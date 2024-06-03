@@ -1,7 +1,8 @@
 pub fn main() !void {
-    const res: i32 = glfw.add(1, 2);
-    std.debug.print("add result: {d}\n", .{res});
-    glfw.init();
+    std.debug.print("Starting up!\n", .{});
+    try glfw.init();
+    defer glfw.deinit();
+    std.debug.print("Exiting!\n", .{});
 }
 
 test "test stub" {
