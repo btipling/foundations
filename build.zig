@@ -13,6 +13,7 @@ pub fn build(b: *std.Build) void {
 
     // GLFW stuff
     exe.addIncludePath(b.path("libs/glfw/include"));
+    exe.addIncludePath(b.path("libs/gl/include"));
     exe.linkLibC();
     switch (target.result.os.tag) {
         .windows => {

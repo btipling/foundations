@@ -2,8 +2,9 @@ const c = @cImport({
     @cInclude("GLFW/glfw3.h");
 });
 
-const GLFWError = error{
+pub const GLFWError = error{
     Fatal,
+    NotFound,
 };
 
 fn errorCallback(err: c_int, description: [*c]const u8) callconv(.C) void {
@@ -23,10 +24,10 @@ pub fn deinit() void {
     c.glfwTerminate();
 }
 
-pub fn createWindow() !*c.GLFWwindow {
+pub fn createWindow(width: c_int, height: c_int) !*c.GLFWwindow {
     const win: *c.GLFWwindow = c.glfwCreateWindow(
-        640,
-        480,
+        width,
+        height,
         "Foundations!",
         null,
         null,
@@ -45,6 +46,17 @@ pub fn shouldClose(win: *c.GLFWwindow) bool {
 
 pub fn destroyWindow(win: *c.GLFWwindow) void {
     c.glfwDestroyWindow(win);
+}
+
+pub fn swapBuffers(win: *c.GLFWwindow) void {
+    c.glfwSwapBuffers(win);
+}
+
+pub fn getProcAddress(comptime T: type, name: []const u8) !T {
+    if (c.glfwGetProcAddress(@ptrCast(name))) |gl_func| {
+        return @as(T, @ptrFromInt(@intFromPtr(gl_func)));
+    }
+    return GLFWError.NotFound;
 }
 
 const std = @import("std");
