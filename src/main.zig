@@ -3,10 +3,12 @@ pub fn main() !void {
     try glfw.init();
     defer glfw.deinit();
 
-    const win = glfw.createWindow();
+    const win = try glfw.createWindow();
     defer glfw.destroyWindow(win);
 
-    while (true) {}
+    while (!glfw.shouldClose(win)) {
+        glfw.pollEvents();
+    }
 
     std.debug.print("Exiting!\n", .{});
 }
