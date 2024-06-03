@@ -1,5 +1,5 @@
 const c = @cImport({
-    @cInclude("glcorearb.h");
+    @cInclude("GL/glcorearb.h");
 });
 
 pub const GLError = error{
