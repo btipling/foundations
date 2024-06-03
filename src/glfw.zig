@@ -6,11 +6,6 @@ const GLFWError = error{
     Fatal,
 };
 
-// void error_callback(int error, const char* description)
-// {
-//     fputs(description, stderr);
-// }
-
 fn errorCallback(err: c_int, description: [*c]const u8) callconv(.C) void {
     std.log.err("GLFW Error: {d} {s}\n", .{ err, description });
 }
@@ -26,6 +21,15 @@ pub fn init() !void {
 
 pub fn deinit() void {
     c.glfwTerminate();
+}
+
+pub fn createWindow() !*c.GLFWwindow {
+    const win: ?*c.GLFWwindow = c.glfwCreateWindow(640, 480, "Foundations!", null, null);
+    return win orelse GLFWError.Fatal;
+}
+
+pub fn destroyWindow(win: *c.GLFWwindow) void {
+    c.glfwDestroyWindow(win);
 }
 
 const std = @import("std");
