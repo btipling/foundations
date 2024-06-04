@@ -14,7 +14,10 @@ pub fn build(b: *std.Build) void {
     // GLFW stuff
     exe.addIncludePath(b.path("libs/glfw/include"));
     exe.addIncludePath(b.path("libs/gl/include"));
+    exe.addIncludePath(b.path("libs/cimgui"));
+    exe.addIncludePath(b.path("libs/cimgui/imgui"));
     exe.linkLibC();
+    exe.linkLibCpp();
     switch (target.result.os.tag) {
         .windows => {
             exe.linkSystemLibrary("gdi32");
@@ -49,6 +52,20 @@ pub fn build(b: *std.Build) void {
         },
         else => @panic("this projectonly builds on windows"),
     }
+
+    exe.addCSourceFiles(.{
+        .files = &.{
+            "libs/cimgui/imgui/imgui.cpp",
+            "libs/cimgui/imgui/imgui_demo.cpp",
+            "libs/cimgui/imgui/imgui_draw.cpp",
+            "libs/cimgui/imgui/imgui_tables.cpp",
+            "libs/cimgui/imgui/imgui_widgets.cpp",
+            "libs/cimgui/cimgui.cpp",
+            "libs/cimgui/imgui/backends/imgui_impl_glfw.cpp",
+            "libs/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
+        },
+        .flags = &.{},
+    });
 
     b.installArtifact(exe);
 

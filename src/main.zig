@@ -3,13 +3,15 @@ pub fn main() !void {
     try glfw.init();
     defer glfw.deinit();
 
-    const width: c_int = 640;
-    const height: c_int = 480;
+    const width: c_int = 1920;
+    const height: c_int = 1080;
 
     const win = try glfw.createWindow(width, height);
     defer glfw.destroyWindow(win);
 
     try gl.loadAll();
+
+    imgui.createContext();
 
     while (!glfw.shouldClose(win)) {
         glfw.pollEvents();
@@ -29,3 +31,4 @@ test "test stub" {
 const std = @import("std");
 const glfw = @import("glfw.zig");
 const gl = @import("gl.zig");
+const imgui = @import("imgui.zig");
