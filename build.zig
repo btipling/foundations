@@ -11,11 +11,15 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const cflags = &.{"-D_GLFW_WIN32"};
+
     // GLFW stuff
     exe.addIncludePath(b.path("libs/glfw/include"));
     exe.addIncludePath(b.path("libs/gl/include"));
     exe.addIncludePath(b.path("libs/cimgui"));
+    exe.addIncludePath(b.path("libs/cimgui/generator/output"));
     exe.addIncludePath(b.path("libs/cimgui/imgui"));
+    exe.addIncludePath(b.path("libs/cimgui/imgui/backends"));
     exe.linkLibC();
     exe.linkLibCpp();
     switch (target.result.os.tag) {
@@ -47,25 +51,29 @@ pub fn build(b: *std.Build) void {
                     "libs/glfw/src/win32_window.c",
                     "libs/glfw/src/win32_module.c",
                 },
-                .flags = &.{"-D_GLFW_WIN32"},
+                .flags = cflags,
+            });
+            exe.addCSourceFiles(.{
+                .files = &.{
+                    "libs/cimgui/cimgui.cpp",
+                    "libs/cimgui/imgui/imgui.cpp",
+                    "libs/cimgui/imgui/imgui_demo.cpp",
+                    "libs/cimgui/imgui/imgui_draw.cpp",
+                    "libs/cimgui/imgui/imgui_tables.cpp",
+                    "libs/cimgui/imgui/imgui_widgets.cpp",
+                },
+                .flags = cflags,
+            });
+            exe.addCSourceFiles(.{
+                .files = &.{
+                    "libs/cimgui/imgui/backends/imgui_impl_glfw.cpp",
+                    "libs/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
+                },
+                .flags = &(cflags.* ++ .{"-DIMGUI_IMPL_API=extern \"C\" __declspec(dllexport)"}),
             });
         },
-        else => @panic("this projectonly builds on windows"),
+        else => @panic("this project only builds on windows"),
     }
-
-    exe.addCSourceFiles(.{
-        .files = &.{
-            "libs/cimgui/imgui/imgui.cpp",
-            "libs/cimgui/imgui/imgui_demo.cpp",
-            "libs/cimgui/imgui/imgui_draw.cpp",
-            "libs/cimgui/imgui/imgui_tables.cpp",
-            "libs/cimgui/imgui/imgui_widgets.cpp",
-            "libs/cimgui/cimgui.cpp",
-            "libs/cimgui/imgui/backends/imgui_impl_glfw.cpp",
-            "libs/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
-        },
-        .flags = &.{},
-    });
 
     b.installArtifact(exe);
 

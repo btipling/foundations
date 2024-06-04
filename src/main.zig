@@ -11,7 +11,7 @@ pub fn main() !void {
 
     try gl.loadAll();
 
-    imgui.createContext();
+    imgui.createContext(win);
 
     while (!glfw.shouldClose(win)) {
         glfw.pollEvents();

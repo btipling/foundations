@@ -2,6 +2,8 @@ const c = @cImport({
     @cInclude("GLFW/glfw3.h");
 });
 
+pub const window = c.GLFWwindow;
+
 pub const GLFWError = error{
     Fatal,
     NotFound,
@@ -17,6 +19,8 @@ pub fn init() !void {
         return GLFWError.Fatal;
     }
     _ = c.glfwSetErrorCallback(errorCallback);
+    c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MAJOR, 4);
+    c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MINOR, 6);
     std.debug.print("successfully inited glfw\n", .{});
 }
 
@@ -24,7 +28,7 @@ pub fn deinit() void {
     c.glfwTerminate();
 }
 
-pub fn createWindow(width: c_int, height: c_int) !*c.GLFWwindow {
+pub fn createWindow(width: c_int, height: c_int) !*window {
     const win: *c.GLFWwindow = c.glfwCreateWindow(
         width,
         height,
@@ -40,15 +44,15 @@ pub fn pollEvents() void {
     c.glfwPollEvents();
 }
 
-pub fn shouldClose(win: *c.GLFWwindow) bool {
+pub fn shouldClose(win: *window) bool {
     return c.glfwWindowShouldClose(win) == c.GL_TRUE;
 }
 
-pub fn destroyWindow(win: *c.GLFWwindow) void {
+pub fn destroyWindow(win: *window) void {
     c.glfwDestroyWindow(win);
 }
 
-pub fn swapBuffers(win: *c.GLFWwindow) void {
+pub fn swapBuffers(win: *window) void {
     c.glfwSwapBuffers(win);
 }
 
