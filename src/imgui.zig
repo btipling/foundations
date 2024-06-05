@@ -18,5 +18,18 @@ pub fn createContext(win: ?*glfw.window) void {
     _ = c.ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
+pub fn frame() void {
+    c.ImGui_ImplOpenGL3_NewFrame();
+    c.ImGui_ImplGlfw_NewFrame();
+    c.igNewFrame();
+    var show = true;
+    c.igShowDemoWindow(@ptrCast(&show));
+    _ = c.igBegin("Hello, world!", null, 0);
+    c.igText("This is some useful text");
+    c.igEnd();
+    c.igRender();
+    c.ImGui_ImplOpenGL3_RenderDrawData(c.igGetDrawData());
+}
+
 const std = @import("std");
 const glfw = @import("glfw.zig");

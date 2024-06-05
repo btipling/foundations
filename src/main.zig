@@ -18,6 +18,7 @@ pub fn main() !void {
         gl.glViewport(0, 0, @intCast(width), @intCast(height));
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
         gl.glClearColor(0.5, 0, 1, 1);
+        imgui.frame();
         glfw.swapBuffers(win);
     }
 
