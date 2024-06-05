@@ -14,8 +14,8 @@ pub fn build(b: *std.Build) void {
     const cflags = &.{"-D_GLFW_WIN32"};
 
     // GLFW stuff
+    exe.addIncludePath(b.path("libs/glad/include"));
     exe.addIncludePath(b.path("libs/glfw/include"));
-    exe.addIncludePath(b.path("libs/gl/include"));
     exe.addIncludePath(b.path("libs/cimgui"));
     exe.addIncludePath(b.path("libs/cimgui/generator/output"));
     exe.addIncludePath(b.path("libs/cimgui/imgui"));
@@ -27,6 +27,12 @@ pub fn build(b: *std.Build) void {
             exe.linkSystemLibrary("gdi32");
             exe.linkSystemLibrary("user32");
             exe.linkSystemLibrary("shell32");
+            exe.addCSourceFiles(.{
+                .files = &.{
+                    "libs/glad/src/gl.c",
+                },
+                .flags = cflags,
+            });
             exe.addCSourceFiles(.{
                 .files = &.{
                     "libs/glfw/src/platform.c",

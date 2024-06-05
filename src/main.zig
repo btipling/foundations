@@ -1,3 +1,8 @@
+const c = @cImport({
+    @cInclude("glad/gl.h");
+    @cInclude("GLFW/glfw3.h");
+});
+
 pub fn main() !void {
     std.debug.print("Starting up!\n", .{});
     try glfw.init();
@@ -9,15 +14,14 @@ pub fn main() !void {
     const win = try glfw.createWindow(width, height);
     defer glfw.destroyWindow(win);
 
-    try gl.loadAll();
+    _ = c.gladLoadGL(c.glfwGetProcAddress);
 
     imgui.createContext(win);
 
     while (!glfw.shouldClose(win)) {
         glfw.pollEvents();
-        gl.glViewport(0, 0, @intCast(width), @intCast(height));
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
-        gl.glClearColor(0.5, 0, 1, 1);
+        c.glViewport(0, 0, @intCast(width), @intCast(height));
+        gl.clear();
         imgui.frame();
         glfw.swapBuffers(win);
     }
@@ -30,6 +34,6 @@ test "test stub" {
 }
 
 const std = @import("std");
-const glfw = @import("glfw.zig");
 const gl = @import("gl.zig");
+const glfw = @import("glfw.zig");
 const imgui = @import("imgui.zig");

@@ -1,4 +1,5 @@
 const c = @cImport({
+    @cInclude("glad/gl.h");
     @cInclude("GLFW/glfw3.h");
 });
 
