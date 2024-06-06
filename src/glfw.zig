@@ -1,8 +1,3 @@
-const c = @cImport({
-    @cInclude("glad/gl.h");
-    @cInclude("GLFW/glfw3.h");
-});
-
 pub const window = c.GLFWwindow;
 
 pub const GLFWError = error{
@@ -40,6 +35,11 @@ pub fn createWindow(width: c_int, height: c_int) !*window {
     c.glfwMakeContextCurrent(win);
     return win;
 }
+
+const c = @cImport({
+    @cInclude("glad/gl.h");
+    @cInclude("GLFW/glfw3.h");
+});
 
 pub fn pollEvents() void {
     c.glfwPollEvents();

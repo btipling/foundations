@@ -1,11 +1,3 @@
-const c = @cImport({
-    @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", {});
-    @cDefine("CIMGUI_USE_GLFW", {});
-    @cDefine("CIMGUI_USE_OPENGL3", {});
-    @cInclude("cimgui.h");
-    @cInclude("cimgui_impl.h");
-});
-
 var io: *c.ImGuiIO = undefined;
 
 pub fn createContext(win: ?*glfw.window) void {
@@ -31,5 +23,12 @@ pub fn frame() void {
     c.ImGui_ImplOpenGL3_RenderDrawData(c.igGetDrawData());
 }
 
+const c = @cImport({
+    @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", {});
+    @cDefine("CIMGUI_USE_GLFW", {});
+    @cDefine("CIMGUI_USE_OPENGL3", {});
+    @cInclude("cimgui.h");
+    @cInclude("cimgui_impl.h");
+});
 const std = @import("std");
 const glfw = @import("glfw.zig");
