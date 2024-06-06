@@ -24,6 +24,13 @@ pub fn deinit() void {
     c.glfwTerminate();
 }
 
+pub fn contentScale(win: *window) f32 {
+    var x: f32 = 0;
+    var y: f32 = 1;
+    c.glfwGetWindowContentScale(win, @ptrCast(&x), @ptrCast(&y));
+    return @max(x, y);
+}
+
 pub fn createWindow(width: c_int, height: c_int) !*window {
     const win: *c.GLFWwindow = c.glfwCreateWindow(
         width,

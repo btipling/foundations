@@ -1,18 +1,19 @@
-var io: ?*c.ImGuiIO = null;
+var ui_io: ?*c.ImGuiIO = null;
 var ctx: ?*c.ImGuiContext = null;
 
-pub fn init(win: ?*glfw.window) void {
+pub fn init(win: *glfw.window) void {
     ctx = c.igCreateContext(null);
-    io = c.igGetIO();
+    ui_io = c.igGetIO();
     const v = c.igGetVersion();
     std.debug.print("dear imgui version: {s}\n", .{v});
     _ = c.ImGui_ImplGlfw_InitForOpenGL(@ptrCast(win), true);
     const glsl_version: [*c]const u8 = "#version 460";
     _ = c.ImGui_ImplOpenGL3_Init(glsl_version);
+    if (ui_io) |io| io.FontGlobalScale = glfw.contentScale(win);
 }
 
 pub fn deinit() void {
-    io = null;
+    ui_io = null;
     c.ImGui_ImplOpenGL3_Shutdown();
     c.ImGui_ImplGlfw_Shutdown();
     c.igDestroyContext(ctx);
