@@ -1,28 +1,54 @@
-var ui_io: ?*c.ImGuiIO = null;
-var ctx: ?*c.ImGuiContext = null;
+io: *c.ImGuiIO,
+ctx: *c.ImGuiContext,
+win: *glfw.window,
+allocator: std.mem.Allocator,
+width: u32,
+height: u32,
 
-pub fn init(win: *glfw.window) void {
-    ctx = c.igCreateContext(null);
-    ui_io = c.igGetIO();
+const UI = @This();
+
+var ui: *UI = undefined;
+
+pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version: []const u8) void {
+    glfw.init() catch @panic("no glfw");
+    const win = glfw.createWindow(@intCast(width), @intCast(height)) catch @panic("no window");
+    const ctx = c.igCreateContext(null) orelse @panic("no imgui");
+    const io: *c.ImGuiIO = c.igGetIO();
     const v = c.igGetVersion();
     std.debug.print("dear imgui version: {s}\n", .{v});
     _ = c.ImGui_ImplGlfw_InitForOpenGL(@ptrCast(win), true);
-    const glsl_version: [*c]const u8 = "#version 460";
-    _ = c.ImGui_ImplOpenGL3_Init(glsl_version);
-    if (ui_io) |io| io.FontGlobalScale = glfw.contentScale(win);
+    _ = c.ImGui_ImplOpenGL3_Init(@ptrCast(glsl_version));
+    io.FontGlobalScale = glfw.contentScale(win);
+    ui = allocator.create(UI) catch @panic("OOM");
+    ui.* = .{
+        .width = width,
+        .height = height,
+        .io = io,
+        .ctx = ctx,
+        .win = win,
+        .allocator = allocator,
+    };
 }
 
 pub fn deinit() void {
-    ui_io = null;
     c.ImGui_ImplOpenGL3_Shutdown();
     c.ImGui_ImplGlfw_Shutdown();
-    c.igDestroyContext(ctx);
+    c.igDestroyContext(ui.ctx);
+    glfw.destroyWindow(ui.win);
+    glfw.deinit();
+    ui.allocator.destroy(ui);
 }
 
 pub fn endFrame() void {
     c.igEnd();
     c.igRender();
     c.ImGui_ImplOpenGL3_RenderDrawData(c.igGetDrawData());
+    glfw.swapBuffers(ui.win);
+}
+
+pub fn shouldClose() bool {
+    glfw.pollEvents();
+    return glfw.shouldClose(ui.win);
 }
 
 pub fn hellWorld() void {

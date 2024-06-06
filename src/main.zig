@@ -1,27 +1,24 @@
 pub fn main() !void {
     std.debug.print("Starting up!\n", .{});
-    try ui.glfw.init();
-    defer ui.glfw.deinit();
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const a = gpa.allocator();
 
-    const width: c_int = 1920;
-    const height: c_int = 1080;
+    const width: u32 = 1920;
+    const height: u32 = 1080;
+    const glsl_version: []const u8 = "#version 460";
 
-    const win = try ui.glfw.createWindow(width, height);
-    defer ui.glfw.destroyWindow(win);
+    ui.init(a, width, height, glsl_version);
+    defer ui.deinit();
 
     _ = c.gladLoadGL(c.glfwGetProcAddress);
 
-    ui.init(win);
-    defer ui.deinit();
-
-    while (!ui.glfw.shouldClose(win)) {
-        ui.glfw.pollEvents();
+    while (!ui.shouldClose()) {
         c.glViewport(0, 0, @intCast(width), @intCast(height));
         rhi.clear();
         ui.beginFrame();
         ui.hellWorld();
         ui.endFrame();
-        ui.glfw.swapBuffers(win);
     }
 
     std.debug.print("Exiting!\n", .{});
