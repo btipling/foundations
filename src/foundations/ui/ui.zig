@@ -10,15 +10,21 @@ const UI = @This();
 var ui: *UI = undefined;
 
 pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version: []const u8) void {
+    // Initialize windowing
     glfw.init() catch @panic("no glfw");
     const win = glfw.createWindow(@intCast(width), @intCast(height)) catch @panic("no window");
+
+    // Initialize cimgui
     const ctx = c.igCreateContext(null) orelse @panic("no imgui");
     const io: *c.ImGuiIO = c.igGetIO();
     const v = c.igGetVersion();
+
     std.debug.print("dear imgui version: {s}\n", .{v});
     _ = c.ImGui_ImplGlfw_InitForOpenGL(@ptrCast(win), true);
     _ = c.ImGui_ImplOpenGL3_Init(@ptrCast(glsl_version));
+
     io.FontGlobalScale = glfw.contentScale(win);
+
     ui = allocator.create(UI) catch @panic("OOM");
     ui.* = .{
         .width = width,
