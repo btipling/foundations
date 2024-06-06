@@ -1,0 +1,36 @@
+allocator: std.mem.Allocator,
+
+const App = @This();
+
+var app: *App = undefined;
+
+pub fn init(allocator: std.mem.Allocator) *App {
+    const width: u32 = 1920;
+    const height: u32 = 1080;
+    const glsl_version: []const u8 = "#version 460";
+
+    ui.init(allocator, width, height, glsl_version);
+    app = allocator.create(App) catch @panic("OOM");
+    app.* = .{
+        .allocator = allocator,
+    };
+    return app;
+}
+
+pub fn deinit(self: *App) void {
+    ui.deinit();
+    self.allocator.destroy(self);
+}
+
+pub fn run(_: *App) void {
+    while (!ui.shouldClose()) {
+        rhi.beginFrame();
+        ui.beginFrame();
+        ui.hellWorld();
+        ui.endFrame();
+    }
+}
+
+const std = @import("std");
+const ui = @import("ui/ui.zig");
+const rhi = @import("rhi/rhi.zig");

@@ -1,26 +1,16 @@
 pub fn main() !void {
-    std.debug.print("Starting up!\n", .{});
+    std.debug.print("Hello Foundations!\n", .{});
+
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
-    const a = gpa.allocator();
 
-    const width: u32 = 1920;
-    const height: u32 = 1080;
-    const glsl_version: []const u8 = "#version 460";
+    const a = app.init(gpa.allocator());
+    defer a.deinit();
 
-    ui.init(a, width, height, glsl_version);
-    defer ui.deinit();
+    a.run();
 
-    while (!ui.shouldClose()) {
-        rhi.beginFrame();
-        ui.beginFrame();
-        ui.hellWorld();
-        ui.endFrame();
-    }
-
-    std.debug.print("Exiting!\n", .{});
+    std.debug.print("Goodbye Foundations!\n", .{});
 }
 
 const std = @import("std");
-const rhi = @import("rhi/rhi.zig");
-const ui = @import("ui/ui.zig");
+const app = @import("foundations/app.zig");
