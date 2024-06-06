@@ -1,27 +1,27 @@
 pub fn main() !void {
     std.debug.print("Starting up!\n", .{});
-    try glfw.init();
-    defer glfw.deinit();
+    try ui.glfw.init();
+    defer ui.glfw.deinit();
 
     const width: c_int = 1920;
     const height: c_int = 1080;
 
-    const win = try glfw.createWindow(width, height);
-    defer glfw.destroyWindow(win);
+    const win = try ui.glfw.createWindow(width, height);
+    defer ui.glfw.destroyWindow(win);
 
     _ = c.gladLoadGL(c.glfwGetProcAddress);
 
     ui.init(win);
     defer ui.deinit();
 
-    while (!glfw.shouldClose(win)) {
-        glfw.pollEvents();
+    while (!ui.glfw.shouldClose(win)) {
+        ui.glfw.pollEvents();
         c.glViewport(0, 0, @intCast(width), @intCast(height));
         rhi.clear();
         ui.beginFrame();
         ui.hellWorld();
         ui.endFrame();
-        glfw.swapBuffers(win);
+        ui.glfw.swapBuffers(win);
     }
 
     std.debug.print("Exiting!\n", .{});
@@ -37,6 +37,5 @@ const c = @cImport({
 });
 
 const std = @import("std");
-const rhi = @import("rhi.zig");
-const glfw = @import("glfw.zig");
-const ui = @import("ui.zig");
+const rhi = @import("rhi/rhi.zig");
+const ui = @import("ui/ui.zig");

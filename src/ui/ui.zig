@@ -46,4 +46,4 @@ const c = @cImport({
     @cInclude("cimgui_impl.h");
 });
 const std = @import("std");
-const glfw = @import("glfw.zig");
+pub const glfw = @import("glfw.zig");
