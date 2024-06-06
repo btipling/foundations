@@ -1,7 +1,8 @@
-var io: *c.ImGuiIO = undefined;
+var io: ?*c.ImGuiIO = null;
+var ctx: ?*c.ImGuiContext = null;
 
-pub fn createContext(win: ?*glfw.window) void {
-    _ = c.igCreateContext(null);
+pub fn init(win: ?*glfw.window) void {
+    ctx = c.igCreateContext(null);
     io = c.igGetIO();
     const v = c.igGetVersion();
     std.debug.print("dear imgui version: {s}\n", .{v});
@@ -10,17 +11,30 @@ pub fn createContext(win: ?*glfw.window) void {
     _ = c.ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
-pub fn frame() void {
-    c.ImGui_ImplOpenGL3_NewFrame();
-    c.ImGui_ImplGlfw_NewFrame();
-    c.igNewFrame();
+pub fn deinit() void {
+    io = null;
+    c.ImGui_ImplOpenGL3_Shutdown();
+    c.ImGui_ImplGlfw_Shutdown();
+    c.igDestroyContext(ctx);
+}
+
+pub fn endFrame() void {
+    c.igEnd();
+    c.igRender();
+    c.ImGui_ImplOpenGL3_RenderDrawData(c.igGetDrawData());
+}
+
+pub fn hellWorld() void {
     var show = true;
     c.igShowDemoWindow(@ptrCast(&show));
     _ = c.igBegin("Hello, world!", null, 0);
     c.igText("This is some useful text");
-    c.igEnd();
-    c.igRender();
-    c.ImGui_ImplOpenGL3_RenderDrawData(c.igGetDrawData());
+}
+
+pub fn beginFrame() void {
+    c.ImGui_ImplOpenGL3_NewFrame();
+    c.ImGui_ImplGlfw_NewFrame();
+    c.igNewFrame();
 }
 
 const c = @cImport({

@@ -11,13 +11,16 @@ pub fn main() !void {
 
     _ = c.gladLoadGL(c.glfwGetProcAddress);
 
-    imgui.createContext(win);
+    ui.init(win);
+    defer ui.deinit();
 
     while (!glfw.shouldClose(win)) {
         glfw.pollEvents();
         c.glViewport(0, 0, @intCast(width), @intCast(height));
         rhi.clear();
-        imgui.frame();
+        ui.beginFrame();
+        ui.hellWorld();
+        ui.endFrame();
         glfw.swapBuffers(win);
     }
 
@@ -36,4 +39,4 @@ const c = @cImport({
 const std = @import("std");
 const rhi = @import("rhi.zig");
 const glfw = @import("glfw.zig");
-const imgui = @import("imgui.zig");
+const ui = @import("ui.zig");
