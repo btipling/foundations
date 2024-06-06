@@ -26,7 +26,7 @@ pub fn run(_: *App) void {
     while (!ui.shouldClose()) {
         rhi.beginFrame();
         ui.beginFrame();
-        ui.hellWorld();
+        ui.nav();
         ui.endFrame();
     }
 }

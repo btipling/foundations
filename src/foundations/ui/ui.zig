@@ -46,7 +46,6 @@ pub fn deinit() void {
 }
 
 pub fn endFrame() void {
-    c.igEnd();
     c.igRender();
     c.ImGui_ImplOpenGL3_RenderDrawData(c.igGetDrawData());
     glfw.swapBuffers(ui.win);
@@ -64,8 +63,6 @@ pub fn windowDimensions() [2]u32 {
 pub fn hellWorld() void {
     var show = true;
     c.igShowDemoWindow(@ptrCast(&show));
-    _ = c.igBegin("Hello, world!", null, 0);
-    c.igText("This is some useful text");
 }
 
 pub fn beginFrame() void {
@@ -82,4 +79,5 @@ const c = @cImport({
     @cInclude("cimgui_impl.h");
 });
 const std = @import("std");
-pub const glfw = @import("glfw.zig");
+const glfw = @import("glfw.zig");
+pub const nav = @import("navigation.zig").draw;
