@@ -17,7 +17,8 @@ pub fn init() !void {
     _ = c.glfwSetErrorCallback(errorCallback);
     c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MAJOR, 4);
     c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MINOR, 6);
-    std.debug.print("successfully inited glfw\n", .{});
+
+    std.debug.print("successfully inited glfw and gl\n", .{});
 }
 
 pub fn deinit() void {
@@ -40,13 +41,9 @@ pub fn createWindow(width: c_int, height: c_int) !*window {
         null,
     ) orelse return GLFWError.Fatal;
     c.glfwMakeContextCurrent(win);
+    _ = c.gladLoadGL(c.glfwGetProcAddress);
     return win;
 }
-
-const c = @cImport({
-    @cInclude("glad/gl.h");
-    @cInclude("GLFW/glfw3.h");
-});
 
 pub fn pollEvents() void {
     c.glfwPollEvents();
@@ -70,5 +67,10 @@ pub fn getProcAddress(comptime T: type, name: []const u8) !T {
     }
     return GLFWError.NotFound;
 }
+
+const c = @cImport({
+    @cInclude("glad/gl.h");
+    @cInclude("GLFW/glfw3.h");
+});
 
 const std = @import("std");

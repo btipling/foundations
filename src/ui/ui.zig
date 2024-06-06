@@ -51,6 +51,10 @@ pub fn shouldClose() bool {
     return glfw.shouldClose(ui.win);
 }
 
+pub fn windowDimensions() [2]u32 {
+    return [2]u32{ ui.width, ui.height };
+}
+
 pub fn hellWorld() void {
     var show = true;
     c.igShowDemoWindow(@ptrCast(&show));

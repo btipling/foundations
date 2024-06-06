@@ -11,11 +11,8 @@ pub fn main() !void {
     ui.init(a, width, height, glsl_version);
     defer ui.deinit();
 
-    _ = c.gladLoadGL(c.glfwGetProcAddress);
-
     while (!ui.shouldClose()) {
-        c.glViewport(0, 0, @intCast(width), @intCast(height));
-        rhi.clear();
+        rhi.beginFrame();
         ui.beginFrame();
         ui.hellWorld();
         ui.endFrame();
@@ -23,15 +20,6 @@ pub fn main() !void {
 
     std.debug.print("Exiting!\n", .{});
 }
-
-test "test stub" {
-    try std.testing.expect(true);
-}
-
-const c = @cImport({
-    @cInclude("glad/gl.h");
-    @cInclude("GLFW/glfw3.h");
-});
 
 const std = @import("std");
 const rhi = @import("rhi/rhi.zig");
