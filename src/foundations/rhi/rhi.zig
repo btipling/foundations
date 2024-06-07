@@ -69,6 +69,23 @@ pub fn createProgram() u32 {
     return @intCast(p);
 }
 
+pub fn attachBuffer(positions: []const [3]f32) struct { vao: u32, buffer: u32 } {
+    const buffer: c.GLuint = 0;
+    c.glCreateBuffers(1, @ptrCast(&buffer));
+    const vertex_size: usize = @sizeOf(f32) * 3;
+    const size = @as(isize, @intCast(positions.len * vertex_size));
+    const data_ptr: *const anyopaque = positions.ptr;
+    c.glNamedBufferData(buffer, size, data_ptr, c.GL_STATIC_DRAW);
+
+    const vao: c.GLuint = 0;
+    c.glCreateVertexArrays(1, @ptrCast(&vao));
+    c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, @intCast(vertex_size));
+    c.glEnableVertexArrayAttrib(vao, 0);
+    c.glVertexArrayAttribFormat(vao, 0, 3, c.GL_FLOAT, c.GL_FALSE, 0);
+
+    return .{ .vao = vao, .buffer = buffer };
+}
+
 pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
     const shaders = [_][]const u8{ vertex, frag };
     const log_len: usize = 1024;
@@ -86,22 +103,22 @@ pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
         var success: c.GLint = 0;
         c.glGetShaderiv(shader, c.GL_COMPILE_STATUS, &success);
         if (success == c.GL_FALSE) {
-            var infoLog: [log_len]u8 = undefined;
+            var infoLog: [log_len]u8 = std.mem.zeroes([log_len]u8);
             var logSize: c.GLsizei = 0;
             c.glGetShaderInfoLog(shader, @intCast(log_len), &logSize, @ptrCast(&infoLog));
             const len: usize = @intCast(logSize);
             std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n", .{infoLog[0..len]});
         }
-        c.glAttachShader(program, shader);
+        c.glAttachShader(@intCast(program), shader);
     }
     {
-        c.glLinkProgram(program);
+        c.glLinkProgram(@intCast(program));
         var success: c.GLint = 0;
-        c.glGetProgramiv(program, c.GL_LINK_STATUS, &success);
+        c.glGetProgramiv(@intCast(program), c.GL_LINK_STATUS, &success);
         if (success == c.GL_FALSE) {
-            var infoLog: [log_len]u8 = undefined;
+            var infoLog: [log_len]u8 = std.mem.zeroes([log_len]u8);
             var logSize: c.GLsizei = 0;
-            c.glGetProgramInfoLog(program, @intCast(log_len), &logSize, @ptrCast(&infoLog));
+            c.glGetProgramInfoLog(@intCast(program), @intCast(log_len), &logSize, @ptrCast(&infoLog));
             const len: usize = @intCast(logSize);
             std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n", .{infoLog[0..len]});
         }
