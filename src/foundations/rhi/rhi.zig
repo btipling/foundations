@@ -70,14 +70,14 @@ pub fn createProgram() u32 {
 }
 
 pub fn attachBuffer(positions: []const [3]f32) struct { vao: u32, buffer: u32 } {
-    const buffer: c.GLuint = 0;
+    var buffer: c.GLuint = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
     const vertex_size: usize = @sizeOf(f32) * 3;
     const size = @as(isize, @intCast(positions.len * vertex_size));
     const data_ptr: *const anyopaque = positions.ptr;
     c.glNamedBufferData(buffer, size, data_ptr, c.GL_STATIC_DRAW);
 
-    const vao: c.GLuint = 0;
+    var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
     c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, @intCast(vertex_size));
     c.glEnableVertexArrayAttrib(vao, 0);
@@ -87,17 +87,20 @@ pub fn attachBuffer(positions: []const [3]f32) struct { vao: u32, buffer: u32 } 
 }
 
 pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
-    const shaders = [_][]const u8{ vertex, frag };
+    const shaders = [_]struct { source: []const u8, shader_type: c.GLenum }{
+        .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
+        .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
+    };
     const log_len: usize = 1024;
 
     var i: usize = 0;
     while (i < shaders.len) : (i += 1) {
-        const source: [:0]u8 = std.mem.concatWithSentinel(rhi.allocator, .{shaders[i]}) catch @panic("OOM");
+        const source: [:0]u8 = std.mem.concatWithSentinel(rhi.allocator, u8, &[_][]const u8{shaders[i].source}, 0) catch @panic("OOM");
         defer rhi.allocator.free(source);
 
-        const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
+        const shader = c.glCreateShader(shaders[i].shader_type);
 
-        c.glShaderSource(shader, 1, @ptrCast(source.ptr));
+        c.glShaderSource(shader, 1, &[_][*c]const u8{source.ptr}, null);
         c.glCompileShader(shader);
 
         var success: c.GLint = 0;
@@ -107,7 +110,7 @@ pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
             var logSize: c.GLsizei = 0;
             c.glGetShaderInfoLog(shader, @intCast(log_len), &logSize, @ptrCast(&infoLog));
             const len: usize = @intCast(logSize);
-            std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n", .{infoLog[0..len]});
+            std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n{s}\n", .{ infoLog[0..len], source });
         }
         c.glAttachShader(@intCast(program), shader);
     }
@@ -120,10 +123,22 @@ pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
             var logSize: c.GLsizei = 0;
             c.glGetProgramInfoLog(@intCast(program), @intCast(log_len), &logSize, @ptrCast(&infoLog));
             const len: usize = @intCast(logSize);
-            std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n", .{infoLog[0..len]});
+            std.debug.panic("ERROR::PROGRAM::LINKING_FAILED\n{s}\n", .{infoLog[0..len]});
         }
     }
     return;
+}
+
+pub fn drawArrays(program: u32, vao: u32, count: usize) void {
+    c.glUseProgram(@intCast(program));
+    c.glBindVertexArray(vao);
+    c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
+}
+
+pub fn delete(program: u32, vao: u32, buffer: u32) void {
+    c.glDeleteProgram(program);
+    c.glDeleteVertexArrays(1, @ptrCast(&vao));
+    c.glDeleteBuffers(1, @ptrCast(&buffer));
 }
 
 const c = @cImport({

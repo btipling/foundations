@@ -77,9 +77,6 @@ pub fn beginFrame() void {
     c.ImGui_ImplOpenGL3_NewFrame();
     c.ImGui_ImplGlfw_NewFrame();
     c.igNewFrame();
-    if (ui.state.demo_current == .triangle) {
-        std.debug.print("rendering triangle\n", .{});
-    }
 }
 
 pub fn helpers() ui_helpers {
@@ -99,6 +96,7 @@ const c = @cImport({
 });
 const std = @import("std");
 const glfw = @import("ui_glfw.zig");
-const ui_state = @import("ui_state.zig");
 const ui_helpers = @import("ui_helpers.zig");
 pub const nav = @import("ui_navigation.zig").draw;
+
+pub const ui_state = @import("ui_state.zig");

@@ -1,3 +1,4 @@
+demos: *demos,
 allocator: std.mem.Allocator,
 
 const App = @This();
@@ -14,21 +15,24 @@ pub fn init(allocator: std.mem.Allocator) *App {
 
     app = allocator.create(App) catch @panic("OOM");
     app.* = .{
+        .demos = demos.init(allocator, ui.state()),
         .allocator = allocator,
     };
     return app;
 }
 
 pub fn deinit(self: *App) void {
+    self.demos.deinit();
     rhi.deinit();
     ui.deinit();
     self.allocator.destroy(self);
 }
 
-pub fn run(_: *App) void {
+pub fn run(self: *App) void {
     while (!ui.shouldClose()) {
         rhi.beginFrame();
         ui.beginFrame();
+        self.demos.drawDemo();
         ui.nav();
         ui.endFrame();
     }
@@ -36,4 +40,5 @@ pub fn run(_: *App) void {
 
 const std = @import("std");
 const ui = @import("ui/ui.zig");
+const demos = @import("demos/demos.zig");
 const rhi = @import("rhi/rhi.zig");
