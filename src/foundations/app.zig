@@ -10,6 +10,8 @@ pub fn init(allocator: std.mem.Allocator) *App {
     const glsl_version: []const u8 = "#version 460";
 
     ui.init(allocator, width, height, glsl_version);
+    rhi.init();
+
     app = allocator.create(App) catch @panic("OOM");
     app.* = .{
         .allocator = allocator,
