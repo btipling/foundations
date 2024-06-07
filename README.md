@@ -11,4 +11,5 @@ https://athena.ecs.csus.edu/~gordonvs/textC2E.html
 https://athena.ecs.csus.edu/~gordonvs/textC3E.html
 https://essentialmath.com/book.htm
 
-![image](https://github.com/btipling/foundations/assets/249641/a9c4dfbc-bace-4ffd-891d-479d22cba35d)
+![image](https://github.com/btipling/foundations/assets/249641/e300f812-5056-42a7-9921-7b91635a701b)
+
