@@ -69,19 +69,33 @@ pub fn createProgram() u32 {
     return @intCast(p);
 }
 
-pub fn attachBuffer(positions: []const [3]f32) struct { vao: u32, buffer: u32 } {
+pub const attributeData = struct {
+    position: [3]f32,
+    color: [4]f32,
+};
+
+pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
-    const vertex_size: usize = @sizeOf(f32) * 3;
-    const size = @as(isize, @intCast(positions.len * vertex_size));
-    const data_ptr: *const anyopaque = positions.ptr;
+    const data_size: usize = @sizeOf(attributeData);
+    const size = @as(isize, @intCast(data.len * data_size));
+    const data_ptr: *const anyopaque = data.ptr;
     c.glNamedBufferData(buffer, size, data_ptr, c.GL_STATIC_DRAW);
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
-    c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, @intCast(vertex_size));
+    c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, @intCast(data_size));
+
+    const vec_3_size: c.GLsizei = @intCast(@sizeOf(f32) * 3);
+
     c.glEnableVertexArrayAttrib(vao, 0);
+    c.glEnableVertexArrayAttrib(vao, 1);
+
     c.glVertexArrayAttribFormat(vao, 0, 3, c.GL_FLOAT, c.GL_FALSE, 0);
+    c.glVertexArrayAttribFormat(vao, 1, 4, c.GL_FLOAT, c.GL_FALSE, vec_3_size);
+
+    c.glVertexArrayAttribBinding(vao, 0, 0);
+    c.glVertexArrayAttribBinding(vao, 1, 0);
 
     return .{ .vao = vao, .buffer = buffer };
 }
