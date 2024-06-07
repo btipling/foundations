@@ -10,7 +10,7 @@ pub fn init(allocator: std.mem.Allocator) *App {
     const glsl_version: []const u8 = "#version 460";
 
     ui.init(allocator, width, height, glsl_version);
-    rhi.init();
+    rhi.init(allocator);
 
     app = allocator.create(App) catch @panic("OOM");
     app.* = .{
@@ -20,6 +20,7 @@ pub fn init(allocator: std.mem.Allocator) *App {
 }
 
 pub fn deinit(self: *App) void {
+    rhi.deinit();
     ui.deinit();
     self.allocator.destroy(self);
 }
