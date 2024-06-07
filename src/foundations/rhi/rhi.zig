@@ -76,6 +76,8 @@ pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
     var i: usize = 0;
     while (i < shaders.len) : (i += 1) {
         const source: [:0]u8 = std.mem.concatWithSentinel(rhi.allocator, .{shaders[i]}) catch @panic("OOM");
+        defer rhi.allocator.free(source);
+
         const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
 
         c.glShaderSource(shader, 1, @ptrCast(source.ptr));
