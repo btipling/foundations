@@ -49,6 +49,7 @@ fn messageCallback(
 pub fn init(allocator: std.mem.Allocator) void {
     c.glEnable(c.GL_DEBUG_OUTPUT);
     c.glDebugMessageCallback(&messageCallback, null);
+    c.glClipControl(c.GL_LOWER_LEFT, c.GL_NEGATIVE_ONE_TO_ONE);
     rhi = allocator.create(RHI) catch @panic("OOM");
     rhi.* = .{ .allocator = allocator };
 }
