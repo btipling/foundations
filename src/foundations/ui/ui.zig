@@ -5,6 +5,7 @@ allocator: std.mem.Allocator,
 width: u32,
 height: u32,
 helpers: ui_helpers,
+state: *ui_state,
 
 const UI = @This();
 
@@ -27,6 +28,8 @@ pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version:
     const scale = glfw.contentScale(win);
     io.FontGlobalScale = scale;
 
+    const s = allocator.create(ui_state) catch @panic("OOM");
+    s.* = .{};
     ui = allocator.create(UI) catch @panic("OOM");
     ui.* = .{
         .width = width,
@@ -35,6 +38,7 @@ pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version:
         .ctx = ctx,
         .win = win,
         .helpers = .{ .scale = scale },
+        .state = s,
         .allocator = allocator,
     };
 }
@@ -45,6 +49,7 @@ pub fn deinit() void {
     c.igDestroyContext(ui.ctx);
     glfw.destroyWindow(ui.win);
     glfw.deinit();
+    ui.allocator.destroy(ui.state);
     ui.allocator.destroy(ui);
 }
 
@@ -72,10 +77,17 @@ pub fn beginFrame() void {
     c.ImGui_ImplOpenGL3_NewFrame();
     c.ImGui_ImplGlfw_NewFrame();
     c.igNewFrame();
+    if (ui.state.demo_current == .triangle) {
+        std.debug.print("rendering triangle\n", .{});
+    }
 }
 
 pub fn helpers() ui_helpers {
     return ui.helpers;
+}
+
+pub fn state() *ui_state {
+    return ui.state;
 }
 
 const c = @cImport({
@@ -87,5 +99,6 @@ const c = @cImport({
 });
 const std = @import("std");
 const glfw = @import("ui_glfw.zig");
+const ui_state = @import("ui_state.zig");
 const ui_helpers = @import("ui_helpers.zig");
 pub const nav = @import("ui_navigation.zig").draw;

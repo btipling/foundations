@@ -9,7 +9,7 @@ pub fn draw() void {
     if (c.igCollapsingHeader_TreeNodeFlags("Shapes", 0)) {
         c.igText("Simple shapes drawn with OpenGL");
         if (c.igButton("Triangle", btn_dims)) {
-            std.debug.print("test!\n", .{});
+            ui.state().demo_current = .triangle;
         }
     }
     c.igEnd();
