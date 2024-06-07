@@ -4,6 +4,7 @@ win: *glfw.window,
 allocator: std.mem.Allocator,
 width: u32,
 height: u32,
+helpers: ui_helpers,
 
 const UI = @This();
 
@@ -23,7 +24,8 @@ pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version:
     _ = c.ImGui_ImplGlfw_InitForOpenGL(@ptrCast(win), true);
     _ = c.ImGui_ImplOpenGL3_Init(@ptrCast(glsl_version));
 
-    io.FontGlobalScale = glfw.contentScale(win);
+    const scale = glfw.contentScale(win);
+    io.FontGlobalScale = scale;
 
     ui = allocator.create(UI) catch @panic("OOM");
     ui.* = .{
@@ -32,6 +34,7 @@ pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version:
         .io = io,
         .ctx = ctx,
         .win = win,
+        .helpers = .{ .scale = scale },
         .allocator = allocator,
     };
 }
@@ -71,6 +74,10 @@ pub fn beginFrame() void {
     c.igNewFrame();
 }
 
+pub fn helpers() ui_helpers {
+    return ui.helpers;
+}
+
 const c = @cImport({
     @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", {});
     @cDefine("CIMGUI_USE_GLFW", {});
@@ -79,5 +86,6 @@ const c = @cImport({
     @cInclude("cimgui_impl.h");
 });
 const std = @import("std");
-const glfw = @import("glfw.zig");
-pub const nav = @import("navigation.zig").draw;
+const glfw = @import("ui_glfw.zig");
+const ui_helpers = @import("ui_helpers.zig");
+pub const nav = @import("ui_navigation.zig").draw;
