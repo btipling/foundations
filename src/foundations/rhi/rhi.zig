@@ -159,7 +159,9 @@ pub fn drawArrays(program: u32, vao: u32, count: usize) void {
 pub fn drawPoints(program: u32, vao: u32, count: usize) void {
     c.glUseProgram(@intCast(program));
     c.glBindVertexArray(vao);
+    c.glPointSize(30.0);
     c.glDrawArrays(c.GL_POINTS, 0, @intCast(count));
+    c.glPointSize(1.0);
 }
 
 pub fn delete(program: u32, vao: u32, buffer: u32) void {
