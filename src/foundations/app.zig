@@ -32,7 +32,7 @@ pub fn run(self: *App) void {
     while (!ui.shouldClose()) {
         rhi.beginFrame();
         ui.beginFrame();
-        self.demos.drawDemo();
+        self.demos.drawDemo(ui.glfw.getTime());
         ui.nav();
         ui.endFrame();
     }

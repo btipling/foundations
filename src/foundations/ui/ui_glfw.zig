@@ -41,8 +41,13 @@ pub fn createWindow(width: c_int, height: c_int) !*window {
         null,
     ) orelse return GLFWError.Fatal;
     c.glfwMakeContextCurrent(win);
+    c.glfwSwapInterval(1);
     _ = c.gladLoadGL(c.glfwGetProcAddress);
     return win;
+}
+
+pub fn getTime() f64 {
+    return @floatCast(c.glfwGetTime());
 }
 
 pub fn pollEvents() void {

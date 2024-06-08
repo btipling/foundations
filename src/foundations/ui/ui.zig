@@ -95,8 +95,8 @@ const c = @cImport({
     @cInclude("cimgui_impl.h");
 });
 const std = @import("std");
-const glfw = @import("ui_glfw.zig");
 const ui_helpers = @import("ui_helpers.zig");
 pub const nav = @import("ui_navigation.zig").draw;
 
+pub const glfw = @import("ui_glfw.zig");
 pub const ui_state = @import("ui_state.zig");

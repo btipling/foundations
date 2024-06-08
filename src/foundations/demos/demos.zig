@@ -19,7 +19,7 @@ pub fn deinit(self: *Demos) void {
     self.allocator.destroy(self);
 }
 
-pub fn drawDemo(self: Demos) void {
+pub fn drawDemo(self: Demos, _: f64) void {
     switch (self.ui_state.demo_current) {
         .triangle => self.triangle.draw(),
         else => {},
