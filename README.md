@@ -10,6 +10,7 @@ These are the books I am going to use to learn:
 * https://athena.ecs.csus.edu/~gordonvs/textC2E.html
 * https://athena.ecs.csus.edu/~gordonvs/textC3E.html
 * https://essentialmath.com/book.htm
+* https://www.gamemath.com/
 
 ![image](https://github.com/btipling/foundations/assets/249641/fae024d5-90f9-4f11-a8af-b37894dda30c)
 
