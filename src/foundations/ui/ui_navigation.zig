@@ -8,6 +8,9 @@ pub fn draw() void {
     _ = c.igBegin("Navigation", null, 0);
     if (c.igCollapsingHeader_TreeNodeFlags("Shapes", 0)) {
         c.igText("Simple shapes drawn with OpenGL");
+        if (c.igButton("Point", btn_dims)) {
+            ui.state().demo_current = .point;
+        }
         if (c.igButton("Triangle", btn_dims)) {
             ui.state().demo_current = .triangle;
         }

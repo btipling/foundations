@@ -62,12 +62,18 @@ pub fn beginFrame() void {
     const dims = ui.windowDimensions();
     c.glViewport(0, 0, @intCast(dims[0]), @intCast(dims[1]));
     c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
-    c.glClearColor(0.6, 0, 1, 1);
+    c.glClearColor(0, 0, 0, 1);
 }
 
 pub fn createProgram() u32 {
     const p = c.glCreateProgram();
     return @intCast(p);
+}
+
+pub fn createVAO() u32 {
+    var vao: c.GLuint = 0;
+    c.glCreateVertexArrays(1, @ptrCast(&vao));
+    return @intCast(vao);
 }
 
 pub const attributeData = struct {
@@ -150,10 +156,16 @@ pub fn drawArrays(program: u32, vao: u32, count: usize) void {
     c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
 }
 
+pub fn drawPoints(program: u32, vao: u32, count: usize) void {
+    c.glUseProgram(@intCast(program));
+    c.glBindVertexArray(vao);
+    c.glDrawArrays(c.GL_POINTS, 0, @intCast(count));
+}
+
 pub fn delete(program: u32, vao: u32, buffer: u32) void {
     c.glDeleteProgram(program);
     c.glDeleteVertexArrays(1, @ptrCast(&vao));
-    c.glDeleteBuffers(1, @ptrCast(&buffer));
+    if (buffer != 0) c.glDeleteBuffers(1, @ptrCast(&buffer));
 }
 
 const c = @cImport({
