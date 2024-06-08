@@ -1,6 +1,6 @@
-# Chatper 1
+# Chatper 1 Getting Started 
 
-Getting started guide. 
+Basic intro guide. 
 
 Shader programming involves pipelines to enable parallel processing.
 
