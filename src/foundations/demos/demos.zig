@@ -27,11 +27,11 @@ pub fn deinit(self: *Demos) void {
     self.allocator.destroy(self);
 }
 
-pub fn drawDemo(self: Demos, _: f64) void {
+pub fn drawDemo(self: Demos, frame_time: f64) void {
     switch (self.ui_state.demo_current) {
         .point => self.point.draw(),
         .triangle => self.triangle.draw(),
-        .triangle_animated => self.triangle_animated.draw(),
+        .triangle_animated => self.triangle_animated.draw(frame_time),
         else => {},
     }
 }

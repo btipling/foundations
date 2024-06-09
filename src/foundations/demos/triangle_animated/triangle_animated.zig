@@ -2,8 +2,6 @@ program: u32,
 vao: u32,
 buffer: u32,
 count: usize,
-x: f32 = 0,
-inc: f32 = 0.01,
 
 const AnimatedTriangle = @This();
 
@@ -30,15 +28,16 @@ pub fn deinit(self: *AnimatedTriangle, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn draw(self: *AnimatedTriangle) void {
-    self.x += self.inc;
-    if (self.x >= 1) {
-        self.inc = -self.inc;
+const animation_duration: f64 = 2; // seconds
+
+pub fn draw(self: *AnimatedTriangle, frame_time: f64) void {
+    const is_even = @mod(@floor(frame_time / animation_duration), 2) == 0;
+    const pos: f32 = @floatCast((@mod(frame_time, animation_duration) / animation_duration));
+    var x: f32 = pos * 2 - 1;
+    if (is_even) {
+        x = 1 - pos * 2;
     }
-    if (self.x < -1) {
-        self.inc = -self.inc;
-    }
-    rhi.setUniform1f(self.program, "f_offset", self.x);
+    rhi.setUniform1f(self.program, "f_offset", x);
     rhi.drawArrays(self.program, self.vao, self.count);
 }
 
