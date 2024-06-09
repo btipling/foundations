@@ -14,6 +14,9 @@ pub fn draw() void {
         if (c.igButton("Triangle", btn_dims)) {
             ui.state().demo_current = .triangle;
         }
+        if (c.igButton("Animated Triangle", btn_dims)) {
+            ui.state().demo_current = .triangle_animated;
+        }
     }
     c.igEnd();
 }

@@ -164,6 +164,11 @@ pub fn drawPoints(program: u32, vao: u32, count: usize) void {
     c.glPointSize(1.0);
 }
 
+pub fn setUniform1f(program: u32, name: []const u8, v: f32) void {
+    const location: c.GLint = c.glGetUniformLocation(@intCast(program), @ptrCast(name));
+    c.glProgramUniform1f(@intCast(program), location, @floatCast(v));
+}
+
 pub fn delete(program: u32, vao: u32, buffer: u32) void {
     c.glDeleteProgram(program);
     c.glDeleteVertexArrays(1, @ptrCast(&vao));

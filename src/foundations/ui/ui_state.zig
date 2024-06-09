@@ -4,4 +4,5 @@ const demos = enum {
     none,
     point,
     triangle,
+    triangle_animated,
 };
