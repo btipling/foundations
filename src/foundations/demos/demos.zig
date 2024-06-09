@@ -1,5 +1,5 @@
 // demos
-point: point,
+point: *point,
 triangle: triangle,
 triangle_animated: *triangle_animated,
 
@@ -11,7 +11,7 @@ const Demos = @This();
 pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     const demos = allocator.create(Demos) catch @panic("OOM");
     demos.* = .{
-        .point = point.init(),
+        .point = point.init(allocator),
         .triangle = triangle.init(),
         .triangle_animated = triangle_animated.init(allocator),
         .ui_state = ui_state,
@@ -21,7 +21,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
 }
 
 pub fn deinit(self: *Demos) void {
-    self.point.deinit();
+    self.point.deinit(self.allocator);
     self.triangle.deinit();
     self.triangle_animated.deinit(self.allocator);
     self.allocator.destroy(self);
