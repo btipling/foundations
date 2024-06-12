@@ -1,10 +1,10 @@
 pub const vec4 = @Vector(4, f32);
 
 pub fn negate(v: anytype) @TypeOf(v) {
-    return mul(v, -1);
+    return mul(-1, v);
 }
 
-pub fn mul(v: anytype, m: anytype) @TypeOf(v) {
+pub fn mul(m: anytype, v: anytype) @TypeOf(v) {
     const T = @TypeOf(v);
     const K = @TypeOf(m);
     switch (@typeInfo(T)) {
@@ -27,10 +27,10 @@ test negate {
 test mul {
     const a: vec4 = .{ 1, 2, 3, 0 };
     const ae: vec4 = .{ 2, 4, 6, 0 };
-    try std.testing.expectEqual(ae, mul(a, 2));
+    try std.testing.expectEqual(ae, mul(2, a));
     const b: vec4 = .{ 1, 2, 3, 0 };
     const be: vec4 = .{ 10, -20, 9, 0 };
-    try std.testing.expectEqual(be, mul(b, @as(vec4, .{ 10, -10, 3, 100 })));
+    try std.testing.expectEqual(be, mul(@as(vec4, .{ 10, -10, 3, 100 }), b));
 }
 
 const std = @import("std");
