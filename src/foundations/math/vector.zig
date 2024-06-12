@@ -128,7 +128,7 @@ test vecFromPointAToPointB {
     try std.testing.expectEqual(be, vecFromPointAToPointB(@as(vec4, .{ 9, -22, 6, 0 }), b));
 }
 
-pub fn magnitude(comptime T: type, v: anytype) T {
+pub fn magnitude(v: anytype) @TypeOf(v[0]) {
     switch (@typeInfo(@TypeOf(v))) {
         .Vector => {
             return @sqrt(@reduce(.Add, v * v));
@@ -141,21 +141,32 @@ pub fn magnitude(comptime T: type, v: anytype) T {
 test magnitude {
     const a: vec4 = .{ 3, 4, 5, 6 };
     const ae: f32 = 9.27361;
-    try std.testing.expect(float.equal(ae, magnitude(f32, a), 0.00001));
+    try std.testing.expect(float.equal(ae, magnitude(a), 0.00001));
 }
 
-pub fn normalize(comptime T: type, v: anytype) @TypeOf(v) {
+pub fn normalize(v: anytype) @TypeOf(v) {
     if (@typeInfo(@TypeOf(v)) != .Vector) @compileError("input must be a vector");
-    return div(v, magnitude(T, v));
+    return div(v, magnitude(v));
 }
 
 test normalize {
     const a: vec2 = .{ 12, -5 };
     const aex: f32 = 0.923;
     const aey: f32 = -0.385;
-    const res = normalize(f32, a);
+    const res = normalize(a);
     try std.testing.expect(float.equal(aex, res[0], 0.001));
     try std.testing.expect(float.equal(aey, res[1], 0.001));
+}
+
+pub fn distance(a: anytype, b: anytype) @TypeOf(a[0]) {
+    return magnitude(sub(b, a));
+}
+
+test distance {
+    const a_a: vec2 = .{ 5, 0 };
+    const a_b: vec2 = .{ -1, 8 };
+    const ae: f32 = 10;
+    try std.testing.expectEqual(ae, distance(a_a, a_b));
 }
 
 const std = @import("std");
