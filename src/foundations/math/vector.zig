@@ -135,7 +135,7 @@ pub fn magnitude(v: anytype) @TypeOf(v[0]) {
         },
         else => {},
     }
-    @compileError("second input must be a vector");
+    @compileError("input must be a vector");
 }
 
 test magnitude {
@@ -168,6 +168,31 @@ test distance {
     const ae: f32 = 10;
     try std.testing.expectEqual(ae, distance(a_a, a_b));
     try std.testing.expectEqual(ae, distance(a_b, a_a));
+}
+
+pub fn dotProduct(v1: anytype, v2: anytype) @TypeOf(v1[0]) {
+    const T = @TypeOf(v1);
+    const K = @TypeOf(v2);
+    switch (@typeInfo(T)) {
+        .Vector => |VT| switch (@typeInfo(K)) {
+            .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return @reduce(.Add, v1 * v2),
+            else => @compileError("second input must be a vector"),
+        },
+        else => {},
+    }
+    @compileError("first input must be a vector");
+}
+
+test dotProduct {
+    const a_v1: vec2 = .{ 4, 6 };
+    const a_v2: vec2 = .{ -3, 7 };
+    const ae: f32 = 30;
+    try std.testing.expectEqual(ae, dotProduct(a_v1, a_v2));
+
+    const b_v1: vec3 = .{ 3, -2, 7 };
+    const b_v2: vec3 = .{ 0, 4, -1 };
+    const be: f32 = -15;
+    try std.testing.expectEqual(be, dotProduct(b_v1, b_v2));
 }
 
 const std = @import("std");
