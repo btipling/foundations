@@ -64,6 +64,20 @@ pub fn sub(v1: anytype, v2: anytype) @TypeOf(v1) {
     @compileError("first input must be a vector");
 }
 
+// vecFromPointAToPointB treats points as vectors from origin
+pub fn vecFromPointAToPointB(v1: anytype, v2: anytype) @TypeOf(v1) {
+    const T = @TypeOf(v1);
+    const K = @TypeOf(v2);
+    switch (@typeInfo(T)) {
+        .Vector => |VT| switch (@typeInfo(K)) {
+            .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v2 - v1,
+            else => @compileError("second input must be a vector"),
+        },
+        else => {},
+    }
+    @compileError("first input must be a vector");
+}
+
 test negate {
     const a: vec4 = .{ 1, 2, 3, 0 };
     const ae: vec4 = .{ -1, -2, -3, 0 };
@@ -104,6 +118,12 @@ test sub {
     const b: vec4 = .{ 10, -20, 9, 0 };
     const be: vec4 = .{ 1, 2, 3, 0 };
     try std.testing.expectEqual(be, sub(b, @as(vec4, .{ 9, -22, 6, 0 })));
+}
+
+test vecFromPointAToPointB {
+    const b: vec4 = .{ 10, -20, 9, 0 };
+    const be: vec4 = .{ 1, 2, 3, 0 };
+    try std.testing.expectEqual(be, vecFromPointAToPointB(@as(vec4, .{ 9, -22, 6, 0 }), b));
 }
 
 const std = @import("std");
