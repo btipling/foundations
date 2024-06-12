@@ -167,6 +167,7 @@ test distance {
     const a_b: vec2 = .{ -1, 8 };
     const ae: f32 = 10;
     try std.testing.expectEqual(ae, distance(a_a, a_b));
+    try std.testing.expectEqual(ae, distance(a_b, a_a));
 }
 
 const std = @import("std");
