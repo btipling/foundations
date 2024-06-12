@@ -1,4 +1,6 @@
 pub const vec4 = @Vector(4, f32);
+pub const vec3 = @Vector(3, f32);
+pub const vec2 = @Vector(2, f32);
 
 pub fn negate(v: anytype) @TypeOf(v) {
     return mul(-1, v);
@@ -140,6 +142,20 @@ test magnitude {
     const a: vec4 = .{ 3, 4, 5, 6 };
     const ae: f32 = 9.27361;
     try std.testing.expect(float.equal(ae, magnitude(f32, a), 0.00001));
+}
+
+pub fn normalize(comptime T: type, v: anytype) @TypeOf(v) {
+    if (@typeInfo(@TypeOf(v)) != .Vector) @compileError("input must be a vector");
+    return div(v, magnitude(T, v));
+}
+
+test normalize {
+    const a: vec2 = .{ 12, -5 };
+    const aex: f32 = 0.923;
+    const aey: f32 = -0.385;
+    const res = normalize(f32, a);
+    try std.testing.expect(float.equal(aex, res[0], 0.001));
+    try std.testing.expect(float.equal(aey, res[1], 0.001));
 }
 
 const std = @import("std");
