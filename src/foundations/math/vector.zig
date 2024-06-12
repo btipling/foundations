@@ -4,6 +4,12 @@ pub fn negate(v: anytype) @TypeOf(v) {
     return mul(-1, v);
 }
 
+test negate {
+    const a: vec4 = .{ 1, 2, 3, 0 };
+    const ae: vec4 = .{ -1, -2, -3, 0 };
+    try std.testing.expectEqual(ae, negate(a));
+}
+
 pub fn mul(m: anytype, v: anytype) @TypeOf(v) {
     const T = @TypeOf(v);
     const K = @TypeOf(m);
@@ -17,6 +23,15 @@ pub fn mul(m: anytype, v: anytype) @TypeOf(v) {
         else => {},
     }
     @compileError("first input must be a vector");
+}
+
+test mul {
+    const a: vec4 = .{ 1, 2, 3, 0 };
+    const ae: vec4 = .{ 2, 4, 6, 0 };
+    try std.testing.expectEqual(ae, mul(2, a));
+    const b: vec4 = .{ 1, 2, 3, 0 };
+    const be: vec4 = .{ 10, -20, 9, 0 };
+    try std.testing.expectEqual(be, mul(@as(vec4, .{ 10, -10, 3, 100 }), b));
 }
 
 pub fn div(v: anytype, d: anytype) @TypeOf(v) {
@@ -34,6 +49,15 @@ pub fn div(v: anytype, d: anytype) @TypeOf(v) {
     @compileError("first input must be a vector");
 }
 
+test div {
+    const a: vec4 = .{ 2, 4, 6, 0 };
+    const ae: vec4 = .{ 1, 2, 3, 0 };
+    try std.testing.expectEqual(ae, div(a, 2));
+    const b: vec4 = .{ 10, -20, 9, 0 };
+    const be: vec4 = .{ 1, 2, 3, 0 };
+    try std.testing.expectEqual(be, div(b, @as(vec4, .{ 10, -10, 3, 100 })));
+}
+
 pub fn add(v1: anytype, v2: anytype) @TypeOf(v1) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
@@ -47,6 +71,15 @@ pub fn add(v1: anytype, v2: anytype) @TypeOf(v1) {
         else => {},
     }
     @compileError("first input must be a vector");
+}
+
+test add {
+    const a: vec4 = .{ 1, 2, 3, 0 };
+    const ae: vec4 = .{ 3, 4, 5, 2 };
+    try std.testing.expectEqual(ae, add(a, 2));
+    const b: vec4 = .{ 1, 2, 3, 0 };
+    const be: vec4 = .{ 10, -20, 9, 0 };
+    try std.testing.expectEqual(be, add(@as(vec4, .{ 9, -22, 6, 0 }), b));
 }
 
 pub fn sub(v1: anytype, v2: anytype) @TypeOf(v1) {
@@ -64,6 +97,15 @@ pub fn sub(v1: anytype, v2: anytype) @TypeOf(v1) {
     @compileError("first input must be a vector");
 }
 
+test sub {
+    const a: vec4 = .{ 2, 4, 6, 0 };
+    const ae: vec4 = .{ 0, 2, 4, -2 };
+    try std.testing.expectEqual(ae, sub(a, 2));
+    const b: vec4 = .{ 10, -20, 9, 0 };
+    const be: vec4 = .{ 1, 2, 3, 0 };
+    try std.testing.expectEqual(be, sub(b, @as(vec4, .{ 9, -22, 6, 0 })));
+}
+
 // vecFromPointAToPointB treats points as vectors from origin
 pub fn vecFromPointAToPointB(v1: anytype, v2: anytype) @TypeOf(v1) {
     const T = @TypeOf(v1);
@@ -78,52 +120,27 @@ pub fn vecFromPointAToPointB(v1: anytype, v2: anytype) @TypeOf(v1) {
     @compileError("first input must be a vector");
 }
 
-test negate {
-    const a: vec4 = .{ 1, 2, 3, 0 };
-    const ae: vec4 = .{ -1, -2, -3, 0 };
-    try std.testing.expectEqual(ae, negate(a));
-}
-
-test mul {
-    const a: vec4 = .{ 1, 2, 3, 0 };
-    const ae: vec4 = .{ 2, 4, 6, 0 };
-    try std.testing.expectEqual(ae, mul(2, a));
-    const b: vec4 = .{ 1, 2, 3, 0 };
-    const be: vec4 = .{ 10, -20, 9, 0 };
-    try std.testing.expectEqual(be, mul(@as(vec4, .{ 10, -10, 3, 100 }), b));
-}
-
-test div {
-    const a: vec4 = .{ 2, 4, 6, 0 };
-    const ae: vec4 = .{ 1, 2, 3, 0 };
-    try std.testing.expectEqual(ae, div(a, 2));
-    const b: vec4 = .{ 10, -20, 9, 0 };
-    const be: vec4 = .{ 1, 2, 3, 0 };
-    try std.testing.expectEqual(be, div(b, @as(vec4, .{ 10, -10, 3, 100 })));
-}
-
-test add {
-    const a: vec4 = .{ 1, 2, 3, 0 };
-    const ae: vec4 = .{ 3, 4, 5, 2 };
-    try std.testing.expectEqual(ae, add(a, 2));
-    const b: vec4 = .{ 1, 2, 3, 0 };
-    const be: vec4 = .{ 10, -20, 9, 0 };
-    try std.testing.expectEqual(be, add(@as(vec4, .{ 9, -22, 6, 0 }), b));
-}
-
-test sub {
-    const a: vec4 = .{ 2, 4, 6, 0 };
-    const ae: vec4 = .{ 0, 2, 4, -2 };
-    try std.testing.expectEqual(ae, sub(a, 2));
-    const b: vec4 = .{ 10, -20, 9, 0 };
-    const be: vec4 = .{ 1, 2, 3, 0 };
-    try std.testing.expectEqual(be, sub(b, @as(vec4, .{ 9, -22, 6, 0 })));
-}
-
 test vecFromPointAToPointB {
     const b: vec4 = .{ 10, -20, 9, 0 };
     const be: vec4 = .{ 1, 2, 3, 0 };
     try std.testing.expectEqual(be, vecFromPointAToPointB(@as(vec4, .{ 9, -22, 6, 0 }), b));
 }
 
+pub fn magnitude(comptime T: type, v: anytype) T {
+    switch (@typeInfo(@TypeOf(v))) {
+        .Vector => {
+            return @sqrt(@reduce(.Add, v * v));
+        },
+        else => {},
+    }
+    @compileError("second input must be a vector");
+}
+
+test magnitude {
+    const a: vec4 = .{ 3, 4, 5, 6 };
+    const ae: f32 = 9.27361;
+    try std.testing.expect(float.equal(ae, magnitude(f32, a), 0.00001));
+}
+
 const std = @import("std");
+const float = @import("float.zig");
