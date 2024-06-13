@@ -210,6 +210,12 @@ test dotProduct {
     const e_v1: vec3 = .{ 2, 0, 0 };
     const e_v2: vec3 = .{ -4, 0, 0 };
     try std.testing.expect(dotProduct(e_v1, e_v2) < 0);
+
+    // dot product projection scales by the same factor as scaling the vector
+    const f_v1: vec3 = .{ 3, -2, 7 };
+    const f_v2: vec3 = .{ 0, 4, -1 };
+    const f_scale: f32 = 5;
+    try std.testing.expectEqual(dotProduct(f_v1, mul(f_scale, f_v2)), dotProduct(f_v1, f_v2) * f_scale);
 }
 
 const std = @import("std");
