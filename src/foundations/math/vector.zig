@@ -225,6 +225,11 @@ test dotProduct {
         dotProduct(normalize(g_v1), normalize(g_v2)),
         dotProduct(normalize(g_v2), normalize(g_v1)),
     );
+
+    // Vectors do not need to be the same length to be commutative
+    const h_v1: vec3 = .{ 3, -2, 7 };
+    const h_v2: vec3 = .{ 0, 4, -1 };
+    try std.testing.expectEqual(dotProduct(h_v1, h_v2), dotProduct(h_v2, h_v1));
 }
 
 const std = @import("std");
