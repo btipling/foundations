@@ -277,6 +277,11 @@ test dotProduct {
     try std.testing.expectEqual(@cos(m_angle), m_adjacent / m_hypotenuse);
     // a dot b = ||a|| * ||b|| * cos ∅
     try std.testing.expectEqual(m_adjacent, magnitude(m_v2) * magnitude(m_v3) * @cos(m_angle));
+
+    // The zero vector is perpendicular to every vector
+    const n_v1: vec3 = .{ -3, 5, 22 };
+    const n_v2: vec3 = .{ 0, 0, 0 };
+    try std.testing.expectEqual(0, dotProduct(n_v1, n_v2));
 }
 
 // angleBetweenVectors returns angle in radians
@@ -304,6 +309,18 @@ test angleBetweenVectors {
     const a_v2: vec2 = .{ 0, 1 };
     const ae: f32 = 90;
     try std.testing.expectEqual(ae, cast.radiansToDegrees(angleBetweenVectors(a_v1, a_v2)));
+}
+
+pub fn isZeroVector(v: anytype) bool {
+    if (@typeInfo(@TypeOf(v)) != .Vector) @compileError("input must be a vector");
+    return @reduce(.Mul, v) == 0;
+}
+
+test isZeroVector {
+    try std.testing.expect(isZeroVector(@as(vec3, .{ 0, 0, 0 })));
+    try std.testing.expect(!isZeroVector(@as(vec3, .{ 1, 2, 3 })));
+    try std.testing.expect(isZeroVector(@as(vec2, .{ 0, 0 })));
+    try std.testing.expect(!isZeroVector(@as(vec2, .{ 1, 2 })));
 }
 
 pub fn crossProduct(v1: anytype, v2: anytype) @TypeOf(v1) {
@@ -338,6 +355,16 @@ test crossProduct {
     const b_v2: vec3 = .{ 2, -5, 8 };
     const b_angle = angleBetweenVectors(b_v1, b_v2);
     try std.testing.expect(float.equal(magnitude(crossProduct(b_v1, b_v2)), magnitude(b_v1) * magnitude(b_v2) * @sin(b_angle), 0.0001));
+
+    // parallel vectors return the zero vector
+    const c_v1: vec3 = .{ 1, 0, 0 };
+    const c_v2: vec3 = .{ 3, 0, 0 };
+    try std.testing.expect(isZeroVector(crossProduct(c_v1, c_v2)));
+
+    // zero vectors are always parallel to any vector
+    const d_v1: vec3 = .{ 1, 3, 4 };
+    const d_v2: vec3 = .{ 0, 0, 0 };
+    try std.testing.expect(isZeroVector(crossProduct(d_v1, d_v2)));
 }
 
 const std = @import("std");
