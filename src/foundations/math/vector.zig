@@ -332,6 +332,12 @@ test crossProduct {
     const a_v2: vec3 = .{ 2, -5, 8 };
     const ae: vec3 = .{ 44, 0, -11 };
     try std.testing.expectEqual(ae, crossProduct(a_v1, a_v2));
+
+    // ||a × b|| = ||a|| * ||b|| * sine ∅
+    const b_v1: vec3 = .{ 1, 3, 4 };
+    const b_v2: vec3 = .{ 2, -5, 8 };
+    const b_angle = angleBetweenVectors(b_v1, b_v2);
+    try std.testing.expect(float.equal(magnitude(crossProduct(b_v1, b_v2)), magnitude(b_v1) * magnitude(b_v2) * @sin(b_angle), 0.0001));
 }
 
 const std = @import("std");
