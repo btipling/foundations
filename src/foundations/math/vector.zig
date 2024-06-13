@@ -156,6 +156,9 @@ test normalize {
     const res = normalize(a);
     try std.testing.expect(float.equal(aex, res[0], 0.001));
     try std.testing.expect(float.equal(aey, res[1], 0.001));
+
+    const b: vec3 = .{ 1, 0, 0 };
+    try std.testing.expectEqual(b, normalize(b));
 }
 
 pub fn distance(a: anytype, b: anytype) @TypeOf(a[0]) {
@@ -237,6 +240,12 @@ test dotProduct {
     const i_v3: vec3 = .{ 1, 4, 0 };
     try std.testing.expectEqual(dotProduct(i_v1, add(i_v2, i_v3)), dotProduct(i_v1, i_v2) + dotProduct(i_v1, i_v3));
     try std.testing.expectEqual(dotProduct(i_v1, sub(i_v2, i_v3)), dotProduct(i_v1, i_v2) - dotProduct(i_v1, i_v3));
+
+    // the dot product of a unit vector of an axis and a vector extracts the value from vector for that axis
+    const j_v1: vec3 = .{ -3, 5, 22 };
+    try std.testing.expectEqual(-3, dotProduct(@as(vec3, .{ 1, 0, 0 }), j_v1));
+    try std.testing.expectEqual(5, dotProduct(@as(vec3, .{ 0, 1, 0 }), j_v1));
+    try std.testing.expectEqual(22, dotProduct(@as(vec3, .{ 0, 0, 1 }), j_v1));
 }
 
 const std = @import("std");
