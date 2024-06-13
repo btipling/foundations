@@ -370,6 +370,24 @@ test crossProduct {
     const e_v1: vec3 = .{ 1, 3, 4 };
     const e_v2: vec3 = .{ 2, -5, 8 };
     try std.testing.expectEqual(crossProduct(e_v1, e_v2), negate(crossProduct(e_v2, e_v1)));
+
+    // The cross product points in a perpendicular direction
+    const x_pos: vec3 = .{ 1, 0, 0 };
+    const x_neg: vec3 = negate(x_pos);
+    const y_pos: vec3 = .{ 0, 1, 0 };
+    const y_neg: vec3 = negate(y_pos);
+    const z_pos: vec3 = .{ 0, 0, 1 };
+    const z_neg: vec3 = negate(z_pos);
+
+    // Pointing in the positive direction
+    try std.testing.expectEqual(z_pos, crossProduct(x_pos, y_pos));
+    try std.testing.expectEqual(x_pos, crossProduct(y_pos, z_pos));
+    try std.testing.expectEqual(y_pos, crossProduct(z_pos, x_pos));
+
+    // Pointing in the negative direction
+    try std.testing.expectEqual(z_neg, crossProduct(y_pos, x_pos));
+    try std.testing.expectEqual(x_neg, crossProduct(z_pos, y_pos));
+    try std.testing.expectEqual(y_neg, crossProduct(x_pos, z_pos));
 }
 
 const std = @import("std");
