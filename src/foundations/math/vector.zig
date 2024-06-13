@@ -216,6 +216,7 @@ test dotProduct {
     const f_v2: vec3 = .{ 0, 4, -1 };
     const f_scale: f32 = 5;
     try std.testing.expectEqual(dotProduct(f_v1, mul(f_scale, f_v2)), dotProduct(f_v1, f_v2) * f_scale);
+    try std.testing.expectEqual(dotProduct(mul(f_scale, f_v1), f_v2), dotProduct(f_v1, f_v2) * f_scale);
 }
 
 const std = @import("std");
