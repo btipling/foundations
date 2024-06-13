@@ -265,6 +265,18 @@ test dotProduct {
     try std.testing.expectEqual(mul(dotProduct(l_v3, l_v2), l_v3), l_v2_perpendicular);
     // the dot product of perpendicular vertices is 0:
     try std.testing.expectEqual(0, dotProduct(l_v2_parallel, l_v2_perpendicular));
+
+    // cos ∅ = adjacent/hypotenuse = (a dot b)/1 = a dot b
+    const m_v1: vec2 = .{ 1, 1 }; // some vector with a magnitude and direction
+    const m_v2: vec2 = .{ 0, 1 }; // a unit vector along the x positive axis
+    const m_v3: vec2 = normalize(m_v1); // extract a unit vector with just that direction,
+    const m_hypotenuse: f32 = magnitude(m_v3); // its length is the hypotenuse
+    // the dot product of the hypotenuse and the unit vector create the adjacent side of the triangle:
+    const m_adjacent: f32 = dotProduct(m_v2, m_v3);
+    const m_angle: f32 = std.math.acos(m_adjacent / m_hypotenuse); // I mean I am just testing that acos works I guess :|
+    try std.testing.expectEqual(@cos(m_angle), m_adjacent / m_hypotenuse);
+    // a dot b = ||a|| * ||b|| * cos ∅
+    try std.testing.expectEqual(m_adjacent, magnitude(m_v2) * magnitude(m_v3) * @cos(m_angle));
 }
 
 const std = @import("std");
