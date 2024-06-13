@@ -230,6 +230,13 @@ test dotProduct {
     const h_v1: vec3 = .{ 3, -2, 7 };
     const h_v2: vec3 = .{ 0, 4, -1 };
     try std.testing.expectEqual(dotProduct(h_v1, h_v2), dotProduct(h_v2, h_v1));
+
+    // the dot product distributes across addition and subtraction
+    const i_v1: vec3 = .{ 3, -2, 7 };
+    const i_v2: vec3 = .{ 0, 4, -1 };
+    const i_v3: vec3 = .{ 1, 4, 0 };
+    try std.testing.expectEqual(dotProduct(i_v1, add(i_v2, i_v3)), dotProduct(i_v1, i_v2) + dotProduct(i_v1, i_v3));
+    try std.testing.expectEqual(dotProduct(i_v1, sub(i_v2, i_v3)), dotProduct(i_v1, i_v2) - dotProduct(i_v1, i_v3));
 }
 
 const std = @import("std");
