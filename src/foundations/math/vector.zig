@@ -365,6 +365,11 @@ test crossProduct {
     const d_v1: vec3 = .{ 1, 3, 4 };
     const d_v2: vec3 = .{ 0, 0, 0 };
     try std.testing.expect(isZeroVector(crossProduct(d_v1, d_v2)));
+
+    // the cross product is anti-commutative
+    const e_v1: vec3 = .{ 1, 3, 4 };
+    const e_v2: vec3 = .{ 2, -5, 8 };
+    try std.testing.expectEqual(crossProduct(e_v1, e_v2), negate(crossProduct(e_v2, e_v1)));
 }
 
 const std = @import("std");
