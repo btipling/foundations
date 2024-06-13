@@ -193,6 +193,23 @@ test dotProduct {
     const b_v2: vec3 = .{ 0, 4, -1 };
     const be: f32 = -15;
     try std.testing.expectEqual(be, dotProduct(b_v1, b_v2));
+
+    // Geometric tests
+    // perpendicular dot product produces a 0:
+    const c_v1: vec3 = .{ 2, 0, 0 };
+    const c_v2: vec3 = .{ 0, 4, 0 };
+    const ce: f32 = 0;
+    try std.testing.expectEqual(ce, dotProduct(c_v1, c_v2));
+
+    // same direction vectors produce a positive value
+    const d_v1: vec3 = .{ 2, 0, 0 };
+    const d_v2: vec3 = .{ 4, 0, 0 };
+    try std.testing.expect(dotProduct(d_v1, d_v2) > 0);
+
+    // opposite direction vectors produce a negative value
+    const e_v1: vec3 = .{ 2, 0, 0 };
+    const e_v2: vec3 = .{ -4, 0, 0 };
+    try std.testing.expect(dotProduct(e_v1, e_v2) < 0);
 }
 
 const std = @import("std");
