@@ -246,6 +246,10 @@ test dotProduct {
     try std.testing.expectEqual(-3, dotProduct(@as(vec3, .{ 1, 0, 0 }), j_v1));
     try std.testing.expectEqual(5, dotProduct(@as(vec3, .{ 0, 1, 0 }), j_v1));
     try std.testing.expectEqual(22, dotProduct(@as(vec3, .{ 0, 0, 1 }), j_v1));
+
+    // the dot product of a vector with itself is the magnitude of the vector scaled by itself
+    const k_v1: vec3 = .{ -3, 5, 22 };
+    try std.testing.expectEqual(magnitude(k_v1) * magnitude(k_v1), dotProduct(k_v1, k_v1));
 }
 
 const std = @import("std");
