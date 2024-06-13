@@ -250,6 +250,7 @@ test dotProduct {
     // the dot product of a vector with itself is the magnitude of the vector scaled by itself
     const k_v1: vec3 = .{ -3, 5, 22 };
     try std.testing.expectEqual(magnitude(k_v1) * magnitude(k_v1), dotProduct(k_v1, k_v1));
+    try std.testing.expectEqual(magnitude(k_v1), @sqrt(dotProduct(k_v1, k_v1)));
 }
 
 const std = @import("std");
