@@ -251,6 +251,20 @@ test dotProduct {
     const k_v1: vec3 = .{ -3, 5, 22 };
     try std.testing.expectEqual(magnitude(k_v1) * magnitude(k_v1), dotProduct(k_v1, k_v1));
     try std.testing.expectEqual(magnitude(k_v1), @sqrt(dotProduct(k_v1, k_v1)));
+
+    // extracting the b's perpendicular b and parallel b (to a unit vector a)
+    const l_v1: vec2 = .{ 1, 0 };
+    const l_v2: vec2 = .{ -3, 5 };
+    const l_v3: vec2 = .{ 0, 1 };
+    // l_v2_parallel is a vector parallel to a, magnitude of b along a scaled to unit a
+    const l_v2_parallel = mul(dotProduct(l_v1, l_v2), l_v1);
+    // l_v2_perpendicular is a vetor perpendicular a, the magnitude of b along that axis
+    const l_v2_perpendicular = sub(l_v2, l_v2_parallel);
+    try std.testing.expectEqual(l_v2_perpendicular, sub(l_v2, mul(dotProduct(l_v1, l_v2), l_v1)));
+    // The result of the l_v2_perpendicular is just the y value extracted:
+    try std.testing.expectEqual(mul(dotProduct(l_v3, l_v2), l_v3), l_v2_perpendicular);
+    // the dot product of perpendicular vertices is 0:
+    try std.testing.expectEqual(0, dotProduct(l_v2_parallel, l_v2_perpendicular));
 }
 
 const std = @import("std");
