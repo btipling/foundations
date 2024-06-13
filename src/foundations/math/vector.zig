@@ -306,6 +306,34 @@ test angleBetweenVectors {
     try std.testing.expectEqual(ae, cast.radiansToDegrees(angleBetweenVectors(a_v1, a_v2)));
 }
 
+pub fn crossProduct(v1: anytype, v2: anytype) @TypeOf(v1) {
+    const T = @TypeOf(v1);
+    const K = @TypeOf(v2);
+    switch (@typeInfo(T)) {
+        .Vector => |VT| switch (@typeInfo(K)) {
+            .Vector => |VM| {
+                if (VT.len != VM.len and VT.len < 3) @compileError("cross product must be for 3D vector");
+                var result: T = undefined;
+                if (VT.len > 3) @memset(&result, 0);
+                result[0] = v1[1] * v2[2] - v1[2] * v2[1];
+                result[1] = v1[2] * v2[0] - v1[0] * v2[2];
+                result[2] = v1[0] * v2[1] - v1[1] * v2[0];
+                return result;
+            },
+            else => @compileError("second input must be a vector"),
+        },
+        else => {},
+    }
+    @compileError("first input must be a vector");
+}
+
+test crossProduct {
+    const a_v1: vec3 = .{ 1, 3, 4 };
+    const a_v2: vec3 = .{ 2, -5, 8 };
+    const ae: vec3 = .{ 44, 0, -11 };
+    try std.testing.expectEqual(ae, crossProduct(a_v1, a_v2));
+}
+
 const std = @import("std");
 const float = @import("float.zig");
 const cast = @import("cast.zig");
