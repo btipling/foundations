@@ -279,5 +279,33 @@ test dotProduct {
     try std.testing.expectEqual(m_adjacent, magnitude(m_v2) * magnitude(m_v3) * @cos(m_angle));
 }
 
+// angleBetweenVectors returns angle in radians
+pub fn angleBetweenVectors(a: anytype, b: anytype) f32 {
+    const T = @TypeOf(a);
+    const K = @TypeOf(b);
+    if (T != K) @compileError("a and b must be the same type");
+    if (@typeInfo(T) != .Vector) @compileError("inputs must be vectors");
+    const child_type = @typeInfo(T).Vector.child;
+    if (@typeInfo(child_type) == .Float or @typeInfo(child_type) == .ComptimeFloat) {
+        const dp = dotProduct(a, b);
+        const divisor = magnitude(a) * magnitude(b);
+        return @floatCast(std.math.acos(dp / divisor));
+    }
+    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .ComptimeInt) {
+        const dp = dotProduct(a, b);
+        const divisor = magnitude(a) * magnitude(b);
+        return @floatFromInt(std.math.acos(dp / divisor));
+    }
+    @compileError("inputs must be vectors of floats or ints");
+}
+
+test angleBetweenVectors {
+    const a_v1: vec2 = .{ 1, 0 };
+    const a_v2: vec2 = .{ 0, 1 };
+    const ae: f32 = 90;
+    try std.testing.expectEqual(ae, cast.radiansToDegrees(angleBetweenVectors(a_v1, a_v2)));
+}
+
 const std = @import("std");
 const float = @import("float.zig");
+const cast = @import("cast.zig");

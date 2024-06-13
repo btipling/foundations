@@ -1,5 +1,7 @@
 pub fn main() !void {
     _ = math.vector;
+    _ = math.cast;
+    _ = math.float;
 }
 
 test {
