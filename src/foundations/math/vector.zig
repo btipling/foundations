@@ -31,9 +31,15 @@ test mul {
     const a: vec4 = .{ 1, 2, 3, 0 };
     const ae: vec4 = .{ 2, 4, 6, 0 };
     try std.testing.expectEqual(ae, mul(2, a));
+
     const b: vec4 = .{ 1, 2, 3, 0 };
     const be: vec4 = .{ 10, -20, 9, 0 };
     try std.testing.expectEqual(be, mul(@as(vec4, .{ 10, -10, 3, 100 }), b));
+
+    // multiplying a vector by 2 makes it twice as long:
+    const c: vec3 = .{ 3, -2, 7 };
+    const cm = magnitude(c);
+    try std.testing.expectEqual(cm * 2, magnitude(mul(2, c)));
 }
 
 pub fn div(v: anytype, d: anytype) @TypeOf(v) {
