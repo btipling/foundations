@@ -154,6 +154,23 @@ test magnitude {
     try std.testing.expect(float.equal(ae, magnitude(a), 0.00001));
 }
 
+// To avoid a costly square root calculation when we can
+pub fn lengthSquared(v: anytype) @TypeOf(v[0]) {
+    switch (@typeInfo(@TypeOf(v))) {
+        .Vector => {
+            return @reduce(.Add, v * v);
+        },
+        else => {},
+    }
+    @compileError("input must be a vector");
+}
+
+test lengthSquared {
+    const a: vec4 = .{ 3, 4, 5, 6 };
+    const ae: f32 = 86;
+    try std.testing.expectEqual(ae, lengthSquared(a));
+}
+
 pub fn normalize(v: anytype) @TypeOf(v) {
     if (@typeInfo(@TypeOf(v)) != .Vector) @compileError("input must be a vector");
     return div(v, magnitude(v));
