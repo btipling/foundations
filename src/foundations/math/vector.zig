@@ -40,6 +40,10 @@ test mul {
     const c: vec3 = .{ 3, -2, 7 };
     const cm = magnitude(c);
     try std.testing.expectEqual(cm * 2, magnitude(mul(2, c)));
+
+    // multiplying a vector by zero makes the zero vector:
+    const d: vec3 = .{ 3, -2, 7 };
+    try std.testing.expect(isZeroVector(mul(0, d)));
 }
 
 pub fn div(v: anytype, d: anytype) @TypeOf(v) {
