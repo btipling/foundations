@@ -322,8 +322,11 @@ test angleBetweenVectors {
 }
 
 pub fn isZeroVector(v: anytype) bool {
-    if (@typeInfo(@TypeOf(v)) != .Vector) @compileError("input must be a vector");
-    return @reduce(.Mul, v) == 0;
+    const ti = @typeInfo(@TypeOf(v));
+    if (ti != .Vector) @compileError("input must be a vector");
+    var i: usize = 0;
+    while (i < ti.Vector.len) : (i += 1) if (v[i] != 0) return false;
+    return true;
 }
 
 test isZeroVector {
@@ -331,6 +334,8 @@ test isZeroVector {
     try std.testing.expect(!isZeroVector(@as(vec3, .{ 1, 2, 3 })));
     try std.testing.expect(isZeroVector(@as(vec2, .{ 0, 0 })));
     try std.testing.expect(!isZeroVector(@as(vec2, .{ 1, 2 })));
+    try std.testing.expect(!isZeroVector(@as(vec2, .{ 1, 0 })));
+    try std.testing.expect(!isZeroVector(@as(vec2, .{ 1, -1 })));
 }
 
 pub fn crossProduct(v1: anytype, v2: anytype) @TypeOf(v1) {
