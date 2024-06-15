@@ -398,6 +398,10 @@ test crossProduct {
     const d_v2: vec3 = .{ 0, 0, 0 };
     try std.testing.expect(isZeroVector(crossProduct(d_v1, d_v2)));
 
+    // v × v is the zero vector, obviously as v is parallel to itself:
+    const d2_v1: vec3 = .{ 1, 3, 4 };
+    try std.testing.expect(isZeroVector(crossProduct(d2_v1, d2_v1)));
+
     // the cross product is anti-commutative
     const e_v1: vec3 = .{ 1, 3, 4 };
     const e_v2: vec3 = .{ 2, -5, 8 };
