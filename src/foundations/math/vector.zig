@@ -355,18 +355,18 @@ test isZeroVector {
     try std.testing.expect(!isZeroVector(@as(vec2, .{ 1, -1 })));
 }
 
-pub fn crossProduct(v1: anytype, v2: anytype) @TypeOf(v1) {
-    const T = @TypeOf(v1);
-    const K = @TypeOf(v2);
+pub fn crossProduct(p: anytype, q: anytype) @TypeOf(p) {
+    const T = @TypeOf(p);
+    const K = @TypeOf(q);
     switch (@typeInfo(T)) {
         .Vector => |VT| switch (@typeInfo(K)) {
             .Vector => |VM| {
                 if (VT.len != VM.len and VT.len < 3) @compileError("cross product must be for 3D vector");
                 var result: T = undefined;
                 if (VT.len > 3) @memset(&result, 0);
-                result[0] = v1[1] * v2[2] - v1[2] * v2[1];
-                result[1] = v1[2] * v2[0] - v1[0] * v2[2];
-                result[2] = v1[0] * v2[1] - v1[1] * v2[0];
+                result[0] = p[1] * q[2] - p[2] * q[1];
+                result[1] = p[2] * q[0] - p[0] * q[2];
+                result[2] = p[0] * q[1] - p[1] * q[0];
                 return result;
             },
             else => @compileError("second input must be a vector"),
@@ -430,6 +430,15 @@ test crossProduct {
     const f_v2: vec3 = .{ 2, -5, 8 };
     try std.testing.expectEqual(0, dotProduct(crossProduct(f_v1, f_v2), f_v1));
     try std.testing.expectEqual(0, dotProduct(crossProduct(f_v1, f_v2), f_v2));
+
+    // The cross product produces a vector that adheres to the right hand rule in a right handed coordinate system
+    // given fingers aligned with the direction vector P points, and the palm points in direction of Q
+    // the thumb will point in the direction of the product
+    // given a y up z positive going out of the screen as per a right handed coordinate system
+    const g_p: vec3 = .{ 0, 0, -1 }; // fingers of right hand pointed into screen is -z in right handed coordinate system
+    const g_q: vec3 = .{ -1, 0, 0 }; // palm facing to the left, the negative x direction
+    const g_expected_vector: vec3 = .{ 0, 1, 0 }; // the thumb would point up in the y up direction
+    try std.testing.expectEqual(g_expected_vector, crossProduct(g_p, g_q));
 }
 
 // decomposeProjection - extract the projection of p onto q and the portion of p that is perpendicular to q
