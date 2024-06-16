@@ -1,5 +1,6 @@
 // demos
 point: *point,
+point_rotating: *point_rotating,
 triangle: triangle,
 triangle_animated: *triangle_animated,
 
@@ -12,6 +13,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     const demos = allocator.create(Demos) catch @panic("OOM");
     demos.* = .{
         .point = point.init(allocator),
+        .point_rotating = point_rotating.init(allocator),
         .triangle = triangle.init(),
         .triangle_animated = triangle_animated.init(allocator),
         .ui_state = ui_state,
@@ -22,6 +24,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
 
 pub fn deinit(self: *Demos) void {
     self.point.deinit(self.allocator);
+    self.point_rotating.deinit(self.allocator);
     self.triangle.deinit();
     self.triangle_animated.deinit(self.allocator);
     self.allocator.destroy(self);
@@ -30,6 +33,7 @@ pub fn deinit(self: *Demos) void {
 pub fn drawDemo(self: Demos, frame_time: f64) void {
     switch (self.ui_state.demo_current) {
         .point => self.point.draw(),
+        .point_rotating => self.point_rotating.draw(frame_time),
         .triangle => self.triangle.draw(),
         .triangle_animated => self.triangle_animated.draw(frame_time),
         else => {},
@@ -39,5 +43,6 @@ pub fn drawDemo(self: Demos, frame_time: f64) void {
 const std = @import("std");
 const ui = @import("../ui/ui.zig");
 const point = @import("point/point.zig");
+const point_rotating = @import("point_rotating/point_rotating.zig");
 const triangle = @import("triangle/triangle.zig");
 const triangle_animated = @import("triangle_animated/triangle_animated.zig");

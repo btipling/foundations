@@ -11,6 +11,9 @@ pub fn draw() void {
         if (c.igButton("Point", btn_dims)) {
             ui.state().demo_current = .point;
         }
+        if (c.igButton("Rotating Point", btn_dims)) {
+            ui.state().demo_current = .point_rotating;
+        }
         if (c.igButton("Triangle", btn_dims)) {
             ui.state().demo_current = .triangle;
         }
