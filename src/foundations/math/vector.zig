@@ -335,7 +335,7 @@ test angleBetweenVectors {
     const a_v1: vec2 = .{ 1, 0 };
     const a_v2: vec2 = .{ 0, 1 };
     const ae: f32 = 90;
-    try std.testing.expectEqual(ae, cast.radiansToDegrees(angleBetweenVectors(a_v1, a_v2)));
+    try std.testing.expectEqual(ae, rotation.radiansToDegrees(angleBetweenVectors(a_v1, a_v2)));
 }
 
 pub fn isZeroVector(v: anytype) bool {
@@ -428,4 +428,4 @@ test crossProduct {
 
 const std = @import("std");
 const float = @import("float.zig");
-const cast = @import("cast.zig");
+const rotation = @import("rotation.zig");
