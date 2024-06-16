@@ -424,6 +424,12 @@ test crossProduct {
     try std.testing.expectEqual(z_neg, crossProduct(y_pos, x_pos));
     try std.testing.expectEqual(x_neg, crossProduct(z_pos, y_pos));
     try std.testing.expectEqual(y_neg, crossProduct(x_pos, z_pos));
+
+    // The cross product is orthogonal to both input vectors
+    const f_v1: vec3 = .{ 1, 3, 4 };
+    const f_v2: vec3 = .{ 2, -5, 8 };
+    try std.testing.expectEqual(0, dotProduct(crossProduct(f_v1, f_v2), f_v1));
+    try std.testing.expectEqual(0, dotProduct(crossProduct(f_v1, f_v2), f_v2));
 }
 
 // decomposeProjection - extract the projection of p onto q and the portion of p that is perpendicular to q
