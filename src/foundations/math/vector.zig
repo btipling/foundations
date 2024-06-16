@@ -426,6 +426,37 @@ test crossProduct {
     try std.testing.expectEqual(y_neg, crossProduct(x_pos, z_pos));
 }
 
+// decomposeProjection - extract the projection of p onto q and the portion of p that is perpendicular to q
+pub fn decomposeProjection(p: anytype, q: anytype) struct { proj: @TypeOf(p), perp: @TypeOf(p) } {
+    const T = @TypeOf(p);
+    const K = @TypeOf(q);
+    switch (@typeInfo(T)) {
+        .Vector => |VT| switch (@typeInfo(K)) {
+            .Vector => |VM| {
+                if (VT.len != VM.len) @compileError("vectors must be of the same length");
+                const q_mag = magnitude(q);
+                const proj = mul(dotProduct(p, q) / q_mag * q_mag, q);
+                const perp = sub(p, proj);
+                return .{ .proj = proj, .perp = perp };
+            },
+            else => @compileError("second input must be a vector"),
+        },
+        else => {},
+    }
+    @compileError("first input must be a vector");
+}
+
+test decomposeProjection {
+    const a_v1: vec3 = .{ 1, 1, 1 };
+    const a_p: vec3 = normalize(a_v1);
+    const a_q: vec3 = .{ 1, 0, 0 };
+    const a_expected_proj: vec3 = .{ @as(f32, 1.0 / @sqrt(3.0)), 0, 0 };
+    const a_expected_perp: vec3 = .{ 0, @as(f32, @sqrt(3.0) / 3.0), @as(f32, @sqrt(3.0) / 3.0) };
+    const res = decomposeProjection(a_p, a_q);
+    try std.testing.expectEqual(a_expected_proj, res.proj);
+    try std.testing.expectEqual(a_expected_perp, res.perp);
+}
+
 const std = @import("std");
 const float = @import("float.zig");
 const rotation = @import("rotation.zig");
