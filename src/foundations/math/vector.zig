@@ -36,6 +36,7 @@ test mul {
     const be: vec4 = .{ 10, -20, 9, 0 };
     try std.testing.expectEqual(be, mul(@as(vec4, .{ 10, -10, 3, 100 }), b));
 
+    // multiplying a vector by a scalar α changes the magnitude of the vector by α
     // multiplying a vector by 2 makes it twice as long:
     const c: vec3 = .{ 3, -2, 7 };
     const cm = magnitude(c);
