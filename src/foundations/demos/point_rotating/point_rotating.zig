@@ -2,6 +2,7 @@ program: u32,
 vao: u32,
 buffer: u32,
 count: usize,
+ui_state: pr_ui,
 
 const RotatingPoint = @This();
 
@@ -19,6 +20,10 @@ pub fn init(allocator: std.mem.Allocator) *RotatingPoint {
         .vao = vao,
         .buffer = 0,
         .count = 1,
+        .ui_state = .{
+            .r = 0.9,
+            .rotation_time = 3,
+        },
     };
     return p;
 }
@@ -28,17 +33,17 @@ pub fn deinit(self: *RotatingPoint, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-const rotation_time: f64 = 3;
-
 pub fn draw(self: *RotatingPoint, frame_time: f64) void {
-    const rot = @mod(frame_time, rotation_time) / rotation_time;
-    const r: f32 = 0.9;
+    const ft: f32 = @floatCast(frame_time);
+    const rot = @mod(ft, self.ui_state.rotation_time) / self.ui_state.rotation_time;
     const angle_radiants: f32 = @as(f32, @floatCast(rot)) * std.math.pi * 2;
-    const xy = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{ r, angle_radiants });
+    const xy = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{ self.ui_state.r, angle_radiants });
     rhi.setUniformVec2(self.program, "f_rotating_point", xy);
     rhi.drawPoints(self.program, self.vao, self.count);
+    self.ui_state.draw();
 }
 
 const std = @import("std");
+const pr_ui = @import("point_rotating_ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
