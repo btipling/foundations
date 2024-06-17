@@ -435,9 +435,9 @@ test crossProduct {
     // given fingers aligned with the direction vector P points, and the palm points in direction of Q
     // the thumb will point in the direction of the product
     // given a y up z positive going out of the screen as per a right handed coordinate system
-    const g_p: vec3 = .{ 0, 0, -1 }; // fingers of right hand pointed into screen is -z in right handed coordinate system
-    const g_q: vec3 = .{ -1, 0, 0 }; // palm facing to the left, the negative x direction
-    const g_expected_vector: vec3 = .{ 0, 1, 0 }; // the thumb would point up in the y up direction
+    const g_p: vec3 = .{ 1, 0, 0 }; // the i basis vector - fingers of right hand to the right
+    const g_q: vec3 = .{ 0, 1, 0 }; // the j basis vector - palm facing up
+    const g_expected_vector: vec3 = .{ 0, 0, 1 }; // the k basis vector - the thumb would point toward the back of the person, RHS z+ direction
     try std.testing.expectEqual(g_expected_vector, crossProduct(g_p, g_q));
 }
 
