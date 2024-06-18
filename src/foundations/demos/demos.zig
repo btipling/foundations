@@ -39,6 +39,7 @@ pub fn drawDemo(self: Demos, frame_time: f64) void {
         .point_rotating => self.point_rotating.draw(frame_time),
         .triangle => self.triangle.draw(),
         .triangle_animated => self.triangle_animated.draw(frame_time),
+        .math_vector_arithmetic => self.math_vector_arithmetic.draw(frame_time),
         else => {},
     }
 }
