@@ -1,6 +1,6 @@
-vectors: [100]math.vector.vec2 = undefined,
+vectors: [100]math.vector.vec3 = undefined,
 num_vectors: usize = 0,
-next_vec_data: [2]f32 = .{ 0, 0 },
+next_vec_data: [3]f32 = .{ 0, 0, 0 },
 
 pub const max_vectors: usize = 100;
 
@@ -29,7 +29,11 @@ pub fn draw(self: *vma_ui) void {
 
 fn addVector(self: *vma_ui) void {
     if (self.num_vectors + 1 == max_vectors) return;
-    self.vectors[self.num_vectors] = self.next_vec_data;
+    self.vectors[self.num_vectors] = .{
+        self.next_vec_data[0],
+        self.next_vec_data[1],
+        0,
+    };
     self.num_vectors += 1;
     self.clearInput();
 }
@@ -46,7 +50,7 @@ fn printVectors(self: *vma_ui) void {
 }
 
 fn clearInput(self: *vma_ui) void {
-    self.next_vec_data = .{ 0, 0 };
+    self.next_vec_data = .{ 0, 0, 0 };
 }
 
 fn clearVectors(self: *vma_ui) void {

@@ -32,12 +32,20 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
 }
 
 fn addVector(self: *MathVectorArithmetic) void {
-    std.debug.print("added a vector yo\n", .{});
+    const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors];
+    var positions: [3][3]f32 = undefined;
+    var pi: usize = 0;
+    while (pi < 3) : (pi += 1) {
+        const pv: math.vector.vec3 = object.triangle.default_positions[pi];
+        positions[pi] = math.vector.add(pv, vec);
+    }
+    //object.triangle.default_positions;
+
     self.vectors[self.num_vectors] = .{
         .triangle = object.triangle.init(
             vertex_shader,
             frag_shader,
-            object.triangle.default_positions,
+            positions,
             object.triangle.default_colors,
         ),
     };
