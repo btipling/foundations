@@ -8,7 +8,7 @@ const Triangle = @This();
 pub const default_positions: [3][3]f32 = .{
     .{ -0.025, -0.025, 0 },
     .{ 0.025, -0.025, 0 },
-    .{ 0.025, 0.025, 0 },
+    .{ 0.0, 0.025, 0 },
 };
 
 pub const default_colors: [3][4]f32 = .{

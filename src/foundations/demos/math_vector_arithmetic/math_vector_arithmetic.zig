@@ -31,25 +31,48 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
     self.ui_state.draw();
 }
 
-const xy_pos: math.vector.vec3 = .{ 1.0, 1.0, 0.0 };
-
 fn addVector(self: *MathVectorArithmetic) void {
     const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors];
     var positions: [3][3]f32 = undefined;
     var pi: usize = 0;
-    const rotation = math.vector.angleBetweenVectors(xy_pos, vec);
+    const rotation = math.rotation.cartesian3DToSphericalCoordinates(vec);
+    std.debug.print("rotation? {d}\n", .{rotation});
     while (pi < 3) : (pi += 1) {
         const pv: math.vector.vec3 = object.triangle.default_positions[pi];
-        // const nv = math.vector.add(pv, vec);
-        const current_angle = math.vector.angleBetweenVectors(xy_pos, pv);
-        const new_angle = current_angle + rotation;
-        // const pm = math.vector.magnitude(pv);
+        const current_angle = math.rotation.cartesian3DToSphericalCoordinates(pv);
+        const new_angle = current_angle[2] + rotation[2];
+        std.debug.print("current_angle? {d} new_angle: {d}\n", .{
+            std.math.radiansToDegrees(current_angle[2]),
+            std.math.radiansToDegrees(new_angle),
+        });
+        const pm = math.vector.magnitude(pv);
         const p_r = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
             1,
             math.rotation.degreesToRadians(90.0),
             new_angle,
         });
-        const v = p_r; // math.vector.add(pv, p_r);
+        const nv = math.vector.mul(pm, p_r);
+        const v = math.vector.add(nv, vec);
+        std.debug.print("data: \n\tpv: ({d}, {d}, {d}) \n", .{
+            pv[0],
+            pv[1],
+            pv[2],
+        });
+        std.debug.print("\tp_r: ({d}, {d}, {d}) \n", .{
+            p_r[0],
+            p_r[1],
+            p_r[2],
+        });
+        std.debug.print("\tnv: ({d}, {d}, {d}) \n", .{
+            nv[0],
+            nv[1],
+            nv[2],
+        });
+        std.debug.print("\tv: ({d}, {d}, {d})\n\n", .{
+            v[0],
+            v[1],
+            v[2],
+        });
         positions[pi] = v;
     }
 

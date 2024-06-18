@@ -312,7 +312,7 @@ test dotProduct {
     try std.testing.expectEqual(0, dotProduct(n_v1, n_v2));
 }
 
-// angleBetweenVectors returns angle in radians
+// angleBetweenVectors returns just an angle in radians between two vectors, without a cw or ccw direction with respect to orientation to an origin
 pub fn angleBetweenVectors(a: anytype, b: anytype) f32 {
     const T = @TypeOf(a);
     const K = @TypeOf(b);
