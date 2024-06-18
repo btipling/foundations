@@ -31,19 +31,18 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
     self.ui_state.draw();
 }
 
-const y_pos: math.vector.vec3 = .{ 0, 1, 0 };
+const xy_pos: math.vector.vec3 = .{ 1.0, 1.0, 0.0 };
 
 fn addVector(self: *MathVectorArithmetic) void {
     const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors];
     var positions: [3][3]f32 = undefined;
     var pi: usize = 0;
+    const rotation = math.vector.angleBetweenVectors(xy_pos, vec);
     while (pi < 3) : (pi += 1) {
         const pv: math.vector.vec3 = object.triangle.default_positions[pi];
         // const nv = math.vector.add(pv, vec);
-        const current_angle = math.vector.angleBetweenVectors(y_pos, pv);
-        const rotation = math.vector.angleBetweenVectors(y_pos, vec);
+        const current_angle = math.vector.angleBetweenVectors(xy_pos, pv);
         const new_angle = current_angle + rotation;
-        std.debug.print("angle: {d}\n", .{math.rotation.radiansToDegrees(new_angle)});
         // const pm = math.vector.magnitude(pv);
         const p_r = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
             1,
@@ -51,17 +50,6 @@ fn addVector(self: *MathVectorArithmetic) void {
             new_angle,
         });
         const v = p_r; // math.vector.add(pv, p_r);
-        std.debug.print("setting position to ({d}, {d}, {d}) to ({d}, {d}, {d}) p_r: ({d}, {d}, {d})\n", .{
-            pv[0],
-            pv[1],
-            pv[2],
-            v[0],
-            v[1],
-            v[2],
-            p_r[0],
-            p_r[1],
-            p_r[2],
-        });
         positions[pi] = v;
     }
 

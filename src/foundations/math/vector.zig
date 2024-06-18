@@ -322,12 +322,12 @@ pub fn angleBetweenVectors(a: anytype, b: anytype) f32 {
     if (@typeInfo(child_type) == .Float or @typeInfo(child_type) == .ComptimeFloat) {
         const dp = dotProduct(a, b);
         const divisor = magnitude(a) * magnitude(b);
-        return @floatCast(std.math.acos(dp / divisor));
+        return @floatCast(std.math.acos(@min(1.0, @max(-1.0, dp / divisor))));
     }
     if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .ComptimeInt) {
         const dp = dotProduct(a, b);
         const divisor = magnitude(a) * magnitude(b);
-        return @floatFromInt(std.math.acos(dp / divisor));
+        return @floatFromInt(std.math.acos(@min(1.0, @max(-1.0, dp / divisor))));
     }
     @compileError("inputs must be vectors of floats or ints");
 }
