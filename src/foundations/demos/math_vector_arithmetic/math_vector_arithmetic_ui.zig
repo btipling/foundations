@@ -1,5 +1,5 @@
-points: [100]math.vector.vec2 = undefined,
-num_points: usize = 0,
+vectors: [100]math.vector.vec2 = undefined,
+num_vectors: usize = 0,
 next_vec_data: [2]f32 = .{ 0, 0 },
 
 const vma_ui = @This();
@@ -14,17 +14,41 @@ pub fn draw(self: *vma_ui) void {
     _ = c.igBegin("Math vector arithmetic", null, 0);
     _ = c.igInputFloat2("##add", &self.next_vec_data, "%.3f", c.ImGuiInputTextFlags_None);
     if (c.igButton("Add vector", btn_dims)) {
-        std.debug.print("adding a vector from (0, 0) to ({d}, {d})\n", .{
-            self.next_vec_data[0],
-            self.next_vec_data[1],
-        });
-        self.clearInput();
+        self.addVector();
+    }
+    if (c.igButton("Clear vectors", btn_dims)) {
+        self.clearVectors();
+    }
+    if (c.igButton("Print vectors", btn_dims)) {
+        self.printVectors();
     }
     c.igEnd();
 }
 
+fn addVector(self: *vma_ui) void {
+    self.vectors[self.num_vectors] = self.next_vec_data;
+    self.num_vectors += 1;
+    self.clearInput();
+}
+
+fn printVectors(self: *vma_ui) void {
+    var i: usize = 0;
+    std.debug.print("vectors:\n", .{});
+    while (i < self.num_vectors) : (i += 1) {
+        std.debug.print("\t({d}, {d})\n", .{
+            self.vectors[i][0],
+            self.vectors[i][1],
+        });
+    }
+}
+
 fn clearInput(self: *vma_ui) void {
     self.next_vec_data = .{ 0, 0 };
+}
+
+fn clearVectors(self: *vma_ui) void {
+    self.clearInput();
+    self.num_vectors = 0;
 }
 
 const c = @cImport({
