@@ -1,27 +1,34 @@
 pub fn draw() void {
-    const btn_dims = ui.helpers().buttonSize();
     const vp: *c.ImGuiViewport = c.igGetMainViewport();
     const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
     const size = c.ImVec2_ImVec2_Float(550, 680);
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
-    _ = c.igBegin("Navigation", null, 0);
-    if (c.igCollapsingHeader_TreeNodeFlags("Shapes", 0)) {
-        c.igText("Simple shapes drawn with OpenGL");
-        if (c.igButton("Point", btn_dims)) {
-            ui.state().demo_current = .point;
+    if (c.igBeginMainMenuBar()) {
+        if (c.igBeginMenu("Shapes", true)) {
+            if (c.igMenuItem_Bool("Point", null, false, true)) {
+                ui.state().demo_current = .point;
+            }
+            if (c.igMenuItem_Bool("Rotating Point", null, false, true)) {
+                ui.state().demo_current = .point_rotating;
+            }
+            if (c.igMenuItem_Bool("Triangle", null, false, true)) {
+                ui.state().demo_current = .triangle;
+            }
+            if (c.igMenuItem_Bool("Animated Triangle", null, false, true)) {
+                ui.state().demo_current = .triangle_animated;
+            }
+            c.igEndMenu();
         }
-        if (c.igButton("Rotating Point", btn_dims)) {
-            ui.state().demo_current = .point_rotating;
+        if (c.igBeginMenu("Math", true)) {
+            if (c.igMenuItem_Bool("Vector Arithmetic", null, false, true)) {
+                ui.state().demo_current = .math_vector_arithmetic;
+            }
+            c.igEndMenu();
         }
-        if (c.igButton("Triangle", btn_dims)) {
-            ui.state().demo_current = .triangle;
-        }
-        if (c.igButton("Animated Triangle", btn_dims)) {
-            ui.state().demo_current = .triangle_animated;
-        }
+
+        c.igEndMainMenuBar();
     }
-    c.igEnd();
 }
 
 const c = @cImport({

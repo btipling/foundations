@@ -4,7 +4,6 @@ rotation_time: f32,
 const pr_ui = @This();
 
 pub fn draw(self: *pr_ui) void {
-    // const btn_dims = ui.helpers().buttonSize();
     var buf: [250]u8 = undefined;
     const txt = std.fmt.bufPrintZ(&buf, "speed: {d} seconds radius: {d}", .{
         self.r,
@@ -28,4 +27,3 @@ const c = @cImport({
 });
 
 const std = @import("std");
-const ui = @import("../../ui/ui.zig");

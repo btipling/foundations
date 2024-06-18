@@ -3,6 +3,7 @@ point: *point,
 point_rotating: *point_rotating,
 triangle: triangle,
 triangle_animated: *triangle_animated,
+math_vector_arithmetic: *math_vector_arithmetic,
 
 ui_state: *ui.ui_state,
 allocator: std.mem.Allocator,
@@ -16,6 +17,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
         .point_rotating = point_rotating.init(allocator),
         .triangle = triangle.init(),
         .triangle_animated = triangle_animated.init(allocator),
+        .math_vector_arithmetic = math_vector_arithmetic.init(allocator),
         .ui_state = ui_state,
         .allocator = allocator,
     };
@@ -23,6 +25,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
 }
 
 pub fn deinit(self: *Demos) void {
+    self.math_vector_arithmetic.deinit(self.allocator);
     self.point.deinit(self.allocator);
     self.point_rotating.deinit(self.allocator);
     self.triangle.deinit();
@@ -46,3 +49,4 @@ const point = @import("point/point.zig");
 const point_rotating = @import("point_rotating/point_rotating.zig");
 const triangle = @import("triangle/triangle.zig");
 const triangle_animated = @import("triangle_animated/triangle_animated.zig");
+const math_vector_arithmetic = @import("math_vector_arithmetic/math_vector_arithmetic.zig");
