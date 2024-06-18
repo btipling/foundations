@@ -5,19 +5,24 @@ count: usize,
 
 const Triangle = @This();
 
-const positions: [3][3]f32 = .{
-    .{ -1, -1, 0 },
-    .{ 1, -1, 0 },
+pub const default_positions: [3][3]f32 = .{
+    .{ -0.1, -0.1, 0 },
+    .{ 0.1, -0.1, 0 },
     .{ 0, 0, 0 },
 };
 
-const colors: [3][4]f32 = .{
+pub const default_colors: [3][4]f32 = .{
     .{ 0, 1, 0, 1 },
     .{ 0, 0, 1, 1 },
     .{ 1, 0, 0, 1 },
 };
 
-pub fn init(vertex_shader: []const u8, frag_shader: []const u8) Triangle {
+pub fn init(
+    vertex_shader: []const u8,
+    frag_shader: []const u8,
+    positions: [3][3]f32,
+    colors: [3][4]f32,
+) Triangle {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
 

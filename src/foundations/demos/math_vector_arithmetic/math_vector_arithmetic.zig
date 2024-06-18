@@ -34,7 +34,12 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
 fn addVector(self: *MathVectorArithmetic) void {
     std.debug.print("added a vector yo\n", .{});
     self.vectors[self.num_vectors] = .{
-        .triangle = object.triangle.init(vertex_shader, frag_shader),
+        .triangle = object.triangle.init(
+            vertex_shader,
+            frag_shader,
+            object.triangle.default_positions,
+            object.triangle.default_colors,
+        ),
     };
     self.num_vectors += 1;
 }
