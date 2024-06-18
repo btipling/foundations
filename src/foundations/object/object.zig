@@ -8,5 +8,5 @@ pub const object = union(object_type) {
     triangle: triangle,
 };
 
-pub const point = @import("point/point.zig");
-pub const triangle = @import("triangle/triangle.zig");
+pub const point = @import("object_point/object_point.zig");
+pub const triangle = @import("object_triangle/object_triangle.zig");

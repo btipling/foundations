@@ -2,6 +2,8 @@ vectors: [100]math.vector.vec2 = undefined,
 num_vectors: usize = 0,
 next_vec_data: [2]f32 = .{ 0, 0 },
 
+pub const max_vectors: usize = 100;
+
 const vma_ui = @This();
 
 pub fn draw(self: *vma_ui) void {
@@ -26,6 +28,7 @@ pub fn draw(self: *vma_ui) void {
 }
 
 fn addVector(self: *vma_ui) void {
+    if (self.num_vectors + 1 == max_vectors) return;
     self.vectors[self.num_vectors] = self.next_vec_data;
     self.num_vectors += 1;
     self.clearInput();
