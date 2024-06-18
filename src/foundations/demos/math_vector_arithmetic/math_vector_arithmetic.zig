@@ -35,44 +35,25 @@ fn addVector(self: *MathVectorArithmetic) void {
     const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors];
     var positions: [3][3]f32 = undefined;
     var pi: usize = 0;
-    const rotation = math.rotation.cartesian3DToSphericalCoordinates(vec);
-    std.debug.print("rotation? {d}\n", .{rotation});
+    const vec2DPC = math.rotation.cartesian2DToPolarCoordinates(vec);
+    // polar coordinate 0° starts at x positive axis -> (i.e (1, 0) in unit circle), and moves positive in ° in the CCW direction
+    // The triangle used here is by default pointing up, the actual starting polar coordinate position for rotation is 90°
+    // in order to get the rotation for the given direction from vec we must account for triangle's +90° from vec's rotation by subtracting 90°
+    // i.e. say new vec is pointing up and has a magnitude of 1, polar coordinates would say 90° CCW rotation would be needed to
+    // go from (1, 0) to (0, 1) but the triangle is already pointing up so 90°-90° = no rotation needed, however if new vec is pointing along the
+    // x axis (1, 0) this math would say to rotate by (0° - 90° = -90°), which is correct, to turn the upwards pointing trianglen CW to the x pos direction
+    const rotation = vec2DPC[1] - math.rotation.degreesToRadians(90.0);
     while (pi < 3) : (pi += 1) {
         const pv: math.vector.vec3 = object.triangle.default_positions[pi];
-        const current_angle = math.rotation.cartesian3DToSphericalCoordinates(pv);
-        const new_angle = current_angle[2] + rotation[2];
-        std.debug.print("current_angle? {d} new_angle: {d}\n", .{
-            std.math.radiansToDegrees(current_angle[2]),
-            std.math.radiansToDegrees(new_angle),
-        });
+        const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);
+        const new_angle = current_angle[1] + rotation;
         const pm = math.vector.magnitude(pv);
-        const p_r = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+        const p_r = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec3, .{
             1,
-            math.rotation.degreesToRadians(90.0),
             new_angle,
         });
         const nv = math.vector.mul(pm, p_r);
         const v = math.vector.add(nv, vec);
-        std.debug.print("data: \n\tpv: ({d}, {d}, {d}) \n", .{
-            pv[0],
-            pv[1],
-            pv[2],
-        });
-        std.debug.print("\tp_r: ({d}, {d}, {d}) \n", .{
-            p_r[0],
-            p_r[1],
-            p_r[2],
-        });
-        std.debug.print("\tnv: ({d}, {d}, {d}) \n", .{
-            nv[0],
-            nv[1],
-            nv[2],
-        });
-        std.debug.print("\tv: ({d}, {d}, {d})\n\n", .{
-            v[0],
-            v[1],
-            v[2],
-        });
         positions[pi] = v;
     }
 
