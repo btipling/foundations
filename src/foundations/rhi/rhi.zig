@@ -180,6 +180,26 @@ pub fn delete(program: u32, vao: u32, buffer: u32) void {
     if (buffer != 0) c.glDeleteBuffers(1, @ptrCast(&buffer));
 }
 
+pub fn drawObjects(objects: []object.object) void {
+    var i: usize = 0;
+    while (i < objects.len) : (i += 1) {
+        switch (objects[i]) {
+            .triangle => |t| drawArrays(t.program, t.vao, t.count),
+            else => {},
+        }
+    }
+}
+
+pub fn deleteObjects(objects: []object.object) void {
+    var i: usize = 0;
+    while (i < objects.len) : (i += 1) {
+        switch (objects[i]) {
+            .triangle => |t| delete(t.program, t.vao, t.buffer),
+            else => {},
+        }
+    }
+}
+
 const c = @cImport({
     @cInclude("glad/gl.h");
 });
@@ -187,3 +207,4 @@ const c = @cImport({
 const std = @import("std");
 const ui = @import("../ui/ui.zig");
 const math = @import("../math/math.zig");
+const object = @import("../object/object.zig");
