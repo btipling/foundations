@@ -78,9 +78,31 @@ fn addVector(self: *MathVectorArithmetic) void {
 
     pi = 0;
     while (pi < 6) : (pi += 1) {
-        const pv: math.vector.vec3 = object.quad.default_positions[pi];
-        const v = pv;
-        quad_positions[pi] = math.vector.mul(0.01, v);
+        var pv: math.vector.vec3 = object.quad.default_positions[pi];
+        pv = math.vector.mul(0.01, pv);
+        const do_sum = math.float.equal(pv[1], 0.01, 0.001);
+        const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);
+        const new_angle = current_angle[1] + rotation;
+        const pm = math.vector.magnitude(pv);
+        const p_r = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec3, .{
+            1,
+            new_angle,
+        });
+        var nv = math.vector.mul(pm, p_r);
+        if (do_sum) {
+            const bf = nv;
+            nv = math.vector.add(nv, vec);
+            std.debug.print("now: ({d}, {d}, {d}) then: ({d}, {d}, {d})\n", .{
+                bf[0],
+                bf[1],
+                bf[2],
+                nv[0],
+                nv[1],
+                nv[2],
+            });
+        }
+        const v = nv;
+        quad_positions[pi] = v;
         quad_colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
         quad_colors[pi][1] = 0.75 + 0.25 * v[0];
         quad_colors[pi][2] = 0.75 + 0.25 * v[1];
