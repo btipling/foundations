@@ -58,6 +58,10 @@ fn drawPoints(self: *vma_ui) void {
             }) catch @panic("bufsize too small");
             if (c.igSelectable_Bool(txt, self.point_selected == i, flags, selectable_dims)) {
                 self.point_selected = i;
+                if (c.igIsMouseDoubleClicked_Nil(0)) {
+                    self.point_selected = i;
+                    self.addVector(self.points[self.point_selected]);
+                }
             }
         }
         c.igTreePop();
