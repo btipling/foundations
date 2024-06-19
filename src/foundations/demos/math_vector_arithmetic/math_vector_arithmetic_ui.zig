@@ -1,4 +1,4 @@
-vectors: [100]math.vector.vec3 = undefined,
+vectors: [100]data = undefined,
 num_vectors: usize = 0,
 points: [101]math.vector.vec3 = undefined,
 point_selected: usize = 0,
@@ -6,6 +6,11 @@ num_points: usize = 0,
 next_vec_data: [3]f32 = .{ 0, 0, 0 },
 
 pub const max_vectors: usize = 100;
+
+pub const data = struct {
+    origin: math.vector.vec3,
+    vector: math.vector.vec3,
+};
 
 const vma_ui = @This();
 
@@ -27,7 +32,7 @@ pub fn draw(self: *vma_ui) void {
     _ = c.igBegin("Math vector arithmetic", null, 0);
     _ = c.igInputFloat2("##add", &self.next_vec_data, "%.3f", c.ImGuiInputTextFlags_None);
     if (c.igButton("Add vector", btn_dims)) {
-        self.addVector();
+        self.addVector(self.points[self.point_selected]);
     }
     if (c.igButton("Clear vectors", btn_dims)) {
         self.clearVectors();
@@ -59,20 +64,35 @@ fn drawPoints(self: *vma_ui) void {
     }
 }
 
-fn addVector(self: *vma_ui) void {
+fn addVector(self: *vma_ui, origin: math.vector.vec3) void {
     if (self.num_vectors + 1 == max_vectors) return;
     self.vectors[self.num_vectors] = .{
-        self.next_vec_data[0],
-        self.next_vec_data[1],
-        0,
+        .origin = origin,
+        .vector = .{
+            self.next_vec_data[0],
+            self.next_vec_data[1],
+            0,
+        },
     };
     self.num_vectors += 1;
-    self.points[self.num_points] = .{
-        self.next_vec_data[0],
-        self.next_vec_data[1],
-        0,
-    };
-    self.num_points += 1;
+    var is_in_points = false;
+    var i: usize = 0;
+    const a: [3]f32 = self.next_vec_data;
+    while (i < self.num_points) : (i += 1) {
+        const b: [3]f32 = self.points[i];
+        if (std.mem.eql(f32, a[0..], b[0..])) {
+            is_in_points = true;
+            break;
+        }
+    }
+    if (!is_in_points) {
+        self.points[self.num_points] = .{
+            self.next_vec_data[0],
+            self.next_vec_data[1],
+            0,
+        };
+        self.num_points += 1;
+    }
     self.clearInput();
 }
 
@@ -80,9 +100,11 @@ fn printVectors(self: *vma_ui) void {
     var i: usize = 0;
     std.debug.print("vectors:\n", .{});
     while (i < self.num_vectors) : (i += 1) {
-        std.debug.print("\t({d}, {d})\n", .{
-            self.vectors[i][0],
-            self.vectors[i][1],
+        std.debug.print("\torigin: ({d}, {d}) - vector: ({d}, {d})\n", .{
+            self.vectors[i].origin[0],
+            self.vectors[i].origin[1],
+            self.vectors[i].vector[0],
+            self.vectors[i].vector[1],
         });
     }
 }

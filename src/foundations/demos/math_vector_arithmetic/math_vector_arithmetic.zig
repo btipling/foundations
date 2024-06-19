@@ -33,7 +33,7 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
 }
 
 fn addVector(self: *MathVectorArithmetic) void {
-    const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors];
+    const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors].vector;
     var triangle_positions: [3][3]f32 = undefined;
     var triangle_colors: [3][4]f32 = undefined;
     var pi: usize = 0;
