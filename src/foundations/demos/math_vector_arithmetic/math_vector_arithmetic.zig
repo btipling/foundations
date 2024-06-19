@@ -11,7 +11,7 @@ const frag_shader: []const u8 = @embedFile("mva_frag.glsl");
 pub fn init(allocator: std.mem.Allocator) *MathVectorArithmetic {
     const p = allocator.create(MathVectorArithmetic) catch @panic("OOM");
     p.* = .{
-        .ui_state = .{},
+        .ui_state = vma_ui.init(),
     };
     return p;
 }

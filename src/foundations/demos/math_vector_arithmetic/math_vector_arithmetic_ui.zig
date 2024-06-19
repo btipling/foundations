@@ -1,10 +1,21 @@
 vectors: [100]math.vector.vec3 = undefined,
 num_vectors: usize = 0,
+points: [101]math.vector.vec3 = undefined,
+point_selected: usize = 0,
+num_points: usize = 0,
 next_vec_data: [3]f32 = .{ 0, 0, 0 },
 
 pub const max_vectors: usize = 100;
 
 const vma_ui = @This();
+
+pub fn init() vma_ui {
+    var ui_state: vma_ui = .{};
+    ui_state.points[0] = .{ 0, 0, 0 };
+    ui_state.point_selected = 0;
+    ui_state.num_points += 1;
+    return ui_state;
+}
 
 pub fn draw(self: *vma_ui) void {
     const btn_dims = ui.helpers().buttonSize();
@@ -24,7 +35,28 @@ pub fn draw(self: *vma_ui) void {
     if (c.igButton("Print vectors", btn_dims)) {
         self.printVectors();
     }
+    self.drawPoints();
     c.igEnd();
+}
+
+fn drawPoints(self: *vma_ui) void {
+    const scale = ui.helpers().scale;
+    const selectable_dims = c.ImVec2_ImVec2_Float(100 * scale, 20 * scale).*;
+    const flags = c.ImGuiSelectableFlags_SpanAvailWidth | c.ImGuiSelectableFlags_AllowDoubleClick;
+    if (c.igTreeNode_Str("points")) {
+        var i: usize = 0;
+        var buf: [250]u8 = undefined;
+        while (i < self.num_points) : (i += 1) {
+            const txt = std.fmt.bufPrintZ(&buf, "({d}, {d})", .{
+                self.points[i][0],
+                self.points[i][1],
+            }) catch @panic("bufsize too small");
+            if (c.igSelectable_Bool(txt, self.point_selected == i, flags, selectable_dims)) {
+                self.point_selected = i;
+            }
+        }
+        c.igTreePop();
+    }
 }
 
 fn addVector(self: *vma_ui) void {
@@ -35,6 +67,12 @@ fn addVector(self: *vma_ui) void {
         0,
     };
     self.num_vectors += 1;
+    self.points[self.num_points] = .{
+        self.next_vec_data[0],
+        self.next_vec_data[1],
+        0,
+    };
+    self.num_points += 1;
     self.clearInput();
 }
 
