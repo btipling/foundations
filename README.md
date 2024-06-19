@@ -1,4 +1,5 @@
 # Foundations
+
 This is an attempt to build a game engine and learn graphics programming in zig. This project is named after Eric Lengyel game engine series [Foundations of Game Engine Development](https://foundationsofgameenginedev.com/) which is pretty cool. This project will be mostly in 
 OpenGL but I might attempt a Vulkan triangle or two as well as try other things.
 
@@ -19,5 +20,6 @@ programming and build a game engine.
 * https://essentialmath.com/book.htm
 * https://www.gamemath.com/
 
-![image](https://github.com/btipling/foundations/assets/249641/fae024d5-90f9-4f11-a8af-b37894dda30c)
+
+![image](https://github.com/btipling/foundations/assets/249641/fa81b05d-8297-4008-ab14-8f7df06f385b)
 
