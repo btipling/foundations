@@ -29,7 +29,7 @@ pub fn contentScale(win: *window) f32 {
     var x: f32 = 0;
     var y: f32 = 1;
     c.glfwGetWindowContentScale(win, @ptrCast(&x), @ptrCast(&y));
-    return @max(x, y);
+    return @max(x, y) * 0.9;
 }
 
 pub fn createWindow(width: c_int, height: c_int) !*window {

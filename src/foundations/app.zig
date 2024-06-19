@@ -6,7 +6,7 @@ const App = @This();
 var app: *App = undefined;
 
 pub fn init(allocator: std.mem.Allocator) *App {
-    const width: u32 = 1920;
+    const width: u32 = 1080;
     const height: u32 = 1080;
     const glsl_version: []const u8 = "#version 460";
 
