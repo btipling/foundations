@@ -35,7 +35,7 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
 fn addVector(self: *MathVectorArithmetic) void {
     const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors];
     var triangle_positions: [3][3]f32 = undefined;
-    var colors: [3][4]f32 = undefined;
+    var triangle_colors: [3][4]f32 = undefined;
     var pi: usize = 0;
     const vec2DPC = math.rotation.cartesian2DToPolarCoordinates(vec);
     // polar coordinate 0° starts at x positive axis -> (i.e (1, 0) in unit circle), and moves positive in ° in the CCW direction
@@ -57,10 +57,10 @@ fn addVector(self: *MathVectorArithmetic) void {
         const nv = math.vector.mul(pm, p_r);
         const v = math.vector.add(nv, vec);
         triangle_positions[pi] = v;
-        colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
-        colors[pi][1] = 0.75 + 0.25 * v[0];
-        colors[pi][2] = 0.75 + 0.25 * v[1];
-        colors[pi][3] = 1.0;
+        triangle_colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
+        triangle_colors[pi][1] = 0.75 + 0.25 * v[0];
+        triangle_colors[pi][2] = 0.75 + 0.25 * v[1];
+        triangle_colors[pi][3] = 1.0;
     }
 
     self.objects[self.num_objects] = .{
@@ -68,7 +68,31 @@ fn addVector(self: *MathVectorArithmetic) void {
             vertex_shader,
             frag_shader,
             triangle_positions,
-            colors,
+            triangle_colors,
+        ),
+    };
+    self.num_objects += 1;
+
+    var quad_positions: [6][3]f32 = undefined;
+    var quad_colors: [6][4]f32 = undefined;
+
+    pi = 0;
+    while (pi < 6) : (pi += 1) {
+        const pv: math.vector.vec3 = object.quad.default_positions[pi];
+        const v = pv;
+        quad_positions[pi] = math.vector.mul(0.01, v);
+        quad_colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
+        quad_colors[pi][1] = 0.75 + 0.25 * v[0];
+        quad_colors[pi][2] = 0.75 + 0.25 * v[1];
+        quad_colors[pi][3] = 1.0;
+    }
+
+    self.objects[self.num_objects] = .{
+        .quad = object.quad.init(
+            vertex_shader,
+            frag_shader,
+            quad_positions,
+            quad_colors,
         ),
     };
     self.num_objects += 1;
