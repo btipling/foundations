@@ -34,6 +34,7 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
 
 fn addVector(self: *MathVectorArithmetic) void {
     const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors].vector;
+    const origin: math.vector.vec3 = self.ui_state.vectors[self.num_vectors].origin;
     var triangle_positions: [3][3]f32 = undefined;
     var triangle_colors: [3][4]f32 = undefined;
     var pi: usize = 0;
@@ -54,7 +55,8 @@ fn addVector(self: *MathVectorArithmetic) void {
             1,
             new_angle,
         });
-        const nv = math.vector.mul(pm, p_r);
+        var nv = math.vector.mul(pm, p_r);
+        nv = math.vector.add(nv, origin);
         const v = math.vector.add(nv, vec);
         triangle_positions[pi] = v;
         triangle_colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
@@ -89,6 +91,7 @@ fn addVector(self: *MathVectorArithmetic) void {
             new_angle,
         });
         var nv = math.vector.mul(pm, p_r);
+        nv = math.vector.add(nv, origin);
         if (do_sum) {
             const bf = nv;
             nv = math.vector.add(nv, vec);

@@ -34,8 +34,8 @@ pub fn draw(self: *vma_ui) void {
     if (c.igButton("Add vector", btn_dims)) {
         self.addVector(self.points[self.point_selected]);
     }
-    if (c.igButton("Clear vectors", btn_dims)) {
-        self.clearVectors();
+    if (c.igButton("Clear data", btn_dims)) {
+        self.clearData();
     }
     if (c.igButton("Print vectors", btn_dims)) {
         self.printVectors();
@@ -66,18 +66,20 @@ fn drawPoints(self: *vma_ui) void {
 
 fn addVector(self: *vma_ui, origin: math.vector.vec3) void {
     if (self.num_vectors + 1 == max_vectors) return;
+    const new_vec: math.vector.vec3 = .{
+        self.next_vec_data[0],
+        self.next_vec_data[1],
+        0,
+    };
     self.vectors[self.num_vectors] = .{
         .origin = origin,
-        .vector = .{
-            self.next_vec_data[0],
-            self.next_vec_data[1],
-            0,
-        },
+        .vector = new_vec,
     };
     self.num_vectors += 1;
     var is_in_points = false;
     var i: usize = 0;
-    const a: [3]f32 = self.next_vec_data;
+    const new_point = math.vector.add(new_vec, origin);
+    const a: [3]f32 = new_point;
     while (i < self.num_points) : (i += 1) {
         const b: [3]f32 = self.points[i];
         if (std.mem.eql(f32, a[0..], b[0..])) {
@@ -86,11 +88,7 @@ fn addVector(self: *vma_ui, origin: math.vector.vec3) void {
         }
     }
     if (!is_in_points) {
-        self.points[self.num_points] = .{
-            self.next_vec_data[0],
-            self.next_vec_data[1],
-            0,
-        };
+        self.points[self.num_points] = new_point;
         self.num_points += 1;
     }
     self.clearInput();
@@ -113,9 +111,11 @@ fn clearInput(self: *vma_ui) void {
     self.next_vec_data = .{ 0, 0, 0 };
 }
 
-fn clearVectors(self: *vma_ui) void {
+fn clearData(self: *vma_ui) void {
     self.clearInput();
     self.num_vectors = 0;
+    self.num_points = 1;
+    self.point_selected = 0;
 }
 
 const c = @cImport({
