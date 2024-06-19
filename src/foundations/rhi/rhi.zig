@@ -185,6 +185,7 @@ pub fn drawObjects(objects: []object.object) void {
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
             .triangle => |t| drawArrays(t.program, t.vao, t.count),
+            .quad => |q| drawArrays(q.program, q.vao, q.count),
             else => {},
         }
     }
@@ -195,6 +196,7 @@ pub fn deleteObjects(objects: []object.object) void {
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
             .triangle => |t| delete(t.program, t.vao, t.buffer),
+            .quad => |q| delete(q.program, q.vao, q.buffer),
             else => {},
         }
     }

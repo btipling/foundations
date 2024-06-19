@@ -1,5 +1,6 @@
 ui_state: vma_ui,
-vectors: [100]object.object = undefined,
+objects: [200]object.object = undefined,
+num_objects: usize = 0,
 num_vectors: usize = 0,
 
 const MathVectorArithmetic = @This();
@@ -27,13 +28,13 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
             self.addVector();
         }
     }
-    rhi.drawObjects(self.vectors[0..self.num_vectors]);
+    rhi.drawObjects(self.objects[0..self.num_objects]);
     self.ui_state.draw();
 }
 
 fn addVector(self: *MathVectorArithmetic) void {
     const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors];
-    var positions: [3][3]f32 = undefined;
+    var triangle_positions: [3][3]f32 = undefined;
     var colors: [3][4]f32 = undefined;
     var pi: usize = 0;
     const vec2DPC = math.rotation.cartesian2DToPolarCoordinates(vec);
@@ -55,27 +56,29 @@ fn addVector(self: *MathVectorArithmetic) void {
         });
         const nv = math.vector.mul(pm, p_r);
         const v = math.vector.add(nv, vec);
-        positions[pi] = v;
+        triangle_positions[pi] = v;
         colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
         colors[pi][1] = 0.75 + 0.25 * v[0];
         colors[pi][2] = 0.75 + 0.25 * v[1];
         colors[pi][3] = 1.0;
     }
 
-    self.vectors[self.num_vectors] = .{
+    self.objects[self.num_objects] = .{
         .triangle = object.triangle.init(
             vertex_shader,
             frag_shader,
-            positions,
+            triangle_positions,
             colors,
         ),
     };
+    self.num_objects += 1;
     self.num_vectors += 1;
 }
 
 fn clearVectors(self: *MathVectorArithmetic) void {
-    rhi.deleteObjects(self.vectors[0..self.num_vectors]);
+    rhi.deleteObjects(self.objects[0..self.num_objects]);
     self.num_vectors = 0;
+    self.num_objects = 0;
 }
 
 const std = @import("std");
