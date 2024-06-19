@@ -34,6 +34,7 @@ pub fn draw(self: *MathVectorArithmetic, _: f64) void {
 fn addVector(self: *MathVectorArithmetic) void {
     const vec: math.vector.vec3 = self.ui_state.vectors[self.num_vectors];
     var positions: [3][3]f32 = undefined;
+    var colors: [3][4]f32 = undefined;
     var pi: usize = 0;
     const vec2DPC = math.rotation.cartesian2DToPolarCoordinates(vec);
     // polar coordinate 0° starts at x positive axis -> (i.e (1, 0) in unit circle), and moves positive in ° in the CCW direction
@@ -55,6 +56,10 @@ fn addVector(self: *MathVectorArithmetic) void {
         const nv = math.vector.mul(pm, p_r);
         const v = math.vector.add(nv, vec);
         positions[pi] = v;
+        colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
+        colors[pi][1] = 0.75 + 0.25 * v[0];
+        colors[pi][2] = 0.75 + 0.25 * v[1];
+        colors[pi][3] = 1.0;
     }
 
     self.vectors[self.num_vectors] = .{
@@ -62,7 +67,7 @@ fn addVector(self: *MathVectorArithmetic) void {
             vertex_shader,
             frag_shader,
             positions,
-            object.triangle.default_colors,
+            colors,
         ),
     };
     self.num_vectors += 1;
