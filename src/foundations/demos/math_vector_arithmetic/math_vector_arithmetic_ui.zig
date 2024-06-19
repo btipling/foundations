@@ -31,16 +31,14 @@ pub fn draw(self: *vma_ui) void {
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Math vector arithmetic", null, 0);
     _ = c.igInputFloat2("##add", &self.next_vec_data, "%.3f", c.ImGuiInputTextFlags_None);
-    if (c.igButton("Add vector", btn_dims)) {
-        self.addVector(self.points[self.point_selected]);
-    }
+    self.drawPoints();
+    self.drawVectors();
     if (c.igButton("Clear data", btn_dims)) {
         self.clearData();
     }
     if (c.igButton("Print vectors", btn_dims)) {
         self.printVectors();
     }
-    self.drawPoints();
     c.igEnd();
 }
 
@@ -60,7 +58,12 @@ fn drawPoints(self: *vma_ui) void {
                 self.point_selected = i;
                 if (c.igIsMouseDoubleClicked_Nil(0)) {
                     self.point_selected = i;
-                    self.addVector(self.points[self.point_selected]);
+                    const new_vec: math.vector.vec3 = .{
+                        self.next_vec_data[0],
+                        self.next_vec_data[1],
+                        0,
+                    };
+                    self.addVector(new_vec, self.points[self.point_selected]);
                 }
             }
         }
@@ -68,13 +71,39 @@ fn drawPoints(self: *vma_ui) void {
     }
 }
 
-fn addVector(self: *vma_ui, origin: math.vector.vec3) void {
+fn drawVectors(self: *vma_ui) void {
+    const scale = ui.helpers().scale;
+    const selectable_dims = c.ImVec2_ImVec2_Float(100 * scale, 20 * scale).*;
+    const flags = c.ImGuiSelectableFlags_SpanAvailWidth | c.ImGuiSelectableFlags_AllowDoubleClick;
+    if (c.igTreeNode_Str("vectors")) {
+        var i: usize = 0;
+        var buf: [250]u8 = undefined;
+        while (i < self.num_vectors) : (i += 1) {
+            const txt = std.fmt.bufPrintZ(&buf, "({d}, {d})", .{
+                self.vectors[i].vector[0],
+                self.vectors[i].vector[1],
+            }) catch @panic("bufsize too small");
+            if (c.igSelectable_Bool(txt, false, flags, selectable_dims)) {
+                if (c.igIsMouseDoubleClicked_Nil(0)) {
+                    const new_vec: math.vector.vec3 = .{
+                        self.next_vec_data[0],
+                        self.next_vec_data[1],
+                        0,
+                    };
+                    const vec_origin = math.vector.add(self.vectors[i].vector, self.vectors[i].origin);
+                    self.addVector(new_vec, vec_origin);
+                    const sum_vec = math.vector.negate(math.vector.add(new_vec, self.vectors[i].vector));
+                    const sum_origin = math.vector.add(new_vec, vec_origin);
+                    self.addVector(sum_vec, sum_origin);
+                }
+            }
+        }
+        c.igTreePop();
+    }
+}
+
+fn addVector(self: *vma_ui, new_vec: math.vector.vec3, origin: math.vector.vec3) void {
     if (self.num_vectors + 1 == max_vectors) return;
-    const new_vec: math.vector.vec3 = .{
-        self.next_vec_data[0],
-        self.next_vec_data[1],
-        0,
-    };
     self.vectors[self.num_vectors] = .{
         .origin = origin,
         .vector = new_vec,

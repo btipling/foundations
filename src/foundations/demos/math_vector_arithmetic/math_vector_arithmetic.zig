@@ -92,18 +92,7 @@ fn addVector(self: *MathVectorArithmetic) void {
         });
         var nv = math.vector.mul(pm, p_r);
         nv = math.vector.add(nv, origin);
-        if (do_sum) {
-            const bf = nv;
-            nv = math.vector.add(nv, vec);
-            std.debug.print("now: ({d}, {d}, {d}) then: ({d}, {d}, {d})\n", .{
-                bf[0],
-                bf[1],
-                bf[2],
-                nv[0],
-                nv[1],
-                nv[2],
-            });
-        }
+        if (do_sum) nv = math.vector.add(nv, vec);
         const v = nv;
         quad_positions[pi] = v;
         quad_colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
