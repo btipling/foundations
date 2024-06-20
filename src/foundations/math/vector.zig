@@ -472,7 +472,7 @@ test decomposeProjection {
     try std.testing.expectEqual(a_expected_proj, a_res.proj);
     try std.testing.expectEqual(a_expected_perp, a_res.perp);
 
-    // The result of a decomposition are perpendicular and parallel vectors that add up to the orignal vector.
+    // The result of a decomposition are perpendicular and parallel vectors that add up to the original vector.
     const b_v1: vec3 = .{ 2, -5, 8 };
     const b_q: vec3 = .{ 1, 0, 0 };
     const b_res = decomposeProjection(b_v1, b_q);
