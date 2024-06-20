@@ -468,9 +468,15 @@ test decomposeProjection {
     const a_q: vec3 = .{ 1, 0, 0 };
     const a_expected_proj: vec3 = .{ @as(f32, 1.0 / @sqrt(3.0)), 0, 0 };
     const a_expected_perp: vec3 = .{ 0, @as(f32, @sqrt(3.0) / 3.0), @as(f32, @sqrt(3.0) / 3.0) };
-    const res = decomposeProjection(a_p, a_q);
-    try std.testing.expectEqual(a_expected_proj, res.proj);
-    try std.testing.expectEqual(a_expected_perp, res.perp);
+    const a_res = decomposeProjection(a_p, a_q);
+    try std.testing.expectEqual(a_expected_proj, a_res.proj);
+    try std.testing.expectEqual(a_expected_perp, a_res.perp);
+
+    // The result of a decomposition are perpendicular and parallel vectors that add up to the orignal vector.
+    const b_v1: vec3 = .{ 2, -5, 8 };
+    const b_q: vec3 = .{ 1, 0, 0 };
+    const b_res = decomposeProjection(b_v1, b_q);
+    try std.testing.expectEqual(b_v1, add(b_res.proj, b_res.perp));
 }
 
 const std = @import("std");
