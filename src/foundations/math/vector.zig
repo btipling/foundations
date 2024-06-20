@@ -450,8 +450,8 @@ pub fn decomposeProjection(p: anytype, q: anytype) struct { proj: @TypeOf(p), pe
         .Vector => |VT| switch (@typeInfo(K)) {
             .Vector => |VM| {
                 if (VT.len != VM.len) @compileError("vectors must be of the same length");
-                const q_mag = magnitude(q);
-                const proj = mul(dotProduct(p, q) / q_mag * q_mag, q);
+                const ql = lengthSquared(q);
+                const proj = mul(dotProduct(p, q) / ql, q);
                 const perp = sub(p, proj);
                 return .{ .proj = proj, .perp = perp };
             },
