@@ -109,31 +109,48 @@ pub fn mxm(a: matrix, b: matrix) matrix {
     return .{
         .columns = .{
             .{
-                vector.dotProduct(a[0], bt[0]),
-                vector.dotProduct(a[0], bt[1]),
-                vector.dotProduct(a[0], bt[2]),
-                vector.dotProduct(a[0], bt[3]),
+                vector.dotProduct(a.columns[0], bt.columns[0]),
+                vector.dotProduct(a.columns[0], bt.columns[1]),
+                vector.dotProduct(a.columns[0], bt.columns[2]),
+                vector.dotProduct(a.columns[0], bt.columns[3]),
             },
             .{
-                vector.dotProduct(a[1], bt[0]),
-                vector.dotProduct(a[1], bt[1]),
-                vector.dotProduct(a[1], bt[2]),
-                vector.dotProduct(a[1], bt[3]),
+                vector.dotProduct(a.columns[1], bt.columns[0]),
+                vector.dotProduct(a.columns[1], bt.columns[1]),
+                vector.dotProduct(a.columns[1], bt.columns[2]),
+                vector.dotProduct(a.columns[1], bt.columns[3]),
             },
             .{
-                vector.dotProduct(a[2], bt[0]),
-                vector.dotProduct(a[2], bt[1]),
-                vector.dotProduct(a[2], bt[2]),
-                vector.dotProduct(a[2], bt[3]),
+                vector.dotProduct(a.columns[2], bt.columns[0]),
+                vector.dotProduct(a.columns[2], bt.columns[1]),
+                vector.dotProduct(a.columns[2], bt.columns[2]),
+                vector.dotProduct(a.columns[2], bt.columns[3]),
             },
             .{
-                vector.dotProduct(a[3], bt[0]),
-                vector.dotProduct(a[3], bt[1]),
-                vector.dotProduct(a[3], bt[2]),
-                vector.dotProduct(a[3], bt[3]),
+                vector.dotProduct(a.columns[3], bt.columns[0]),
+                vector.dotProduct(a.columns[3], bt.columns[1]),
+                vector.dotProduct(a.columns[3], bt.columns[2]),
+                vector.dotProduct(a.columns[3], bt.columns[3]),
             },
         },
     };
+}
+
+test mxm {
+    const a_ma: matrix = .{
+        .columns = .{
+            .{ 1, 2, 3, 0 },
+            .{ 4, 5, 6, 0 },
+            .{ 7, 8, 9, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const a_mb = identity();
+    const a_r = mxm(a_ma, a_mb);
+    try std.testing.expectEqual(a_ma.columns[0], a_r.columns[0]);
+    try std.testing.expectEqual(a_ma.columns[1], a_r.columns[1]);
+    try std.testing.expectEqual(a_ma.columns[2], a_r.columns[2]);
+    try std.testing.expectEqual(a_ma.columns[3], a_r.columns[3]);
 }
 
 pub fn sxm(k: f32, m: matrix) matrix {
