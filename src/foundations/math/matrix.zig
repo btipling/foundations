@@ -86,11 +86,11 @@ pub fn translate(x: f32, y: f32, z:f32) matrix {
     };
 }
 
-pub fn elementAt(m: matrix, row: usize, column: usize) f32 {
+pub fn at(m: matrix, row: usize, column: usize) f32 {
     return m.columns[column][row];
 }
 
-test elementAt {
+test at {
     const a_m: matrix = .{
         .columns = .{
             .{-3, 15, 12, 0},
@@ -99,38 +99,39 @@ test elementAt {
             .{0, 0, 0, 1},
         },
     };
-    try std.testing.expectEqual(9, elementAt(a_m, 0, 1));
-    try std.testing.expectEqual(-7, elementAt(a_m, 2, 2));
-    try std.testing.expectEqual(15, elementAt(a_m, 1, 0));
+    try std.testing.expectEqual(9, at(a_m, 0, 1));
+    try std.testing.expectEqual(-7, at(a_m, 2, 2));
+    try std.testing.expectEqual(15, at(a_m, 1, 0));
 }
 
 pub fn mxm(a: matrix, b: matrix) matrix {
-    const bt = b.transpose();
+    const amt = transpose(a);
     return .{
         .columns = .{
             .{
-                vector.dotProduct(a.columns[0], bt.columns[0]),
-                vector.dotProduct(a.columns[0], bt.columns[1]),
-                vector.dotProduct(a.columns[0], bt.columns[2]),
-                vector.dotProduct(a.columns[0], bt.columns[3]),
+                vector.dotProduct(amt.columns[0], b.columns[0]),
+                vector.dotProduct(amt.columns[1], b.columns[0]),
+                vector.dotProduct(amt.columns[2], b.columns[0]),
+                vector.dotProduct(amt.columns[3], b.columns[0]),
             },
             .{
-                vector.dotProduct(a.columns[1], bt.columns[0]),
-                vector.dotProduct(a.columns[1], bt.columns[1]),
-                vector.dotProduct(a.columns[1], bt.columns[2]),
-                vector.dotProduct(a.columns[1], bt.columns[3]),
+
+                vector.dotProduct(amt.columns[0], b.columns[1]),
+                vector.dotProduct(amt.columns[1], b.columns[1]),
+                vector.dotProduct(amt.columns[2], b.columns[1]),
+                vector.dotProduct(amt.columns[3], b.columns[1]),
             },
             .{
-                vector.dotProduct(a.columns[2], bt.columns[0]),
-                vector.dotProduct(a.columns[2], bt.columns[1]),
-                vector.dotProduct(a.columns[2], bt.columns[2]),
-                vector.dotProduct(a.columns[2], bt.columns[3]),
+                vector.dotProduct(amt.columns[0], b.columns[2]),
+                vector.dotProduct(amt.columns[1], b.columns[2]),
+                vector.dotProduct(amt.columns[2], b.columns[2]),
+                vector.dotProduct(amt.columns[3], b.columns[2]),
             },
             .{
-                vector.dotProduct(a.columns[3], bt.columns[0]),
-                vector.dotProduct(a.columns[3], bt.columns[1]),
-                vector.dotProduct(a.columns[3], bt.columns[2]),
-                vector.dotProduct(a.columns[3], bt.columns[3]),
+                vector.dotProduct(amt.columns[0], b.columns[3]),
+                vector.dotProduct(amt.columns[1], b.columns[3]),
+                vector.dotProduct(amt.columns[2], b.columns[3]),
+                vector.dotProduct(amt.columns[3], b.columns[3]),
             },
         },
     };
@@ -151,6 +152,66 @@ test mxm {
     try std.testing.expectEqual(a_ma.columns[1], a_r.columns[1]);
     try std.testing.expectEqual(a_ma.columns[2], a_r.columns[2]);
     try std.testing.expectEqual(a_ma.columns[3], a_r.columns[3]);
+
+    const b_ma: matrix = .{
+        .columns = .{
+            .{ 3, 1, 0, 0 },
+            .{ -10, 7, 5, 0 },
+            .{ 2, 9, -1, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const b_mb: matrix = .{
+        .columns = .{
+            .{ 1, 0, 0, 0 },
+            .{ 0, 0, 0, 0 },
+            .{ 0, 0, 0, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const b_e: matrix = .{
+        .columns = .{
+            .{ 3, 1, 0, 0 },
+            .{ 0, 0, 0, 0 },
+            .{ 0, 0, 0, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const b_r = mxm(b_ma, b_mb);
+    try std.testing.expectEqual(b_e.columns[0], b_r.columns[0]);
+    try std.testing.expectEqual(b_e.columns[1], b_r.columns[1]);
+    try std.testing.expectEqual(b_e.columns[2], b_r.columns[2]);
+    try std.testing.expectEqual(b_e.columns[3], b_r.columns[3]);
+
+    const c_ma: matrix = .{
+        .columns = .{
+            .{ 3, 1, 0, 0 },
+            .{ -10, 7, 5, 0 },
+            .{ 2, 9, -1, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const c_mb: matrix = .{
+        .columns = .{
+            .{ 8, 4, 7, 0 },
+            .{ 2, 1, 5, 0 },
+            .{ 6, -3, 9, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const c_e: matrix = .{
+        .columns = .{
+            .{ -2, 99, 13, 0 },
+            .{ 6, 54, 0, 0 },
+            .{ 66, 66, -24, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const c_r = mxm(c_ma, c_mb);
+    try std.testing.expectEqual(c_e.columns[0], c_r.columns[0]);
+    try std.testing.expectEqual(c_e.columns[1], c_r.columns[1]);
+    try std.testing.expectEqual(c_e.columns[2], c_r.columns[2]);
+    try std.testing.expectEqual(c_e.columns[3], c_r.columns[3]);
 }
 
 pub fn sxm(k: f32, m: matrix) matrix {
@@ -220,28 +281,28 @@ pub fn transpose(m: matrix) matrix {
     return .{
         .columns = .{
             .{
-                elementAt(m, 0, 0),
-                elementAt(m, 0, 1),
-                elementAt(m, 0, 2),
-                elementAt(m, 0, 3),
+                at(m, 0, 0),
+                at(m, 0, 1),
+                at(m, 0, 2),
+                at(m, 0, 3),
             },
             .{
-                elementAt(m, 1, 0),
-                elementAt(m, 1, 1),
-                elementAt(m, 1, 2),
-                elementAt(m, 1, 3),
+                at(m, 1, 0),
+                at(m, 1, 1),
+                at(m, 1, 2),
+                at(m, 1, 3),
             },
             .{
-                elementAt(m, 2, 0),
-                elementAt(m, 2, 1),
-                elementAt(m, 2, 2),
-                elementAt(m, 2, 3),
+                at(m, 2, 0),
+                at(m, 2, 1),
+                at(m, 2, 2),
+                at(m, 2, 3),
             },
             .{
-                elementAt(m, 3, 0),
-                elementAt(m, 3, 1),
-                elementAt(m, 3, 2),
-                elementAt(m, 3, 3),
+                at(m, 3, 0),
+                at(m, 3, 1),
+                at(m, 3, 2),
+                at(m, 3, 3),
             },
         },
     };
