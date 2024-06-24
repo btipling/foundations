@@ -194,6 +194,47 @@ test mxm {
     try std.testing.expectEqual(c_e.columns[1], c_r.columns[1]);
     try std.testing.expectEqual(c_e.columns[2], c_r.columns[2]);
     try std.testing.expectEqual(c_e.columns[3], c_r.columns[3]);
+
+    // Test associative property
+    const d_ma: matrix = .{
+        .columns = .{
+            .{ 0.5, 1, 0, 0 },
+            .{ 0.5, 0.5, 0.25, 0 },
+            .{ 0.25, 0.5, -1, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const d_mb: matrix = .{
+        .columns = .{
+            .{ 0.25, 0.25, 0.25, 0 },
+            .{ 0.25, 1, 0.5, 0 },
+            .{ 0.5, -0.25, 1, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const d_mc: matrix = .{
+        .columns = .{
+            .{ 1, 0.25, 0.5, 0 },
+            .{ 0.5, 1, 0.25, 0 },
+            .{ 0.5, 1, 0.25, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const d_e: matrix = .{
+        .columns = .{
+            .{ 0.6875, 1.1875, -0.78125, 0 },
+            .{ 1, 1.46875, -0.609375, 0 },
+            .{ 1, 1.46875, -0.609375, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const d_r1 = mxm(d_ma, mxm(d_mb, d_mc));
+    const d_r2 = mxm(mxm(d_ma, d_mb), d_mc);
+    try std.testing.expectEqual(d_e.columns[0], d_r1.columns[0]);
+    try std.testing.expectEqual(d_e.columns[1], d_r1.columns[1]);
+    try std.testing.expectEqual(d_e.columns[2], d_r1.columns[2]);
+    try std.testing.expectEqual(d_e.columns[3], d_r1.columns[3]);
+    try std.testing.expectEqual(d_r1, d_r2);
 }
 
 pub fn sxm(k: f32, m: matrix) matrix {
