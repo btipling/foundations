@@ -187,6 +187,30 @@ pub fn transpose(m: matrix) matrix {
     };
 }
 
+test transpose {
+    const a_m: matrix = .{
+        .columns = .{
+            .{1, 10, 20, 0},
+            .{2, 5, 40, 0},
+            .{3, 4, 15, 0},
+            .{0, 0, 0, 1},
+        },
+    };
+    const a_e: matrix = .{
+        .columns = .{
+            .{1, 2, 3, 0},
+            .{10, 5, 4, 0},
+            .{20, 40, 15, 0},
+            .{0, 0, 0, 1},
+        },
+    };
+    const a_r = transpose(a_m);
+    try std.testing.expectEqual(a_e.columns[0], a_r.columns[0]);
+    try std.testing.expectEqual(a_e.columns[1], a_r.columns[1]);
+    try std.testing.expectEqual(a_e.columns[2], a_r.columns[2]);
+    try std.testing.expectEqual(a_e.columns[3], a_r.columns[3]);
+}
+
 pub fn orthonormalize() matrix {
     @compileError("not yet implemented, see page 32 in book 1 foundations of game engine dev");
 }
