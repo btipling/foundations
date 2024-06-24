@@ -8,7 +8,7 @@ columns: [4]vector.vec4 = .{
 
 const matrix = @This();
 
-pub fn identity() matrix {
+pub inline fn identity() matrix {
     return .{
         .columns = .{
             // zig fmt: off
@@ -21,7 +21,7 @@ pub fn identity() matrix {
     };
 }
 
-pub fn rotationX(angle: f32) matrix {
+pub inline fn rotationX(angle: f32) matrix {
     return .{
         .columns = .{
             // zig fmt: off
@@ -34,7 +34,7 @@ pub fn rotationX(angle: f32) matrix {
     };
 }
 
-pub fn rotationY(angle: f32) matrix {
+pub inline fn rotationY(angle: f32) matrix {
     return .{
         .columns = .{
             // zig fmt: off
@@ -47,7 +47,7 @@ pub fn rotationY(angle: f32) matrix {
     };
 }
 
-pub fn rotationZ(angle: f32) matrix {
+pub inline fn rotationZ(angle: f32) matrix {
     return .{
         .columns = .{
             // zig fmt: off
@@ -60,7 +60,7 @@ pub fn rotationZ(angle: f32) matrix {
     };
 }
 
-pub fn scale(x: f32, y: f32, z: f32) matrix {
+pub inline fn scale(x: f32, y: f32, z: f32) matrix {
     return .{
         .columns = .{
             // zig fmt: off
@@ -73,7 +73,7 @@ pub fn scale(x: f32, y: f32, z: f32) matrix {
     };
 }
 
-pub fn translate(x: f32, y: f32, z:f32) matrix {
+pub inline fn translate(x: f32, y: f32, z:f32) matrix {
     return .{
         .columns = .{
             // zig fmt: off
@@ -86,7 +86,7 @@ pub fn translate(x: f32, y: f32, z:f32) matrix {
     };
 }
 
-pub fn at(m: matrix, row: usize, column: usize) f32 {
+pub inline fn at(m: matrix, row: usize, column: usize) f32 {
     return m.columns[column][row];
 }
 
@@ -106,35 +106,17 @@ test at {
 
 pub fn mxm(a: matrix, b: matrix) matrix {
     const amt = transpose(a);
-    return .{
-        .columns = .{
-            .{
-                vector.dotProduct(amt.columns[0], b.columns[0]),
-                vector.dotProduct(amt.columns[1], b.columns[0]),
-                vector.dotProduct(amt.columns[2], b.columns[0]),
-                vector.dotProduct(amt.columns[3], b.columns[0]),
-            },
-            .{
-
-                vector.dotProduct(amt.columns[0], b.columns[1]),
-                vector.dotProduct(amt.columns[1], b.columns[1]),
-                vector.dotProduct(amt.columns[2], b.columns[1]),
-                vector.dotProduct(amt.columns[3], b.columns[1]),
-            },
-            .{
-                vector.dotProduct(amt.columns[0], b.columns[2]),
-                vector.dotProduct(amt.columns[1], b.columns[2]),
-                vector.dotProduct(amt.columns[2], b.columns[2]),
-                vector.dotProduct(amt.columns[3], b.columns[2]),
-            },
-            .{
-                vector.dotProduct(amt.columns[0], b.columns[3]),
-                vector.dotProduct(amt.columns[1], b.columns[3]),
-                vector.dotProduct(amt.columns[2], b.columns[3]),
-                vector.dotProduct(amt.columns[3], b.columns[3]),
-            },
-        },
-    };
+    var rv: matrix = undefined;
+    comptime var column: usize = 0;
+    inline while (column < 4) : (column += 1) {
+        rv.columns[column] =  .{
+            vector.dotProduct(amt.columns[0], b.columns[column]),
+            vector.dotProduct(amt.columns[1], b.columns[column]),
+            vector.dotProduct(amt.columns[2], b.columns[column]),
+            vector.dotProduct(amt.columns[3], b.columns[column]),
+        };
+    }
+    return rv;
 }
 
 test mxm {
@@ -277,7 +259,7 @@ test mxv {
     try std.testing.expectEqual(c_e, c_r);
 }
 
-pub fn transpose(m: matrix) matrix {
+pub inline fn transpose(m: matrix) matrix {
     return .{
         .columns = .{
             .{
