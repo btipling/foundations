@@ -180,6 +180,13 @@ pub fn mxv(m: matrix, v: vector.vec4) vector.vec4 {
     };
 }
 
+test mxv {
+    const a_m = identity();
+    const a_v = .{-3, 2, 1, 1};
+    const a_r = mxv(a_m, a_v);
+    try std.testing.expectEqual(a_v, a_r);
+}
+
 pub fn transpose(m: matrix) matrix {
     return .{
         .columns = .{
