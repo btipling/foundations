@@ -185,6 +185,18 @@ test mxv {
     const a_v = .{-3, 2, 1, 1};
     const a_r = mxv(a_m, a_v);
     try std.testing.expectEqual(a_v, a_r);
+
+    const b_m = scale(10, 1, 1);
+    const b_v = .{1, 1, 1, 1};
+    const b_e = .{10, 1, 1, 1};
+    const b_r = mxv(b_m, b_v);
+    try std.testing.expectEqual(b_e, b_r);
+
+    const c_m = scale(20, -3, 5);
+    const c_v = .{-3, 2, 9, 1};
+    const c_e = .{-60, -6, 45, 1};
+    const c_r = mxv(c_m, c_v);
+    try std.testing.expectEqual(c_e, c_r);
 }
 
 pub fn transpose(m: matrix) matrix {
