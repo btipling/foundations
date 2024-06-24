@@ -142,9 +142,33 @@ pub fn sxm(k: f32, m: matrix) matrix {
             vector.mul(k, m.columns[0]),
             vector.mul(k, m.columns[1]),
             vector.mul(k, m.columns[2]),
-            vector.mul(k, m.columns[3]),
+            m.columns[3],
         },
     };
+}
+
+test sxm {
+    const a_m: matrix = .{
+        .columns = .{
+            .{ 1, 2, 3, 0 },
+            .{ 4, 5, 6, 0 },
+            .{ 7, 8, 9, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const a_e: matrix = .{
+        .columns = .{
+            .{ 5, 10, 15, 0 },
+            .{ 20, 25, 30, 0 },
+            .{ 35, 40, 45, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const a_r = sxm(5, a_m);
+    try std.testing.expectEqual(a_e.columns[0], a_r.columns[0]);
+    try std.testing.expectEqual(a_e.columns[1], a_r.columns[1]);
+    try std.testing.expectEqual(a_e.columns[2], a_r.columns[2]);
+    try std.testing.expectEqual(a_e.columns[3], a_r.columns[3]);
 }
 
 pub fn mxv(m: matrix, v: vector.vec4) vector.vec4 {
