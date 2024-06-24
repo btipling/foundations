@@ -2,7 +2,7 @@ pub const vec4 = @Vector(4, f32);
 pub const vec3 = @Vector(3, f32);
 pub const vec2 = @Vector(2, f32);
 
-pub fn negate(v: anytype) @TypeOf(v) {
+pub inline fn negate(v: anytype) @TypeOf(v) {
     return mul(-1, v);
 }
 
@@ -12,7 +12,7 @@ test negate {
     try std.testing.expectEqual(ae, negate(a));
 }
 
-pub fn mul(m: anytype, v: anytype) @TypeOf(v) {
+pub inline fn mul(m: anytype, v: anytype) @TypeOf(v) {
     const T = @TypeOf(v);
     const K = @TypeOf(m);
     switch (@typeInfo(T)) {
@@ -47,7 +47,7 @@ test mul {
     try std.testing.expect(isZeroVector(mul(0, d)));
 }
 
-pub fn div(v: anytype, d: anytype) @TypeOf(v) {
+pub inline fn div(v: anytype, d: anytype) @TypeOf(v) {
     const T = @TypeOf(v);
     const K = @TypeOf(d);
     switch (@typeInfo(T)) {
@@ -71,7 +71,7 @@ test div {
     try std.testing.expectEqual(be, div(b, @as(vec4, .{ 10, -10, 3, 100 })));
 }
 
-pub fn add(v1: anytype, v2: anytype) @TypeOf(v1) {
+pub inline fn add(v1: anytype, v2: anytype) @TypeOf(v1) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
     switch (@typeInfo(T)) {
@@ -95,7 +95,7 @@ test add {
     try std.testing.expectEqual(be, add(@as(vec4, .{ 9, -22, 6, 0 }), b));
 }
 
-pub fn sub(v1: anytype, v2: anytype) @TypeOf(v1) {
+pub inline fn sub(v1: anytype, v2: anytype) @TypeOf(v1) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
     switch (@typeInfo(T)) {
@@ -120,7 +120,7 @@ test sub {
 }
 
 // vecFromPointAToPointB treats points as vectors from origin
-pub fn vecFromPointAToPointB(v1: anytype, v2: anytype) @TypeOf(v1) {
+pub inline fn vecFromPointAToPointB(v1: anytype, v2: anytype) @TypeOf(v1) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
     switch (@typeInfo(T)) {
@@ -139,7 +139,7 @@ test vecFromPointAToPointB {
     try std.testing.expectEqual(be, vecFromPointAToPointB(@as(vec4, .{ 9, -22, 6, 0 }), b));
 }
 
-pub fn magnitude(v: anytype) @TypeOf(v[0]) {
+pub inline fn magnitude(v: anytype) @TypeOf(v[0]) {
     switch (@typeInfo(@TypeOf(v))) {
         .Vector => {
             return @sqrt(@reduce(.Add, v * v));
@@ -156,7 +156,7 @@ test magnitude {
 }
 
 // To avoid a costly square root calculation when we can
-pub fn lengthSquared(v: anytype) @TypeOf(v[0]) {
+pub inline fn lengthSquared(v: anytype) @TypeOf(v[0]) {
     switch (@typeInfo(@TypeOf(v))) {
         .Vector => {
             return @reduce(.Add, v * v);
@@ -172,7 +172,7 @@ test lengthSquared {
     try std.testing.expectEqual(ae, lengthSquared(a));
 }
 
-pub fn normalize(v: anytype) @TypeOf(v) {
+pub inline fn normalize(v: anytype) @TypeOf(v) {
     if (@typeInfo(@TypeOf(v)) != .Vector) @compileError("input must be a vector");
     return div(v, magnitude(v));
 }
@@ -189,7 +189,7 @@ test normalize {
     try std.testing.expectEqual(b, normalize(b));
 }
 
-pub fn distance(a: anytype, b: anytype) @TypeOf(a[0]) {
+pub inline fn distance(a: anytype, b: anytype) @TypeOf(a[0]) {
     return magnitude(sub(b, a));
 }
 
@@ -201,7 +201,7 @@ test distance {
     try std.testing.expectEqual(ae, distance(a_b, a_a));
 }
 
-pub fn dotProduct(v1: anytype, v2: anytype) @TypeOf(v1[0]) {
+pub inline fn dotProduct(v1: anytype, v2: anytype) @TypeOf(v1[0]) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
     switch (@typeInfo(T)) {
@@ -313,7 +313,7 @@ test dotProduct {
 }
 
 // angleBetweenVectors returns just an angle in radians between two vectors, without a cw or ccw direction with respect to orientation to an origin
-pub fn angleBetweenVectors(a: anytype, b: anytype) f32 {
+pub inline fn angleBetweenVectors(a: anytype, b: anytype) f32 {
     const T = @TypeOf(a);
     const K = @TypeOf(b);
     if (T != K) @compileError("a and b must be the same type");
@@ -339,7 +339,7 @@ test angleBetweenVectors {
     try std.testing.expectEqual(ae, rotation.radiansToDegrees(angleBetweenVectors(a_v1, a_v2)));
 }
 
-pub fn isZeroVector(v: anytype) bool {
+pub inline fn isZeroVector(v: anytype) bool {
     const ti = @typeInfo(@TypeOf(v));
     if (ti != .Vector) @compileError("input must be a vector");
     var i: usize = 0;
@@ -356,7 +356,7 @@ test isZeroVector {
     try std.testing.expect(!isZeroVector(@as(vec2, .{ 1, -1 })));
 }
 
-pub fn crossProduct(p: anytype, q: anytype) @TypeOf(p) {
+pub inline fn crossProduct(p: anytype, q: anytype) @TypeOf(p) {
     const T = @TypeOf(p);
     const K = @TypeOf(q);
     switch (@typeInfo(T)) {
@@ -443,7 +443,7 @@ test crossProduct {
 }
 
 // decomposeProjection - extract the projection of p onto q and the portion of p that is perpendicular to q
-pub fn decomposeProjection(p: anytype, q: anytype) struct { proj: @TypeOf(p), perp: @TypeOf(p) } {
+pub inline fn decomposeProjection(p: anytype, q: anytype) struct { proj: @TypeOf(p), perp: @TypeOf(p) } {
     const T = @TypeOf(p);
     const K = @TypeOf(q);
     switch (@typeInfo(T)) {
