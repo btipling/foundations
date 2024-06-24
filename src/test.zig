@@ -2,6 +2,7 @@ pub fn main() !void {
     _ = math.vector;
     _ = math.rotation;
     _ = math.float;
+    _ = math.matrix;
 }
 
 test {

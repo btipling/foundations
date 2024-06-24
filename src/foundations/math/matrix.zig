@@ -90,6 +90,20 @@ pub fn elementAt(m: matrix, row: usize, column: usize) f32 {
     return m.columns[column][row];
 }
 
+test elementAt {
+    const a_m: matrix = .{
+        .columns = .{
+            .{-3, 15, 12, 0},
+            .{9, 0, 9, 0},
+            .{5, -2, -7, 0},
+            .{0, 0, 0, 1},
+        },
+    };
+    try std.testing.expectEqual(9, elementAt(a_m, 0, 1));
+    try std.testing.expectEqual(-7, elementAt(a_m, 2, 2));
+    try std.testing.expectEqual(15, elementAt(a_m, 1, 0));
+}
+
 pub fn mxm(a: matrix, b: matrix) matrix {
     const bt = b.transpose();
     return .{
@@ -193,4 +207,5 @@ pub fn invert4D() matrix {
     @compileError("not yet implemented, see page 33-34 in book 1 foundatoins of game engine dev");
 }
 
+const std = @import("std");
 const vector = @import("vector.zig");
