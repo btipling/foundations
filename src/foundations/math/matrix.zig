@@ -104,7 +104,7 @@ test at {
     try std.testing.expectEqual(15, at(a_m, 1, 0));
 }
 
-pub fn mxm(a: matrix, b: matrix) matrix {
+pub fn transformMatrix(a: matrix, b: matrix) matrix {
     const amt = transpose(a);
     var rv: matrix = undefined;
     comptime var column: usize = 0;
@@ -119,7 +119,7 @@ pub fn mxm(a: matrix, b: matrix) matrix {
     return rv;
 }
 
-test mxm {
+test transformMatrix {
     const a_ma: matrix = .{
         .columns = .{
             .{ 1, 2, 3, 0 },
@@ -129,7 +129,7 @@ test mxm {
         },
     };
     const a_mb = identity();
-    const a_r = mxm(a_ma, a_mb);
+    const a_r = transformMatrix(a_ma, a_mb);
     try std.testing.expectEqual(a_ma, a_r);
 
     const b_ma: matrix = .{
@@ -156,7 +156,7 @@ test mxm {
             .{ 0, 0, 0, 1 },
         },
     };
-    const b_r = mxm(b_ma, b_mb);
+    const b_r = transformMatrix(b_ma, b_mb);
     try std.testing.expectEqual(b_e, b_r);
 
     const c_ma: matrix = .{
@@ -183,7 +183,7 @@ test mxm {
             .{ 0, 0, 0, 1 },
         },
     };
-    const c_r = mxm(c_ma, c_mb);
+    const c_r = transformMatrix(c_ma, c_mb);
     try std.testing.expectEqual(c_e, c_r);
 
     // Test associative property
@@ -219,8 +219,8 @@ test mxm {
             .{ 0, 0, 0, 1 },
         },
     };
-    const d_r1 = mxm(d_ma, mxm(d_mb, d_mc));
-    const d_r2 = mxm(mxm(d_ma, d_mb), d_mc);
+    const d_r1 = transformMatrix(d_ma, transformMatrix(d_mb, d_mc));
+    const d_r2 = transformMatrix(transformMatrix(d_ma, d_mb), d_mc);
     try std.testing.expectEqual(d_e, d_r1);
     try std.testing.expectEqual(d_r1, d_r2);
 
@@ -243,12 +243,12 @@ test mxm {
         },
     };
     const e_mbt = transpose(e_mb);
-    const e_abt = transpose(mxm(e_ma, e_mb));
-    const e_btat = mxm(e_mbt, e_mat);
+    const e_abt = transpose(transformMatrix(e_ma, e_mb));
+    const e_btat = transformMatrix(e_mbt, e_mat);
     try std.testing.expectEqual(e_abt, e_btat);
 }
 
-pub fn sxm(k: f32, m: matrix) matrix {
+pub fn scaleMatrix(k: f32, m: matrix) matrix {
     return .{
         .columns = .{
             vector.mul(k, m.columns[0]),
@@ -259,7 +259,7 @@ pub fn sxm(k: f32, m: matrix) matrix {
     };
 }
 
-test sxm {
+test scaleMatrix {
     const a_m: matrix = .{
         .columns = .{
             .{ 1, 2, 3, 0 },
@@ -276,11 +276,11 @@ test sxm {
             .{ 0, 0, 0, 1 },
         },
     };
-    const a_r = sxm(5, a_m);
+    const a_r = scaleMatrix(5, a_m);
     try std.testing.expectEqual(a_e, a_r);
 }
 
-pub fn mxv(m: matrix, v: vector.vec4) vector.vec4 {
+pub fn transformVector(m: matrix, v: vector.vec4) vector.vec4 {
     return .{
         vector.dotProduct(m.columns[0], v),
         vector.dotProduct(m.columns[1], v),
@@ -289,22 +289,22 @@ pub fn mxv(m: matrix, v: vector.vec4) vector.vec4 {
     };
 }
 
-test mxv {
+test transformVector {
     const a_m = identity();
     const a_v = .{-3, 2, 1, 1};
-    const a_r = mxv(a_m, a_v);
+    const a_r = transformVector(a_m, a_v);
     try std.testing.expectEqual(a_v, a_r);
 
     const b_m = scale(10, 1, 1);
     const b_v = .{1, 1, 1, 1};
     const b_e = .{10, 1, 1, 1};
-    const b_r = mxv(b_m, b_v);
+    const b_r = transformVector(b_m, b_v);
     try std.testing.expectEqual(b_e, b_r);
 
     const c_m = scale(20, -3, 5);
     const c_v = .{-3, 2, 9, 1};
     const c_e = .{-60, -6, 45, 1};
-    const c_r = mxv(c_m, c_v);
+    const c_r = transformVector(c_m, c_v);
     try std.testing.expectEqual(c_e, c_r);
 }
 
@@ -406,7 +406,7 @@ test determinant {
     };
     const c_ad: f32 = determinant(c_ma);
     const c_bd: f32 = determinant(c_mb);
-    const c_pd: f32 = determinant(mxm(c_ma, c_mb));
+    const c_pd: f32 = determinant(transformMatrix(c_ma, c_mb));
     try std.testing.expectEqual(c_pd, c_ad * c_bd);
 
     // det(Aᵀ) = det(A)
@@ -486,7 +486,7 @@ test inverse {
     try std.testing.expectEqual(b_e, b_r);
     // Inverse M⁻¹M = I
     const c_e = identity();
-    const c_r: matrix = mxm(b_m, b_e);
+    const c_r: matrix = transformMatrix(b_m, b_e);
     try std.testing.expectEqual(c_e, c_r);
 }
 
