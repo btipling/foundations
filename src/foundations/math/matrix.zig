@@ -456,7 +456,7 @@ pub fn inverse(m: matrix) matrix {
     r2[3] = vector.dotProduct(d, s) * -1.0;
     r3[3] = vector.dotProduct(c, s);
 
-    return .{.columns = .{ r0, r1, r2, r3 }};
+    return transpose(.{.columns = .{ r0, r1, r2, r3 }});
 }
 
 test inverse {
@@ -476,19 +476,18 @@ test inverse {
     };
     const b_e: matrix = .{
         .columns = .{
-            .{3, -0.5, -0.5, 0}, 
-            .{-2, 1, 0, 0}, 
-            .{-2, 0, 1, 0},
+            .{3, -2, -2, 0}, 
+            .{-0.5, 1, 0, 0}, 
+            .{-0.5, 0, 1, 0},
             .{0, 0, 0, 1},
         },
     };
     const b_r = inverse(b_m);
     try std.testing.expectEqual(b_e, b_r);
     // Inverse M⁻¹M = I
-    // const c_e = identity();
-    // const c_r: matrix = mxm(b_e, b_m);
-    // const c_r: matrix = mxm(b_m, b_e);
-    // try std.testing.expectEqual(c_e, c_r);
+    const c_e = identity();
+    const c_r: matrix = mxm(b_m, b_e);
+    try std.testing.expectEqual(c_e, c_r);
 
 }
 
