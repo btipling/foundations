@@ -130,10 +130,7 @@ test mxm {
     };
     const a_mb = identity();
     const a_r = mxm(a_ma, a_mb);
-    try std.testing.expectEqual(a_ma.columns[0], a_r.columns[0]);
-    try std.testing.expectEqual(a_ma.columns[1], a_r.columns[1]);
-    try std.testing.expectEqual(a_ma.columns[2], a_r.columns[2]);
-    try std.testing.expectEqual(a_ma.columns[3], a_r.columns[3]);
+    try std.testing.expectEqual(a_ma, a_r);
 
     const b_ma: matrix = .{
         .columns = .{
@@ -160,10 +157,7 @@ test mxm {
         },
     };
     const b_r = mxm(b_ma, b_mb);
-    try std.testing.expectEqual(b_e.columns[0], b_r.columns[0]);
-    try std.testing.expectEqual(b_e.columns[1], b_r.columns[1]);
-    try std.testing.expectEqual(b_e.columns[2], b_r.columns[2]);
-    try std.testing.expectEqual(b_e.columns[3], b_r.columns[3]);
+    try std.testing.expectEqual(b_e, b_r);
 
     const c_ma: matrix = .{
         .columns = .{
@@ -190,10 +184,7 @@ test mxm {
         },
     };
     const c_r = mxm(c_ma, c_mb);
-    try std.testing.expectEqual(c_e.columns[0], c_r.columns[0]);
-    try std.testing.expectEqual(c_e.columns[1], c_r.columns[1]);
-    try std.testing.expectEqual(c_e.columns[2], c_r.columns[2]);
-    try std.testing.expectEqual(c_e.columns[3], c_r.columns[3]);
+    try std.testing.expectEqual(c_e, c_r);
 
     // Test associative property
     const d_ma: matrix = .{
@@ -230,10 +221,7 @@ test mxm {
     };
     const d_r1 = mxm(d_ma, mxm(d_mb, d_mc));
     const d_r2 = mxm(mxm(d_ma, d_mb), d_mc);
-    try std.testing.expectEqual(d_e.columns[0], d_r1.columns[0]);
-    try std.testing.expectEqual(d_e.columns[1], d_r1.columns[1]);
-    try std.testing.expectEqual(d_e.columns[2], d_r1.columns[2]);
-    try std.testing.expectEqual(d_e.columns[3], d_r1.columns[3]);
+    try std.testing.expectEqual(d_e, d_r1);
     try std.testing.expectEqual(d_r1, d_r2);
 
     // (AB)ᵀ = BᵀAᵀ
@@ -257,10 +245,7 @@ test mxm {
     const e_mbt = transpose(e_mb);
     const e_abt = transpose(mxm(e_ma, e_mb));
     const e_btat = mxm(e_mbt, e_mat);
-    try std.testing.expectEqual(e_abt.columns[0], e_btat.columns[0]);
-    try std.testing.expectEqual(e_abt.columns[1], e_btat.columns[1]);
-    try std.testing.expectEqual(e_abt.columns[2], e_btat.columns[2]);
-    try std.testing.expectEqual(e_abt.columns[3], e_btat.columns[3]);
+    try std.testing.expectEqual(e_abt, e_btat);
 }
 
 pub fn sxm(k: f32, m: matrix) matrix {
@@ -292,10 +277,7 @@ test sxm {
         },
     };
     const a_r = sxm(5, a_m);
-    try std.testing.expectEqual(a_e.columns[0], a_r.columns[0]);
-    try std.testing.expectEqual(a_e.columns[1], a_r.columns[1]);
-    try std.testing.expectEqual(a_e.columns[2], a_r.columns[2]);
-    try std.testing.expectEqual(a_e.columns[3], a_r.columns[3]);
+    try std.testing.expectEqual(a_e, a_r);
 }
 
 pub fn mxv(m: matrix, v: vector.vec4) vector.vec4 {
@@ -375,18 +357,11 @@ test transpose {
         },
     };
     const a_r = transpose(a_m);
-    try std.testing.expectEqual(a_e.columns[0], a_r.columns[0]);
-    try std.testing.expectEqual(a_e.columns[1], a_r.columns[1]);
-    try std.testing.expectEqual(a_e.columns[2], a_r.columns[2]);
-    try std.testing.expectEqual(a_e.columns[3], a_r.columns[3]);
+    try std.testing.expectEqual(a_e, a_r);
 }
 
-pub fn orthonormalize() matrix {
-    @compileError("not yet implemented, see page 32 in book 1 foundations of game engine dev");
-}
-
-pub inline fn determinant(m: matrix) f32 {
-    // det (M) = (n-1 ∑ j= 0) Mₖⱼ (-1)ᵏ⁺ʲ|M(not(ₖⱼ))|
+pub fn determinant(m: matrix) f32 {
+    // det (M) = (n-1 ∑ j=0) Mₖⱼ (-1)ᵏ⁺ʲ|M(not(ₖⱼ))|
     // k = 0
     const rv1: f32 = at(m, 0, 0) * (at(m, 1, 1) * at(m, 2, 2) - at(m, 1, 2) * at(m, 2, 1)); // j = 0
     const rv2: f32 = at(m, 0, 1) * (at(m, 1, 2) * at(m, 2, 0) - at(m, 1, 0) * at(m, 2, 2)); // j = 1
@@ -450,12 +425,75 @@ test determinant {
 
 }
 
-pub fn invert3D() matrix {
-    @compileError("not yet implemented, see page 33-34 in book 1 foundatoins of game engine dev");
+pub fn inverse(m: matrix) matrix {
+    const a = m.columns[0];
+    const b = m.columns[1];
+    const c = m.columns[2];
+    const d = m.columns[3];
+
+    const x: f32 = at(m, 3, 0);
+    const y: f32 = at(m, 3, 1);
+    const z: f32 = at(m, 3, 2);
+    const w: f32 = at(m, 3, 3);
+
+    var s = vector.crossProduct(a, b);
+    var t = vector.crossProduct(c, d);
+    var u = vector.sub(vector.mul(y, a), vector.mul(x, b));
+    var v = vector.sub(vector.mul(w, c), vector.mul(z, d));
+
+    const inv_d: f32 = 1.0 / vector.dotProduct(s, v) + vector.dotProduct(t, u);
+    s = vector.mul(inv_d, s);
+    t = vector.mul(inv_d, t);
+    u = vector.mul(inv_d, u);
+    v = vector.mul(inv_d, v);
+
+    var r0: vector.vec4 = vector.add(vector.crossProduct(b, v), vector.mul(y, t));
+    var r1: vector.vec4 = vector.sub(vector.crossProduct(v, a), vector.mul(x, t));
+    var r2: vector.vec4 = vector.add(vector.crossProduct(d, u), vector.mul(w, s));
+    var r3: vector.vec4 = vector.sub(vector.crossProduct(u, c), vector.mul(z, s));
+    r0[3] = vector.dotProduct(b, t) * -1.0;
+    r1[3] = vector.dotProduct(a, t);
+    r2[3] = vector.dotProduct(d, s) * -1.0;
+    r3[3] = vector.dotProduct(c, s);
+
+    return .{.columns = .{ r0, r1, r2, r3 }};
 }
 
-pub fn invert4D() matrix {
-    @compileError("not yet implemented, see page 33-34 in book 1 foundatoins of game engine dev");
+test inverse {
+    // The inverse of I is I
+    const a_m = identity();
+    const a_e = identity();
+    const a_r = inverse(a_m);
+    try std.testing.expectEqual(a_e, a_r);
+
+    const b_m: matrix = .{
+        .columns = .{
+            .{1, 2, 2, 0}, 
+            .{0.5, 2, 1, 0}, 
+            .{0.5, 1, 2, 0}, 
+            .{0, 0, 0, 1}
+        },
+    };
+    const b_e: matrix = .{
+        .columns = .{
+            .{3, -0.5, -0.5, 0}, 
+            .{-2, 1, 0, 0}, 
+            .{-2, 0, 1, 0},
+            .{0, 0, 0, 1},
+        },
+    };
+    const b_r = inverse(b_m);
+    try std.testing.expectEqual(b_e, b_r);
+    // Inverse M⁻¹M = I
+    // const c_e = identity();
+    // const c_r: matrix = mxm(b_e, b_m);
+    // const c_r: matrix = mxm(b_m, b_e);
+    // try std.testing.expectEqual(c_e, c_r);
+
+}
+
+pub fn orthonormalize() matrix {
+    @compileError("not yet implemented, see page 32 in book 1 foundations of game engine dev");
 }
 
 const std = @import("std");

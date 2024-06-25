@@ -20,11 +20,11 @@ pub inline fn mul(m: anytype, v: anytype) @TypeOf(v) {
             .Float, .Int, .ComptimeFloat, .ComptimeInt => return v * @as(T, @splat(m)),
             // This isn't mathmatically correct for vector math, correct vector multiplication is the dot product or the cross product
             .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector length") else return v * m,
-            else => @compileError("second input must be a vector or scalar"),
+            else => @compileError("first input must be a vector or scalar"),
         },
         else => {},
     }
-    @compileError("first input must be a vector");
+    @compileError("second input must be a vector");
 }
 
 test mul {
@@ -363,8 +363,7 @@ pub inline fn crossProduct(p: anytype, q: anytype) @TypeOf(p) {
         .Vector => |VT| switch (@typeInfo(K)) {
             .Vector => |VM| {
                 if (VT.len != VM.len and VT.len < 3) @compileError("cross product must be for 3D vector");
-                var result: T = undefined;
-                if (VT.len > 3) @memset(&result, 0);
+                var result: T = std.mem.zeroes(T);
                 result[0] = p[1] * q[2] - p[2] * q[1];
                 result[1] = p[2] * q[0] - p[0] * q[2];
                 result[2] = p[0] * q[1] - p[1] * q[0];
