@@ -385,12 +385,69 @@ pub fn orthonormalize() matrix {
     @compileError("not yet implemented, see page 32 in book 1 foundations of game engine dev");
 }
 
-pub fn determinant3D() matrix {
-    @compileError("not yet implemented, see page 33-34 in book 1 foundatoins of game engine dev");
+pub inline fn determinant(m: matrix) f32 {
+    // det (M) = (n-1 ∑ j= 0) Mₖⱼ (-1)ᵏ⁺ʲ|M(not(ₖⱼ))|
+    // k = 0
+    const rv1: f32 = at(m, 0, 0) * (at(m, 1, 1) * at(m, 2, 2) - at(m, 1, 2) * at(m, 2, 1)); // j = 0
+    const rv2: f32 = at(m, 0, 1) * (at(m, 1, 2) * at(m, 2, 0) - at(m, 1, 0) * at(m, 2, 2)); // j = 1
+    const rv3: f32 = at(m, 0, 2) * (at(m, 1, 0) * at(m, 2, 1) - at(m, 1, 1) * at(m, 2, 0)); // j = 2
+    return rv1 + rv2 + rv3;
 }
 
-pub fn determinant4D() matrix {
-    @compileError("not yet implemented, see page 33-34 in book 1 foundatoins of game engine dev");
+test determinant {
+    const a_m: matrix = identity();
+    const a_e: f32 = 1.0;
+    const a_r: f32 = determinant(a_m);
+    try std.testing.expectEqual(a_e, a_r);
+
+    const b_m: matrix = .{
+        .columns = .{
+            .{ 8, 4, 7, 0 },
+            .{ 2, 1, 5, 0 },
+            .{ 6, -3, 9, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const b_e: f32 = 156;
+    const b_r: f32 = determinant(b_m);
+    try std.testing.expectEqual(b_e, b_r);
+
+    // det (AB) = det(A) det(B)
+    const c_ma: matrix = .{
+        .columns = .{
+            .{ 8, 4, 7, 0 },
+            .{ 2, 1, 5, 0 },
+            .{ 6, -3, 9, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const c_mb: matrix = .{
+        .columns = .{
+            .{1, 2, 3, 0},
+            .{10, 5, 4, 0},
+            .{20, 40, 15, 0},
+            .{0, 0, 0, 1},
+        },
+    };
+    const c_ad: f32 = determinant(c_ma);
+    const c_bd: f32 = determinant(c_mb);
+    const c_pd: f32 = determinant(mxm(c_ma, c_mb));
+    try std.testing.expectEqual(c_pd, c_ad * c_bd);
+
+    // det(Aᵀ) = det(A)
+    const d_ma: matrix = .{
+        .columns = .{
+            .{ 8, 4, 7, 0 },
+            .{ 2, 1, 5, 0 },
+            .{ 6, -3, 9, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const d_mt: matrix = transpose(d_ma);
+    const d_mad: f32 = determinant(d_ma);
+    const d_mtd: f32 = determinant(d_mt);
+    try std.testing.expectEqual(d_mad, d_mtd);
+
 }
 
 pub fn invert3D() matrix {
