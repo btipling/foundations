@@ -488,7 +488,6 @@ test inverse {
     const c_e = identity();
     const c_r: matrix = mxm(b_m, b_e);
     try std.testing.expectEqual(c_e, c_r);
-
 }
 
 pub fn orthonormalize() matrix {
