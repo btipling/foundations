@@ -490,8 +490,55 @@ test inverse {
     try std.testing.expectEqual(c_e, c_r);
 }
 
-pub fn orthonormalize() matrix {
-    @compileError("not yet implemented, see page 32 in book 1 foundations of game engine dev");
+pub fn orthonormalize(m :matrix) matrix {
+    const i: vector.vec4 = m.columns[0];
+    const j: vector.vec4 = m.columns[1];
+    const k: vector.vec4 = m.columns[2];
+    const iprime = vector.normalize(i);
+    const jdi = vector.decomposeProjection(j, iprime);
+    var jprime = j;
+    jprime = vector.sub(jprime, jdi.proj);
+    jprime = vector.normalize(jprime);
+    const kdi = vector.decomposeProjection(k, iprime);
+    const kdj = vector.decomposeProjection(k, jprime);
+    var kprime = k;
+    kprime = vector.sub(kprime, kdi.proj);
+    kprime = vector.sub(kprime, kdj.proj);
+    kprime = vector.normalize(kprime);
+    return .{
+        .columns = .{
+            iprime,
+            jprime,
+            kprime,
+            .{0, 0, 0, 1},
+        },
+    };
+}
+
+test orthonormalize {
+    const a_m: matrix = .{
+        .columns = .{
+            .{0.8999998, 0, 0, 0}, 
+            .{0.0, 1.2, 0, 0}, 
+            .{0, 0, 1.0004, 0}, 
+            .{0, 0, 0, 1}
+        },
+    };
+    const a_e = identity();
+    const a_r = orthonormalize(a_m);
+    try std.testing.expectEqual(a_e, a_r);
+
+    const b_m: matrix = .{
+        .columns = .{
+            .{0.9, 0, 0, 0}, 
+            .{0.005, 1.005, 0, 0}, 
+            .{0, 0, 1002, 0}, 
+            .{0, 0, 0, 1}
+        },
+    };
+    const b_e = identity();
+    const b_r = orthonormalize(b_m);
+    try std.testing.expectEqual(b_e, b_r);
 }
 
 const std = @import("std");
