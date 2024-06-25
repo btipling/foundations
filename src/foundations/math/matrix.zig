@@ -235,6 +235,32 @@ test mxm {
     try std.testing.expectEqual(d_e.columns[2], d_r1.columns[2]);
     try std.testing.expectEqual(d_e.columns[3], d_r1.columns[3]);
     try std.testing.expectEqual(d_r1, d_r2);
+
+    // (AB)ᵀ = BᵀAᵀ
+    const e_ma: matrix = .{
+        .columns = .{
+            .{ 3, 1, 0, 0 },
+            .{ -10, 7, 5, 0 },
+            .{ 2, 9, -1, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const e_mat = transpose(e_ma);
+    const e_mb: matrix = .{
+        .columns = .{
+            .{ 1, 0.25, 0.5, 0 },
+            .{ 0.5, 1, 0.25, 0 },
+            .{ 0.5, 1, 0.25, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const e_mbt = transpose(e_mb);
+    const e_abt = transpose(mxm(e_ma, e_mb));
+    const e_btat = mxm(e_mbt, e_mat);
+    try std.testing.expectEqual(e_abt.columns[0], e_btat.columns[0]);
+    try std.testing.expectEqual(e_abt.columns[1], e_btat.columns[1]);
+    try std.testing.expectEqual(e_abt.columns[2], e_btat.columns[2]);
+    try std.testing.expectEqual(e_abt.columns[3], e_btat.columns[3]);
 }
 
 pub fn sxm(k: f32, m: matrix) matrix {
