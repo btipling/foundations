@@ -1,7 +1,6 @@
 program: u32,
 objects: [1]object.object = undefined,
 ui_state: ca_ui,
-transform: math.matrix,
 
 const LinearColorSpace = @This();
 
@@ -23,7 +22,6 @@ pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
     p.* = .{
         .program = program,
         .ui_state = ca_ui.init(),
-        .transform = math.matrix.identity(),
     };
     p.objects[0] = cube;
     return p;
@@ -34,8 +32,14 @@ pub fn deinit(self: *LinearColorSpace, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *LinearColorSpace, _: f64) void {
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.scale(
+        self.ui_state.scale,
+        self.ui_state.scale,
+        self.ui_state.scale,
+    ));
     rhi.drawObjects(self.objects[0..]);
-    rhi.setUniformMatrix(self.program, "f_transform", self.transform);
+    rhi.setUniformMatrix(self.program, "f_transform", m);
     self.ui_state.draw();
 }
 

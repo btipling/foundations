@@ -1,4 +1,7 @@
 scale: f32 = 1.0,
+x_rot: f32 = 0,
+y_rot: f32 = 0,
+z_rot: f32 = 0,
 
 const ca_ui = @This();
 
@@ -16,9 +19,10 @@ pub fn draw(self: *ca_ui) void {
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Animated cubes", null, 0);
     c.igText("animated cubes");
-    if (c.igSliderFloat("scale", &self.scale, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic)) {
-        std.debug.print("scale changed\n", .{});
-    }
+    _ = c.igSliderFloat("scale", &self.scale, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic);
+    _ = c.igSliderFloat("x rot", &self.x_rot, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic);
+    _ = c.igSliderFloat("y rot", &self.y_rot, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic);
+    _ = c.igSliderFloat("z rot", &self.z_rot, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic);
     c.igEnd();
 }
 
