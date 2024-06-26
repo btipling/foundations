@@ -1,4 +1,4 @@
-scale: [3]f32 = .{ 0, 0, 0 },
+scale: f32 = 1.0,
 
 const ca_ui = @This();
 
@@ -9,7 +9,6 @@ pub fn init() ca_ui {
 pub fn draw(self: *ca_ui) void {
     const btn_dims = ui.helpers().buttonSize();
     _ = btn_dims;
-    _ = self;
     const vp: *c.ImGuiViewport = c.igGetMainViewport();
     const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
@@ -17,6 +16,9 @@ pub fn draw(self: *ca_ui) void {
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Animated cubes", null, 0);
     c.igText("animated cubes");
+    if (c.igSliderFloat("scale", &self.scale, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic)) {
+        std.debug.print("scale changed\n", .{});
+    }
     c.igEnd();
 }
 
