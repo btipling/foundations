@@ -26,6 +26,12 @@ pub fn draw() void {
             }
             c.igEndMenu();
         }
+        if (c.igBeginMenu("Color", true)) {
+            if (c.igMenuItem_Bool("Linear colorspace", null, false, true)) {
+                ui.state().demo_current = .linear_colorspace;
+            }
+            c.igEndMenu();
+        }
 
         c.igEndMainMenuBar();
     }

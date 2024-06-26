@@ -46,7 +46,7 @@ pub fn deinit(self: Triangle) void {
 }
 
 pub fn draw(self: Triangle) void {
-    rhi.drawArrays(self.program, self.vao, self.count);
+    rhi.drawArrays(self.program, self.vao, self.count, true);
 }
 
 const rhi = @import("../../rhi/rhi.zig");

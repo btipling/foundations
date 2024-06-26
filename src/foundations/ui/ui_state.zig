@@ -7,4 +7,5 @@ const demos = enum {
     triangle,
     triangle_animated,
     math_vector_arithmetic,
+    linear_colorspace,
 };

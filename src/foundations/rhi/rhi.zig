@@ -150,10 +150,16 @@ pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
     return;
 }
 
-pub fn drawArrays(program: u32, vao: u32, count: usize) void {
+pub fn drawArrays(program: u32, vao: u32, count: usize, use_linear_color_space: bool) void {
+    if (use_linear_color_space) {
+        c.glEnable(c.GL_FRAMEBUFFER_SRGB);
+    }
     c.glUseProgram(@intCast(program));
     c.glBindVertexArray(vao);
     c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
+    if (use_linear_color_space) {
+        c.glDisable(c.GL_FRAMEBUFFER_SRGB);
+    }
 }
 
 pub fn drawPoints(program: u32, vao: u32, count: usize) void {
@@ -184,8 +190,8 @@ pub fn drawObjects(objects: []object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
-            .triangle => |t| drawArrays(t.program, t.vao, t.count),
-            .quad => |q| drawArrays(q.program, q.vao, q.count),
+            .triangle => |t| drawArrays(t.program, t.vao, t.count, t.linear_colorspace),
+            .quad => |q| drawArrays(q.program, q.vao, q.count, q.linear_colorspace),
             else => {},
         }
     }
