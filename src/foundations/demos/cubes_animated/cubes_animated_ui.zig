@@ -19,10 +19,10 @@ pub fn draw(self: *ca_ui) void {
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Animated cubes", null, 0);
     c.igText("animated cubes");
-    _ = c.igSliderFloat("scale", &self.scale, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic);
-    _ = c.igSliderFloat("x rot", &self.x_rot, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic);
-    _ = c.igSliderFloat("y rot", &self.y_rot, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic);
-    _ = c.igSliderFloat("z rot", &self.z_rot, 0.01, 1.0, "%.3f", c.ImGuiSliderFlags_Logarithmic);
+    _ = c.igSliderFloat("scale", &self.scale, 0.01, 1, "%.3f", c.ImGuiSliderFlags_Logarithmic);
+    _ = c.igSliderFloat("x rot", &self.x_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_Logarithmic);
+    _ = c.igSliderFloat("y rot", &self.y_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_Logarithmic);
+    _ = c.igSliderFloat("z rot", &self.z_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_Logarithmic);
     c.igEnd();
 }
 
