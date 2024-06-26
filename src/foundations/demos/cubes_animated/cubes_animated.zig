@@ -1,4 +1,4 @@
-objects: [2]object.object = undefined,
+objects: [1]object.object = undefined,
 
 const LinearColorSpace = @This();
 
@@ -8,62 +8,15 @@ const frag_shader: []const u8 = @embedFile("ca_frag.glsl");
 pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
     const p = allocator.create(LinearColorSpace) catch @panic("OOM");
 
-    var triangle_positions: [3][3]f32 = undefined;
-    const triangle_colors: [3][4]f32 = object.triangle.default_colors;
-    var rotation = math.rotation.degreesToRadians(32.0);
-    var offset: math.vector.vec3 = .{ 0.3, 0.2, 0 };
-    var pi: usize = 0;
-    var magnitude: f32 = 12;
-    while (pi < 3) : (pi += 1) {
-        const pv: math.vector.vec3 = object.triangle.default_positions[pi];
-        const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);
-        const new_angle = current_angle[1] + rotation;
-        const pm = math.vector.magnitude(pv) * magnitude;
-        const p_r = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec3, .{
-            1,
-            new_angle,
-        });
-        const nv = math.vector.mul(pm, p_r);
-        const v = math.vector.add(offset, nv);
-        triangle_positions[pi] = v;
-    }
-    var triangle1: object.object = .{
-        .triangle = object.triangle.init(
+    const cube: object.object = .{
+        .cube = object.cube.init(
             vertex_shader,
             frag_shader,
-            triangle_positions,
-            triangle_colors,
+            object.cube.default_positions,
+            .{ 1, 0, 1, 1 },
         ),
     };
-    triangle1.triangle.linear_colorspace = true;
-    p.objects[0] = triangle1;
-
-    pi = 0;
-    rotation = -45.0;
-    offset = .{ -0.3, -0.2, 0 };
-    magnitude = 10;
-    while (pi < 3) : (pi += 1) {
-        const pv: math.vector.vec3 = object.triangle.default_positions[pi];
-        const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);
-        const new_angle = current_angle[1] + rotation;
-        const pm = math.vector.magnitude(pv) * 10;
-        const p_r = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec3, .{
-            1,
-            new_angle,
-        });
-        const nv = math.vector.mul(pm, p_r);
-        const v = math.vector.add(offset, nv);
-        triangle_positions[pi] = v;
-    }
-    const triangle2: object.object = .{
-        .triangle = object.triangle.init(
-            vertex_shader,
-            frag_shader,
-            triangle_positions,
-            triangle_colors,
-        ),
-    };
-    p.objects[1] = triangle2;
+    p.objects[0] = cube;
 
     return p;
 }

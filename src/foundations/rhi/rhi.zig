@@ -190,11 +190,16 @@ pub fn drawObjects(objects: []object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
-            .triangle => |t| drawArrays(t.program, t.vao, t.count, t.linear_colorspace),
-            .quad => |q| drawArrays(q.program, q.vao, q.count, q.linear_colorspace),
+            .triangle => |o| drawObject(o),
+            .quad => |o| drawObject(o),
+            .cube => |o| drawObject(o),
             else => {},
         }
     }
+}
+
+pub fn drawObject(o: anytype) void {
+    drawArrays(o.program, o.vao, o.count, o.linear_colorspace);
 }
 
 pub fn deleteObjects(objects: []object.object) void {

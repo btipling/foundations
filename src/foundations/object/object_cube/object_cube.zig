@@ -20,7 +20,7 @@ pub fn init(
     vertex_shader: []const u8,
     frag_shader: []const u8,
     positions: [6][3]f32,
-    colors: [6][4]f32,
+    color: [4]f32,
 ) Quad {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -30,7 +30,7 @@ pub fn init(
     while (i < data.len) : (i += 1) {
         data[i] = .{
             .position = positions[i],
-            .color = colors[i],
+            .color = color,
         };
     }
     const vao_buf = rhi.attachBuffer(data[0..]);
