@@ -5,6 +5,7 @@ triangle: triangle,
 triangle_animated: *triangle_animated,
 math_vector_arithmetic: *math_vector_arithmetic,
 linear_colorspace: *linear_colorspace,
+cubes_animated: *cubes_animated,
 
 ui_state: *ui.ui_state,
 allocator: std.mem.Allocator,
@@ -20,6 +21,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
         .triangle_animated = triangle_animated.init(allocator),
         .math_vector_arithmetic = math_vector_arithmetic.init(allocator),
         .linear_colorspace = linear_colorspace.init(allocator),
+        .cubes_animated = cubes_animated.init(allocator),
         .ui_state = ui_state,
         .allocator = allocator,
     };
@@ -27,6 +29,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
 }
 
 pub fn deinit(self: *Demos) void {
+    self.cubes_animated.deinit(self.allocator);
     self.linear_colorspace.deinit(self.allocator);
     self.math_vector_arithmetic.deinit(self.allocator);
     self.point.deinit(self.allocator);
@@ -44,6 +47,7 @@ pub fn drawDemo(self: Demos, frame_time: f64) void {
         .triangle_animated => self.triangle_animated.draw(frame_time),
         .math_vector_arithmetic => self.math_vector_arithmetic.draw(frame_time),
         .linear_colorspace => self.linear_colorspace.draw(frame_time),
+        .cubes_animated => self.cubes_animated.draw(frame_time),
         else => {},
     }
 }
@@ -56,3 +60,4 @@ const triangle = @import("triangle/triangle.zig");
 const triangle_animated = @import("triangle_animated/triangle_animated.zig");
 const math_vector_arithmetic = @import("math_vector_arithmetic/math_vector_arithmetic.zig");
 const linear_colorspace = @import("linear_colorspace/linear_colorspace.zig");
+const cubes_animated = @import("cubes_animated/cubes_animated.zig");

@@ -6,6 +6,7 @@ const demos = enum {
     point_rotating,
     triangle,
     triangle_animated,
+    cubes_animated,
     math_vector_arithmetic,
     linear_colorspace,
 };

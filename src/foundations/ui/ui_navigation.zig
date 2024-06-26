@@ -18,6 +18,9 @@ pub fn draw() void {
             if (c.igMenuItem_Bool("Animated Triangle", null, false, true)) {
                 ui.state().demo_current = .triangle_animated;
             }
+            if (c.igMenuItem_Bool("Animated Cubes", null, false, true)) {
+                ui.state().demo_current = .cubes_animated;
+            }
             c.igEndMenu();
         }
         if (c.igBeginMenu("Math", true)) {
