@@ -86,6 +86,15 @@ pub inline fn translate(x: f32, y: f32, z:f32) matrix {
     };
 }
 
+pub inline fn array(m: matrix) [16]f32 {
+    var rv: [16]f32 = undefined;
+    @memcpy(rv[0..4], @as([4]f32, m.columns[0])[0..]);
+    @memcpy(rv[4..8], @as([4]f32, m.columns[1])[0..]);
+    @memcpy(rv[8..12], @as([4]f32, m.columns[2])[0..]);
+    @memcpy(rv[12..16], @as([4]f32, m.columns[3])[0..]);
+    return rv;
+}
+
 pub inline fn at(m: matrix, row: usize, column: usize) f32 {
     return m.columns[column][row];
 }

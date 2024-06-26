@@ -175,6 +175,12 @@ pub fn setUniform1f(program: u32, name: []const u8, v: f32) void {
     c.glProgramUniform1f(@intCast(program), location, @floatCast(v));
 }
 
+pub fn setUniformMatrix(program: u32, name: []const u8, m: math.matrix) void {
+    const v = math.matrix.array(m);
+    const location: c.GLint = c.glGetUniformLocation(@intCast(program), @ptrCast(name));
+    c.glProgramUniformMatrix4fv(@intCast(program), location, 1, c.GL_FALSE, &v);
+}
+
 pub fn setUniformVec2(program: u32, name: []const u8, v: math.vector.vec2) void {
     const location: c.GLint = c.glGetUniformLocation(@intCast(program), @ptrCast(name));
     c.glProgramUniform2f(@intCast(program), location, @floatCast(v[0]), @floatCast(v[1]));

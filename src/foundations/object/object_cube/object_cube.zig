@@ -57,14 +57,10 @@ pub const default_positions: [36][3]f32 = .{
 };
 
 pub fn init(
-    vertex_shader: []const u8,
-    frag_shader: []const u8,
+    program: u32,
     positions: [36][3]f32,
     color: [4]f32,
 ) Quad {
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
-
     var data: [36]rhi.attributeData = undefined;
     var i: usize = 0;
     while (i < data.len) : (i += 1) {
