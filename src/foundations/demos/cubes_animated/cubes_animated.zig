@@ -1,4 +1,5 @@
 objects: [1]object.object = undefined,
+ui_state: ca_ui,
 
 const LinearColorSpace = @This();
 
@@ -16,8 +17,10 @@ pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
             .{ 1, 0, 1, 1 },
         ),
     };
+    p.* = .{
+        .ui_state = ca_ui.init(),
+    };
     p.objects[0] = cube;
-
     return p;
 }
 
@@ -27,6 +30,7 @@ pub fn deinit(self: *LinearColorSpace, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *LinearColorSpace, _: f64) void {
     rhi.drawObjects(self.objects[0..]);
+    self.ui_state.draw();
 }
 
 fn clearVectors(self: *LinearColorSpace) void {
@@ -39,3 +43,4 @@ const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
+const ca_ui = @import("cubes_animated_ui.zig");
