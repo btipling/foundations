@@ -43,6 +43,11 @@ pub fn draw(self: *LinearColorSpace, _: f64) void {
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.z_rot));
     rhi.drawObjects(self.objects[0..]);
     rhi.setUniformMatrix(self.program, "f_transform", m);
+    var pinhole_distance: f32 = 0;
+    if (self.ui_state.perspective != 0) {
+        pinhole_distance = 0.5;
+    }
+    rhi.setUniform1f(self.program, "f_pinhole", pinhole_distance);
     self.ui_state.draw();
 }
 
