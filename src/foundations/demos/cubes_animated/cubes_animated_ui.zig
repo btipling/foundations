@@ -1,7 +1,8 @@
-scale: f32 = 1.0,
+scale: f32 = 0.25,
 x_rot: f32 = 0,
 y_rot: f32 = 0,
 z_rot: f32 = 0,
+perspective: c_int = 0,
 
 const ca_ui = @This();
 
@@ -23,6 +24,9 @@ pub fn draw(self: *ca_ui) void {
     _ = c.igSliderFloat("x rot", &self.x_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_Logarithmic);
     _ = c.igSliderFloat("y rot", &self.y_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_Logarithmic);
     _ = c.igSliderFloat("z rot", &self.z_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_Logarithmic);
+    _ = c.igRadioButton_IntPtr("orthographic", &self.perspective, 0);
+    c.igSameLine(0, 0);
+    _ = c.igRadioButton_IntPtr("pinhole", &self.perspective, 1);
     c.igEnd();
 }
 
