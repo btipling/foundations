@@ -10,31 +10,31 @@ const Demos = @This();
 
 pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     const demos = allocator.create(Demos) catch @panic("OOM");
+    errdefer allocator.destroy(demos);
     demos.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
     };
-    demos.demo_instances[@intFromEnum(demo_type.point)] = .{
-        .point = point.init(allocator),
-    };
-    demos.demo_instances[@intFromEnum(demo_type.point_rotating)] = .{
-        .point_rotating = point_rotating.init(allocator),
-    };
-    demos.demo_instances[@intFromEnum(demo_type.triangle)] = .{
-        .triangle = triangle.init(allocator),
-    };
-    demos.demo_instances[@intFromEnum(demo_type.triangle_animated)] = .{
-        .triangle_animated = triangle_animated.init(allocator),
-    };
-    demos.demo_instances[@intFromEnum(demo_type.math_vector_arithmetic)] = .{
-        .math_vector_arithmetic = math_vector_arithmetic.init(allocator),
-    };
-    demos.demo_instances[@intFromEnum(demo_type.linear_colorspace)] = .{
-        .linear_colorspace = linear_colorspace.init(allocator),
-    };
-    demos.demo_instances[@intFromEnum(demo_type.cubes_animated)] = .{
-        .cubes_animated = cubes_animated.init(allocator),
-    };
+    const p = point.init(allocator);
+    errdefer p.deinit(allocator);
+    const ta = triangle_animated.init(allocator);
+    errdefer ta.deinit(allocator);
+    const mva = math_vector_arithmetic.init(allocator);
+    errdefer mva.deinit(allocator);
+    const pr = point_rotating.init(allocator);
+    errdefer pr.deinit(allocator);
+    const lcs = linear_colorspace.init(allocator);
+    errdefer lcs.deinit(allocator);
+    const ca = cubes_animated.init(allocator);
+    errdefer ca.deinit(allocator);
+
+    demos.demo_instances[@intFromEnum(demo_type.point)] = .{ .point = p };
+    demos.demo_instances[@intFromEnum(demo_type.point_rotating)] = .{ .point_rotating = pr };
+    demos.demo_instances[@intFromEnum(demo_type.triangle)] = .{ .triangle = triangle.init(allocator) };
+    demos.demo_instances[@intFromEnum(demo_type.triangle_animated)] = .{ .triangle_animated = ta };
+    demos.demo_instances[@intFromEnum(demo_type.math_vector_arithmetic)] = .{ .math_vector_arithmetic = mva };
+    demos.demo_instances[@intFromEnum(demo_type.linear_colorspace)] = .{ .linear_colorspace = lcs };
+    demos.demo_instances[@intFromEnum(demo_type.cubes_animated)] = .{ .cubes_animated = ca };
     return demos;
 }
 
