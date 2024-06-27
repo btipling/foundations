@@ -23,6 +23,8 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     errdefer mva.deinit(allocator);
     const pr = point_rotating.init(allocator);
     errdefer pr.deinit(allocator);
+    const t = triangle.init(allocator);
+    errdefer t.deinit(allocator);
     const lcs = linear_colorspace.init(allocator);
     errdefer lcs.deinit(allocator);
     const ca = cubes_animated.init(allocator);
@@ -30,7 +32,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
 
     demos.demo_instances[@intFromEnum(demo_type.point)] = .{ .point = p };
     demos.demo_instances[@intFromEnum(demo_type.point_rotating)] = .{ .point_rotating = pr };
-    demos.demo_instances[@intFromEnum(demo_type.triangle)] = .{ .triangle = triangle.init(allocator) };
+    demos.demo_instances[@intFromEnum(demo_type.triangle)] = .{ .triangle = t };
     demos.demo_instances[@intFromEnum(demo_type.triangle_animated)] = .{ .triangle_animated = ta };
     demos.demo_instances[@intFromEnum(demo_type.math_vector_arithmetic)] = .{ .math_vector_arithmetic = mva };
     demos.demo_instances[@intFromEnum(demo_type.linear_colorspace)] = .{ .linear_colorspace = lcs };
