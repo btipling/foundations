@@ -31,7 +31,7 @@ pub fn deinit(self: *Point, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn draw(self: *Point) void {
+pub fn draw(self: *Point, _: f64) void {
     self.x += self.inc;
     if (self.x >= 1) {
         self.inc = -self.inc;

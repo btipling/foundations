@@ -1,59 +1,70 @@
 // demos
-point: *point,
-point_rotating: *point_rotating,
-triangle: triangle,
-triangle_animated: *triangle_animated,
-math_vector_arithmetic: *math_vector_arithmetic,
-linear_colorspace: *linear_colorspace,
-cubes_animated: *cubes_animated,
+demo_instances: [num_demos]ui.ui_state.demos = undefined,
 
 ui_state: *ui.ui_state,
 allocator: std.mem.Allocator,
+
+const num_demos = 8;
 
 const Demos = @This();
 
 pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     const demos = allocator.create(Demos) catch @panic("OOM");
     demos.* = .{
-        .point = point.init(allocator),
-        .point_rotating = point_rotating.init(allocator),
-        .triangle = triangle.init(),
-        .triangle_animated = triangle_animated.init(allocator),
-        .math_vector_arithmetic = math_vector_arithmetic.init(allocator),
-        .linear_colorspace = linear_colorspace.init(allocator),
-        .cubes_animated = cubes_animated.init(allocator),
         .ui_state = ui_state,
         .allocator = allocator,
+    };
+    demos.demo_instances[@intFromEnum(demo_type.point)] = .{
+        .point = point.init(allocator),
+    };
+    demos.demo_instances[@intFromEnum(demo_type.point_rotating)] = .{
+        .point_rotating = point_rotating.init(allocator),
+    };
+    demos.demo_instances[@intFromEnum(demo_type.triangle)] = .{
+        .triangle = triangle.init(allocator),
+    };
+    demos.demo_instances[@intFromEnum(demo_type.triangle_animated)] = .{
+        .triangle_animated = triangle_animated.init(allocator),
+    };
+    demos.demo_instances[@intFromEnum(demo_type.math_vector_arithmetic)] = .{
+        .math_vector_arithmetic = math_vector_arithmetic.init(allocator),
+    };
+    demos.demo_instances[@intFromEnum(demo_type.linear_colorspace)] = .{
+        .linear_colorspace = linear_colorspace.init(allocator),
+    };
+    demos.demo_instances[@intFromEnum(demo_type.cubes_animated)] = .{
+        .cubes_animated = cubes_animated.init(allocator),
     };
     return demos;
 }
 
 pub fn deinit(self: *Demos) void {
-    self.cubes_animated.deinit(self.allocator);
-    self.linear_colorspace.deinit(self.allocator);
-    self.math_vector_arithmetic.deinit(self.allocator);
-    self.point.deinit(self.allocator);
-    self.point_rotating.deinit(self.allocator);
-    self.triangle.deinit();
-    self.triangle_animated.deinit(self.allocator);
+    comptime var i: usize = 0;
+    inline while (i < num_demos - 1) : (i += 1) {
+        switch (self.demo_instances[i]) {
+            @as(demo_type, @enumFromInt(i)) => |d| d.deinit(self.allocator),
+            else => {},
+        }
+    }
     self.allocator.destroy(self);
 }
 
 pub fn drawDemo(self: Demos, frame_time: f64) void {
-    switch (self.ui_state.demo_current) {
-        .point => self.point.draw(),
-        .point_rotating => self.point_rotating.draw(frame_time),
-        .triangle => self.triangle.draw(),
-        .triangle_animated => self.triangle_animated.draw(frame_time),
-        .math_vector_arithmetic => self.math_vector_arithmetic.draw(frame_time),
-        .linear_colorspace => self.linear_colorspace.draw(frame_time),
-        .cubes_animated => self.cubes_animated.draw(frame_time),
-        else => {},
+    const idx = @intFromEnum(self.ui_state.demo_current);
+    comptime var i: usize = 0;
+    inline while (i < num_demos - 1) : (i += 1) {
+        if (i == idx) {
+            switch (self.demo_instances[@intFromEnum(self.ui_state.demo_current)]) {
+                @as(demo_type, @enumFromInt(i)) => |d| d.draw(frame_time),
+                else => {},
+            }
+        }
     }
 }
 
 const std = @import("std");
 const ui = @import("../ui/ui.zig");
+const demo_type = ui.ui_state.demo_type;
 const point = @import("point/point.zig");
 const point_rotating = @import("point_rotating/point_rotating.zig");
 const triangle = @import("triangle/triangle.zig");

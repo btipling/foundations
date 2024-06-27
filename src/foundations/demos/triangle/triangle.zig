@@ -20,7 +20,8 @@ const colors: [3][4]f32 = .{
 const vertex_shader: []const u8 = @embedFile("vertex.glsl");
 const frag_shader: []const u8 = @embedFile("frag.glsl");
 
-pub fn init() Triangle {
+pub fn init(allocator: std.mem.Allocator) *Triangle {
+    const t = allocator.create(Triangle) catch @panic("OOM");
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
 
@@ -33,20 +34,23 @@ pub fn init() Triangle {
         };
     }
     const vao_buf = rhi.attachBuffer(data[0..]);
-    return .{
+    t.* = .{
         .program = program,
         .vao = vao_buf.vao,
         .buffer = vao_buf.buffer,
         .count = positions.len,
     };
+    return t;
 }
 
-pub fn deinit(self: Triangle) void {
+pub fn deinit(self: *Triangle, allocator: std.mem.Allocator) void {
     rhi.delete(self.program, self.vao, self.buffer);
+    allocator.destroy(self);
 }
 
-pub fn draw(self: Triangle) void {
+pub fn draw(self: *Triangle, _: f64) void {
     rhi.drawArrays(self.program, self.vao, self.count, true);
 }
 
+const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
