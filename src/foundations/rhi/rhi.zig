@@ -50,6 +50,8 @@ pub fn init(allocator: std.mem.Allocator) void {
     c.glEnable(c.GL_DEBUG_OUTPUT);
     c.glDebugMessageCallback(&messageCallback, null);
     c.glClipControl(c.GL_LOWER_LEFT, c.GL_NEGATIVE_ONE_TO_ONE);
+    c.glEnable(c.GL_DEPTH_TEST);
+    c.glFrontFace(c.GL_CCW);
     rhi = allocator.create(RHI) catch @panic("OOM");
     rhi.* = .{ .allocator = allocator };
 }
@@ -79,6 +81,7 @@ pub fn createVAO() u32 {
 pub const attributeData = struct {
     position: [3]f32,
     color: [4]f32,
+    normals: [3]f32 = .{ 0, 0, 0 },
 };
 
 pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
@@ -94,15 +97,19 @@ pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
     c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, @intCast(data_size));
 
     const vec_3_size: c.GLsizei = @intCast(@sizeOf(f32) * 3);
+    const vec_4_size: c.GLsizei = @intCast(@sizeOf(f32) * 4);
 
     c.glEnableVertexArrayAttrib(vao, 0);
     c.glEnableVertexArrayAttrib(vao, 1);
+    c.glEnableVertexArrayAttrib(vao, 2);
 
     c.glVertexArrayAttribFormat(vao, 0, 3, c.GL_FLOAT, c.GL_FALSE, 0);
     c.glVertexArrayAttribFormat(vao, 1, 4, c.GL_FLOAT, c.GL_FALSE, vec_3_size);
+    c.glVertexArrayAttribFormat(vao, 2, 3, c.GL_FLOAT, c.GL_FALSE, vec_3_size + vec_4_size);
 
     c.glVertexArrayAttribBinding(vao, 0, 0);
     c.glVertexArrayAttribBinding(vao, 1, 0);
+    c.glVertexArrayAttribBinding(vao, 2, 0);
 
     return .{ .vao = vao, .buffer = buffer };
 }
