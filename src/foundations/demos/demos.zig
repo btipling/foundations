@@ -40,25 +40,19 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
 
 pub fn deinit(self: *Demos) void {
     comptime var i: usize = 0;
-    inline while (i < num_demos - 1) : (i += 1) {
-        switch (self.demo_instances[i]) {
-            @as(demo_type, @enumFromInt(i)) => |d| d.deinit(self.allocator),
-            else => {},
-        }
-    }
+    inline while (i < num_demos - 1) : (i += 1) self.deinitDemo(i);
     self.allocator.destroy(self);
 }
 
+fn deinitDemo(self: Demos, i: usize) void {
+    switch (self.demo_instances[i]) {
+        inline else => |d| d.deinit(self.allocator),
+    }
+}
+
 pub fn drawDemo(self: Demos, frame_time: f64) void {
-    const idx = @intFromEnum(self.ui_state.demo_current);
-    comptime var i: usize = 0;
-    inline while (i < num_demos - 1) : (i += 1) {
-        if (i == idx) {
-            switch (self.demo_instances[@intFromEnum(self.ui_state.demo_current)]) {
-                @as(demo_type, @enumFromInt(i)) => |d| d.draw(frame_time),
-                else => {},
-            }
-        }
+    switch (self.demo_instances[@intFromEnum(self.ui_state.demo_current)]) {
+        inline else => |d| d.draw(frame_time),
     }
 }
 
