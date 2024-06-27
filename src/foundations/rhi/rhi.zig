@@ -203,10 +203,7 @@ pub fn drawObjects(objects: []object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
-            .triangle => |o| drawObject(o),
-            .quad => |o| drawObject(o),
-            .cube => |o| drawObject(o),
-            else => {},
+            inline else => |o| drawObject(o),
         }
     }
 }

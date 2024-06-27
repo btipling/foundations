@@ -1,4 +1,4 @@
-demo_current: demo_type = .linear_colorspace,
+demo_current: demo_type = .cubes_animated,
 
 pub const demo_type = enum(usize) {
     point,

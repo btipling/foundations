@@ -32,7 +32,12 @@ pub fn deinit(self: *LinearColorSpace, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *LinearColorSpace, _: f64) void {
-    var m = math.matrix.identity();
+    var m = math.matrix.leftHandedXUpToNDC();
+    m = math.matrix.transformMatrix(m, math.matrix.translate(
+        self.ui_state.x_translate,
+        self.ui_state.y_translate,
+        self.ui_state.z_translate,
+    ));
     m = math.matrix.transformMatrix(m, math.matrix.scale(
         self.ui_state.scale,
         self.ui_state.scale,

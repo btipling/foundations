@@ -77,9 +77,22 @@ pub inline fn translate(x: f32, y: f32, z:f32) matrix {
     return .{
         .columns = .{
             // zig fmt: off
-            .{  0,  0,  0,  x },
-            .{  0,  0,  0,  y },
-            .{  0,  0,  0,  z },
+            .{  1,  0,  0,  0 },
+            .{  0,  1,  0,  0 },
+            .{  0,  0,  1,  0 },
+            .{  x,  y,  z,  1 },
+            // zig fmt: on
+        },
+    };
+}
+
+pub inline fn leftHandedXUpToNDC() matrix {
+    return .{
+        .columns = .{
+            // zig fmt: off
+            .{  0,  1,  0,  0 },
+            .{  0,  0,  1,  0 },
+            .{  1,  0,  0,  0 },
             .{  0,  0,  0,  1 },
             // zig fmt: on
         },
