@@ -303,11 +303,12 @@ test scaleMatrix {
 }
 
 pub fn transformVector(m: matrix, v: vector.vec4) vector.vec4 {
+    const mt = transpose(m);
     return .{
-        vector.dotProduct(m.columns[0], v),
-        vector.dotProduct(m.columns[1], v),
-        vector.dotProduct(m.columns[2], v),
-        vector.dotProduct(m.columns[3], v),
+        vector.dotProduct(mt.columns[0], v),
+        vector.dotProduct(mt.columns[1], v),
+        vector.dotProduct(mt.columns[2], v),
+        vector.dotProduct(mt.columns[3], v),
     };
 }
 
@@ -328,6 +329,20 @@ test transformVector {
     const c_e = .{-60, -6, 45, 1};
     const c_r = transformVector(c_m, c_v);
     try std.testing.expectEqual(c_e, c_r);
+
+    
+    const d_m: matrix = .{
+        .columns = .{
+            .{ 8, 4, 7, 0 },
+            .{ 2, 1, 5, 0 },
+            .{ 6, -3, 9, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const d_v = .{-3, 2, 9, 1};
+    const d_e = .{34, -37, 70, 1};
+    const d_r = transformVector(d_m, d_v);
+    try std.testing.expectEqual(d_e, d_r);
 }
 
 pub inline fn transpose(m: matrix) matrix {
