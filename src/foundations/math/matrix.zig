@@ -587,25 +587,24 @@ test orthonormalize {
     try std.testing.expectEqual(b_e, b_r);
 }
 
+const echelon_reduction_precision: f32 = 0.0001;
+
 pub fn scalarElementaryMatrix(a: f32, row: usize) matrix {
     std.debug.assert(row < 4);
     std.debug.assert(!std.math.isNan(a));
     std.debug.assert(!std.math.isInf(a));
     var m = identity();
-    // m is a diagonal matrix so row == column;
+    // m is a diagonal matrix so row is equal column;
     m.columns[row] = vector.mul(a, m.columns[row]);
-    std.debug.print("\n \n\n scalarElementaryMatrix: a: {d}, row: {d}\n", .{ a, row });
-    debug(m, "scalarElementaryMatrix");
     return m;
 }
 
-pub fn addititionELementaryMatrix(a: f32, row: usize, column: usize) matrix {
+pub fn addititionElementaryMatrix(a: f32, row: usize, column: usize) matrix {
     std.debug.assert(row < 4);
     std.debug.assert(!std.math.isNan(a));
     std.debug.assert(!std.math.isInf(a));
     var m = identity();
     m.columns[column][row] = a;
-    debug(m, "addititionELementaryMatrix");
     return m;
 }
 
@@ -615,12 +614,10 @@ pub fn swapElementaryMatrix(row_a: usize, row_b: usize) matrix {
     const cb = m.columns[row_b];
     m.columns[row_b] = m.columns[row_a];
     m.columns[row_a] = cb;
-    debug(m, "swapElementaryMatrix");
     return transpose(m);
 }
 
 fn largestColumnComponent(c: vector.vec4, start_at: usize) ?struct { index: usize, value: f32 } {
-    std.debug.print("\n \nlargestColumnComponent: {any}\n", .{c});
     if (vector.isZeroVector(c)) return null;
     var rv: usize = 0;
     var highest = -std.math.inf(f32);
@@ -631,8 +628,7 @@ fn largestColumnComponent(c: vector.vec4, start_at: usize) ?struct { index: usiz
             highest = @abs(c[i]);
         }
     }
-    std.debug.print("\n \n HUH largestColumnComponent index: {d} value: {d}\n\n", .{ rv, c[rv] });
-    if (c[rv] == 0) return null;
+    if (float.equal(c[rv], 0.0, echelon_reduction_precision)) return null;
     return .{ .index = rv, .value = c[rv] };
 }
 
@@ -643,55 +639,42 @@ pub fn toReducedRowEchelonForm(a: matrix, b: matrix) ?struct { reduced_echelon: 
     // lower triangle space transform to row echelon form
     while (i < 4) : (i += 1) {
         // pivot step
-        std.debug.print("\n \n BEGIN LOWER TRIANGLE SPACE row: {d}\n", .{i});
         const pivot_element = largestColumnComponent(a_prime.columns[i], i) orelse return null;
-        std.debug.print("\n \nlargestColumnComponent {any}\n", .{pivot_element});
         if (pivot_element.value != 1) {
-            debug(a_prime, "before swapElementaryMatrix");
             const m_swap = swapElementaryMatrix(i, pivot_element.index);
             a_prime = transformMatrix(m_swap, a_prime);
             b_prime = transformMatrix(m_swap, b_prime);
-            debug(a_prime, "after swapElementaryMatrix");
 
             const s = 1.0 / pivot_element.value;
             const m_scalar = scalarElementaryMatrix(s, i);
             a_prime = transformMatrix(m_scalar, a_prime);
-            debug(a_prime, "after scalarElementaryMatrix");
-            std.debug.assert(at(a_prime, i, i) == 1);
+            std.debug.assert(float.equal(at(a_prime, i, i), 1.0, echelon_reduction_precision));
             b_prime = transformMatrix(m_scalar, b_prime);
         }
         var row: usize = i + 1;
 
-        debug(a_prime, "begin lowering column to zero");
         const column = i;
         while (row < 4) : (row += 1) {
-            std.debug.print("\n \nzeroing below row: {d} column: {d}\n", .{ row, column });
             var element = at(a_prime, row, column);
-            if (element == 0) continue; // already zero
+            if (float.equal(element, 0.0, echelon_reduction_precision)) continue; // already zero
             element *= -1; // add the negative value to reduce to zero
-            const m_add = addititionELementaryMatrix(element, row, column);
+            const m_add = addititionElementaryMatrix(element, row, column);
             a_prime = transformMatrix(m_add, a_prime);
-            debug(a_prime, "after addititionELementaryMatrix");
-            std.debug.assert(at(a_prime, row, column) == 0);
+            std.debug.assert(float.equal(at(a_prime, row, column), 0.0, echelon_reduction_precision));
             b_prime = transformMatrix(m_add, b_prime);
         }
-        std.debug.print("\n \n FINISHED LOWER TRIANGLE SPACE row: {d}\n", .{i});
     }
     // a_prime is now in row echelon form. upper triangle space transform to reduced row echelon form
-    // just need to turn all the upper diagonals to zero
-
-    debug(a_prime, "in row echelon form");
+    // just need to turn all the upper non-diagonals to zero
     var column: usize = 1;
     while (column < 4) : (column += 1) {
         var row: isize = @intCast(column - 1);
         while (row >= 0) : (row -= 1) {
-            std.debug.print("\n \nupper triangle row: {d} column: {d}\n", .{ row, column });
             var lower_scalar = at(a_prime, @intCast(row), column);
-            if (lower_scalar == 0) continue;
+            if (float.equal(lower_scalar, 0.0, echelon_reduction_precision)) continue;
             lower_scalar *= -1;
-            const m_add = addititionELementaryMatrix(lower_scalar, @intCast(row), column);
+            const m_add = addititionElementaryMatrix(lower_scalar, @intCast(row), column);
             a_prime = transformMatrix(m_add, a_prime);
-            debug(a_prime, "after addititionELementaryMatrix");
             b_prime = transformMatrix(m_add, b_prime);
         }
     }
@@ -702,6 +685,7 @@ pub fn toReducedRowEchelonForm(a: matrix, b: matrix) ?struct { reduced_echelon: 
 }
 
 test toReducedRowEchelonForm {
+    const I = identity();
     const a_ma: matrix = .{ .columns = .{
         .{ 0, 0, 0, 0 },
         .{ 0, 0, 0, 0 },
@@ -711,13 +695,10 @@ test toReducedRowEchelonForm {
     const a_mb = identity();
     try std.testing.expectEqual(null, toReducedRowEchelonForm(a_ma, a_mb));
 
-    const b_ma = identity();
-    const b_mb = identity();
-    const b_res = toReducedRowEchelonForm(b_ma, b_mb);
-    const b_re = identity();
+    const b_res = toReducedRowEchelonForm(I, I);
     try std.testing.expect(b_res != null);
-    try std.testing.expectEqual(b_re, b_res.?.reduced_echelon);
-    try std.testing.expectEqual(b_re, b_res.?.solution);
+    try std.testing.expectEqual(I, b_res.?.reduced_echelon);
+    try std.testing.expectEqual(I, b_res.?.solution);
 
     const c_ma: matrix = transpose(.{
         .columns = .{
@@ -727,14 +708,48 @@ test toReducedRowEchelonForm {
             .{ 0, 0, 0, 1 },
         },
     });
-    const c_mb = identity();
-    const c_res = toReducedRowEchelonForm(c_ma, c_mb);
-    const c_re = identity();
+    const c_res = toReducedRowEchelonForm(c_ma, I);
     try std.testing.expect(c_res != null);
-    try std.testing.expectEqual(c_re, c_res.?.reduced_echelon);
-    debug(c_res.?.solution, "inverse of c_mb");
-    try std.testing.expectEqual(c_re, transformMatrix(c_ma, c_res.?.solution));
+    try std.testing.expectEqual(I, c_res.?.reduced_echelon);
+    try std.testing.expectEqual(I, transformMatrix(c_ma, c_res.?.solution));
+
+    const d_m: matrix = .{
+        .columns = .{
+            .{ 1, 2, 2, 0 },
+            .{ 0.5, 2, 1, 0 },
+            .{ 0.5, 1, 2, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const d_re: matrix = .{
+        .columns = .{
+            .{ 3, -2, -2, 0 },
+            .{ -0.5, 1, 0, 0 },
+            .{ -0.5, 0, 1, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const d_res = toReducedRowEchelonForm(d_m, I);
+    try std.testing.expect(d_res != null);
+    try std.testing.expectEqual(I, d_res.?.reduced_echelon);
+    try std.testing.expectEqual(d_re, d_res.?.solution);
+
+    // Linear dependent has no solution set.
+    // zig fmt: off
+    const e_m: matrix = .{
+        .columns = .{
+            .{ 1,   0,  0,  0 },
+            .{ 0,   1,  0,  0 },
+            .{ 0,   1,  0,  0 },
+            .{ 0,   0,  0,  1 },
+        },
+    };
+    // zig fmt: on
+    const e_res = toReducedRowEchelonForm(e_m, I);
+    try std.testing.expectEqual(0, determinant(e_m));
+    try std.testing.expect(e_res == null);
 }
 
 const std = @import("std");
 const vector = @import("vector.zig");
+const float = @import("float.zig");
