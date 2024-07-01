@@ -5,7 +5,7 @@ z_rot: f32 = 2.760,
 x_translate: f32 = 0,
 y_translate: f32 = 0,
 z_translate: f32 = 0,
-perspective: c_int = 0,
+use_lh_x_up: c_int = 1,
 
 const ca_ui = @This();
 
@@ -35,9 +35,9 @@ pub fn draw(self: *ca_ui) void {
         _ = c.igSliderFloat("z", &self.z_translate, -1, 1, "%.3f", c.ImGuiSliderFlags_None);
         c.igTreePop();
     }
-    _ = c.igRadioButton_IntPtr("orthographic", &self.perspective, 0);
+    _ = c.igRadioButton_IntPtr("left handed x up", &self.use_lh_x_up, 1);
     c.igSameLine(0, 0);
-    _ = c.igRadioButton_IntPtr("pinhole", &self.perspective, 1);
+    _ = c.igRadioButton_IntPtr("NDC", &self.use_lh_x_up, 0);
     c.igEnd();
 }
 

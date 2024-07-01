@@ -32,7 +32,10 @@ pub fn deinit(self: *LinearColorSpace, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *LinearColorSpace, _: f64) void {
-    var m = math.matrix.leftHandedXUpToNDC();
+    var m = math.matrix.identity();
+    if (self.ui_state.use_lh_x_up == 1) {
+        m = math.matrix.leftHandedXUpToNDC();
+    }
     m = math.matrix.transformMatrix(m, math.matrix.translate(
         self.ui_state.x_translate,
         self.ui_state.y_translate,
@@ -48,10 +51,7 @@ pub fn draw(self: *LinearColorSpace, _: f64) void {
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.z_rot));
     rhi.drawObjects(self.objects[0..]);
     rhi.setUniformMatrix(self.program, "f_transform", m);
-    var pinhole_distance: f32 = 0;
-    if (self.ui_state.perspective != 0) {
-        pinhole_distance = 0.5;
-    }
+    const pinhole_distance: f32 = 0;
     rhi.setUniform1f(self.program, "f_pinhole", pinhole_distance);
     self.ui_state.draw();
 }

@@ -99,6 +99,23 @@ pub inline fn leftHandedXUpToNDC() matrix {
     // zig fmt: on
 }
 
+test leftHandedXUpToNDC {
+    const m = leftHandedXUpToNDC();
+    const v1v2_cross_product = vector.crossProduct(m.columns[0], m.columns[1]);
+    const a: vector.vec3 = .{
+        v1v2_cross_product[0],
+        v1v2_cross_product[1],
+        v1v2_cross_product[2],
+    };
+    const b: vector.vec3 = .{
+        m.columns[2][0],
+        m.columns[2][1],
+        m.columns[2][2],
+    };
+    const result = vector.dotProduct(a, b);
+    try std.testing.expect(result > 0);
+}
+
 pub fn debug(m: matrix, msg: []const u8) void {
     const mt = transpose(m);
     std.debug.print("\ndebug matrix {s}: \n\t{any}\n\t{any}\n\t{any}\n\t{any}\n\n", .{
