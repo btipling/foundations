@@ -91,7 +91,7 @@ pub inline fn leftHandedXUpToNDC() matrix {
     return .{
         .columns = .{
             .{  0,  1,  0,  0 },
-            .{  0,  0,  1,  0 },
+            .{  0,  0,  -1,  0 },
             .{  1,  0,  0,  0 },
             .{  0,  0,  0,  1 },
         },
@@ -113,7 +113,7 @@ test leftHandedXUpToNDC {
         m.columns[2][2],
     };
     const result = vector.dotProduct(a, b);
-    try std.testing.expect(result > 0);
+    try std.testing.expect(result < 0);
 }
 
 pub fn debug(m: matrix, msg: []const u8) void {
