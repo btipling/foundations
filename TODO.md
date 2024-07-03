@@ -19,3 +19,8 @@ Things to try and do as I learn more about graphical programming
         prove that the +Z side by default faces the camera as NDC is a left handed coordinate system, the color should be the one facing the viewer
 - [ ] I really need to do a lot with the normalized plane equation to understand how it works once I have projections.
 - [ ] Do a thing to reflect something around an abitrary plane centered around the origin.
+
+
+## Ideas
+
+Make a bunch of small single level games, a racing game, a 3D fps game of some kind in a small level, a platform game, a small voxel game and then build out the concepts from the books into an engine that will make each of these games look better and do more things. Like shadows, lighting, physics, collisons etc.
