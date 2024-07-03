@@ -3,7 +3,7 @@
 Things to try and do as I learn more about graphical programming
 
 ## Point, line, plane & polygon equation programs
-- [ ] A program that lets you add and subtract vectors together visually to visually see displacement!
+- [x] A program that lets you add and subtract vectors together visually to visually see displacement!
         - [ ] I need an arrow drawer!
 - [ ] A program that draws a line and then a user clicks on the screen and it draws a new line from the original line. Reports distance to the line.
 - [ ] A program that draws a line and a point, maybe a ray, and by interacting the user can add another point further down the line
@@ -17,3 +17,4 @@ Things to try and do as I learn more about graphical programming
 - [ ] Given a generalized plane equation and a point, draw a plane
 - [ ] Draw a cube or other polygon with normals, give a color to +Z different from the other normals to 
         prove that the +Z side by default faces the camera as NDC is a left handed coordinate system, the color should be the one facing the viewer
+- [ ] I really need to do a lot with the normalized plane equation to understand how it works. 
