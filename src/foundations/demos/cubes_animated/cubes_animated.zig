@@ -41,14 +41,14 @@ pub fn draw(self: *LinearColorSpace, _: f64) void {
         self.ui_state.y_translate,
         self.ui_state.z_translate,
     ));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.x_rot));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.y_rot));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.z_rot));
     m = math.matrix.transformMatrix(m, math.matrix.scale(
         self.ui_state.scale,
         self.ui_state.scale,
         self.ui_state.scale,
     ));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.x_rot));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.y_rot));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.z_rot));
     rhi.drawObjects(self.objects[0..]);
     rhi.setUniformMatrix(self.program, "f_transform", m);
     const pinhole_distance: f32 = 0;
