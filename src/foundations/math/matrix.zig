@@ -551,6 +551,15 @@ test inverse {
     const c_e = identity();
     const c_r: matrix = transformMatrix(b_m, b_e);
     try std.testing.expectEqual(c_e, c_r);
+
+    // The inverse of a scale matrix is the recriprocal of the original matrices components.
+    // This is clear if you consider that a scale matrix is a diagonal matrix and
+    // that to reverse the transformation of a scale, as an example, that grows you would want to shrink
+    // in the reverse amount.
+    const d_m = scale(2.0, 3.0, 4.0);
+    const d_e = scale(1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0);
+    const d_r = inverse(d_m);
+    try std.testing.expectEqual(d_e, d_r);
 }
 
 pub fn orthonormalize(m: matrix) matrix {
