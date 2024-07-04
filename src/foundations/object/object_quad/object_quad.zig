@@ -35,7 +35,11 @@ pub fn init(
             .program = program,
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
-            .count = positions.len,
+            .instance_type = .{
+                .array = .{
+                    .count = positions.len,
+                },
+            },
         },
     };
 }

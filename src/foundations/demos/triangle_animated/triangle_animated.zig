@@ -38,7 +38,7 @@ pub fn draw(self: *AnimatedTriangle, frame_time: f64) void {
         x = 1 - pos * 2;
     }
     rhi.setUniform1f(self.program, "f_offset", x);
-    rhi.drawArrays(self.program, self.vao, self.count, false);
+    rhi.drawArrays(self.program, self.vao, self.count);
 }
 
 const std = @import("std");

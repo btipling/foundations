@@ -65,6 +65,7 @@ pub fn beginFrame() void {
     c.glViewport(0, 0, @intCast(dims[0]), @intCast(dims[1]));
     c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
     c.glClearColor(0, 0, 0, 1);
+    c.glEnable(c.GL_FRAMEBUFFER_SRGB);
 }
 
 pub fn createProgram() u32 {
@@ -157,16 +158,10 @@ pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
     return;
 }
 
-pub fn drawArrays(program: u32, vao: u32, count: usize, use_linear_color_space: bool) void {
-    if (use_linear_color_space) {
-        c.glEnable(c.GL_FRAMEBUFFER_SRGB);
-    }
+pub fn drawArrays(program: u32, vao: u32, count: usize) void {
     c.glUseProgram(@intCast(program));
     c.glBindVertexArray(vao);
     c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
-    if (use_linear_color_space) {
-        c.glDisable(c.GL_FRAMEBUFFER_SRGB);
-    }
 }
 
 pub fn drawPoints(program: u32, vao: u32, count: usize) void {
@@ -215,7 +210,15 @@ pub fn drawObjects(objects: []object.object) void {
 }
 
 pub fn drawObject(o: anytype) void {
-    drawArrays(o.mesh.program, o.mesh.vao, o.mesh.count, o.mesh.linear_colorspace);
+    if (o.mesh.linear_colorspace) {
+        c.glEnable(c.GL_FRAMEBUFFER_SRGB);
+    }
+    switch (o.mesh.instance_type) {
+        .array => |a| drawArrays(o.mesh.program, o.mesh.vao, a.count),
+    }
+    if (o.mesh.linear_colorspace) {
+        c.glDisable(c.GL_FRAMEBUFFER_SRGB);
+    }
 }
 
 pub fn deleteObjects(objects: []object.object) void {

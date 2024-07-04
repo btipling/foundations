@@ -49,7 +49,7 @@ pub fn deinit(self: *Triangle, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *Triangle, _: f64) void {
-    rhi.drawArrays(self.program, self.vao, self.count, true);
+    rhi.drawArrays(self.program, self.vao, self.count);
 }
 
 const std = @import("std");
