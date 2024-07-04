@@ -560,6 +560,13 @@ test inverse {
     const d_e = scale(1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0);
     const d_r = inverse(d_m);
     try std.testing.expectEqual(d_e, d_r);
+
+    // The inverse of a translation will translate a vector back to where it was
+    // originally translated from
+    const e_m = translate(2.0, 3.0, 4.0);
+    const e_e = translate(-2.0, -3.0, -4.0);
+    const e_r = inverse(e_m);
+    try std.testing.expectEqual(e_e, e_r);
 }
 
 pub fn orthonormalize(m: matrix) matrix {
