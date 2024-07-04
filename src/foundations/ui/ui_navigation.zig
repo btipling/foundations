@@ -21,6 +21,9 @@ pub fn draw() void {
             if (c.igMenuItem_Bool("Animated Cubes", null, false, true)) {
                 ui.state().demo_current = .cubes_animated;
             }
+            if (c.igMenuItem_Bool("Circle", null, false, true)) {
+                ui.state().demo_current = .circle;
+            }
             c.igEndMenu();
         }
         if (c.igBeginMenu("Math", true)) {

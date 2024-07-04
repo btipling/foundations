@@ -8,6 +8,7 @@ pub const demo_type = enum(usize) {
     cubes_animated,
     math_vector_arithmetic,
     linear_colorspace,
+    circle,
 };
 
 pub const demos = union(demo_type) {
@@ -18,6 +19,7 @@ pub const demos = union(demo_type) {
     cubes_animated: *cubes_animated,
     math_vector_arithmetic: *math_vector_arithmetic,
     linear_colorspace: *linear_colorspace,
+    circle: *circle,
 };
 
 const point = @import("../demos/point/point.zig");
@@ -27,3 +29,4 @@ const triangle_animated = @import("../demos/triangle_animated/triangle_animated.
 const math_vector_arithmetic = @import("../demos/math_vector_arithmetic/math_vector_arithmetic.zig");
 const linear_colorspace = @import("../demos/linear_colorspace/linear_colorspace.zig");
 const cubes_animated = @import("../demos/cubes_animated/cubes_animated.zig");
+const circle = @import("../demos/circle/circle.zig");
