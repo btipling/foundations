@@ -193,10 +193,16 @@ pub fn setUniformVec2(program: u32, name: []const u8, v: math.vector.vec2) void 
     c.glProgramUniform2f(@intCast(program), location, @floatCast(v[0]), @floatCast(v[1]));
 }
 
-pub fn delete(program: u32, vao: u32, buffer: u32) void {
+pub fn deletePrimitive(program: u32, vao: u32, buffer: u32) void {
     c.glDeleteProgram(program);
     c.glDeleteVertexArrays(1, @ptrCast(&vao));
     if (buffer != 0) c.glDeleteBuffers(1, @ptrCast(&buffer));
+}
+
+pub fn deleteMesh(m: mesh) void {
+    c.glDeleteProgram(m.program);
+    c.glDeleteVertexArrays(1, @ptrCast(&m.vao));
+    if (m.buffer != 0) c.glDeleteBuffers(1, @ptrCast(&m.buffer));
 }
 
 pub fn drawObjects(objects: []object.object) void {
@@ -216,9 +222,7 @@ pub fn deleteObjects(objects: []object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
-            .triangle => |t| delete(t.mesh.program, t.mesh.vao, t.mesh.buffer),
-            .quad => |q| delete(q.mesh.program, q.mesh.vao, q.mesh.buffer),
-            else => {},
+            inline else => |o| deleteMesh(o.mesh),
         }
     }
 }

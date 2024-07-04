@@ -27,7 +27,7 @@ pub fn init(allocator: std.mem.Allocator) *Point {
 }
 
 pub fn deinit(self: *Point, allocator: std.mem.Allocator) void {
-    rhi.delete(self.program, self.vao, self.buffer);
+    rhi.deletePrimitive(self.program, self.vao, self.buffer);
     allocator.destroy(self);
 }
 
