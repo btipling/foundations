@@ -204,19 +204,19 @@ pub fn drawObjects(objects: []object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
-            inline else => |o| drawObject(o),
+            inline else => |o| drawMesh(o.mesh),
         }
     }
 }
 
-pub fn drawObject(o: anytype) void {
-    if (o.mesh.linear_colorspace) {
+pub fn drawMesh(m: mesh) void {
+    if (m.linear_colorspace) {
         c.glEnable(c.GL_FRAMEBUFFER_SRGB);
     }
-    switch (o.mesh.instance_type) {
-        .array => |a| drawArrays(o.mesh.program, o.mesh.vao, a.count),
+    switch (m.instance_type) {
+        .array => |a| drawArrays(m.program, m.vao, a.count),
     }
-    if (o.mesh.linear_colorspace) {
+    if (m.linear_colorspace) {
         c.glDisable(c.GL_FRAMEBUFFER_SRGB);
     }
 }
