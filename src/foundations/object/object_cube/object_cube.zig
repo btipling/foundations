@@ -1,8 +1,4 @@
-program: u32,
-vao: u32,
-buffer: u32,
-count: usize,
-linear_colorspace: bool = true,
+mesh: rhi.mesh,
 
 const Quad = @This();
 
@@ -122,10 +118,12 @@ pub fn init(
     }
     const vao_buf = rhi.attachBuffer(data[0..]);
     return .{
-        .program = program,
-        .vao = vao_buf.vao,
-        .buffer = vao_buf.buffer,
-        .count = positions.len,
+        .mesh = .{
+            .program = program,
+            .vao = vao_buf.vao,
+            .buffer = vao_buf.buffer,
+            .count = positions.len,
+        },
     };
 }
 

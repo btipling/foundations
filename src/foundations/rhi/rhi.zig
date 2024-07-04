@@ -209,15 +209,15 @@ pub fn drawObjects(objects: []object.object) void {
 }
 
 pub fn drawObject(o: anytype) void {
-    drawArrays(o.program, o.vao, o.count, o.linear_colorspace);
+    drawArrays(o.mesh.program, o.mesh.vao, o.mesh.count, o.mesh.linear_colorspace);
 }
 
 pub fn deleteObjects(objects: []object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
-            .triangle => |t| delete(t.program, t.vao, t.buffer),
-            .quad => |q| delete(q.program, q.vao, q.buffer),
+            .triangle => |t| delete(t.mesh.program, t.mesh.vao, t.mesh.buffer),
+            .quad => |q| delete(q.mesh.program, q.mesh.vao, q.mesh.buffer),
             else => {},
         }
     }
@@ -231,3 +231,5 @@ const std = @import("std");
 const ui = @import("../ui/ui.zig");
 const math = @import("../math/math.zig");
 const object = @import("../object/object.zig");
+
+pub const mesh = @import("./mesh.zig");

@@ -27,7 +27,7 @@ pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
         const v = math.vector.add(offset, nv);
         triangle_positions[pi] = v;
     }
-    var triangle1: object.object = .{
+    const triangle1: object.object = .{
         .triangle = object.triangle.init(
             vertex_shader,
             frag_shader,
@@ -35,7 +35,6 @@ pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
             triangle_colors,
         ),
     };
-    triangle1.triangle.linear_colorspace = true;
     p.objects[0] = triangle1;
 
     pi = 0;
@@ -55,7 +54,7 @@ pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
         const v = math.vector.add(offset, nv);
         triangle_positions[pi] = v;
     }
-    const triangle2: object.object = .{
+    var triangle2: object.object = .{
         .triangle = object.triangle.init(
             vertex_shader,
             frag_shader,
@@ -63,6 +62,7 @@ pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
             triangle_colors,
         ),
     };
+    triangle2.triangle.mesh.linear_colorspace = false;
     p.objects[1] = triangle2;
 
     return p;
