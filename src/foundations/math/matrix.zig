@@ -486,6 +486,10 @@ test determinant {
     const d_mad: f32 = determinant(d_ma);
     const d_mtd: f32 = determinant(d_mt);
     try std.testing.expectEqual(d_mad, d_mtd);
+
+    // rotations have a determinant of 1
+    const e_mt = rotationX(0.234);
+    try std.testing.expect(float.equal(1.0, determinant(e_mt), 0.000001));
 }
 
 pub fn inverse(m: matrix) matrix {
@@ -618,6 +622,19 @@ test orthonormalize {
     const b_e = identity();
     const b_r = orthonormalize(b_m);
     try std.testing.expectEqual(b_e, b_r);
+
+    // The detemrinant of an orthogonal matrix is 1
+    const c_m: matrix = .{
+        .columns = .{
+            .{ 0.9, 0, 0, 0 },
+            .{ 0.005, 1.005, 0, 0 },
+            .{ 0, 0, 1002, 0 },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+    const c_r = orthonormalize(c_m);
+    try std.testing.expect(!float.equal(1.0, determinant(c_m), 0.00001));
+    try std.testing.expect(float.equal(1.0, determinant(c_r), 0.00001));
 }
 
 const echelon_reduction_precision: f32 = 0.0001;
