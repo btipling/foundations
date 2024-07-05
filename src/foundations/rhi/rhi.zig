@@ -115,6 +115,16 @@ pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
     return .{ .vao = vao, .buffer = buffer };
 }
 
+pub fn initEBO(indices: []const u32) u32 {
+    var ebo: u32 = undefined;
+    c.glCreateBuffers(1, @ptrCast(&ebo));
+
+    const size = @as(isize, @intCast(indices.len * @sizeOf(u32)));
+    const indicesptr: *const anyopaque = indices.ptr;
+    c.glNamedBufferData(ebo, size, indicesptr, c.GL_STATIC_DRAW);
+    return ebo;
+}
+
 pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
     const shaders = [_]struct { source: []const u8, shader_type: c.GLenum }{
         .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
@@ -164,10 +174,10 @@ pub fn drawArrays(program: u32, vao: u32, count: usize) void {
     c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
 }
 
-pub fn drawElements(program: u32, vao: u32, count: usize) void {
-    c.glUseProgram(@intCast(program));
-    c.glBindVertexArray(vao);
-    c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
+pub fn drawElements(m: mesh, element: mesh.element) void {
+    c.glUseProgram(@intCast(m.program));
+    c.glBindVertexArray(m.vao);
+    c.glDrawElements(element.primitive, element.count, element.format, null);
 }
 
 pub fn drawPoints(program: u32, vao: u32, count: usize) void {

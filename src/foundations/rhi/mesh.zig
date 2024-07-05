@@ -20,5 +20,10 @@ pub const array = struct {
 };
 
 pub const element = struct {
+    primitive: c.GLenum,
+    format: c.GLenum,
     count: usize,
+    ebo: u32,
 };
+
+const c = @import("../c.zig").c;

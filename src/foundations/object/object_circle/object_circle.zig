@@ -18,14 +18,19 @@ pub fn init(
         };
     }
     const vao_buf = rhi.attachBuffer(data[0..]);
+    const indices = [_]f32{ 0, 1, 2 };
+    const ebo = rhi.initEBO(@ptrCast(indices[0..]));
     return .{
         .mesh = .{
             .program = program,
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
             .instance_type = .{
-                .array = .{
-                    .count = p.len,
+                .element = .{
+                    .count = indices.len,
+                    .ebo = ebo,
+                    .primitive = c.GL_TRIANGLES,
+                    .format = c.GL_UNSIGNED_INT,
                 },
             },
         },
@@ -50,5 +55,6 @@ fn positions() [num_vertices][3]f32 {
 }
 
 const std = @import("std");
+const c = @import("../../c.zig").c;
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
