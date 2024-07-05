@@ -215,6 +215,7 @@ pub fn drawMesh(m: mesh) void {
     }
     switch (m.instance_type) {
         .array => |a| drawArrays(m.program, m.vao, a.count),
+        .element => |e| drawArrays(m.program, m.vao, e.count),
     }
     if (m.linear_colorspace) {
         c.glDisable(c.GL_FRAMEBUFFER_SRGB);
