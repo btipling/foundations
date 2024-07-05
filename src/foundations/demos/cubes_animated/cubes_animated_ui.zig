@@ -41,11 +41,7 @@ pub fn draw(self: *ca_ui) void {
     c.igEnd();
 }
 
-const c = @cImport({
-    @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", {});
-    @cInclude("cimgui.h");
-});
-
 const std = @import("std");
+const c = @import("../../c.zig").c;
 const math = @import("../../math/math.zig");
 const ui = @import("../../ui/ui.zig");

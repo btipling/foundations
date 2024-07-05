@@ -164,6 +164,12 @@ pub fn drawArrays(program: u32, vao: u32, count: usize) void {
     c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
 }
 
+pub fn drawElements(program: u32, vao: u32, count: usize) void {
+    c.glUseProgram(@intCast(program));
+    c.glBindVertexArray(vao);
+    c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
+}
+
 pub fn drawPoints(program: u32, vao: u32, count: usize) void {
     c.glUseProgram(@intCast(program));
     c.glBindVertexArray(vao);
@@ -231,11 +237,8 @@ pub fn deleteObjects(objects: []object.object) void {
     }
 }
 
-const c = @cImport({
-    @cInclude("glad/gl.h");
-});
-
 const std = @import("std");
+const c = @import("../c.zig").c;
 const ui = @import("../ui/ui.zig");
 const math = @import("../math/math.zig");
 const object = @import("../object/object.zig");

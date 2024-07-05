@@ -73,9 +73,5 @@ pub fn getProcAddress(comptime T: type, name: []const u8) !T {
     return GLFWError.NotFound;
 }
 
-const c = @cImport({
-    @cInclude("glad/gl.h");
-    @cInclude("GLFW/glfw3.h");
-});
-
+const c = @import("../c.zig").c;
 const std = @import("std");

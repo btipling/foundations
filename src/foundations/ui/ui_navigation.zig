@@ -43,10 +43,6 @@ pub fn draw() void {
     }
 }
 
-const c = @cImport({
-    @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", {});
-    @cInclude("cimgui.h");
-});
-
 const std = @import("std");
+const c = @import("../c.zig").c;
 const ui = @import("ui.zig");

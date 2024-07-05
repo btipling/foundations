@@ -21,9 +21,5 @@ pub fn draw(self: *pr_ui) void {
     c.igEnd();
 }
 
-const c = @cImport({
-    @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", {});
-    @cInclude("cimgui.h");
-});
-
 const std = @import("std");
+const c = @import("../../c.zig").c;
