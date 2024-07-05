@@ -213,6 +213,10 @@ pub fn deletePrimitive(program: u32, vao: u32, buffer: u32) void {
 pub fn deleteMesh(m: mesh) void {
     c.glDeleteProgram(m.program);
     c.glDeleteVertexArrays(1, @ptrCast(&m.vao));
+    switch (m.instance_type) {
+        .element => |e| c.glDeleteBuffers(1, e.ebo),
+        else => {},
+    }
     if (m.buffer != 0) c.glDeleteBuffers(1, @ptrCast(&m.buffer));
 }
 
