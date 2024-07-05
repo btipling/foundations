@@ -2,24 +2,24 @@ mesh: rhi.mesh,
 
 const Triangle = @This();
 const num_vertices: usize = 3;
+const num_indices: usize = 3;
 
 pub fn init(
     program: u32,
     color: [4]f32,
 ) Triangle {
-    const p = positions();
+    const d = data();
 
-    var data: [num_vertices]rhi.attributeData = undefined;
+    var rhi_data: [num_vertices]rhi.attributeData = undefined;
     var i: usize = 0;
     while (i < num_vertices) : (i += 1) {
-        data[i] = .{
-            .position = p[i],
+        rhi_data[i] = .{
+            .position = d.positions[i],
             .color = color,
         };
     }
-    const vao_buf = rhi.attachBuffer(data[0..]);
-    const indices = [_]f32{ 0, 1, 2 };
-    const ebo = rhi.initEBO(@ptrCast(indices[0..]));
+    const vao_buf = rhi.attachBuffer(rhi_data[0..]);
+    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]));
     return .{
         .mesh = .{
             .program = program,
@@ -27,7 +27,7 @@ pub fn init(
             .buffer = vao_buf.buffer,
             .instance_type = .{
                 .element = .{
-                    .count = indices.len,
+                    .count = num_indices,
                     .ebo = ebo,
                     .primitive = c.GL_TRIANGLES,
                     .format = c.GL_UNSIGNED_INT,
@@ -37,7 +37,7 @@ pub fn init(
     };
 }
 
-fn positions() [num_vertices][3]f32 {
+fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } {
     var p: [num_vertices][3]f32 = undefined;
     // origin:
     p[0] = .{ 0, 0, 0 };
@@ -51,7 +51,8 @@ fn positions() [num_vertices][3]f32 {
         current_vector[2] = new_coordinates[0];
         current_vector[0] = new_coordinates[1];
     }
-    return p;
+    const indices = [_]u32{ 0, 1, 2 };
+    return .{ .positions = p, .indices = indices };
 }
 
 const std = @import("std");
