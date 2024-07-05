@@ -234,12 +234,18 @@ pub fn drawMesh(m: mesh) void {
     if (m.linear_colorspace) {
         c.glEnable(c.GL_FRAMEBUFFER_SRGB);
     }
+    if (m.wire_mesh) {
+        c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
+    }
     switch (m.instance_type) {
         .array => |a| drawArrays(m.program, m.vao, a.count),
         .element => |e| drawElements(m, e),
     }
     if (m.linear_colorspace) {
         c.glDisable(c.GL_FRAMEBUFFER_SRGB);
+    }
+    if (m.wire_mesh) {
+        c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
     }
 }
 
