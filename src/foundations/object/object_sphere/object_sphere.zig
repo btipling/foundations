@@ -1,7 +1,7 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 100 * 3.14;
+const num_vertices: usize = 3;
 const num_indices: usize = (num_vertices - 2) * 3;
 
 pub fn init(
@@ -41,32 +41,38 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     var p: [num_vertices][3]f32 = undefined;
     var indices: [num_indices]u32 = undefined;
     // origin:
-    const origin: [3]f32 = .{ 0, 0, 0 };
-    p[0] = origin;
+    const start: [3]f32 = .{ 1.0, 0, 0 };
+    p[0] = start;
     indices[0] = 0;
-    var i: usize = 1;
-    var last_index: u32 = 0;
-    var indices_index: usize = 1;
-    const angle: f32 = std.math.pi / 100.0;
-    var current_vector: [3]f32 = .{ 0, 0, 0.5 }; // start at z positive, move counter clockwise around the y axis
-    while (i < num_vertices) : (i += 1) {
-        if (i > 2) {
-            // Complete sphere every with previous index and origin
-            indices[indices_index] = 0;
-            indices_index += 1;
-            indices[indices_index] = last_index;
-            indices_index += 1;
+    var current_p_index = 1;
+    var current_i_index = 1;
+    var x_to_o: f32 = 0.9;
+    const x_decrements: f32 = 0.1;
+    const x_axis_angle: f32 = std.math.pi / 100.0;
+    while (x_to_o > 0.0) : (x_to_o -= x_decrements) {
+        const current_slice_radius = 2 * std.math.pi * (1.0 - x_to_o);
+        const num_points = @floor(current_slice_radius / x_axis_angle);
+        var i: usize = 0;
+        while (i < num_points) : (i += 1) {
+            // This is generating points of the outer edge of a circle that spans a line drawn around the surface of a sphere
+            // on the (x)yz plane. This code makes successive iterations of such circles in segments descending down x.
+            // The slices of cicles increase in diamater until it reaches the center of the sphere and is done
+            // The points will acculate as vertices. Indices will be generated to specify the primitives to draw
+            // triangles that will form a visual representation of the surface of the sphere.
+            //
+            // The distance between the points is uniform and is based on a fraction of the total sphere's circumference at its widest point
+            // along the yz plane where x = 0.
+            // As we're working with a unit sphere the radius of each circle is equal to 1 - (distance to current x)
+            // Each circle will generate 2pi*radius/angle points.
+            //
+            // the angle across the x axis is the x_axis_angle
+            // each point is derived by calculating a 2D polar coordinate from the center origin of the yz plane circle
+            // and then translating it to the current x with just vector addition (x, 0, 0) + (0, y, z) = new position
+            current_p_index += 1;
+            current_i_index += 1;
+            if (current_p_index > num_vertices) break;
+            if (current_i_index > num_indices) break;
         }
-        p[i] = current_vector;
-        last_index += 1;
-        indices[indices_index] = last_index;
-        indices_index += 1;
-        const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-            0.5,
-            angle * @as(f32, @floatFromInt(i)),
-        });
-        current_vector[2] = new_coordinates[0];
-        current_vector[0] = new_coordinates[1];
     }
     return .{ .positions = p, .indices = indices };
 }
