@@ -30,7 +30,6 @@ pub fn deinit(self: *Circle, allocator: std.mem.Allocator) void {
 pub fn draw(self: *Circle, _: f64) void {
     rhi.drawObjects(self.objects[0..]);
     rhi.setUniformMatrix(self.program, "f_transform", math.matrix.leftHandedXUpToNDC());
-    rhi.drawObjects(self.objects[0..]);
 }
 
 fn clearVectors(self: *Circle) void {

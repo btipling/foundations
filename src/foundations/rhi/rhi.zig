@@ -115,13 +115,14 @@ pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
     return .{ .vao = vao, .buffer = buffer };
 }
 
-pub fn initEBO(indices: []const u32) u32 {
+pub fn initEBO(indices: []const u32, vao: u32) u32 {
     var ebo: u32 = undefined;
     c.glCreateBuffers(1, @ptrCast(&ebo));
 
     const size = @as(isize, @intCast(indices.len * @sizeOf(u32)));
     const indicesptr: *const anyopaque = indices.ptr;
     c.glNamedBufferData(ebo, size, indicesptr, c.GL_STATIC_DRAW);
+    c.glVertexArrayElementBuffer(vao, ebo);
     return ebo;
 }
 
@@ -177,7 +178,7 @@ pub fn drawArrays(program: u32, vao: u32, count: usize) void {
 pub fn drawElements(m: mesh, element: mesh.element) void {
     c.glUseProgram(@intCast(m.program));
     c.glBindVertexArray(m.vao);
-    c.glDrawElements(element.primitive, element.count, element.format, null);
+    c.glDrawElements(element.primitive, @intCast(element.count), element.format, null);
 }
 
 pub fn drawPoints(program: u32, vao: u32, count: usize) void {
@@ -235,7 +236,7 @@ pub fn drawMesh(m: mesh) void {
     }
     switch (m.instance_type) {
         .array => |a| drawArrays(m.program, m.vao, a.count),
-        .element => |e| drawArrays(m.program, m.vao, e.count),
+        .element => |e| drawElements(m, e),
     }
     if (m.linear_colorspace) {
         c.glDisable(c.GL_FRAMEBUFFER_SRGB);
