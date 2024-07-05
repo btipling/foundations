@@ -1,10 +1,8 @@
 mesh: rhi.mesh,
 
 const Triangle = @This();
-const num_vertices: usize = 3;
-const num_indices: usize = 3;
-// const num_vertices: usize = 4;
-// const num_indices: usize = 6;
+const num_vertices: usize = 4;
+const num_indices: usize = 6;
 
 pub fn init(
     program: u32,
@@ -50,6 +48,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     var last_index: u32 = 0;
     var indices_index: usize = 1;
     const angle: f32 = std.math.pi / 10.0;
+    std.debug.print("starting angle: {d}\n", .{angle});
     var current_vector: [3]f32 = .{ 0, 0, 1 }; // start at z positive, move counter clockwise around the y axis
     while (i < num_vertices) : (i += 1) {
         if (i > 2) {
@@ -64,7 +63,10 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         indices[indices_index] = last_index;
         indices_index += 1;
         const r = math.rotation.cartesian2DToPolarCoordinates(@as(math.vector.vec2, .{ current_vector[2], current_vector[1] }));
-        const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{ r[0], r[1] + angle });
+        const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+            r[0],
+            angle * @as(f32, @floatFromInt(i)),
+        });
         current_vector[2] = new_coordinates[0];
         current_vector[0] = new_coordinates[1];
     }
