@@ -1,3 +1,4 @@
+program: u32,
 objects: [1]object.object = undefined,
 
 const Circle = @This();
@@ -8,13 +9,15 @@ const frag_shader: []const u8 = @embedFile("circle_frag.glsl");
 pub fn init(allocator: std.mem.Allocator) *Circle {
     const p = allocator.create(Circle) catch @panic("OOM");
 
+    const program = rhi.createProgram();
+    rhi.attachShaders(program, vertex_shader, frag_shader);
     const circle: object.object = .{
         .circle = object.circle.init(
-            vertex_shader,
-            frag_shader,
+            program,
             .{ 1, 1, 1, 1 },
         ),
     };
+    p.program = program;
     p.objects[0] = circle;
 
     return p;
@@ -25,6 +28,8 @@ pub fn deinit(self: *Circle, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *Circle, _: f64) void {
+    rhi.drawObjects(self.objects[0..]);
+    rhi.setUniformMatrix(self.program, "f_transform", math.matrix.leftHandedXUpToNDC());
     rhi.drawObjects(self.objects[0..]);
 }
 

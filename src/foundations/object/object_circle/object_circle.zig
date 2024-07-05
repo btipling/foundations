@@ -4,13 +4,9 @@ const Triangle = @This();
 const num_vertices: usize = 3;
 
 pub fn init(
-    vertex_shader: []const u8,
-    frag_shader: []const u8,
+    program: u32,
     color: [4]f32,
 ) Triangle {
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
-
     const p = positions();
 
     var data: [num_vertices]rhi.attributeData = undefined;
@@ -48,7 +44,7 @@ fn positions() [num_vertices][3]f32 {
         const r = math.rotation.cartesian2DToPolarCoordinates(@as(math.vector.vec2, .{ current_vector[2], current_vector[1] }));
         const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{ r[0], r[1] + angle });
         current_vector[2] = new_coordinates[0];
-        current_vector[1] = new_coordinates[1];
+        current_vector[0] = new_coordinates[1];
     }
     return p;
 }
