@@ -1,4 +1,4 @@
-objects: [2]object.object = undefined,
+objects: [1]object.object = undefined,
 
 const Circle = @This();
 
@@ -8,61 +8,14 @@ const frag_shader: []const u8 = @embedFile("circle_frag.glsl");
 pub fn init(allocator: std.mem.Allocator) *Circle {
     const p = allocator.create(Circle) catch @panic("OOM");
 
-    var triangle_positions: [3][3]f32 = undefined;
-    const triangle_colors: [3][4]f32 = object.triangle.default_colors;
-    var rotation = math.rotation.degreesToRadians(32.0);
-    var offset: math.vector.vec3 = .{ 0.3, 0.2, 0 };
-    var pi: usize = 0;
-    var magnitude: f32 = 12;
-    while (pi < 3) : (pi += 1) {
-        const pv: math.vector.vec3 = object.triangle.default_positions[pi];
-        const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);
-        const new_angle = current_angle[1] + rotation;
-        const pm = math.vector.magnitude(pv) * magnitude;
-        const p_r = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec3, .{
-            1,
-            new_angle,
-        });
-        const nv = math.vector.mul(pm, p_r);
-        const v = math.vector.add(offset, nv);
-        triangle_positions[pi] = v;
-    }
-    const triangle1: object.object = .{
-        .triangle = object.triangle.init(
+    const circle: object.object = .{
+        .circle = object.circle.init(
             vertex_shader,
             frag_shader,
-            triangle_positions,
-            triangle_colors,
+            .{ 1, 1, 1, 1 },
         ),
     };
-    p.objects[0] = triangle1;
-
-    pi = 0;
-    rotation = -45.0;
-    offset = .{ -0.3, -0.2, 0 };
-    magnitude = 10;
-    while (pi < 3) : (pi += 1) {
-        const pv: math.vector.vec3 = object.triangle.default_positions[pi];
-        const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);
-        const new_angle = current_angle[1] + rotation;
-        const pm = math.vector.magnitude(pv) * 10;
-        const p_r = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec3, .{
-            1,
-            new_angle,
-        });
-        const nv = math.vector.mul(pm, p_r);
-        const v = math.vector.add(offset, nv);
-        triangle_positions[pi] = v;
-    }
-    const triangle2: object.object = .{
-        .triangle = object.triangle.init(
-            vertex_shader,
-            frag_shader,
-            triangle_positions,
-            triangle_colors,
-        ),
-    };
-    p.objects[1] = triangle2;
+    p.objects[0] = circle;
 
     return p;
 }

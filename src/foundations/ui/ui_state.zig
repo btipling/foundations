@@ -1,4 +1,4 @@
-demo_current: demo_type = .cubes_animated,
+demo_current: demo_type = .circle,
 
 pub const demo_type = enum(usize) {
     point,
