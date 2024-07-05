@@ -1,6 +1,6 @@
 mesh: rhi.mesh,
 
-const Quad = @This();
+const Cube = @This();
 
 pub const default_positions: [36][3]f32 = .{
     // z pos
@@ -106,7 +106,7 @@ pub fn init(
     program: u32,
     positions: [36][3]f32,
     color: [4]f32,
-) Quad {
+) Cube {
     var data: [36]rhi.attributeData = undefined;
     var i: usize = 0;
     while (i < data.len) : (i += 1) {

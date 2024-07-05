@@ -24,6 +24,9 @@ pub fn draw() void {
             if (c.igMenuItem_Bool("Circle", null, false, true)) {
                 ui.state().demo_current = .circle;
             }
+            if (c.igMenuItem_Bool("Shere", null, false, true)) {
+                ui.state().demo_current = .sphere;
+            }
             c.igEndMenu();
         }
         if (c.igBeginMenu("Math", true)) {

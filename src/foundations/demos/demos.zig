@@ -4,7 +4,7 @@ demo_instances: [num_demos]ui.ui_state.demos = undefined,
 ui_state: *ui.ui_state,
 allocator: std.mem.Allocator,
 
-const num_demos = 9;
+const num_demos = 10;
 
 const Demos = @This();
 
@@ -31,6 +31,8 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     errdefer ca.deinit(allocator);
     const circ = circle.init(allocator);
     errdefer circ.deinit(allocator);
+    const sp = sphere.init(allocator);
+    errdefer sp.deinit(allocator);
 
     demos.demo_instances[@intFromEnum(demo_type.point)] = .{ .point = p };
     demos.demo_instances[@intFromEnum(demo_type.point_rotating)] = .{ .point_rotating = pr };
@@ -40,6 +42,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     demos.demo_instances[@intFromEnum(demo_type.linear_colorspace)] = .{ .linear_colorspace = lcs };
     demos.demo_instances[@intFromEnum(demo_type.cubes_animated)] = .{ .cubes_animated = ca };
     demos.demo_instances[@intFromEnum(demo_type.circle)] = .{ .circle = circ };
+    demos.demo_instances[@intFromEnum(demo_type.sphere)] = .{ .sphere = sp };
     return demos;
 }
 
@@ -72,3 +75,4 @@ const math_vector_arithmetic = @import("math_vector_arithmetic/math_vector_arith
 const linear_colorspace = @import("linear_colorspace/linear_colorspace.zig");
 const cubes_animated = @import("cubes_animated/cubes_animated.zig");
 const circle = @import("circle/circle.zig");
+const sphere = @import("sphere/sphere.zig");

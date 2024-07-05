@@ -1,13 +1,13 @@
 mesh: rhi.mesh,
 
-const Circle = @This();
+const Sphere = @This();
 const num_vertices: usize = 100 * 3.14;
 const num_indices: usize = (num_vertices - 2) * 3;
 
 pub fn init(
     program: u32,
     color: [4]f32,
-) Circle {
+) Sphere {
     const d = data();
 
     var rhi_data: [num_vertices]rhi.attributeData = undefined;
@@ -51,7 +51,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     var current_vector: [3]f32 = .{ 0, 0, 0.5 }; // start at z positive, move counter clockwise around the y axis
     while (i < num_vertices) : (i += 1) {
         if (i > 2) {
-            // Complete circle every with previous index and origin
+            // Complete sphere every with previous index and origin
             indices[indices_index] = 0;
             indices_index += 1;
             indices[indices_index] = last_index;
