@@ -2,7 +2,7 @@ mesh: rhi.mesh,
 
 const Triangle = @This();
 const num_vertices: usize = 4;
-const num_indices: usize = 6;
+const num_indices: usize = (num_vertices - 2) * 3;
 
 pub fn init(
     program: u32,
