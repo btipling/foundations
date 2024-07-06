@@ -52,11 +52,8 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     // The width of the triangle base around the axis.
     const x_axis_angle: f32 = 2 * std.math.pi / 100.0;
 
-    var next_vertices_index: u32 = 0;
-    // var prev_top_index: u32 = 0;
     var current_p_index: usize = 0;
     var current_i_index: usize = 0;
-    var prev_vertex_index: u32 = 0;
 
     {
         // Generate the top of the circle that just has one shared point at top.
@@ -65,19 +62,17 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         const current_bot_slice_radius = 2 * std.math.pi * (1.0 - x_to_o_bot);
         const num_points: usize = @intFromFloat(@floor(current_bot_slice_radius / x_axis_angle));
         const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points));
-        std.debug.print("num_points: {d}\n", .{num_points});
 
         const start: [3]f32 = .{ sphere_scale, 0, 0 };
         p[0] = start;
         indices[0] = 0;
-        next_vertices_index += 1;
         current_p_index += 1;
         current_i_index += 1;
 
+        var prev_bot_vertex_index: u32 = 0;
         var i: usize = 0;
         while (i < num_points) : (i += 1) {
             const current_x_axis_angle: f32 = slice_angle * @as(f32, @floatFromInt(i));
-            std.debug.print("current_bot_x_axis_angle: {d}\n", .{math.rotation.radiansToDegrees(current_x_axis_angle)});
 
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
                 1.0 - x_to_o_bot,
@@ -91,24 +86,22 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                     new_coordinates[0],
                 }),
             ));
-            current_p_index += 1;
             if (i >= 2) {
                 indices[current_i_index] = 0;
                 current_i_index += 1;
-                indices[current_i_index] = prev_vertex_index;
+                indices[current_i_index] = prev_bot_vertex_index;
                 current_i_index += 1;
             }
-            prev_vertex_index = next_vertices_index;
-
-            indices[current_i_index] = next_vertices_index;
-            next_vertices_index += 1;
+            const bot_index: u32 = @intCast(current_p_index);
+            indices[current_i_index] = bot_index;
+            prev_bot_vertex_index = bot_index;
+            current_p_index += 1;
             current_i_index += 1;
         }
     }
 
     x_to_o_top -= x_decrements;
     x_to_o_bot -= x_decrements;
-    std.debug.print("current_p_index: {d}\n", .{current_p_index});
 
     // Generate the bands around the rest of the bottom half of the sphere. It's different. It doesn't use a shared point at the
     // top of every triangle.
@@ -123,7 +116,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         const num_points: usize = @intFromFloat(@floor(current_bot_slice_circumference / x_axis_angle));
         // Calculate the angle around the x axis between each point for both the bottom and top circles.
         const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points * 2));
-        std.debug.print("num_points: {d}\n", .{num_points});
 
         var current_top_vertex_index: u32 = 0;
         var current_bot_vertex_index: u32 = 0;
@@ -220,21 +212,23 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         }
         x_to_o_top -= x_decrements;
     }
-
-    std.debug.print("points: \n", .{});
-    for (p, 0..) |v, i| {
-        std.debug.print("\ti:{d} ({d}, {d}, {d})\t", .{
-            i,
-            v[0],
-            v[1],
-            v[2],
-        });
+    const debug = false;
+    if (debug) {
+        std.debug.print("points: \n", .{});
+        for (p, 0..) |v, i| {
+            std.debug.print("\ti:{d} ({d}, {d}, {d})\t", .{
+                i,
+                v[0],
+                v[1],
+                v[2],
+            });
+        }
+        std.debug.print("\nindices: \n", .{});
+        for (indices, 0..) |v, i| {
+            std.debug.print("\ti:{d} index: {d}\t", .{ i, v });
+        }
+        std.debug.print("\n", .{});
     }
-    std.debug.print("\nindices: \n", .{});
-    for (indices, 0..) |v, i| {
-        std.debug.print("\ti:{d} index: {d}\t", .{ i, v });
-    }
-    std.debug.print("\n", .{});
     return .{ .positions = p, .indices = indices };
 }
 
