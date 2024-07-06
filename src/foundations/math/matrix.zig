@@ -86,6 +86,56 @@ pub inline fn translate(x: f32, y: f32, z: f32) matrix {
     // zig fmt: on
 }
 
+pub inline fn normalizedQuaternionToMatrix(q: Quat) matrix {
+    const qw = q[0];
+    const qx = q[1];
+    const qy = q[2];
+    const qz = q[3];
+
+    const s: f32 = 2.0 / (qx * qx + qy * qy + qz * qz + qw * qw);
+
+    const xs: f32 = s * qx;
+    const ys: f32 = s * qy;
+    const zs: f32 = s * qz;
+
+    const wx = qw * xs;
+    const wy = qw * ys;
+    const wz = qw * zs;
+
+    const xx = qx * xs;
+    const xy = qx * ys;
+    const xz = qx * zs;
+
+    const yy = qy * ys;
+    const yz = qy * zs;
+
+    const zz = qz * zs;
+
+    return .{
+        .columns = .{
+            .{
+                1.0 - (yy + zz),
+                xy + wz,
+                xz - wy,
+                0,
+            },
+            .{
+                xy - wz,
+                1.0 - (xx + zz),
+                yz + wx,
+                0,
+            },
+            .{
+                xz + wy,
+                yz - wx,
+                1.0 - (xx + yy),
+                0,
+            },
+            .{ 0, 0, 0, 1 },
+        },
+    };
+}
+
 pub inline fn leftHandedXUpToNDC() matrix {
     // zig fmt: off
     return .{
@@ -803,3 +853,4 @@ test toReducedRowEchelonForm {
 const std = @import("std");
 const vector = @import("vector.zig");
 const float = @import("float.zig");
+const Quat = @import("rotation").Quat;

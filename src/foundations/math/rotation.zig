@@ -1,3 +1,49 @@
+pub const Quat = vector.vec4;
+
+pub fn multiplyQuaternions(q2: Quat, q1: Quat) Quat {
+    const v1: vector.vec3 = .{ q1[1], q1[2], q1[3] };
+    const v2: vector.vec3 = .{ q2[1], q2[2], q2[3] };
+    const w = q1[0] * q2[0] - vector.dotProduct(v1, v2);
+    var v = vector.mul(q1[0], v2);
+    v = vector.add(v, vector.mul(q2[0], v1));
+    v = vector.add(v, vector.crossProduct(v2, v1));
+    return .{ w, v[0], v[1], v[2] };
+}
+
+pub inline fn identityQuat() Quat {
+    return .{ 1, 0, 0, 0 };
+}
+
+pub inline fn inverseNormalizedQuat(q: Quat) Quat {
+    return .{ q[0], -q[1], -q[2], -q[3] };
+}
+
+pub fn inverseQuat(q: Quat) Quat {
+    const qn = vector.normalize(q);
+    return inverseNormalizedQuat(qn);
+}
+
+pub fn rotateVectorWithNormalizedQuat(v: vector.vec3, q: Quat) vector.vec3 {
+    const qw = q[0];
+    const qx = q[1];
+    const qy = q[2];
+    const qz = q[3];
+
+    const vx = v[0];
+    const vy = v[1];
+    const vz = v[2];
+
+    const v_mul: f32 = 2.0 * (qx * vx + qy * vy + qz * vz);
+    const cross_mul: f32 = 2.0 * qw;
+    const p_mul = cross_mul * qw - 1.0;
+
+    return .{
+        p_mul * vx + v_mul * qx + cross_mul * (qy * vz - qz * vy),
+        p_mul * vy + v_mul * qy + cross_mul * (qz * vx - qx * vz),
+        p_mul * vz + v_mul * qz + cross_mul * (qx * vy - qy * vx),
+    };
+}
+
 pub fn radiansToDegrees(r: anytype) f32 {
     const T = @TypeOf(r);
     switch (@typeInfo(T)) {
