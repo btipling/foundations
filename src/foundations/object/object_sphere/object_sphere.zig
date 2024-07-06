@@ -1,8 +1,8 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 10;
-const num_indices: usize = (num_vertices - 2) * 3;
+const num_vertices: usize = 883;
+const num_indices: usize = 899;
 const sphere_scale: f32 = 1.0;
 
 pub fn init(
@@ -65,7 +65,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     // Every iteration around a circle starts at z positive, and moves counter clockwise around the x axis.
     while (x_to_o_bot > 0.0) : (x_to_o_bot -= x_decrements) {
         const current_top_vector: math.vector.vec3 = .{ x_to_o_top, 0, 0 };
-        _ = current_top_vector;
         const current_bot_vector: math.vector.vec3 = .{ x_to_o_bot, 0, 0 };
         //*********
         // BEGIN NEXT CIRCLE AROUND SPHERE
@@ -98,15 +97,31 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             current_p_index += 1;
             current_i_index += 1;
         } else {
-            // Need
+            // For circles after the first the first position added is at the top
+            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+                1.0 - x_to_o_top,
+                0,
+            });
+            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
+                current_top_vector,
+                @as(math.vector.vec3, .{
+                    0,
+                    new_coordinates[1],
+                    new_coordinates[0],
+                }),
+            ));
+            current_p_index += 1;
+            indices[current_i_index] = next_vertices_index;
+            next_vertices_index += 1;
+            current_i_index += 1;
         }
         //***
 
         // Begin iterating around circle to generate the points.
         var i: usize = 0;
         while (i < num_points) : (i += 1) {
-            const current_bot_x_axis_angle: f32 = slice_angle * @as(f32, @floatFromInt(i));
-            std.debug.print("current_bot_x_axis_angle: {d}\n", .{math.rotation.radiansToDegrees(current_bot_x_axis_angle)});
+            const current_x_axis_angle: f32 = slice_angle * @as(f32, @floatFromInt(i));
+            std.debug.print("current_bot_x_axis_angle: {d}\n", .{math.rotation.radiansToDegrees(current_x_axis_angle)});
             // This is generating points of the outer edge of a circle that spans a line drawn around the surface of a sphere
             // on the (x)yz plane. This code makes successive iterations of such circles in segments descending down x.
             // The slices of cicles increase in diamater until it reaches the center of the sphere and is done
@@ -125,7 +140,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
 
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
                 1.0 - x_to_o_bot,
-                current_bot_x_axis_angle,
+                current_x_axis_angle,
             });
             p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
                 current_bot_vector,
@@ -138,26 +153,54 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             current_p_index += 1;
 
             // Each circle adds two points before we start incrementing indices on a per new vertex basis
-            if (i >= 2) {
-                // Having added a previous triangle and need to create full triangles for each point add the start and previous point's index
-                // Add start index to ebo to create the tip of the triangle
-                if (math.float.equal(x_to_o_top, 1.0, 0.0001)) {
+            // Having added a previous triangle and need to create full triangles for each point add the start and previous point's index
+            // Add start index to ebo to create the tip of the triangle
+            if (math.float.equal(x_to_o_top, 1.0, 0.0001)) {
+                if (i >= 2) {
                     // Again, first circle is special as it uses just one point for all the tops of the triangle.
                     // So as it's our first circle, so just use the first index for triangle.
                     indices[current_i_index] = 0;
+                    current_i_index += 1;
+                    // Add the previously created point in the prior loop to create the right most edge of the triangle
+                    indices[current_i_index] = prev_vertex_index;
+                    current_i_index += 1;
                 }
+                // Store the ebo index for the point just created.
+                prev_vertex_index = next_vertices_index;
+
+                // Add an ebo index for the point just created to finish the triangle.
+                indices[current_i_index] = next_vertices_index;
+                next_vertices_index += 1;
                 current_i_index += 1;
-                // Add the previously created point in the prior loop to create the right most edge of the triangle
-                indices[current_i_index] = prev_vertex_index;
+            } else {
+                if (i >= 1) {
+                    // Add a top vertex.
+                    const new_top_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+                        1.0 - x_to_o_top,
+                        current_x_axis_angle,
+                    });
+                    p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
+                        current_top_vector,
+                        @as(math.vector.vec3, .{
+                            0,
+                            new_top_coordinates[1],
+                            new_top_coordinates[0],
+                        }),
+                    ));
+                    current_p_index += 1;
+                    indices[current_i_index] = next_vertices_index;
+                    next_vertices_index += 1;
+                    current_i_index += 1;
+                }
+
+                // Store the ebo index for the point just created.
+                prev_vertex_index = next_vertices_index;
+
+                // Add an ebo index for the point just created to finish the triangle.
+                indices[current_i_index] = next_vertices_index;
+                next_vertices_index += 1;
                 current_i_index += 1;
             }
-            // Store the ebo index for the point just created.
-            prev_vertex_index = next_vertices_index;
-
-            // Add an ebo index for the point just created to finish the triangle.
-            indices[current_i_index] = next_vertices_index;
-            next_vertices_index += 1;
-            current_i_index += 1;
 
             if (current_p_index >= num_vertices) break;
             if (current_i_index >= num_indices) break;
