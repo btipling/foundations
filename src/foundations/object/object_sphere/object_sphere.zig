@@ -1,10 +1,8 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-// const num_vertices: usize = 883;
-// const num_indices: usize = 1755;
-const num_vertices: usize = 53;
-const num_indices: usize = 146;
+const num_vertices: usize = 899;
+const num_indices: usize = 2659;
 const sphere_scale: f32 = 1.0;
 
 pub fn init(
@@ -114,7 +112,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
 
     // Generate the bands around the rest of the bottom half of the sphere. It's different. It doesn't use a shared point at the
     // top of every triangle.
-    {
+    while (x_to_o_bot > 0) : (x_to_o_bot -= x_decrements) {
         const current_top_vector: math.vector.vec3 = .{ x_to_o_top, 0, 0 };
         const current_bot_vector: math.vector.vec3 = .{ x_to_o_bot, 0, 0 };
 
@@ -220,11 +218,12 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 current_i_index += 1;
             }
         }
+        x_to_o_top -= x_decrements;
     }
 
     std.debug.print("points: \n", .{});
     for (p, 0..) |v, i| {
-        std.debug.print("\ti:{d} ({d}, {d}, {d})\n", .{
+        std.debug.print("\ti:{d} ({d}, {d}, {d})\t", .{
             i,
             v[0],
             v[1],
@@ -233,8 +232,9 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     }
     std.debug.print("\nindices: \n", .{});
     for (indices, 0..) |v, i| {
-        std.debug.print("\ti:{d} index: {d}\n", .{ i, v });
+        std.debug.print("\ti:{d} index: {d}\t", .{ i, v });
     }
+    std.debug.print("\n", .{});
     return .{ .positions = p, .indices = indices };
 }
 
