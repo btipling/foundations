@@ -3,8 +3,8 @@ mesh: rhi.mesh,
 const Sphere = @This();
 // const num_vertices: usize = 883;
 // const num_indices: usize = 1755;
-const num_vertices: usize = 14;
-const num_indices: usize = 30;
+const num_vertices: usize = 15;
+const num_indices: usize = 33;
 const sphere_scale: f32 = 1.0;
 
 pub fn init(
@@ -125,6 +125,8 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points));
         std.debug.print("num_points: {d}\n", .{num_points});
 
+        var current_top_vertex_index: u32 = 0;
+        var current_bot_vertex_index: u32 = 0;
         {
             // Get the first top coordinate
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
@@ -139,7 +141,9 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                     new_coordinates[0],
                 }),
             ));
-            indices[current_i_index] = @intCast(current_p_index);
+            const top_index: u32 = @intCast(current_p_index);
+            indices[current_i_index] = top_index;
+            current_top_vertex_index = top_index;
             current_p_index += 1;
             current_i_index += 1;
         }
@@ -158,7 +162,8 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                     new_coordinates[0],
                 }),
             ));
-            indices[current_i_index] = @intCast(current_p_index);
+            const bot_index: u32 = @intCast(current_p_index);
+            indices[current_i_index] = bot_index;
             current_p_index += 1;
             current_i_index += 1;
         }
@@ -177,7 +182,39 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                     new_coordinates[0],
                 }),
             ));
-            indices[current_i_index] = @intCast(current_p_index);
+            const bot_index: u32 = @intCast(current_p_index);
+            indices[current_i_index] = bot_index;
+            current_bot_vertex_index = bot_index;
+            current_p_index += 1;
+            current_i_index += 1;
+        }
+
+        {
+            // add top index again
+            indices[current_i_index] = current_top_vertex_index;
+            current_i_index += 1;
+            // Add bot index again
+            indices[current_i_index] = current_bot_vertex_index;
+            current_i_index += 1;
+        }
+
+        {
+            // Get another bottom to finish that 2 second triangle
+            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+                1.0 - x_to_o_bot,
+                slice_angle * 2,
+            });
+            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
+                current_bot_vector,
+                @as(math.vector.vec3, .{
+                    0,
+                    new_coordinates[1],
+                    new_coordinates[0],
+                }),
+            ));
+            const bot_index: u32 = @intCast(current_p_index);
+            indices[current_i_index] = bot_index;
+            current_bot_vertex_index = bot_index;
             current_p_index += 1;
             current_i_index += 1;
         }
