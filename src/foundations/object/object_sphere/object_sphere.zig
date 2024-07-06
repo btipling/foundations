@@ -3,8 +3,8 @@ mesh: rhi.mesh,
 const Sphere = @This();
 // const num_vertices: usize = 883;
 // const num_indices: usize = 1755;
-const num_vertices: usize = 10;
-const num_indices: usize = 28;
+const num_vertices: usize = 14;
+const num_indices: usize = 30;
 const sphere_scale: f32 = 1.0;
 
 pub fn init(
@@ -49,7 +49,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
 
     // The first circle begins at 0.1 less than unit length
     var x_to_o_top: f32 = 1.0;
-    const x_to_o_bot: f32 = 0.9;
+    var x_to_o_bot: f32 = 0.9;
     const x_decrements: f32 = 0.1;
     // The width of the triangle base around the axis.
     const x_axis_angle: f32 = 2 * std.math.pi / 100.0;
@@ -105,27 +105,83 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             indices[current_i_index] = next_vertices_index;
             next_vertices_index += 1;
             current_i_index += 1;
-
-            if (current_p_index >= num_vertices) break;
-            if (current_i_index >= num_indices) break;
         }
-        x_to_o_top -= x_decrements;
     }
+
+    x_to_o_top -= x_decrements;
+    x_to_o_bot -= x_decrements;
+    std.debug.print("current_p_index: {d}\n", .{current_p_index});
 
     // Generate the bands around the rest of the bottom half of the sphere. It's different. It doesn't use a shared point at the
     // top of every triangle.
-    // {
-    //     const current_top_vector: math.vector.vec3 = .{ x_to_o_top, 0, 0 };
-    //     const current_bot_vector: math.vector.vec3 = .{ x_to_o_bot, 0, 0 };
+    {
+        const current_top_vector: math.vector.vec3 = .{ x_to_o_top, 0, 0 };
+        const current_bot_vector: math.vector.vec3 = .{ x_to_o_bot, 0, 0 };
 
-    //     const current_bot_slice_radius = 2 * std.math.pi * (1.0 - x_to_o_bot);
-    //     // Calculate the number of points to generate for this circle.
-    //     const num_points: usize = @intFromFloat(@floor(current_bot_slice_radius / x_axis_angle));
-    //     // Calculate the angle around the x axis between each point for both the bottom and top circles.
-    //     const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points));
-    //     std.debug.print("num_points: {d}\n", .{num_points});
+        const current_bot_slice_radius = 2 * std.math.pi * (1.0 - x_to_o_bot);
+        // Calculate the number of points to generate for this circle.
+        const num_points: usize = @intFromFloat(@floor(current_bot_slice_radius / x_axis_angle));
+        // Calculate the angle around the x axis between each point for both the bottom and top circles.
+        const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points));
+        std.debug.print("num_points: {d}\n", .{num_points});
 
-    // }
+        {
+            // Get the first top coordinate
+            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+                1.0 - x_to_o_top,
+                0,
+            });
+            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
+                current_top_vector,
+                @as(math.vector.vec3, .{
+                    0,
+                    new_coordinates[1],
+                    new_coordinates[0],
+                }),
+            ));
+            indices[current_i_index] = @intCast(current_p_index);
+            current_p_index += 1;
+            current_i_index += 1;
+        }
+
+        {
+            // Get the first bottom coordinate
+            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+                1.0 - x_to_o_bot,
+                0,
+            });
+            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
+                current_bot_vector,
+                @as(math.vector.vec3, .{
+                    0,
+                    new_coordinates[1],
+                    new_coordinates[0],
+                }),
+            ));
+            indices[current_i_index] = @intCast(current_p_index);
+            current_p_index += 1;
+            current_i_index += 1;
+        }
+
+        {
+            // Get the second bottom coordinate to form the first triangle
+            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+                1.0 - x_to_o_bot,
+                slice_angle,
+            });
+            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
+                current_bot_vector,
+                @as(math.vector.vec3, .{
+                    0,
+                    new_coordinates[1],
+                    new_coordinates[0],
+                }),
+            ));
+            indices[current_i_index] = @intCast(current_p_index);
+            current_p_index += 1;
+            current_i_index += 1;
+        }
+    }
 
     std.debug.print("points: \n", .{});
     for (p, 0..) |v, i| {
