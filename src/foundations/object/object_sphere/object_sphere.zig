@@ -40,26 +40,67 @@ pub fn init(
 }
 
 fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } {
+    // p is an array of vertices to use for the triangles that form the sphere
     var p: [num_vertices][3]f32 = undefined;
+    // indices are the indices that are used for the EBO to generate the triangles that form the sphere
     var indices: [num_indices]u32 = undefined;
-    // origin:
+    // start is the very top of the sphere from which this code begins the desend to generate the vertices around the sphere
     const start: [3]f32 = .{ sphere_scale, 0, 0 };
+    // Store the initial position and index
     p[0] = start;
     indices[0] = 0;
+    // Tack positions and indicies, accounting for start
     var next_vertices_index: u32 = 1;
     var current_p_index: usize = 1;
     var current_i_index: usize = 1;
+    // The first circle begins at 0.1 less than unit length
     var x_to_o: f32 = 0.9;
     const x_decrements: f32 = 0.1;
+    // The width of the triangle base around the axis.
     const x_axis_angle: f32 = 2 * std.math.pi / 100.0;
+
+    //***
+    // INDEX MANGEMENT
+    // This code tracks current circles indicies to form triangles for the next circle.
+    var current_circle_indices: [100]u32 = undefined;
+    var num_current_circle_indices: usize = 0;
+    // prev_vertex_index tracks the EBO index of the last vertex added to positions.
+    var prev_vertex_index: u32 = 0;
+    //***
+
+    // Every iteration around a circle starts at z positive, and moves counter clockwise around the x axis.
+    const current_vector: math.vector.vec3 = .{ x_to_o, 0, 0 };
     while (x_to_o > 0.0) : (x_to_o -= x_decrements) {
+        //*********
+        // BEGIN NEXT CIRCLE AROUND SPHERE
+        // Begins with per circle set up.
+        //*********
+
+        //***
+        // SETUP INDICES FOR THIS CIRCLE
+        //****
+        // Write previous circle's indicies to use as indicies for this next circle.
+        const previous_circle_indices: [100]u32 = current_circle_indices;
+        // current_index_at_previous_circle_indices tracks what index to use for the next triangle from the previous circle.
+        var current_index_at_previous_circle_indices: usize = 0;
+        // Record how many indicies we stored on previous circle.
+        const num_previous_circle_indices: usize = num_current_circle_indices;
+        // Reset current circle to start storing this circle's indicies to be used for next circle.
+        num_current_circle_indices = 0;
+
+        //***
+        // DETERMINE CIRCLE PROPERTIES
+        //****
+        // Get current circle's radius based on current x to origin distance
         const current_slice_radius = 2 * std.math.pi * (1.0 - x_to_o);
+        // Calculate the number of points to generate for this circle.
         const num_points: usize = @intFromFloat(@floor(current_slice_radius / x_axis_angle));
+        // Calculate the angle around the x axis between each point.
         const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points));
         std.debug.print("num_points: {d}\n", .{num_points});
+
+        // Begin iterating around circle to generate the points.
         var i: usize = 0;
-        const current_vector: math.vector.vec3 = .{ x_to_o, 0, 0 }; // start at z positive, move counter clockwise around the y axis
-        var prev_vertex_index: u32 = 0;
         while (i < num_points) : (i += 1) {
             const current_x_axis_angle: f32 = slice_angle * @as(f32, @floatFromInt(i));
             std.debug.print("current_x_axis_angle: {d}\n", .{math.rotation.radiansToDegrees(current_x_axis_angle)});
@@ -93,11 +134,20 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             ));
             current_p_index += 1;
 
-            // Added a point, now construct the triangle, for the first two points the triangle is just start and first two points
-            if (next_vertices_index > 2) {
+            // Each circle adds two points before we start incrementing indices on a per new vertex basis
+            if (i >= 2) {
                 // Having added a previous triangle and need to create full triangles for each point add the start and previous point's index
                 // Add start index to ebo to create the tip of the triangle
-                indices[current_i_index] = 0;
+                if (math.float.equal(x_to_o, 0.9, 0.0001)) {
+                    // Creating our first circle, so just use the first index for triangle.
+                    indices[current_i_index] = 0;
+                } else {
+                    // Form the triangle from the previous circle index.
+                    indices[current_i_index] = previous_circle_indices[num_previous_circle_indices];
+                    current_index_at_previous_circle_indices += 1;
+                    // This block should never try to use indices not from the previous circles for forming a triangle.
+                    std.debug.assert(num_previous_circle_indices <= current_index_at_previous_circle_indices);
+                }
                 current_i_index += 1;
                 // Add the previously created point in the prior loop to create the right most edge of the triangle
                 indices[current_i_index] = prev_vertex_index;
@@ -105,10 +155,16 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             }
             // Store the ebo index for the point just created.
             prev_vertex_index = next_vertices_index;
+
             // Add an ebo index for the point just created to finish the triangle.
             indices[current_i_index] = next_vertices_index;
-            current_i_index += 1;
             next_vertices_index += 1;
+            current_i_index += 1;
+
+            // Add the new index to the list of indices added for this circle to use as indices for the next circle
+            current_circle_indices[num_current_circle_indices] = next_vertices_index;
+            num_current_circle_indices += 1;
+
             if (current_p_index >= num_vertices) break;
             if (current_i_index >= num_indices) break;
         }
