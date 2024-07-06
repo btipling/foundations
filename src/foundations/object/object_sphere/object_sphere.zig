@@ -1,9 +1,10 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 220;
-const num_indices: usize = 624;
-const sphere_scale: f32 = 1.0;
+const num_vertices: usize = 1680;
+const num_indices: usize = 4913;
+const sphere_scale: f32 = 0.75;
+const angle_div: f32 = 40.0;
 
 pub fn init(
     program: u32,
@@ -46,12 +47,13 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     var indices: [num_indices]u32 = undefined;
 
     // The width of the triangle base around the axis.
-    const angle_delta: f32 = 2 * std.math.pi / 20.0;
+    const angle_delta: f32 = 2 * std.math.pi / angle_div;
     var y_axis_angle: f32 = angle_delta;
     _ = &y_axis_angle;
 
     var current_p_index: usize = 0;
     var current_i_index: usize = 0;
+    var current_level: f32 = 1.0;
 
     {
         const start: [3]f32 = .{ sphere_scale, 0, 0 };
@@ -63,11 +65,9 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         var prev_bot_vertex_index: u32 = 0;
         var i: usize = 0;
         var x_angle: f32 = 0;
-        const cur_radius = (2 * std.math.pi - y_axis_angle) / (2 * std.math.pi);
-        std.debug.print("cur_radius: {d}\n", .{cur_radius});
         while (x_angle < 2 * std.math.pi) : (x_angle += angle_delta) {
             const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
-                cur_radius,
+                1.0,
                 y_axis_angle,
                 x_angle,
             });
@@ -98,19 +98,15 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     // top of every triangle.
     // y_axis_angle += angle_delta;
     const first_ya = y_axis_angle;
-    while (y_axis_angle < std.math.pi) : (y_axis_angle += angle_delta) {
-        const cur_radius_top = (2 * std.math.pi - y_axis_angle) / (2 * std.math.pi);
-        const cur_radius_bot = (2 * std.math.pi - (y_axis_angle + angle_delta)) / (2 * std.math.pi);
-        std.debug.print("\n\ncurrent y_axis_angle: {d}\n", .{math.rotation.radiansToDegrees(y_axis_angle)});
-        std.debug.print("cur_radius_top: {d} \n", .{cur_radius_top});
-        std.debug.print("cur_radius_bot: {d}\n", .{cur_radius_bot});
+    while (y_axis_angle < 2 * std.math.pi) : (y_axis_angle += angle_delta) {
+        current_level += 1;
         var current_top_vertex_index: u32 = 0;
         var current_bot_vertex_index: u32 = 0;
         var x_angle: f32 = 0;
         {
             // Get the first top coordinate
             const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
-                cur_radius_top,
+                1.0,
                 y_axis_angle,
                 x_angle,
             });
@@ -136,7 +132,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         {
             // Get the first bottom coordinate
             const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
-                cur_radius_bot,
+                1.0,
                 y_axis_angle + angle_delta,
                 x_angle,
             });
@@ -158,15 +154,10 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         x_angle += angle_delta;
         const stop_at = (2 * std.math.pi) + angle_delta;
         while (x_angle <= stop_at) : (x_angle += angle_delta) {
-            std.debug.print("x_angle: {d} next: {d} stop_at: {d}\n", .{
-                math.rotation.radiansToDegrees(x_angle),
-                math.rotation.radiansToDegrees(x_angle + angle_delta),
-                math.rotation.radiansToDegrees(stop_at),
-            });
             if (@mod(i, 2) == 0) {
                 // Get the second bottom coordinate to form the first triangle
                 const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
-                    cur_radius_bot,
+                    1.0,
                     y_axis_angle + angle_delta,
                     x_angle,
                 });
@@ -185,7 +176,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 current_i_index += 1;
             } else {
                 const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
-                    cur_radius_top,
+                    1.0,
                     y_axis_angle,
                     x_angle,
                 });
@@ -215,24 +206,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             i += 1;
         }
     }
-    std.debug.print("vertices: {d} indices: {d}", .{ current_p_index, current_i_index });
-    const debug = false;
-    if (debug) {
-        std.debug.print("points: \n", .{});
-        for (p, 0..) |v, i| {
-            std.debug.print("\ti:{d} ({d}, {d}, {d})\n", .{
-                i,
-                v[0],
-                v[1],
-                v[2],
-            });
-        }
-        std.debug.print("\nindices: \n", .{});
-        for (indices, 0..) |v, i| {
-            std.debug.print("\ti:{d} index: {d}\n", .{ i, v });
-        }
-        std.debug.print("\n", .{});
-    }
+    std.debug.print("vertices: {d} indices: {d}\n", .{ current_p_index, current_i_index });
     return .{ .positions = p, .indices = indices };
 }
 
