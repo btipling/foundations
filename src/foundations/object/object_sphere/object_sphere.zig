@@ -41,12 +41,9 @@ pub fn init(
 }
 
 fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } {
-    // p is an array of vertices to use for the triangles that form the sphere
     var p: [num_vertices][3]f32 = undefined;
-    // indices are the indices that are used for the EBO to generate the triangles that form the sphere
     var indices: [num_indices]u32 = undefined;
 
-    // The width of the triangle base around the axis.
     const angle_delta: f32 = 2 * std.math.pi / angle_div;
     var y_axis_angle: f32 = angle_delta;
     _ = &y_axis_angle;
@@ -94,9 +91,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         }
     }
 
-    // Generate the bands around the rest of the bottom half of the sphere. It's different. It doesn't use a shared point at the
-    // top of every triangle.
-    // y_axis_angle += angle_delta;
     const first_ya = y_axis_angle;
     while (y_axis_angle < 2 * std.math.pi) : (y_axis_angle += angle_delta) {
         current_level += 1;
@@ -104,7 +98,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         var current_bot_vertex_index: u32 = 0;
         var x_angle: f32 = 0;
         {
-            // Get the first top coordinate
             const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                 1.0,
                 y_axis_angle,
@@ -130,7 +123,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         }
 
         {
-            // Get the first bottom coordinate
             const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                 1.0,
                 y_axis_angle + angle_delta,
@@ -155,7 +147,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         const stop_at = (2 * std.math.pi) + angle_delta;
         while (x_angle <= stop_at) : (x_angle += angle_delta) {
             if (@mod(i, 2) == 0) {
-                // Get the second bottom coordinate to form the first triangle
                 const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                     1.0,
                     y_axis_angle + angle_delta,
@@ -196,10 +187,8 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             }
 
             {
-                // add top index again
                 indices[current_i_index] = current_top_vertex_index;
                 current_i_index += 1;
-                // Add bot index again
                 indices[current_i_index] = current_bot_vertex_index;
                 current_i_index += 1;
             }
