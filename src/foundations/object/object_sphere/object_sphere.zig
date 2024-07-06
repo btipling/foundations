@@ -1,10 +1,10 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 1680;
-const num_indices: usize = 4913;
+const num_vertices: usize = 6560;
+const num_indices: usize = 19433;
 const sphere_scale: f32 = 0.75;
-const angle_div: f32 = 40.0;
+const angle_div: f32 = 80.0;
 
 pub fn init(
     program: u32,
@@ -27,7 +27,7 @@ pub fn init(
             .program = program,
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
-            .wire_mesh = true,
+            .wire_mesh = false,
             .instance_type = .{
                 .element = .{
                     .count = num_indices,

@@ -10,5 +10,5 @@ void main()
 {
     vec4 pos = f_transform * vec4(f_position.xyz, 1.0);
     gl_Position = pos;
-    fo_color = f_color;
+    fo_color = vec4(pos.xyz * 0.5 + 0.25, 1.0);
 }
