@@ -1,5 +1,6 @@
 program: u32,
 objects: [1]object.object = undefined,
+ui_state: sphere_ui,
 
 const Sphere = @This();
 
@@ -17,8 +18,16 @@ pub fn init(allocator: std.mem.Allocator) *Sphere {
             .{ 1, 1, 1, 1 },
         ),
     };
-    p.program = program;
-    p.objects[0] = sphere;
+    p.* = .{
+        .program = program,
+        .objects = .{
+            sphere,
+        },
+        .ui_state = .{
+            .wireframe = false,
+            .rotation_time = 5.0,
+        },
+    };
 
     return p;
 }
@@ -27,9 +36,16 @@ pub fn deinit(self: *Sphere, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn draw(self: *Sphere, _: f64) void {
+pub fn draw(self: *Sphere, frame_time: f64) void {
+    const ft: f32 = @floatCast(frame_time);
+    const rot = @mod(ft, self.ui_state.rotation_time) / self.ui_state.rotation_time;
+    const angle_radiants: f32 = @as(f32, @floatCast(rot)) * std.math.pi * 2;
+    self.objects[0].sphere.mesh.wire_mesh = self.ui_state.wireframe;
     rhi.drawObjects(self.objects[0..]);
-    rhi.setUniformMatrix(self.program, "f_transform", math.matrix.leftHandedXUpToNDC());
+    const m = math.matrix.leftHandedXUpToNDC();
+    rhi.setUniformMatrix(self.program, "f_transform", m);
+    rhi.setUniformMatrix(self.program, "f_color_transform", math.matrix.rotationY(angle_radiants));
+    self.ui_state.draw();
 }
 
 fn clearVectors(self: *Sphere) void {
@@ -40,5 +56,6 @@ fn clearVectors(self: *Sphere) void {
 
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
+const sphere_ui = @import("sphere_ui.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
