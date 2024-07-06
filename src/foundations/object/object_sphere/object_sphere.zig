@@ -1,8 +1,8 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 899;
-const num_indices: usize = 2659;
+const num_vertices: usize = 220;
+const num_indices: usize = 624;
 const sphere_scale: f32 = 1.0;
 
 pub fn init(
@@ -45,24 +45,15 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     // indices are the indices that are used for the EBO to generate the triangles that form the sphere
     var indices: [num_indices]u32 = undefined;
 
-    // The first circle begins at 0.1 less than unit length
-    var x_to_o_top: f32 = 1.0;
-    var x_to_o_bot: f32 = 0.9;
-    const x_decrements: f32 = 0.1;
     // The width of the triangle base around the axis.
-    const x_axis_angle: f32 = 2 * std.math.pi / 100.0;
+    const angle_delta: f32 = 2 * std.math.pi / 20.0;
+    var y_axis_angle: f32 = angle_delta;
+    _ = &y_axis_angle;
 
     var current_p_index: usize = 0;
     var current_i_index: usize = 0;
 
     {
-        // Generate the top of the circle that just has one shared point at top.
-        const current_bot_vector: math.vector.vec3 = .{ x_to_o_bot, 0, 0 };
-
-        const current_bot_slice_radius = 2 * std.math.pi * (1.0 - x_to_o_bot);
-        const num_points: usize = @intFromFloat(@floor(current_bot_slice_radius / x_axis_angle));
-        const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points));
-
         const start: [3]f32 = .{ sphere_scale, 0, 0 };
         p[0] = start;
         indices[0] = 0;
@@ -71,21 +62,23 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
 
         var prev_bot_vertex_index: u32 = 0;
         var i: usize = 0;
-        while (i < num_points) : (i += 1) {
-            const current_x_axis_angle: f32 = slice_angle * @as(f32, @floatFromInt(i));
-
-            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                1.0 - x_to_o_bot,
-                current_x_axis_angle,
+        var x_angle: f32 = 0;
+        const cur_radius = (2 * std.math.pi - y_axis_angle) / (2 * std.math.pi);
+        std.debug.print("cur_radius: {d}\n", .{cur_radius});
+        while (x_angle < 2 * std.math.pi) : (x_angle += angle_delta) {
+            const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+                cur_radius,
+                y_axis_angle,
+                x_angle,
             });
-            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
-                current_bot_vector,
+            p[current_p_index] = math.vector.mul(
+                sphere_scale,
                 @as(math.vector.vec3, .{
-                    0,
+                    new_coordinates[2],
                     new_coordinates[1],
                     new_coordinates[0],
                 }),
-            ));
+            );
             if (i >= 2) {
                 indices[current_i_index] = 0;
                 current_i_index += 1;
@@ -97,103 +90,113 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             prev_bot_vertex_index = bot_index;
             current_p_index += 1;
             current_i_index += 1;
+            i += 1;
         }
     }
 
-    x_to_o_top -= x_decrements;
-    x_to_o_bot -= x_decrements;
-
     // Generate the bands around the rest of the bottom half of the sphere. It's different. It doesn't use a shared point at the
     // top of every triangle.
-    while (x_to_o_bot > 0) : (x_to_o_bot -= x_decrements) {
-        const current_top_vector: math.vector.vec3 = .{ x_to_o_top, 0, 0 };
-        const current_bot_vector: math.vector.vec3 = .{ x_to_o_bot, 0, 0 };
-
-        const current_bot_slice_radius = (1.0 - x_to_o_bot);
-        const current_top_slice_radius = (1.0 - x_to_o_top);
-        const current_bot_slice_circumference = 2 * std.math.pi * current_bot_slice_radius;
-        // Calculate the number of points to generate for this circle.
-        const num_points: usize = @intFromFloat(@floor(current_bot_slice_circumference / x_axis_angle));
-        // Calculate the angle around the x axis between each point for both the bottom and top circles.
-        const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points * 2));
-
+    // y_axis_angle += angle_delta;
+    const first_ya = y_axis_angle;
+    while (y_axis_angle < std.math.pi) : (y_axis_angle += angle_delta) {
+        const cur_radius_top = (2 * std.math.pi - y_axis_angle) / (2 * std.math.pi);
+        const cur_radius_bot = (2 * std.math.pi - (y_axis_angle + angle_delta)) / (2 * std.math.pi);
+        std.debug.print("\n\ncurrent y_axis_angle: {d}\n", .{math.rotation.radiansToDegrees(y_axis_angle)});
+        std.debug.print("cur_radius_top: {d} \n", .{cur_radius_top});
+        std.debug.print("cur_radius_bot: {d}\n", .{cur_radius_bot});
         var current_top_vertex_index: u32 = 0;
         var current_bot_vertex_index: u32 = 0;
+        var x_angle: f32 = 0;
         {
             // Get the first top coordinate
-            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                current_top_slice_radius,
-                0,
+            const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+                cur_radius_top,
+                y_axis_angle,
+                x_angle,
             });
-            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
-                current_top_vector,
+            p[current_p_index] = math.vector.mul(
+                sphere_scale,
                 @as(math.vector.vec3, .{
-                    0,
+                    new_coordinates[2],
                     new_coordinates[1],
                     new_coordinates[0],
                 }),
-            ));
+            );
             const top_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = top_index;
             current_top_vertex_index = top_index;
             current_p_index += 1;
             current_i_index += 1;
+            if (y_axis_angle != first_ya) {
+                indices[current_i_index] = top_index;
+                current_i_index += 1;
+            }
         }
 
         {
             // Get the first bottom coordinate
-            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                current_bot_slice_radius,
-                0,
+            const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+                cur_radius_bot,
+                y_axis_angle + angle_delta,
+                x_angle,
             });
-            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
-                current_bot_vector,
+            p[current_p_index] = math.vector.mul(
+                sphere_scale,
                 @as(math.vector.vec3, .{
-                    0,
+                    new_coordinates[2],
                     new_coordinates[1],
                     new_coordinates[0],
                 }),
-            ));
+            );
             const bot_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = bot_index;
             current_p_index += 1;
             current_i_index += 1;
         }
 
-        var i: usize = 1;
-        while (i < num_points * 2) : (i += 1) {
+        var i: usize = 0;
+        x_angle += angle_delta;
+        const stop_at = (2 * std.math.pi) + angle_delta;
+        while (x_angle <= stop_at) : (x_angle += angle_delta) {
+            std.debug.print("x_angle: {d} next: {d} stop_at: {d}\n", .{
+                math.rotation.radiansToDegrees(x_angle),
+                math.rotation.radiansToDegrees(x_angle + angle_delta),
+                math.rotation.radiansToDegrees(stop_at),
+            });
             if (@mod(i, 2) == 0) {
                 // Get the second bottom coordinate to form the first triangle
-                const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                    current_bot_slice_radius,
-                    slice_angle * @as(f32, @floatFromInt(i)),
+                const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+                    cur_radius_bot,
+                    y_axis_angle + angle_delta,
+                    x_angle,
                 });
-                p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
-                    current_bot_vector,
+                p[current_p_index] = math.vector.mul(
+                    sphere_scale,
                     @as(math.vector.vec3, .{
-                        0,
+                        new_coordinates[2],
                         new_coordinates[1],
                         new_coordinates[0],
                     }),
-                ));
+                );
                 const bot_index: u32 = @intCast(current_p_index);
                 indices[current_i_index] = bot_index;
                 current_bot_vertex_index = bot_index;
                 current_p_index += 1;
                 current_i_index += 1;
             } else {
-                const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                    current_top_slice_radius,
-                    slice_angle * @as(f32, @floatFromInt(i)),
+                const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+                    cur_radius_top,
+                    y_axis_angle,
+                    x_angle,
                 });
-                p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
-                    current_top_vector,
+                p[current_p_index] = math.vector.mul(
+                    sphere_scale,
                     @as(math.vector.vec3, .{
-                        0,
+                        new_coordinates[2],
                         new_coordinates[1],
                         new_coordinates[0],
                     }),
-                ));
+                );
                 const top_index: u32 = @intCast(current_p_index);
                 indices[current_i_index] = top_index;
                 current_top_vertex_index = top_index;
@@ -209,14 +212,15 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 indices[current_i_index] = current_bot_vertex_index;
                 current_i_index += 1;
             }
+            i += 1;
         }
-        x_to_o_top -= x_decrements;
     }
+    std.debug.print("vertices: {d} indices: {d}", .{ current_p_index, current_i_index });
     const debug = false;
     if (debug) {
         std.debug.print("points: \n", .{});
         for (p, 0..) |v, i| {
-            std.debug.print("\ti:{d} ({d}, {d}, {d})\t", .{
+            std.debug.print("\ti:{d} ({d}, {d}, {d})\n", .{
                 i,
                 v[0],
                 v[1],
@@ -225,7 +229,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         }
         std.debug.print("\nindices: \n", .{});
         for (indices, 0..) |v, i| {
-            std.debug.print("\ti:{d} index: {d}\t", .{ i, v });
+            std.debug.print("\ti:{d} index: {d}\n", .{ i, v });
         }
         std.debug.print("\n", .{});
     }
