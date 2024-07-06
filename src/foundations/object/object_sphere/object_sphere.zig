@@ -61,9 +61,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
 
     //***
     // INDEX MANGEMENT
-    // This code tracks current circles indicies to form triangles for the next circle.
-    var current_circle_indices: [100]u32 = undefined;
-    var num_current_circle_indices: usize = 0;
     // prev_vertex_index tracks the EBO index of the last vertex added to positions.
     var prev_vertex_index: u32 = 0;
     //***
@@ -75,18 +72,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         // BEGIN NEXT CIRCLE AROUND SPHERE
         // Begins with per circle set up.
         //*********
-
-        //***
-        // SETUP INDICES FOR THIS CIRCLE
-        //****
-        // Write previous circle's indicies to use as indicies for this next circle.
-        const previous_circle_indices: [100]u32 = current_circle_indices;
-        // current_index_at_previous_circle_indices tracks what index to use for the next triangle from the previous circle.
-        var current_index_at_previous_circle_indices: usize = 0;
-        // Record how many indicies we stored on previous circle.
-        const num_previous_circle_indices: usize = num_current_circle_indices;
-        // Reset current circle to start storing this circle's indicies to be used for next circle.
-        num_current_circle_indices = 0;
 
         //***
         // DETERMINE CIRCLE PROPERTIES
@@ -141,12 +126,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 if (math.float.equal(x_to_o, 0.9, 0.0001)) {
                     // Creating our first circle, so just use the first index for triangle.
                     indices[current_i_index] = 0;
-                } else {
-                    // Form the triangle from the previous circle index.
-                    indices[current_i_index] = previous_circle_indices[num_previous_circle_indices];
-                    current_index_at_previous_circle_indices += 1;
-                    // This block should never try to use indices not from the previous circles for forming a triangle.
-                    std.debug.assert(num_previous_circle_indices <= current_index_at_previous_circle_indices);
                 }
                 current_i_index += 1;
                 // Add the previously created point in the prior loop to create the right most edge of the triangle
@@ -160,10 +139,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             indices[current_i_index] = next_vertices_index;
             next_vertices_index += 1;
             current_i_index += 1;
-
-            // Add the new index to the list of indices added for this circle to use as indices for the next circle
-            current_circle_indices[num_current_circle_indices] = next_vertices_index;
-            num_current_circle_indices += 1;
 
             if (current_p_index >= num_vertices) break;
             if (current_i_index >= num_indices) break;
