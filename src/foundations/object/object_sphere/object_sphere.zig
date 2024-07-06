@@ -3,8 +3,8 @@ mesh: rhi.mesh,
 const Sphere = @This();
 // const num_vertices: usize = 883;
 // const num_indices: usize = 1755;
-const num_vertices: usize = 18;
-const num_indices: usize = 39;
+const num_vertices: usize = 20;
+const num_indices: usize = 45;
 const sphere_scale: f32 = 1.0;
 
 pub fn init(
@@ -118,11 +118,13 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         const current_top_vector: math.vector.vec3 = .{ x_to_o_top, 0, 0 };
         const current_bot_vector: math.vector.vec3 = .{ x_to_o_bot, 0, 0 };
 
-        const current_bot_slice_radius = 2 * std.math.pi * (1.0 - x_to_o_bot);
+        const current_bot_slice_radius = (1.0 - x_to_o_bot);
+        const current_top_slice_radius = (1.0 - x_to_o_top);
+        const current_bot_slice_circumference = 2 * std.math.pi * current_bot_slice_radius;
         // Calculate the number of points to generate for this circle.
-        const num_points: usize = @intFromFloat(@floor(current_bot_slice_radius / x_axis_angle));
+        const num_points: usize = @intFromFloat(@floor(current_bot_slice_circumference / x_axis_angle));
         // Calculate the angle around the x axis between each point for both the bottom and top circles.
-        const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points));
+        const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points * 2));
         std.debug.print("num_points: {d}\n", .{num_points});
 
         var current_top_vertex_index: u32 = 0;
@@ -130,7 +132,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         {
             // Get the first top coordinate
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                1.0 - x_to_o_top,
+                current_top_slice_radius,
                 0,
             });
             p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
@@ -151,7 +153,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         {
             // Get the first bottom coordinate
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                1.0 - x_to_o_bot,
+                current_bot_slice_radius,
                 0,
             });
             p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
@@ -171,7 +173,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         {
             // Get the second bottom coordinate to form the first triangle
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                1.0 - x_to_o_bot,
+                current_bot_slice_radius,
                 slice_angle,
             });
             p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
@@ -199,37 +201,10 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         }
 
         {
-            // Get another bottom to finish that 2 second triangle
+            // Add another top to finish that 2 second triangle
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                1.0 - x_to_o_bot,
+                current_top_slice_radius,
                 slice_angle * 2,
-            });
-            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
-                current_bot_vector,
-                @as(math.vector.vec3, .{
-                    0,
-                    new_coordinates[1],
-                    new_coordinates[0],
-                }),
-            ));
-            const bot_index: u32 = @intCast(current_p_index);
-            indices[current_i_index] = bot_index;
-            current_bot_vertex_index = bot_index;
-            current_p_index += 1;
-            current_i_index += 1;
-        }
-
-        {
-            // add that bottom again, one more time, for fun
-            indices[current_i_index] = current_bot_vertex_index;
-            current_i_index += 1;
-        }
-
-        {
-            // Now add our second top! WOW
-            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                1.0 - x_to_o_top,
-                slice_angle,
             });
             p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
                 current_top_vector,
@@ -247,9 +222,18 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         }
 
         {
-            // Get the the final portion of the third triangle
+            // add top index again
+            indices[current_i_index] = current_top_vertex_index;
+            current_i_index += 1;
+            // Add bot index again
+            indices[current_i_index] = current_bot_vertex_index;
+            current_i_index += 1;
+        }
+
+        {
+            // Add another bot
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                1.0 - x_to_o_bot,
+                current_bot_slice_radius,
                 slice_angle * 3,
             });
             p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
@@ -262,24 +246,55 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             ));
             const bot_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = bot_index;
+            current_bot_vertex_index = bot_index;
             current_p_index += 1;
             current_i_index += 1;
         }
 
         {
-            // add top index again!!
+            // add top index again
             indices[current_i_index] = current_top_vertex_index;
             current_i_index += 1;
-            // Add bot index again!!
+            // Add bot index again
             indices[current_i_index] = current_bot_vertex_index;
             current_i_index += 1;
         }
 
         {
-            // Get another bottom to finish that 4th! triangle
+            // Add another top to finish that 2 second triangle
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                1.0 - x_to_o_bot,
+                current_top_slice_radius,
                 slice_angle * 4,
+            });
+            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
+                current_top_vector,
+                @as(math.vector.vec3, .{
+                    0,
+                    new_coordinates[1],
+                    new_coordinates[0],
+                }),
+            ));
+            const top_index: u32 = @intCast(current_p_index);
+            indices[current_i_index] = top_index;
+            current_top_vertex_index = top_index;
+            current_p_index += 1;
+            current_i_index += 1;
+        }
+
+        {
+            // add top index again
+            indices[current_i_index] = current_top_vertex_index;
+            current_i_index += 1;
+            // Add bot index again
+            indices[current_i_index] = current_bot_vertex_index;
+            current_i_index += 1;
+        }
+
+        {
+            // Get the the final portion of the whatever triangle this is
+            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+                current_bot_slice_radius,
+                slice_angle * 5,
             });
             p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
                 current_bot_vector,
@@ -292,6 +307,36 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             const bot_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = bot_index;
             current_bot_vertex_index = bot_index;
+            current_p_index += 1;
+            current_i_index += 1;
+        }
+
+        {
+            // add top index again
+            indices[current_i_index] = current_top_vertex_index;
+            current_i_index += 1;
+            // Add bot index again
+            indices[current_i_index] = current_bot_vertex_index;
+            current_i_index += 1;
+        }
+
+        {
+            // Now add our THIRD top! WOW HOLYMOLY
+            const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
+                current_top_slice_radius,
+                slice_angle * 6,
+            });
+            p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
+                current_top_vector,
+                @as(math.vector.vec3, .{
+                    0,
+                    new_coordinates[1],
+                    new_coordinates[0],
+                }),
+            ));
+            const top_index: u32 = @intCast(current_p_index);
+            indices[current_i_index] = top_index;
+            current_top_vertex_index = top_index;
             current_p_index += 1;
             current_i_index += 1;
         }
