@@ -78,10 +78,10 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         // Get current circle's radius based on current x to origin distance
         const current_bot_slice_radius = 2 * std.math.pi * (1.0 - x_to_o_bot);
         // Calculate the number of points to generate for this circle.
-        const num_bot_points: usize = @intFromFloat(@floor(current_bot_slice_radius / x_axis_angle));
-        // Calculate the angle around the x axis between each point.
-        const bot_slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_bot_points));
-        std.debug.print("num_points: {d}\n", .{num_bot_points});
+        const num_points: usize = @intFromFloat(@floor(current_bot_slice_radius / x_axis_angle));
+        // Calculate the angle around the x axis between each point for both the bottom and top circles.
+        const slice_angle: f32 = (2 * std.math.pi) / @as(f32, @floatFromInt(num_points));
+        std.debug.print("num_points: {d}\n", .{num_points});
 
         //***
         // START INITIAL CIRCLE POINT AND INDEX PRIOR TO LOOP
@@ -104,8 +104,8 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
 
         // Begin iterating around circle to generate the points.
         var i: usize = 0;
-        while (i < num_bot_points) : (i += 1) {
-            const current_bot_x_axis_angle: f32 = bot_slice_angle * @as(f32, @floatFromInt(i));
+        while (i < num_points) : (i += 1) {
+            const current_bot_x_axis_angle: f32 = slice_angle * @as(f32, @floatFromInt(i));
             std.debug.print("current_bot_x_axis_angle: {d}\n", .{math.rotation.radiansToDegrees(current_bot_x_axis_angle)});
             // This is generating points of the outer edge of a circle that spans a line drawn around the surface of a sphere
             // on the (x)yz plane. This code makes successive iterations of such circles in segments descending down x.
@@ -124,7 +124,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             // and then translating it to the current x with just vector addition (x, 0, 0) + (0, y, z) = new position
 
             const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-                0.5,
+                1.0 - x_to_o_bot,
                 current_bot_x_axis_angle,
             });
             p[current_p_index] = math.vector.mul(sphere_scale, math.vector.add(
