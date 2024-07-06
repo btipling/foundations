@@ -2,7 +2,7 @@ mesh: rhi.mesh,
 
 const Sphere = @This();
 const num_vertices: usize = 883;
-const num_indices: usize = 899;
+const num_indices: usize = 1755;
 const sphere_scale: f32 = 1.0;
 
 pub fn init(
@@ -56,6 +56,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     // INDEX MANGEMENT
     // Track positions and indicies as we go along
     var next_vertices_index: u32 = 0;
+    var prev_top_index: u32 = 0;
     var current_p_index: usize = 0;
     var current_i_index: usize = 0;
     // prev_vertex_index tracks the EBO index of the last vertex added to positions.
@@ -112,6 +113,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             ));
             current_p_index += 1;
             indices[current_i_index] = next_vertices_index;
+            prev_top_index = next_vertices_index;
             next_vertices_index += 1;
             current_i_index += 1;
         }
@@ -173,8 +175,19 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 next_vertices_index += 1;
                 current_i_index += 1;
             } else {
+                // Add an ebo index for the just created bot vertex
+                indices[current_i_index] = @intCast(current_p_index);
+                prev_vertex_index = indices[current_i_index];
+                current_i_index += 1;
                 if (i >= 1) {
-                    // Add a top vertex.
+                    // Re-add previous top index.
+                    indices[current_i_index] = prev_top_index;
+                    current_i_index += 1;
+                    // Re-add the previously created vertex
+                    indices[current_i_index] = prev_vertex_index;
+                    current_i_index += 1;
+                    // Re-add the previous bot index
+                    // Add a new top vertex.
                     const new_top_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
                         1.0 - x_to_o_top,
                         current_x_axis_angle,
@@ -188,18 +201,10 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                         }),
                     ));
                     current_p_index += 1;
-                    indices[current_i_index] = next_vertices_index;
-                    next_vertices_index += 1;
+                    indices[current_i_index] = @intCast(current_p_index);
+                    prev_top_index = indices[current_i_index];
                     current_i_index += 1;
                 }
-
-                // Store the ebo index for the point just created.
-                prev_vertex_index = next_vertices_index;
-
-                // Add an ebo index for the point just created to finish the triangle.
-                indices[current_i_index] = next_vertices_index;
-                next_vertices_index += 1;
-                current_i_index += 1;
             }
 
             if (current_p_index >= num_vertices) break;
