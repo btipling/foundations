@@ -43,7 +43,21 @@ pub fn createWindow(width: c_int, height: c_int) !*window {
     c.glfwMakeContextCurrent(win);
     c.glfwSwapInterval(1);
     _ = c.gladLoadGL(c.glfwGetProcAddress);
+    registerGLFWCallbacks(win);
     return win;
+}
+
+fn cursorPosCallback(_: ?*c.GLFWwindow, x: f64, y: f64) callconv(.C) void {
+    std.debug.print("cursorPosCallback - x: {d} y: {d}\n", .{ x, y });
+}
+
+fn mouseButtonCallback(_: ?*c.GLFWwindow, button: c_int, action: c_int, mods: c_int) callconv(.C) void {
+    std.debug.print("mouseButtonCallback - button: {d} action: {d} mods: {d}\n", .{ button, action, mods });
+}
+
+fn registerGLFWCallbacks(win: *c.GLFWwindow) void {
+    _ = c.glfwSetCursorPosCallback(win, cursorPosCallback);
+    _ = c.glfwSetMouseButtonCallback(win, mouseButtonCallback);
 }
 
 pub fn getTime() f64 {
