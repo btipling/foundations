@@ -21,22 +21,20 @@ pub fn deinit(self: *Input, allocator: std.mem.Allocator) void {
 }
 
 fn cursorPosCallback(_: ?*c.GLFWwindow, x: f64, y: f64) callconv(.C) void {
-    std.debug.print("cursorPosCallback - x: {d} y: {d}\n", .{ x, y });
     const inp = input orelse return;
     inp.mouse_x = x;
     inp.mouse_y = y;
 }
 
 fn mouseButtonCallback(_: ?*c.GLFWwindow, button: c_int, action: c_int, mods: c_int) callconv(.C) void {
-    std.debug.print("mouseButtonCallback - button: {d} action: {d} mods: {d}\n", .{ button, action, mods });
     const inp = input orelse return;
     inp.mouse_button = button;
     inp.mouse_action = action;
     inp.mouse_mods = mods;
 }
 
-pub fn get() *Input {
-    return input orelse @panic("accessed invalid input");
+pub fn get() ?*Input {
+    return input;
 }
 
 fn registerGLFWCallbacks(win: *c.GLFWwindow) void {
@@ -44,7 +42,7 @@ fn registerGLFWCallbacks(win: *c.GLFWwindow) void {
     _ = c.glfwSetMouseButtonCallback(win, mouseButtonCallback);
 }
 
-fn endFrame(self: *Input) void {
+pub fn endFrame(self: *Input) void {
     self.* = .{};
 }
 

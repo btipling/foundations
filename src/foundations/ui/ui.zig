@@ -60,7 +60,7 @@ fn deinitCIMGUI() void {
 pub fn deinit() void {
     deinitCIMGUI();
     c.igDestroyContext(ui.ctx);
-    input.get().deinit(ui.allocator);
+    if (input.get()) |inp| inp.deinit(ui.allocator);
     glfw.destroyWindow(ui.win);
     glfw.deinit();
     ui.allocator.destroy(ui.state);
@@ -71,6 +71,7 @@ pub fn endFrame() void {
     c.igRender();
     c.ImGui_ImplOpenGL3_RenderDrawData(c.igGetDrawData());
     glfw.swapBuffers(ui.win);
+    if (input.get()) |inp| inp.endFrame();
 }
 
 pub fn shouldClose() bool {
