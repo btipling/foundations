@@ -63,9 +63,37 @@ pub inline fn inverseNormalizedQuat(q: Quat) Quat {
     return .{ q[0], -q[1], -q[2], -q[3] };
 }
 
+test inverseNormalizedQuat {
+    const a_q1: Quat = .{ @sin(std.math.pi) * -1, 3, 4, 3 };
+    const a_qn: Quat = vector.normalize(a_q1);
+    const a_qi = inverseNormalizedQuat(a_qn);
+    const a_e = identityQuat();
+    const a_r = multiplyQuaternions(a_qn, a_qi);
+    try std.testing.expect(float.equal(a_e[0], a_r[0], 0.0001));
+    try std.testing.expect(float.equal(a_e[1], a_r[1], 0.0001));
+    try std.testing.expect(float.equal(a_e[2], a_r[2], 0.0001));
+    try std.testing.expect(float.equal(a_e[3], a_r[3], 0.0001));
+}
+
 pub fn inverseQuat(q: Quat) Quat {
-    const qn = vector.normalize(q);
-    return inverseNormalizedQuat(qn);
+    const l = vector.lengthSquared(q);
+    return .{
+        q[0] / l,
+        -q[1] / l,
+        -q[2] / l,
+        -q[3] / l,
+    };
+}
+
+test inverseQuat {
+    const a_q1: Quat = .{ @sin(std.math.pi) * -1, 3, 4, 3 };
+    const a_qi = inverseQuat(a_q1);
+    const a_e = identityQuat();
+    const a_r = multiplyQuaternions(a_q1, a_qi);
+    try std.testing.expect(float.equal(a_e[0], a_r[0], 0.0001));
+    try std.testing.expect(float.equal(a_e[1], a_r[1], 0.0001));
+    try std.testing.expect(float.equal(a_e[2], a_r[2], 0.0001));
+    try std.testing.expect(float.equal(a_e[3], a_r[3], 0.0001));
 }
 
 pub fn rotateVectorWithNormalizedQuat(v: vector.vec3, q: Quat) vector.vec3 {
@@ -87,6 +115,22 @@ pub fn rotateVectorWithNormalizedQuat(v: vector.vec3, q: Quat) vector.vec3 {
         p_mul * vy + v_mul * qy + cross_mul * (qz * vx - qx * vz),
         p_mul * vz + v_mul * qz + cross_mul * (qx * vy - qy * vx),
     };
+}
+
+test rotateVectorWithNormalizedQuat {
+    const a_v1: vector.vec3 = .{ 1, 0, 0 };
+    const a_q1: Quat = axisAngleToQuat(degreesToRadians(180), .{ 0, 1, 0 });
+    const a_qn = vector.normalize(a_q1);
+    const a_e: vector.vec3 = .{ -1, 0, 0 };
+    const a_r = rotateVectorWithNormalizedQuat(a_v1, a_qn);
+    std.debug.print("a_r: ({d}, {d}, {d})", .{
+        a_r[0],
+        a_r[1],
+        a_r[2],
+    });
+    try std.testing.expect(float.equal(a_e[0], a_r[0], 0.0001));
+    try std.testing.expect(float.equal(a_e[1], a_r[1], 0.0001));
+    try std.testing.expect(float.equal(a_e[2], a_r[2], 0.0001));
 }
 
 pub fn radiansToDegrees(r: anytype) f32 {
