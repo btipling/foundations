@@ -1,5 +1,13 @@
 pub const Quat = vector.vec4;
 
+pub fn axisAngleToQuat(angle: f32, axis: vector.vec3) Quat {
+    const half_angle = angle * 0.5;
+    const w = @cos(half_angle);
+    const nv = vector.normalize(axis);
+    const v: vector.vec3 = vector.mul(@sin(half_angle), nv);
+    return .{ w, v[0], v[1], v[2] };
+}
+
 pub fn multiplyQuaternions(q2: Quat, q1: Quat) Quat {
     const v1: vector.vec3 = .{ q1[1], q1[2], q1[3] };
     const v2: vector.vec3 = .{ q2[1], q2[2], q2[3] };
