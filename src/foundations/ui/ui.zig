@@ -14,11 +14,18 @@ var ui: *UI = undefined;
 pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version: []const u8) void {
     // Initialize windowing
     glfw.init() catch @panic("no glfw");
+    errdefer glfw.deinit();
     const win = glfw.createWindow(@intCast(width), @intCast(height)) catch @panic("no window");
+    errdefer glfw.destroyWindow(win);
+
+    const inp = input.init(allocator, win);
+    errdefer inp.deinit(allocator);
 
     // Initialize cimgui
     const ctx = c.igCreateContext(null) orelse @panic("no imgui");
+    errdefer c.igDestroyContext(ctx);
     const io: *c.ImGuiIO = c.igGetIO();
+    errdefer deinitCIMGUI();
     const v = c.igGetVersion();
 
     std.debug.print("dear imgui version: {s}\n", .{v});
@@ -29,8 +36,10 @@ pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version:
     io.FontGlobalScale = scale;
 
     const s = allocator.create(ui_state) catch @panic("OOM");
+    errdefer allocator.destroy(s);
     s.* = .{};
     ui = allocator.create(UI) catch @panic("OOM");
+    errdefer allocator.destroy(ui);
     ui.* = .{
         .width = width,
         .height = height,
@@ -43,10 +52,15 @@ pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version:
     };
 }
 
-pub fn deinit() void {
+fn deinitCIMGUI() void {
     c.ImGui_ImplOpenGL3_Shutdown();
     c.ImGui_ImplGlfw_Shutdown();
+}
+
+pub fn deinit() void {
+    deinitCIMGUI();
     c.igDestroyContext(ui.ctx);
+    input.get().deinit(ui.allocator);
     glfw.destroyWindow(ui.win);
     glfw.deinit();
     ui.allocator.destroy(ui.state);
@@ -94,3 +108,4 @@ pub const nav = @import("ui_navigation.zig").draw;
 
 pub const glfw = @import("ui_glfw.zig");
 pub const ui_state = @import("ui_state.zig");
+pub const input = @import("ui_input.zig");
