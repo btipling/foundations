@@ -8,6 +8,16 @@ pub fn axisAngleToQuat(angle: f32, axis: vector.vec3) Quat {
     return .{ w, v[0], v[1], v[2] };
 }
 
+test axisAngleToQuat {
+    const a_q: Quat = axisAngleToQuat(degreesToRadians(90), .{ 1, 0, 0 });
+    const a_e: Quat = .{ 0.70710677, 0.70710677, 0, 0 };
+    try std.testing.expectEqual(a_e, a_q);
+
+    const b_q: Quat = axisAngleToQuat(degreesToRadians(90), .{ 0, 1, 0 });
+    const b_e: Quat = .{ 0.70710677, 0, 0.70710677, 0 };
+    try std.testing.expectEqual(b_e, b_q);
+}
+
 pub fn multiplyQuaternions(q2: Quat, q1: Quat) Quat {
     const v1: vector.vec3 = .{ q1[1], q1[2], q1[3] };
     const v2: vector.vec3 = .{ q2[1], q2[2], q2[3] };
@@ -16,6 +26,33 @@ pub fn multiplyQuaternions(q2: Quat, q1: Quat) Quat {
     v = vector.add(v, vector.mul(q2[0], v1));
     v = vector.add(v, vector.crossProduct(v2, v1));
     return .{ w, v[0], v[1], v[2] };
+}
+
+test multiplyQuaternions {
+    const a_q: Quat = axisAngleToQuat(degreesToRadians(90), .{ 1, 0, 0 });
+    const a_e = a_q;
+    const a_r = multiplyQuaternions(a_q, identityQuat());
+    try std.testing.expectEqual(a_e, a_r);
+
+    // (-sin(π) + 3i + 4j + 3k) × (4 + 3.9i -1j -3k) = 1.3 + 3 i + 36.7 j - 6.6 k
+    const b_q1: Quat = .{ @sin(std.math.pi) * -1, 3, 4, 3 };
+    const b_q2: Quat = .{ 4, 3.9, -1, -3 };
+    const b_e: Quat = .{ 1.3, 3, 36.7, -6.6 };
+    const b_r = multiplyQuaternions(b_q1, b_q2);
+    try std.testing.expect(float.equal(b_e[0], b_r[0], 0.0001));
+    try std.testing.expect(float.equal(b_e[1], b_r[1], 0.0001));
+    try std.testing.expect(float.equal(b_e[2], b_r[2], 0.0001));
+    try std.testing.expect(float.equal(b_e[3], b_r[3], 0.0001));
+
+    // (sin(π) + 2i + 7j + 3k) × (1 -1i + 2.5j -4k) = -3.5 - 33.5 i + 12 j + 15 k
+    const c_q1: Quat = .{ @sin(std.math.pi), 2, 7, 3 };
+    const c_q2: Quat = .{ 1, -1, 2.5, -4 };
+    const c_e: Quat = .{ -3.5, -33.5, 12, 15 };
+    const c_r = multiplyQuaternions(c_q1, c_q2);
+    try std.testing.expect(float.equal(c_e[0], c_r[0], 0.0001));
+    try std.testing.expect(float.equal(c_e[1], c_r[1], 0.0001));
+    try std.testing.expect(float.equal(c_e[2], c_r[2], 0.0001));
+    try std.testing.expect(float.equal(c_e[3], c_r[3], 0.0001));
 }
 
 pub inline fn identityQuat() Quat {
