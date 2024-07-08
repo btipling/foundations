@@ -34,8 +34,8 @@ fn cursorPosCallback(_: ?*c.GLFWwindow, z: f64, x: f64) callconv(.C) void {
     const inp = input orelse return;
     const _x: f32 = @floatCast(x);
     const _z: f32 = @floatCast(z);
-    inp.mouse_x = _x / inp.win_height;
-    inp.mouse_z = _z / inp.win_width;
+    inp.mouse_x = ((_x / inp.win_height) - 0.5) * -2;
+    inp.mouse_z = ((_z / inp.win_width) - 0.5) * 2;
 }
 
 fn mouseButtonCallback(_: ?*c.GLFWwindow, button: c_int, action: c_int, mods: c_int) callconv(.C) void {
@@ -58,6 +58,8 @@ pub fn endFrame(self: *Input) void {
     self.* = .{
         .win_width = self.win_width,
         .win_height = self.win_height,
+        .mouse_x = self.mouse_x,
+        .mouse_z = self.mouse_z,
     };
 }
 

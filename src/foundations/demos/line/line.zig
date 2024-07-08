@@ -22,17 +22,26 @@ pub fn deinit(self: *Line, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *Line, _: f64) void {
-    if (ui.input.get()) |input| {
-        const button = input.mouse_button orelse return;
-        const action = input.mouse_action orelse return;
-        const x = input.mouse_x orelse return;
-        const z = input.mouse_z orelse return;
-        if (button != c.GLFW_MOUSE_BUTTON_1) return;
-        if (action != c.GLFW_PRESS) return;
-        self.addPoint(x, z);
-    }
+    self.handleInput();
     if (self.num_objects > 0) rhi.drawObjects(self.objects[0..self.num_objects]);
     self.ui_state.draw();
+}
+
+fn handleInput(self: *Line) void {
+    const input = ui.input.get() orelse return;
+    const button = input.mouse_button orelse return;
+    const action = input.mouse_action orelse return;
+    if (button != c.GLFW_MOUSE_BUTTON_1) return;
+    std.debug.print("button: {any} action: {any} x: {any} z:{any}\n", .{
+        input.mouse_button,
+        input.mouse_action,
+        input.mouse_x,
+        input.mouse_z,
+    });
+    if (action != c.GLFW_PRESS) return;
+    const x = input.mouse_x orelse return;
+    const z = input.mouse_z orelse return;
+    self.addPoint(x, z);
 }
 
 fn addPoint(self: *Line, x: f32, z: f32) void {
@@ -47,10 +56,11 @@ fn addPoint(self: *Line, x: f32, z: f32) void {
     };
     var m = math.matrix.leftHandedXUpToNDC();
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(0.01, 0.01, 0.01));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 0.05, 0.05));
     rhi.setUniformMatrix(program, "f_transform", m);
     self.objects[self.num_objects] = circle;
     self.num_objects += 1;
+    std.debug.print("added point ({d}, 0, {d}) num_points: {d}\n", .{ x, z, self.num_objects });
 }
 
 const std = @import("std");
