@@ -1,6 +1,7 @@
 objects: [100]object.object = undefined,
 num_objects: usize = 0,
 point: ?*point = null,
+highlighted_point: ?usize = null,
 ui_state: line_ui,
 allocator: std.mem.Allocator,
 
@@ -28,7 +29,23 @@ pub fn draw(self: *Line, _: f64) void {
     self.ui_state.draw();
 }
 
+fn handleOver(self: *Line) bool {
+    self.highlighted_point = null;
+    const input = ui.input.get() orelse return false;
+    const root_point = self.point orelse return false;
+    const x = input.mouse_x orelse return false;
+    const z = input.mouse_z orelse return false;
+    const px = point.coordinate(x);
+    const pz = point.coordinate(z);
+    if (root_point.getAt(px, pz)) |p| {
+        self.highlighted_point = p.index;
+        return true;
+    }
+    return false;
+}
+
 fn handleInput(self: *Line) void {
+    if (self.handleOver()) return;
     const input = ui.input.get() orelse return;
     const button = input.mouse_button orelse return;
     const action = input.mouse_action orelse return;
@@ -50,7 +67,7 @@ fn addPoint(self: *Line, x: f32, z: f32) void {
     const px = point.coordinate(x);
     const pz = point.coordinate(z);
     if (self.point) |p| {
-        if (p.addAt(self.allocator, px, pz, x, z)) |np| {
+        if (p.addAt(self.allocator, px, pz, x, z, self.num_objects)) |np| {
             self.objects[self.num_objects] = np.circle;
             self.num_objects += 1;
             std.debug.print("no: {d}\n", .{self.num_objects});
@@ -58,7 +75,7 @@ fn addPoint(self: *Line, x: f32, z: f32) void {
         }
         return;
     }
-    const np = point.init(self.allocator, px, pz, x, z);
+    const np = point.init(self.allocator, px, pz, x, z, self.num_objects);
     self.point = np;
     self.objects[self.num_objects] = np.circle;
     self.num_objects += 1;
