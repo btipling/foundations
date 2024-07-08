@@ -74,14 +74,14 @@ fn addPoint(self: *Line, x: f32, z: f32) void {
     const px = point.coordinate(x);
     const pz = point.coordinate(z);
     if (self.point) |p| {
-        if (p.addAt(self.allocator, px, pz, x, z, self.num_objects)) |np| {
+        if (p.addAt(self.allocator, px, pz, self.num_objects)) |np| {
             self.objects[self.num_objects] = np.circle;
             self.num_objects += 1;
             return;
         }
         return;
     }
-    const np = point.init(self.allocator, px, pz, x, z, self.num_objects);
+    const np = point.init(self.allocator, px, pz, self.num_objects);
     self.point = np;
     self.objects[self.num_objects] = np.circle;
     self.num_objects += 1;

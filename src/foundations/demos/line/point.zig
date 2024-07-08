@@ -13,10 +13,12 @@ const vertex_shader: []const u8 = @embedFile("line_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("line_frag.glsl");
 
 pub inline fn coordinate(c: f32) f32 {
-    return @floor(c * 10) / 10;
+    var n: f32 = @floor(c * 10) / 10;
+    n += 0.075;
+    return n;
 }
 
-pub fn init(allocator: std.mem.Allocator, px: f32, pz: f32, x: f32, z: f32, index: usize) *Point {
+pub fn init(allocator: std.mem.Allocator, px: f32, pz: f32, index: usize) *Point {
     const p = allocator.create(Point) catch @panic("OOM");
 
     const program = rhi.createProgram();
@@ -28,7 +30,7 @@ pub fn init(allocator: std.mem.Allocator, px: f32, pz: f32, x: f32, z: f32, inde
         ),
     };
     var m = math.matrix.leftHandedXUpToNDC();
-    m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
+    m = math.matrix.transformMatrix(m, math.matrix.translate(px, 0, pz));
     m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 0.05, 0.05));
     rhi.setUniformMatrix(program, "f_transform", m);
     rhi.setUniformVec4(program, "f_highlighted_color", .{ 1, 1, 1, 1 });
@@ -49,36 +51,36 @@ pub fn deinit(self: *Point, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn addAt(self: *Point, allocator: std.mem.Allocator, px: f32, pz: f32, x: f32, z: f32, index: usize) ?*Point {
+pub fn addAt(self: *Point, allocator: std.mem.Allocator, px: f32, pz: f32, index: usize) ?*Point {
     if (self.x == px and self.z == pz) {
         std.debug.print("\n ({d}, {d}) already a point\n\n", .{ px, pz });
         return null;
     }
     if (self.x < px) {
         if (self.x_small_node) |n| {
-            return n.addAt(allocator, px, pz, x, z, index);
+            return n.addAt(allocator, px, pz, index);
         }
-        self.x_small_node = init(allocator, px, pz, x, z, index);
+        self.x_small_node = init(allocator, px, pz, index);
         return self.x_small_node;
     }
     if (self.x > px) {
         if (self.x_big_node) |n| {
-            return n.addAt(allocator, px, pz, x, z, index);
+            return n.addAt(allocator, px, pz, index);
         }
-        self.x_big_node = init(allocator, px, pz, x, z, index);
+        self.x_big_node = init(allocator, px, pz, index);
         return self.x_big_node;
     }
     if (self.z < pz) {
         if (self.z_small_node) |n| {
-            return n.addAt(allocator, px, pz, x, z, index);
+            return n.addAt(allocator, px, pz, index);
         }
-        self.z_small_node = init(allocator, px, pz, x, z, index);
+        self.z_small_node = init(allocator, px, pz, index);
         return self.z_small_node;
     }
     if (self.z_big_node) |n| {
-        return n.addAt(allocator, px, pz, x, z, index);
+        return n.addAt(allocator, px, pz, index);
     }
-    self.z_big_node = init(allocator, px, pz, x, z, index);
+    self.z_big_node = init(allocator, px, pz, index);
     return self.z_big_node;
 }
 
