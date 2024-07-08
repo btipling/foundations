@@ -1,23 +1,24 @@
 objects: [100]object.object = undefined,
 num_objects: usize = 0,
+point: ?*point = null,
 ui_state: line_ui,
+allocator: std.mem.Allocator,
 
 const Line = @This();
-
-const vertex_shader: []const u8 = @embedFile("line_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("line_frag.glsl");
 
 pub fn init(allocator: std.mem.Allocator) *Line {
     const line = allocator.create(Line) catch @panic("OOM");
 
     line.* = .{
         .ui_state = .{},
+        .allocator = allocator,
     };
 
     return line;
 }
 
 pub fn deinit(self: *Line, allocator: std.mem.Allocator) void {
+    if (self.point) |p| p.deinit(allocator);
     allocator.destroy(self);
 }
 
@@ -46,21 +47,22 @@ fn handleInput(self: *Line) void {
 
 fn addPoint(self: *Line, x: f32, z: f32) void {
     if (self.num_objects == self.objects.len) return;
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
-    const circle: object.object = .{
-        .circle = object.circle.init(
-            program,
-            .{ 1, 1, 1, 1 },
-        ),
-    };
-    var m = math.matrix.leftHandedXUpToNDC();
-    m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 0.05, 0.05));
-    rhi.setUniformMatrix(program, "f_transform", m);
-    self.objects[self.num_objects] = circle;
+    const px = point.coordinate(x);
+    const pz = point.coordinate(z);
+    if (self.point) |p| {
+        if (p.addAt(self.allocator, px, pz, x, z)) |np| {
+            self.objects[self.num_objects] = np.circle;
+            self.num_objects += 1;
+            std.debug.print("no: {d}\n", .{self.num_objects});
+            return;
+        }
+        return;
+    }
+    const np = point.init(self.allocator, px, pz, x, z);
+    self.point = np;
+    self.objects[self.num_objects] = np.circle;
     self.num_objects += 1;
-    std.debug.print("added point ({d}, 0, {d}) num_points: {d}\n", .{ x, z, self.num_objects });
+    std.debug.print("initial no: {d}\n", .{self.num_objects});
 }
 
 const std = @import("std");
@@ -69,4 +71,4 @@ const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const line_ui = @import("line_ui.zig");
 const object = @import("../../object/object.zig");
-const math = @import("../../math/math.zig");
+const point = @import("point.zig");
