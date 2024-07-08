@@ -4,7 +4,7 @@ demo_instances: [num_demos]ui.ui_state.demos = undefined,
 ui_state: *ui.ui_state,
 allocator: std.mem.Allocator,
 
-const num_demos = 10;
+const num_demos = 11;
 
 const Demos = @This();
 
