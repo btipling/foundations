@@ -33,6 +33,8 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     errdefer circ.deinit(allocator);
     const sp = sphere.init(allocator);
     errdefer sp.deinit(allocator);
+    const li = line.init(allocator);
+    errdefer li.deinit(allocator);
 
     demos.demo_instances[@intFromEnum(demo_type.point)] = .{ .point = p };
     demos.demo_instances[@intFromEnum(demo_type.point_rotating)] = .{ .point_rotating = pr };
@@ -43,6 +45,7 @@ pub fn init(allocator: std.mem.Allocator, ui_state: *ui.ui_state) *Demos {
     demos.demo_instances[@intFromEnum(demo_type.cubes_animated)] = .{ .cubes_animated = ca };
     demos.demo_instances[@intFromEnum(demo_type.circle)] = .{ .circle = circ };
     demos.demo_instances[@intFromEnum(demo_type.sphere)] = .{ .sphere = sp };
+    demos.demo_instances[@intFromEnum(demo_type.line)] = .{ .line = li };
     return demos;
 }
 
@@ -76,3 +79,4 @@ const linear_colorspace = @import("linear_colorspace/linear_colorspace.zig");
 const cubes_animated = @import("cubes_animated/cubes_animated.zig");
 const circle = @import("circle/circle.zig");
 const sphere = @import("sphere/sphere.zig");
+const line = @import("line/line.zig");

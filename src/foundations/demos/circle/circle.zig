@@ -32,12 +32,6 @@ pub fn draw(self: *Circle, _: f64) void {
     rhi.setUniformMatrix(self.program, "f_transform", math.matrix.leftHandedXUpToNDC());
 }
 
-fn clearVectors(self: *Circle) void {
-    rhi.deleteObjects(self.objects[0..self.num_objects]);
-    self.num_vectors = 0;
-    self.num_objects = 0;
-}
-
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");

@@ -1,4 +1,4 @@
-demo_current: demo_type = .sphere,
+demo_current: demo_type = .line,
 
 pub const demo_type = enum(usize) {
     point,
@@ -10,6 +10,7 @@ pub const demo_type = enum(usize) {
     linear_colorspace,
     circle,
     sphere,
+    line,
 };
 
 pub const demos = union(demo_type) {
@@ -22,6 +23,7 @@ pub const demos = union(demo_type) {
     linear_colorspace: *linear_colorspace,
     circle: *circle,
     sphere: *sphere,
+    line: *line,
 };
 
 const point = @import("../demos/point/point.zig");
@@ -33,3 +35,4 @@ const linear_colorspace = @import("../demos/linear_colorspace/linear_colorspace.
 const cubes_animated = @import("../demos/cubes_animated/cubes_animated.zig");
 const circle = @import("../demos/circle/circle.zig");
 const sphere = @import("../demos/sphere/sphere.zig");
+const line = @import("../demos/line/line.zig");

@@ -37,15 +37,6 @@ pub fn deinit(self: *Sphere, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *Sphere, frame_time: f64) void {
-    if (ui.input.get()) |input| {
-        if (input.mouse_action) |action| {
-            std.debug.print("sphere mouse action: {d} mouse x: {any} mouse y: {any}\n", .{
-                action,
-                input.mouse_x,
-                input.mouse_y,
-            });
-        }
-    }
     const ft: f32 = @floatCast(frame_time);
     const rot = @mod(ft, self.ui_state.rotation_time) / self.ui_state.rotation_time;
     const angle_radiants: f32 = @as(f32, @floatCast(rot)) * std.math.pi * 2;
@@ -55,12 +46,6 @@ pub fn draw(self: *Sphere, frame_time: f64) void {
     rhi.setUniformMatrix(self.program, "f_transform", m);
     rhi.setUniformMatrix(self.program, "f_color_transform", math.matrix.rotationY(angle_radiants));
     self.ui_state.draw();
-}
-
-fn clearVectors(self: *Sphere) void {
-    rhi.deleteObjects(self.objects[0..self.num_objects]);
-    self.num_vectors = 0;
-    self.num_objects = 0;
 }
 
 const std = @import("std");

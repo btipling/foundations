@@ -33,6 +33,9 @@ pub fn draw() void {
             if (c.igMenuItem_Bool("Vector Arithmetic", null, false, true)) {
                 ui.state().demo_current = .math_vector_arithmetic;
             }
+            if (c.igMenuItem_Bool("Lines", null, false, true)) {
+                ui.state().demo_current = .line;
+            }
             c.igEndMenu();
         }
         if (c.igBeginMenu("Color", true)) {

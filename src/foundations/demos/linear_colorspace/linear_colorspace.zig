@@ -76,12 +76,6 @@ pub fn draw(self: *LinearColorSpace, _: f64) void {
     rhi.drawObjects(self.objects[0..]);
 }
 
-fn clearVectors(self: *LinearColorSpace) void {
-    rhi.deleteObjects(self.objects[0..self.num_objects]);
-    self.num_vectors = 0;
-    self.num_objects = 0;
-}
-
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
