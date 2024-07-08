@@ -31,13 +31,13 @@ pub fn init(allocator: std.mem.Allocator, px: f32, pz: f32, x: f32, z: f32, inde
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
     m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 0.05, 0.05));
     rhi.setUniformMatrix(program, "f_transform", m);
+    rhi.setUniformVec4(program, "f_highlighted_color", .{ 1, 1, 1, 1 });
     p.* = .{
         .x = px,
         .z = pz,
         .circle = circle,
         .index = index,
     };
-    std.debug.print("\nadded initial point ({d}, 0, {d})\n\n", .{ px, pz });
     return p;
 }
 
