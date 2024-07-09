@@ -3,7 +3,7 @@ num_vectors: usize = 0,
 points: [101]math.vector.vec3 = undefined,
 point_selected: usize = 0,
 num_points: usize = 0,
-next_vec_data: [3]f32 = .{ 0, 0, 0 },
+next_vec_data: [3]f32 = .{ -0.5, 0.5, 0 },
 
 pub const max_vectors: usize = 100;
 
@@ -46,6 +46,7 @@ fn drawPoints(self: *vma_ui) void {
     const scale = ui.helpers().scale;
     const selectable_dims = c.ImVec2_ImVec2_Float(100 * scale, 20 * scale).*;
     const flags = c.ImGuiSelectableFlags_SpanAvailWidth | c.ImGuiSelectableFlags_AllowDoubleClick;
+    c.igSetNextItemOpen(true, c.ImGuiCond_Once);
     if (c.igTreeNode_Str("points")) {
         var i: usize = 0;
         var buf: [250]u8 = undefined;

@@ -1,4 +1,5 @@
 demo_instance: ?ui.ui_state.demos = null,
+next_demo_type: ?ui.ui_state.demo_type = null,
 
 allocator: std.mem.Allocator,
 
@@ -15,6 +16,12 @@ pub fn init(allocator: std.mem.Allocator) *Demos {
 }
 
 pub fn setDemo(self: *Demos, dt: ui.ui_state.demo_type) void {
+    self.next_demo_type = dt;
+}
+
+fn updateDemoType(self: *Demos) void {
+    const dt = self.next_demo_type orelse return;
+    self.next_demo_type = null;
     if (self.demo_instance) |cdt| if (cdt == dt) return;
     self.deinitDemo();
     self.initDemo(dt);
@@ -42,6 +49,10 @@ fn deinitDemo(self: Demos) void {
             inline else => |d| d.deinit(self.allocator),
         }
     }
+}
+
+pub fn updateDemo(self: *Demos, _: f64) void {
+    self.updateDemoType();
 }
 
 pub fn drawDemo(self: Demos, frame_time: f64) void {

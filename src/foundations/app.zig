@@ -38,6 +38,7 @@ pub fn run(self: *App) void {
     while (!ui.shouldClose()) {
         rhi.beginFrame();
         ui.beginFrame();
+        self.demos.updateDemo(ui.glfw.getTime());
         self.demos.drawDemo(ui.glfw.getTime());
         self.nav.draw();
         ui.endFrame();

@@ -65,7 +65,6 @@ pub fn beginFrame() void {
     c.glViewport(0, 0, @intCast(dims[0]), @intCast(dims[1]));
     c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
     c.glClearColor(0, 0, 0, 1);
-    c.glEnable(c.GL_FRAMEBUFFER_SRGB);
 }
 
 pub fn createProgram() u32 {
