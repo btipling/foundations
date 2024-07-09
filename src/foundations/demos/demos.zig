@@ -55,4 +55,3 @@ pub fn drawDemo(self: Demos, frame_time: f64) void {
 
 const std = @import("std");
 const ui = @import("../ui/ui.zig");
-const demo_type = ui.ui_state.demo_type;
