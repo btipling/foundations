@@ -1,4 +1,5 @@
 demos: *demos,
+nav: ui.nav,
 allocator: std.mem.Allocator,
 
 const App = @This();
@@ -11,12 +12,17 @@ pub fn init(allocator: std.mem.Allocator) *App {
     const glsl_version: []const u8 = "#version 460";
 
     ui.init(allocator, width, height, glsl_version);
+    errdefer ui.deinit();
     rhi.init(allocator);
+    errdefer rhi.deinit();
+    const d = demos.init(allocator);
+    errdefer d.deinit();
 
     app = allocator.create(App) catch @panic("OOM");
     app.* = .{
-        .demos = demos.init(allocator, ui.state()),
+        .demos = d,
         .allocator = allocator,
+        .nav = ui.nav.init(d),
     };
     return app;
 }
@@ -33,7 +39,7 @@ pub fn run(self: *App) void {
         rhi.beginFrame();
         ui.beginFrame();
         self.demos.drawDemo(ui.glfw.getTime());
-        ui.nav();
+        self.nav.draw();
         ui.endFrame();
     }
 }

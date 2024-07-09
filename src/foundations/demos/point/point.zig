@@ -11,6 +11,10 @@ const Point = @This();
 const vertex_shader: []const u8 = @embedFile("vertex.glsl");
 const frag_shader: []const u8 = @embedFile("frag.glsl");
 
+pub fn new(_: *Point, allocator: std.mem.Allocator) *Point {
+    return init(allocator);
+}
+
 pub fn init(allocator: std.mem.Allocator) *Point {
     const program = rhi.createProgram();
     const vao = rhi.createVAO();

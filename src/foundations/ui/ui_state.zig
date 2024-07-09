@@ -1,5 +1,3 @@
-demo_current: demo_type = .line,
-
 pub const demo_type = enum(usize) {
     point,
     point_rotating,

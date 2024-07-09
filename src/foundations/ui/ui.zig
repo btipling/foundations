@@ -105,7 +105,7 @@ pub fn state() *ui_state {
 const std = @import("std");
 const c = @import("../c.zig").c;
 const ui_helpers = @import("ui_helpers.zig");
-pub const nav = @import("ui_navigation.zig").draw;
+pub const nav = @import("ui_navigation.zig");
 
 pub const glfw = @import("ui_glfw.zig");
 pub const ui_state = @import("ui_state.zig");
