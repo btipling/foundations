@@ -11,6 +11,7 @@ pub fn init(allocator: std.mem.Allocator) *Demos {
     demos.* = .{
         .allocator = allocator,
     };
+    demos.initDemo(ui.ui_state.demo_type.line);
     return demos;
 }
 
