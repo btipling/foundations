@@ -1,4 +1,3 @@
-// demos
 demo_instance: ?ui.ui_state.demos = null,
 
 allocator: std.mem.Allocator,
