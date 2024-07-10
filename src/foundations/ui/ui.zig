@@ -85,7 +85,7 @@ pub fn windowDimensions() [2]u32 {
 
 pub fn hellWorld() void {
     var show = true;
-    c.igShowDemoWindow(@ptrCast(&show));
+    c.igShowSceneWindow(@ptrCast(&show));
 }
 
 pub fn beginFrame() void {

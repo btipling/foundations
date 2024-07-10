@@ -1,4 +1,4 @@
-demos: *demos,
+scenes: *scenes,
 nav: ui.nav,
 allocator: std.mem.Allocator,
 
@@ -15,12 +15,12 @@ pub fn init(allocator: std.mem.Allocator) *App {
     errdefer ui.deinit();
     rhi.init(allocator);
     errdefer rhi.deinit();
-    const d = demos.init(allocator);
+    const d = scenes.init(allocator);
     errdefer d.deinit();
 
     app = allocator.create(App) catch @panic("OOM");
     app.* = .{
-        .demos = d,
+        .scenes = d,
         .allocator = allocator,
         .nav = ui.nav.init(d),
     };
@@ -28,7 +28,7 @@ pub fn init(allocator: std.mem.Allocator) *App {
 }
 
 pub fn deinit(self: *App) void {
-    self.demos.deinit();
+    self.scenes.deinit();
     rhi.deinit();
     ui.deinit();
     self.allocator.destroy(self);
@@ -38,8 +38,8 @@ pub fn run(self: *App) void {
     while (!ui.shouldClose()) {
         rhi.beginFrame();
         ui.beginFrame();
-        self.demos.updateDemo(ui.glfw.getTime());
-        self.demos.drawDemo(ui.glfw.getTime());
+        self.scenes.updateScene(ui.glfw.getTime());
+        self.scenes.drawScene(ui.glfw.getTime());
         self.nav.draw();
         ui.endFrame();
     }
@@ -47,5 +47,5 @@ pub fn run(self: *App) void {
 
 const std = @import("std");
 const ui = @import("ui/ui.zig");
-const demos = @import("demos/demos.zig");
+const scenes = @import("scenes/scenes.zig");
 const rhi = @import("rhi/rhi.zig");
