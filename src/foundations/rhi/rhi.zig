@@ -87,10 +87,7 @@ pub const attributeData = struct {
 pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
-    const data_size: usize = @sizeOf(attributeData);
-    const size = @as(isize, @intCast(data.len * data_size));
-    const data_ptr: *const anyopaque = data.ptr;
-    c.glNamedBufferData(buffer, size, data_ptr, c.GL_STATIC_DRAW);
+    const data_size = updateNamedBuffer(buffer, c.GL_STATIC_DRAW, data);
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
@@ -112,6 +109,14 @@ pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
     c.glVertexArrayAttribBinding(vao, 2, 0);
 
     return .{ .vao = vao, .buffer = buffer };
+}
+
+pub fn updateNamedBuffer(name: u32, draw_hint: c.GLenum, data: []attributeData) usize {
+    const data_size: usize = @sizeOf(attributeData);
+    const size = @as(isize, @intCast(data.len * data_size));
+    const data_ptr: *const anyopaque = data.ptr;
+    c.glNamedBufferData(name, size, data_ptr, draw_hint);
+    return data_size;
 }
 
 pub fn initEBO(indices: []const u32, vao: u32) u32 {
