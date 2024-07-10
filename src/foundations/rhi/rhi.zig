@@ -114,10 +114,10 @@ pub fn attachBuffer(
 pub fn attachInstancedBuffer(
     vertex_data: []attributeData,
     instance_data: []instanceData,
-    vertex_bind_index: u32,
-    instance_bind_index: u32,
 ) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
+    const vertex_bind_index: usize = 0;
+    const instance_bind_index: usize = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
 
     const vertex_data_size = @as(isize, @intCast(vertex_data.len * @sizeOf(attributeData)));
@@ -130,6 +130,7 @@ pub fn attachInstancedBuffer(
     c.glVertexArrayVertexBuffer(vao, vertex_bind_index, buffer, 0, vertex_data_size);
     c.glVertexArrayVertexBuffer(vao, instance_bind_index, buffer, vertex_data_size, instance_data_size);
     defineVertexData(vao);
+    defineInstanceData(vao, instance_bind_index);
 
     return .{ .vao = vao, .buffer = buffer };
 }
@@ -144,16 +145,16 @@ fn defineVertexData(vao: u32) void {
     inline for (0..3) |i| c.glVertexArrayAttribBinding(vao, i, 0);
 }
 
-fn defineInstanceData(vao: u32, instance_bind_index: u32, offset: usize, location_offset: c_int) void {
+fn defineInstanceData(vao: u32, instance_bind_index: usize, offset: usize, location_offset: c_int) void {
     c.glVertexArrayBindingDivisor(vao, instance_bind_index, 1);
 
     inline for (1..6) |i| c.glEnableVertexArrayAttrib(vao, location_offset + i);
 
-    c.glVertexArrayAttribFormat(vao, location_offset + 1, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column0"));
-    c.glVertexArrayAttribFormat(vao, location_offset + 2, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column1"));
-    c.glVertexArrayAttribFormat(vao, location_offset + 3, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column2"));
-    c.glVertexArrayAttribFormat(vao, location_offset + 4, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column3"));
-    c.glVertexArrayAttribFormat(vao, location_offset + 5, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "color"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 1, 4, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column0"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 2, 4, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column1"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 3, 4, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column2"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 4, 4, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column3"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 5, 4, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "color"));
 
     inline for (1..6) |i| c.glVertexArrayAttribBinding(vao, location_offset + i, 0);
 }
