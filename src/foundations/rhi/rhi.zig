@@ -84,17 +84,50 @@ pub const attributeData = struct {
     normals: [3]f32 = .{ 0, 0, 0 },
 };
 
+pub const instanceData = struct {
+    t_column0: [4]f32,
+    t_column1: [4]f32,
+    t_column2: [4]f32,
+    t_column3: [4]f32,
+    color: [4]f32,
+};
+
 pub fn attachBuffer(
     data: []attributeData,
 ) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
-    const data_size = updateNamedBuffer(buffer, c.GL_STATIC_DRAW, data);
+
+    const data_size = @sizeOf(attributeData);
+    const size = @as(isize, @intCast(data.len * data_size));
+    updateNamedBuffer(buffer, size, c.GL_STATIC_DRAW, data);
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
     c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, @intCast(data_size));
+    defineVertexData(vao);
 
+    return .{ .vao = vao, .buffer = buffer };
+}
+
+pub fn attachInstancedBuffer(
+    data: []attributeData,
+) struct { vao: u32, buffer: u32 } {
+    var buffer: c.GLuint = 0;
+    c.glCreateBuffers(1, @ptrCast(&buffer));
+
+    const data_size = @as(isize, @intCast(data.len * @sizeOf(attributeData)));
+    updateNamedBuffer(buffer, data_size, c.GL_STATIC_DRAW, data);
+
+    var vao: c.GLuint = 0;
+    c.glCreateVertexArrays(1, @ptrCast(&vao));
+    c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, data_size);
+    defineVertexData(vao);
+
+    return .{ .vao = vao, .buffer = buffer };
+}
+
+fn defineVertexData(vao: u32) void {
     c.glEnableVertexArrayAttrib(vao, 0);
     c.glEnableVertexArrayAttrib(vao, 1);
     c.glEnableVertexArrayAttrib(vao, 2);
@@ -106,17 +139,12 @@ pub fn attachBuffer(
     c.glVertexArrayAttribBinding(vao, 0, 0);
     c.glVertexArrayAttribBinding(vao, 1, 0);
     c.glVertexArrayAttribBinding(vao, 2, 0);
-
-    return .{ .vao = vao, .buffer = buffer };
 }
 
-pub fn updateNamedBuffer(name: u32, draw_hint: c.GLenum, data: []attributeData) usize {
-    const data_size: usize = @sizeOf(attributeData);
-    const size = @as(isize, @intCast(data.len * data_size));
+pub fn updateNamedBuffer(name: u32, size: isize, draw_hint: c.GLenum, data: []attributeData) void {
     const data_ptr: *const anyopaque = data.ptr;
     c.glNamedBufferData(name, size, null, draw_hint);
     c.glNamedBufferSubData(name, 0, size, data_ptr);
-    return data_size;
 }
 
 pub fn initEBO(indices: []const u32, vao: u32) u32 {
