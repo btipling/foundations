@@ -96,6 +96,7 @@ pub fn attachBuffer(
     data: []attributeData,
 ) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
+    const bind_index: usize = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
 
     const data_size = @sizeOf(attributeData);
@@ -104,24 +105,30 @@ pub fn attachBuffer(
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
-    c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, @intCast(data_size));
+    c.glVertexArrayVertexBuffer(vao, bind_index, buffer, 0, @intCast(data_size));
     defineVertexData(vao);
 
     return .{ .vao = vao, .buffer = buffer };
 }
 
 pub fn attachInstancedBuffer(
-    data: []attributeData,
+    vertex_data: []attributeData,
+    instance_data: []instanceData,
+    vertex_bind_index: u32,
+    instance_bind_index: u32,
 ) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
 
-    const data_size = @as(isize, @intCast(data.len * @sizeOf(attributeData)));
-    updateNamedBuffer(buffer, data_size, c.GL_STATIC_DRAW, data);
+    const vertex_data_size = @as(isize, @intCast(vertex_data.len * @sizeOf(attributeData)));
+    const instance_data_size = @as(isize, @intCast(instance_data.len * @sizeOf(instanceData)));
+    updateNamedBuffer(buffer, vertex_data_size + instance_data_size, c.GL_STATIC_DRAW, vertex_data);
+    c.glNamedBufferSubData(buffer, vertex_data_size, instance_data_size, instance_data);
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
-    c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, data_size);
+    c.glVertexArrayVertexBuffer(vao, vertex_bind_index, buffer, 0, vertex_data_size);
+    c.glVertexArrayVertexBuffer(vao, instance_bind_index, buffer, vertex_data_size, instance_data_size);
     defineVertexData(vao);
 
     return .{ .vao = vao, .buffer = buffer };
@@ -139,6 +146,27 @@ fn defineVertexData(vao: u32) void {
     c.glVertexArrayAttribBinding(vao, 0, 0);
     c.glVertexArrayAttribBinding(vao, 1, 0);
     c.glVertexArrayAttribBinding(vao, 2, 0);
+}
+
+fn defineInstanceData(vao: u32, offset: usize, location_offset: c_int) void {
+    c.glEnableVertexArrayAttrib(vao, location_offset + 1);
+    c.glEnableVertexArrayAttrib(vao, location_offset + 2);
+    c.glEnableVertexArrayAttrib(vao, location_offset + 3);
+    c.glEnableVertexArrayAttrib(vao, location_offset + 4);
+    c.glEnableVertexArrayAttrib(vao, location_offset + 5);
+
+    c.glVertexArrayAttribFormat(vao, location_offset + 1, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column0"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 2, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column1"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 3, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column2"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 4, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column3"));
+    c.glVertexArrayAttribFormat(vao, location_offset + 5, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "color"));
+
+    c.glVertexArrayAttribBinding(vao, location_offset + 1, 0);
+    c.glVertexArrayAttribBinding(vao, location_offset + 2, 0);
+    c.glVertexArrayAttribBinding(vao, location_offset + 3, 0);
+    c.glVertexArrayAttribBinding(vao, location_offset + 4, 0);
+    c.glVertexArrayAttribBinding(vao, location_offset + 5, 0);
+    c.glVertexArrayBindingDivisor(vao, 1, 1);
 }
 
 pub fn updateNamedBuffer(name: u32, size: isize, draw_hint: c.GLenum, data: []attributeData) void {
