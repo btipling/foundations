@@ -135,25 +135,19 @@ pub fn attachInstancedBuffer(
 }
 
 fn defineVertexData(vao: u32) void {
-    c.glEnableVertexArrayAttrib(vao, 0);
-    c.glEnableVertexArrayAttrib(vao, 1);
-    c.glEnableVertexArrayAttrib(vao, 2);
+    inline for (0..3) |i| c.glEnableVertexArrayAttrib(vao, i);
 
     c.glVertexArrayAttribFormat(vao, 0, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "position"));
     c.glVertexArrayAttribFormat(vao, 1, 4, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "color"));
     c.glVertexArrayAttribFormat(vao, 2, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "normals"));
 
-    c.glVertexArrayAttribBinding(vao, 0, 0);
-    c.glVertexArrayAttribBinding(vao, 1, 0);
-    c.glVertexArrayAttribBinding(vao, 2, 0);
+    inline for (0..3) |i| c.glVertexArrayAttribBinding(vao, i, 0);
 }
 
-fn defineInstanceData(vao: u32, offset: usize, location_offset: c_int) void {
-    c.glEnableVertexArrayAttrib(vao, location_offset + 1);
-    c.glEnableVertexArrayAttrib(vao, location_offset + 2);
-    c.glEnableVertexArrayAttrib(vao, location_offset + 3);
-    c.glEnableVertexArrayAttrib(vao, location_offset + 4);
-    c.glEnableVertexArrayAttrib(vao, location_offset + 5);
+fn defineInstanceData(vao: u32, instance_bind_index: u32, offset: usize, location_offset: c_int) void {
+    c.glVertexArrayBindingDivisor(vao, instance_bind_index, 1);
+
+    inline for (1..6) |i| c.glEnableVertexArrayAttrib(vao, location_offset + i);
 
     c.glVertexArrayAttribFormat(vao, location_offset + 1, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column0"));
     c.glVertexArrayAttribFormat(vao, location_offset + 2, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column1"));
@@ -161,12 +155,7 @@ fn defineInstanceData(vao: u32, offset: usize, location_offset: c_int) void {
     c.glVertexArrayAttribFormat(vao, location_offset + 4, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "t_column3"));
     c.glVertexArrayAttribFormat(vao, location_offset + 5, 3, c.GL_FLOAT, c.GL_FALSE, offset + @offsetOf(instanceData, "color"));
 
-    c.glVertexArrayAttribBinding(vao, location_offset + 1, 0);
-    c.glVertexArrayAttribBinding(vao, location_offset + 2, 0);
-    c.glVertexArrayAttribBinding(vao, location_offset + 3, 0);
-    c.glVertexArrayAttribBinding(vao, location_offset + 4, 0);
-    c.glVertexArrayAttribBinding(vao, location_offset + 5, 0);
-    c.glVertexArrayBindingDivisor(vao, 1, 1);
+    inline for (1..6) |i| c.glVertexArrayAttribBinding(vao, location_offset + i, 0);
 }
 
 pub fn updateNamedBuffer(name: u32, size: isize, draw_hint: c.GLenum, data: []attributeData) void {
