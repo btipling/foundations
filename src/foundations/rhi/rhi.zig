@@ -84,7 +84,9 @@ pub const attributeData = struct {
     normals: [3]f32 = .{ 0, 0, 0 },
 };
 
-pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
+pub fn attachBuffer(
+    data: []attributeData,
+) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
     const data_size = updateNamedBuffer(buffer, c.GL_STATIC_DRAW, data);
@@ -93,16 +95,13 @@ pub fn attachBuffer(data: []attributeData) struct { vao: u32, buffer: u32 } {
     c.glCreateVertexArrays(1, @ptrCast(&vao));
     c.glVertexArrayVertexBuffer(vao, 0, buffer, 0, @intCast(data_size));
 
-    const vec_3_size: c.GLsizei = @intCast(@sizeOf(f32) * 3);
-    const vec_4_size: c.GLsizei = @intCast(@sizeOf(f32) * 4);
-
     c.glEnableVertexArrayAttrib(vao, 0);
     c.glEnableVertexArrayAttrib(vao, 1);
     c.glEnableVertexArrayAttrib(vao, 2);
 
-    c.glVertexArrayAttribFormat(vao, 0, 3, c.GL_FLOAT, c.GL_FALSE, 0);
-    c.glVertexArrayAttribFormat(vao, 1, 4, c.GL_FLOAT, c.GL_FALSE, vec_3_size);
-    c.glVertexArrayAttribFormat(vao, 2, 3, c.GL_FLOAT, c.GL_FALSE, vec_3_size + vec_4_size);
+    c.glVertexArrayAttribFormat(vao, 0, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "position"));
+    c.glVertexArrayAttribFormat(vao, 1, 4, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "color"));
+    c.glVertexArrayAttribFormat(vao, 2, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "normals"));
 
     c.glVertexArrayAttribBinding(vao, 0, 0);
     c.glVertexArrayAttribBinding(vao, 1, 0);
@@ -115,7 +114,8 @@ pub fn updateNamedBuffer(name: u32, draw_hint: c.GLenum, data: []attributeData) 
     const data_size: usize = @sizeOf(attributeData);
     const size = @as(isize, @intCast(data.len * data_size));
     const data_ptr: *const anyopaque = data.ptr;
-    c.glNamedBufferData(name, size, data_ptr, draw_hint);
+    c.glNamedBufferData(name, size, null, draw_hint);
+    c.glNamedBufferSubData(name, 0, size, data_ptr);
     return data_size;
 }
 
