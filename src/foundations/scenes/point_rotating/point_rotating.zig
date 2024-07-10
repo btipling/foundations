@@ -9,6 +9,13 @@ const RotatingPoint = @This();
 const vertex_shader: []const u8 = @embedFile("point_rotating_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("point_rotating_frag.glsl");
 
+pub fn navType() ui.ui_state.scene_nav_info {
+    return .{
+        .nav_type = .shape,
+        .name = "Point Rotating",
+    };
+}
+
 pub fn init(allocator: std.mem.Allocator) *RotatingPoint {
     const program = rhi.createProgram();
     const vao = rhi.createVAO();
@@ -47,3 +54,4 @@ const std = @import("std");
 const pr_ui = @import("point_rotating_ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
+const ui = @import("../../ui/ui.zig");

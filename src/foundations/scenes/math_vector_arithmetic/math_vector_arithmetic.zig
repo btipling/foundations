@@ -8,6 +8,13 @@ const MathVectorArithmetic = @This();
 const vertex_shader: []const u8 = @embedFile("mva_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("mva_frag.glsl");
 
+pub fn navType() ui.ui_state.scene_nav_info {
+    return .{
+        .nav_type = .math,
+        .name = "Vector Math",
+    };
+}
+
 pub fn init(allocator: std.mem.Allocator) *MathVectorArithmetic {
     const p = allocator.create(MathVectorArithmetic) catch @panic("OOM");
     p.* = .{
@@ -124,3 +131,4 @@ const vma_ui = @import("math_vector_arithmetic_ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
+const ui = @import("../../ui/ui.zig");

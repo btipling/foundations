@@ -11,8 +11,11 @@ const Point = @This();
 const vertex_shader: []const u8 = @embedFile("vertex.glsl");
 const frag_shader: []const u8 = @embedFile("frag.glsl");
 
-pub fn new(_: *Point, allocator: std.mem.Allocator) *Point {
-    return init(allocator);
+pub fn navType() ui.ui_state.scene_nav_info {
+    return .{
+        .nav_type = .shape,
+        .name = "Point",
+    };
 }
 
 pub fn init(allocator: std.mem.Allocator) *Point {
@@ -49,3 +52,4 @@ pub fn draw(self: *Point, _: f64) void {
 
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
+const ui = @import("../../ui/ui.zig");

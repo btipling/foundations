@@ -8,6 +8,13 @@ const AnimatedTriangle = @This();
 const vertex_shader: []const u8 = @embedFile("vertex.glsl");
 const frag_shader: []const u8 = @embedFile("frag.glsl");
 
+pub fn navType() ui.ui_state.scene_nav_info {
+    return .{
+        .nav_type = .shape,
+        .name = "Triangle animated",
+    };
+}
+
 pub fn init(allocator: std.mem.Allocator) *AnimatedTriangle {
     const program = rhi.createProgram();
     const vao = rhi.createVAO();
@@ -43,3 +50,4 @@ pub fn draw(self: *AnimatedTriangle, frame_time: f64) void {
 
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
+const ui = @import("../../ui/ui.zig");

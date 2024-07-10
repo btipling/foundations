@@ -5,6 +5,13 @@ const LinearColorSpace = @This();
 const vertex_shader: []const u8 = @embedFile("lcs_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("lcs_frag.glsl");
 
+pub fn navType() ui.ui_state.scene_nav_info {
+    return .{
+        .nav_type = .color,
+        .name = "Linear Colorspace",
+    };
+}
+
 pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
     const p = allocator.create(LinearColorSpace) catch @panic("OOM");
 
@@ -80,3 +87,4 @@ const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
+const ui = @import("../../ui/ui.zig");

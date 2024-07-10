@@ -7,6 +7,13 @@ allocator: std.mem.Allocator,
 
 const Line = @This();
 
+pub fn navType() ui.ui_state.scene_nav_info {
+    return .{
+        .nav_type = .math,
+        .name = "Line",
+    };
+}
+
 pub fn init(allocator: std.mem.Allocator) *Line {
     const line = allocator.create(Line) catch @panic("OOM");
 

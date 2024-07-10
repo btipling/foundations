@@ -24,6 +24,17 @@ pub const scenes = union(scene_type) {
     line: *line,
 };
 
+pub const scene_nav_type = enum {
+    shape,
+    math,
+    color,
+};
+
+pub const scene_nav_info = struct {
+    nav_type: scene_nav_type,
+    name: []const u8,
+};
+
 const point = @import("../scenes/point/point.zig");
 const point_rotating = @import("../scenes/point_rotating/point_rotating.zig");
 const triangle = @import("../scenes/triangle/triangle.zig");

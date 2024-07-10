@@ -14,46 +14,38 @@ pub fn draw(self: *Nav) void {
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     if (c.igBeginMainMenuBar()) {
         if (c.igBeginMenu("Shapes", true)) {
-            if (c.igMenuItem_Bool("Point", null, false, true)) {
-                self.app_scenes.setScene(.point);
-            }
-            if (c.igMenuItem_Bool("Rotating Point", null, false, true)) {
-                self.app_scenes.setScene(.point_rotating);
-            }
-            if (c.igMenuItem_Bool("Triangle", null, false, true)) {
-                self.app_scenes.setScene(.triangle);
-            }
-            if (c.igMenuItem_Bool("Animated Triangle", null, false, true)) {
-                self.app_scenes.setScene(.triangle_animated);
-            }
-            if (c.igMenuItem_Bool("Animated Cubes", null, false, true)) {
-                self.app_scenes.setScene(.cubes_animated);
-            }
-            if (c.igMenuItem_Bool("Circle", null, false, true)) {
-                self.app_scenes.setScene(.circle);
-            }
-            if (c.igMenuItem_Bool("Shere", null, false, true)) {
-                self.app_scenes.setScene(.sphere);
-            }
+            self.navMenuItems(.shape);
             c.igEndMenu();
         }
         if (c.igBeginMenu("Math", true)) {
-            if (c.igMenuItem_Bool("Vector Arithmetic", null, false, true)) {
-                self.app_scenes.setScene(.math_vector_arithmetic);
-            }
-            if (c.igMenuItem_Bool("Lines", null, false, true)) {
-                self.app_scenes.setScene(.line);
-            }
+            self.navMenuItems(.math);
             c.igEndMenu();
         }
         if (c.igBeginMenu("Color", true)) {
-            if (c.igMenuItem_Bool("Linear colorspace", null, false, true)) {
-                self.app_scenes.setScene(.linear_colorspace);
-            }
+            self.navMenuItems(.color);
             c.igEndMenu();
         }
-
         c.igEndMainMenuBar();
+    }
+}
+
+inline fn navMenuItems(self: *Nav, nav_type: ui.ui_state.scene_nav_type) void {
+    inline for (std.meta.fields(ui.ui_state.scene_type)) |field| {
+        const dt = @field(ui.ui_state.scene_type, field.name);
+        switch (dt) {
+            inline else => |dtag| {
+                const ntfn: *const fn () ui.ui_state.scene_nav_info = @field(std.meta.Child(std.meta.TagPayload(
+                    ui.ui_state.scenes,
+                    dtag,
+                )), "navType");
+                const nav_info: ui.ui_state.scene_nav_info = @call(.auto, ntfn, .{});
+                if (nav_info.nav_type == nav_type) {
+                    if (c.igMenuItem_Bool(@ptrCast(nav_info.name), null, false, true)) {
+                        self.app_scenes.setScene(dt);
+                    }
+                }
+            },
+        }
     }
 }
 

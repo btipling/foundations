@@ -20,6 +20,13 @@ const colors: [3][4]f32 = .{
 const vertex_shader: []const u8 = @embedFile("vertex.glsl");
 const frag_shader: []const u8 = @embedFile("frag.glsl");
 
+pub fn navType() ui.ui_state.scene_nav_info {
+    return .{
+        .nav_type = .shape,
+        .name = "Triangle",
+    };
+}
+
 pub fn init(allocator: std.mem.Allocator) *Triangle {
     const t = allocator.create(Triangle) catch @panic("OOM");
     const program = rhi.createProgram();
@@ -54,3 +61,4 @@ pub fn draw(self: *Triangle, _: f64) void {
 
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
+const ui = @import("../../ui/ui.zig");
