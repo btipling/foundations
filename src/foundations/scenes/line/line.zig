@@ -1,5 +1,3 @@
-points: [100]*point = undefined,
-num_points: usize = 0,
 point: ?*point = null,
 highlighted_point: ?usize = null,
 ui_state: line_ui,
@@ -33,8 +31,7 @@ pub fn deinit(self: *Line, allocator: std.mem.Allocator) void {
 pub fn draw(self: *Line, _: f64) void {
     self.handleInput();
     if (self.point) |p| {
-        const objects: [1]object.object = .{p.circle.?};
-        rhi.drawObjects(objects[0..]);
+        p.draw();
     }
     self.ui_state.draw();
 }
@@ -71,19 +68,12 @@ fn handleInput(self: *Line) void {
 }
 
 fn addPoint(self: *Line, x: f32, z: f32) void {
-    if (self.num_points == self.points.len) return;
     if (self.point) |p| {
-        if (p.addAt(self.allocator, x, z, self.num_points)) |np| {
-            self.points[self.num_points] = np;
-            self.num_points += 1;
-            return;
-        }
+        p.addAt(self.allocator, x, z);
         return;
     }
-    const np = point.init(self.allocator, x, z, self.num_points);
+    const np = point.initRoot(self.allocator, x, z);
     self.point = np;
-    self.points[self.num_points] = np;
-    self.num_points += 1;
 }
 
 const std = @import("std");
