@@ -12,13 +12,15 @@ out vec4 fo_color;
 
 void main()
 {
-    mat4 f_transform = mat4(
-        f_t_column0,
-        f_t_column1,
-        f_t_column2,
-        f_t_column3
-    );
-    vec4 pos = f_transform * vec4(f_position.xyz, 1.0);
+    // mat4 f_transform = mat4(
+    //     f_t_column0,
+    //     f_t_column1,
+    //     f_t_column2,
+    //     f_t_column3
+    // );
+    // vec4 pos = f_transform * vec4(f_position.xyz, 1.0);
+    vec4 pos = vec4(f_position.xyz, 1.0);
     gl_Position = pos;
-    fo_color = f_i_color;
+    // fo_color = f_i_color;
+    fo_color = f_color;
 }
