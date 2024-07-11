@@ -11,8 +11,12 @@ z_small_node: ?*Point = null,
 points: [100]*Point = undefined,
 i_data: rhi.instanceData = undefined,
 num_points: usize = 0,
+highlighted_point: ?usize = null,
 
 const Point = @This();
+
+const normal_color: [4]f32 = .{ 1, 1, 1, 1 };
+const highlighted_color: [4]f32 = .{ 1, 0, 1, 1 };
 
 const vertex_shader: []const u8 = @embedFile("line_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("line_frag.glsl");
@@ -91,6 +95,24 @@ pub fn addAt(self: *Point, allocator: std.mem.Allocator, x: f32, z: f32) void {
         self.deleteCircle();
         self.initCircle();
     }
+}
+
+pub fn highlight(self: *Point, index: usize) void {
+    if (self.highlighted_point) |hp| {
+        self.points[hp].i_data.color = normal_color;
+    }
+    self.points[index].i_data.color = highlighted_color;
+    self.highlighted_point = index;
+    self.deleteCircle();
+    self.initCircle();
+}
+
+pub fn clearHighlight(self: *Point) void {
+    const hp = self.highlighted_point orelse return;
+    self.highlighted_point = null;
+    self.points[hp].i_data.color = normal_color;
+    self.deleteCircle();
+    self.initCircle();
 }
 
 pub fn draw(self: *Point) void {

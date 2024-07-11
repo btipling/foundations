@@ -1,5 +1,4 @@
 point: ?*point = null,
-highlighted_point: ?usize = null,
 ui_state: line_ui,
 allocator: std.mem.Allocator,
 
@@ -37,21 +36,19 @@ pub fn draw(self: *Line, _: f64) void {
 }
 
 fn handleOver(self: *Line) bool {
-    if (self.highlighted_point) |hp| {
-        _ = hp;
-    }
-    self.highlighted_point = null;
-    const input = ui.input.get() orelse return false;
     const root_point = self.point orelse return false;
-    const x = input.mouse_x orelse return false;
-    const z = input.mouse_z orelse return false;
-    const px = point.coordinate(x);
-    const pz = point.coordinate(z);
-    if (root_point.getAt(px, pz)) |p| {
-        const hp = p.index;
-        self.highlighted_point = hp;
-        return true;
+    clear_highlight: {
+        const input = ui.input.get() orelse break :clear_highlight;
+        const x = input.mouse_x orelse break :clear_highlight;
+        const z = input.mouse_z orelse break :clear_highlight;
+        const px = point.coordinate(x);
+        const pz = point.coordinate(z);
+        if (root_point.getAt(px, pz)) |p| {
+            root_point.highlight(p.index);
+            return true;
+        }
     }
+    root_point.clearHighlight();
     return false;
 }
 
