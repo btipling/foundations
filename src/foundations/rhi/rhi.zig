@@ -242,7 +242,6 @@ pub fn drawElements(m: mesh, element: mesh.element) void {
 pub fn drawInstances(m: mesh, instanced: mesh.instanced) void {
     c.glUseProgram(@intCast(m.program));
     c.glBindVertexArray(m.vao);
-    // c.glDrawElements(instanced.primitive, @intCast(instanced.index_count), instanced.format, null);
     c.glDrawElementsInstanced(
         instanced.primitive,
         @intCast(instanced.index_count),
