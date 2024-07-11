@@ -18,10 +18,20 @@ pub fn init(allocator: std.mem.Allocator) *Circle {
 
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
+    const m = math.matrix.leftHandedXUpToNDC();
+    var i_data: [1]rhi.instanceData = .{
+        .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 0, 0, 1, 1 },
+        },
+    };
     const circle: object.object = .{
         .circle = object.circle.init(
             program,
-            .{ 1, 1, 1, 1 },
+            i_data[0..],
         ),
     };
     p.program = program;
