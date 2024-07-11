@@ -144,9 +144,9 @@ pub fn attachInstancedBuffer(
 fn defineVertexData(vao: u32, vertex_bind_index: usize) void {
     inline for (0..3) |i| c.glEnableVertexArrayAttrib(vao, @intCast(i));
 
-    c.glVertexArrayAttribFormat(vao, 0, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "position"));
-    c.glVertexArrayAttribFormat(vao, 1, 4, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "color"));
-    c.glVertexArrayAttribFormat(vao, 2, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "normals"));
+    inline for (std.meta.fields(attributeData), 0..) |field, i| {
+        c.glVertexArrayAttribFormat(vao, i, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, field.name));
+    }
 
     inline for (0..3) |i| c.glVertexArrayAttribBinding(vao, @intCast(i), @intCast(vertex_bind_index));
 }
@@ -154,11 +154,9 @@ fn defineVertexData(vao: u32, vertex_bind_index: usize) void {
 fn defineInstanceData(vao: u32, instance_bind_index: usize, location_offset: usize) void {
     inline for (1..6) |i| c.glEnableVertexArrayAttrib(vao, @intCast(location_offset + i));
 
-    c.glVertexArrayAttribFormat(vao, @intCast(location_offset + 1), 4, c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(instanceData, "t_column0")));
-    c.glVertexArrayAttribFormat(vao, @intCast(location_offset + 2), 4, c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(instanceData, "t_column1")));
-    c.glVertexArrayAttribFormat(vao, @intCast(location_offset + 3), 4, c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(instanceData, "t_column2")));
-    c.glVertexArrayAttribFormat(vao, @intCast(location_offset + 4), 4, c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(instanceData, "t_column3")));
-    c.glVertexArrayAttribFormat(vao, @intCast(location_offset + 5), 4, c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(instanceData, "color")));
+    inline for (std.meta.fields(instanceData), 0..) |field, i| {
+        c.glVertexArrayAttribFormat(vao, @intCast(location_offset + i + 1), 4, c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(instanceData, field.name)));
+    }
 
     inline for (1..6) |i| c.glVertexArrayAttribBinding(vao, @intCast(location_offset + i), @intCast(instance_bind_index));
 
