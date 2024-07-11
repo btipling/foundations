@@ -148,10 +148,6 @@ fn defineVertexData(vao: u32, vertex_bind_index: usize) void {
     c.glVertexArrayAttribFormat(vao, 1, 4, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "color"));
     c.glVertexArrayAttribFormat(vao, 2, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, "normals"));
 
-    c.glVertexArrayAttribBinding(vao, 0, @intCast(vertex_bind_index));
-    c.glVertexArrayAttribBinding(vao, 1, @intCast(vertex_bind_index));
-    c.glVertexArrayAttribBinding(vao, 2, @intCast(vertex_bind_index));
-
     inline for (0..3) |i| c.glVertexArrayAttribBinding(vao, @intCast(i), @intCast(vertex_bind_index));
 }
 
