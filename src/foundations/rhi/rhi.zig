@@ -303,7 +303,7 @@ pub fn deleteMesh(m: mesh) void {
     if (m.buffer != 0) c.glDeleteBuffers(1, @ptrCast(&m.buffer));
 }
 
-pub fn drawObjects(objects: []object.object) void {
+pub fn drawObjects(objects: []const object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {

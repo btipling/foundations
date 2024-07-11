@@ -1,5 +1,5 @@
-objects: [100]object.object = undefined,
-num_objects: usize = 0,
+points: [100]*point = undefined,
+num_points: usize = 0,
 point: ?*point = null,
 highlighted_point: ?usize = null,
 ui_state: line_ui,
@@ -32,17 +32,16 @@ pub fn deinit(self: *Line, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *Line, _: f64) void {
     self.handleInput();
-    if (self.num_objects > 0) rhi.drawObjects(self.objects[0..self.num_objects]);
+    if (self.point) |p| {
+        const objects: [1]object.object = .{p.circle.?};
+        rhi.drawObjects(objects[0..]);
+    }
     self.ui_state.draw();
 }
 
 fn handleOver(self: *Line) bool {
     if (self.highlighted_point) |hp| {
-        rhi.setUniformVec4(
-            self.objects[hp].circle.mesh.program,
-            "f_highlighted_color",
-            .{ 1, 1, 1, 1 },
-        );
+        _ = hp;
     }
     self.highlighted_point = null;
     const input = ui.input.get() orelse return false;
@@ -53,11 +52,6 @@ fn handleOver(self: *Line) bool {
     const pz = point.coordinate(z);
     if (root_point.getAt(px, pz)) |p| {
         const hp = p.index;
-        // rhi.setUniformVec4(
-        //     self.objects[hp].circle.mesh.program,
-        //     "f_highlighted_color",
-        //     .{ 1, 0, 1, 1 },
-        // );
         self.highlighted_point = hp;
         return true;
     }
@@ -77,19 +71,19 @@ fn handleInput(self: *Line) void {
 }
 
 fn addPoint(self: *Line, x: f32, z: f32) void {
-    if (self.num_objects == self.objects.len) return;
+    if (self.num_points == self.points.len) return;
     if (self.point) |p| {
-        if (p.addAt(self.allocator, x, z, self.num_objects)) |np| {
-            self.objects[self.num_objects] = np.circle;
-            self.num_objects += 1;
+        if (p.addAt(self.allocator, x, z, self.num_points)) |np| {
+            self.points[self.num_points] = np;
+            self.num_points += 1;
             return;
         }
         return;
     }
-    const np = point.init(self.allocator, x, z, self.num_objects);
+    const np = point.init(self.allocator, x, z, self.num_points);
     self.point = np;
-    self.objects[self.num_objects] = np.circle;
-    self.num_objects += 1;
+    self.points[self.num_points] = np;
+    self.num_points += 1;
 }
 
 const std = @import("std");
