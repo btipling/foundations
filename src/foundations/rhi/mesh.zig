@@ -9,11 +9,13 @@ linear_colorspace: bool = true,
 pub const mesh_type = enum(usize) {
     array,
     element,
+    instanced,
 };
 
 pub const mesh_instance = union(mesh_type) {
     array: array,
     element: element,
+    instanced: instanced,
 };
 
 pub const array = struct {
@@ -25,6 +27,14 @@ pub const element = struct {
     format: c.GLenum,
     count: usize,
     ebo: u32,
+};
+
+pub const instanced = struct {
+    primitive: c.GLenum,
+    format: c.GLenum,
+    index_count: usize,
+    ebo: u32,
+    instances_count: usize,
 };
 
 const c = @import("../c.zig").c;

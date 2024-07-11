@@ -53,11 +53,11 @@ fn handleOver(self: *Line) bool {
     const pz = point.coordinate(z);
     if (root_point.getAt(px, pz)) |p| {
         const hp = p.index;
-        rhi.setUniformVec4(
-            self.objects[hp].circle.mesh.program,
-            "f_highlighted_color",
-            .{ 1, 0, 1, 1 },
-        );
+        // rhi.setUniformVec4(
+        //     self.objects[hp].circle.mesh.program,
+        //     "f_highlighted_color",
+        //     .{ 1, 0, 1, 1 },
+        // );
         self.highlighted_point = hp;
         return true;
     }

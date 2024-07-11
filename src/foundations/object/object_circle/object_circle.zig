@@ -6,7 +6,7 @@ const num_indices: usize = (num_vertices - 2) * 3;
 
 pub fn init(
     program: u32,
-    color: [4]f32,
+    instance_data: []rhi.instanceData,
 ) Circle {
     const d = data();
 
@@ -15,10 +15,11 @@ pub fn init(
     while (i < num_vertices) : (i += 1) {
         rhi_data[i] = .{
             .position = d.positions[i],
-            .color = color,
+            .color = .{ 1, 0, 1, 1 },
+            .normals = .{ 1, 0, 0 },
         };
     }
-    const vao_buf = rhi.attachBuffer(rhi_data[0..]);
+    const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
@@ -26,8 +27,9 @@ pub fn init(
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
             .instance_type = .{
-                .element = .{
-                    .count = num_indices,
+                .instanced = .{
+                    .index_count = num_indices,
+                    .instances_count = instance_data.len,
                     .ebo = ebo,
                     .primitive = c.GL_TRIANGLES,
                     .format = c.GL_UNSIGNED_INT,
