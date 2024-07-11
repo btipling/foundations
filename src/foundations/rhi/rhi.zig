@@ -129,7 +129,7 @@ pub fn attachInstancedBuffer(
     const instance_data_size = instance_data.len * instance_struct_data_size;
     c.glNamedBufferData(buffer, @intCast(vertex_data_size + instance_data_size), null, c.GL_STATIC_DRAW);
     c.glNamedBufferSubData(buffer, 0, @intCast(vertex_data_size), vertex_data.ptr);
-    // c.glNamedBufferSubData(buffer, @intCast(vertex_data_size), @intCast(instance_data_size), instance_data.ptr);
+    c.glNamedBufferSubData(buffer, @intCast(vertex_data_size), @intCast(instance_data_size), instance_data.ptr);
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
