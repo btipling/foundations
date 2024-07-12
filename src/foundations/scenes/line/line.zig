@@ -67,7 +67,6 @@ fn handleInput(self: *Line) void {
         if (self.point) |p| {
             if (button == c.GLFW_MOUSE_BUTTON_1) p.startDragging(pi);
         }
-        return;
     }
     if (action != c.GLFW_PRESS) return;
     if (button != c.GLFW_MOUSE_BUTTON_1) return;
