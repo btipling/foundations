@@ -142,20 +142,26 @@ pub fn attachInstancedBuffer(
 }
 
 fn defineVertexData(vao: u32, vertex_bind_index: usize) void {
-    inline for (0..3) |i| c.glEnableVertexArrayAttrib(vao, @intCast(i));
-    inline for (std.meta.fields(attributeData), 0..) |field, i| {
-        c.glVertexArrayAttribFormat(vao, i, 3, c.GL_FLOAT, c.GL_FALSE, @offsetOf(attributeData, field.name));
-    }
-    inline for (0..3) |i| c.glVertexArrayAttribBinding(vao, @intCast(i), @intCast(vertex_bind_index));
+    defineStructData(attributeData, vao, vertex_bind_index, 0);
 }
 
 fn defineInstanceData(vao: u32, instance_bind_index: usize, offset: usize) void {
-    inline for (1..6) |i| c.glEnableVertexArrayAttrib(vao, @intCast(offset + i));
-    inline for (std.meta.fields(instanceData), 0..) |field, i| {
-        c.glVertexArrayAttribFormat(vao, @intCast(offset + i + 1), 4, c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(instanceData, field.name)));
-    }
-    inline for (1..6) |i| c.glVertexArrayAttribBinding(vao, @intCast(offset + i), @intCast(instance_bind_index));
+    defineStructData(instanceData, vao, instance_bind_index, offset + 1);
     c.glVertexArrayBindingDivisor(vao, @intCast(instance_bind_index), 1);
+}
+
+fn defineStructData(comptime T: type, vao: u32, bind_index: usize, offset: usize) void {
+    const fields = std.meta.fields(T);
+    inline for (0..fields.len) |i| c.glEnableVertexArrayAttrib(vao, @intCast(offset + i));
+    inline for (fields, 0..) |field, i| {
+        const len: usize = switch (@typeInfo(field.type)) {
+            .Vector => |v| v.len,
+            .Array => |a| a.len,
+            else => 1,
+        };
+        c.glVertexArrayAttribFormat(vao, @intCast(offset + i), @intCast(len), c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(T, field.name)));
+    }
+    inline for (0..fields.len) |i| c.glVertexArrayAttribBinding(vao, @intCast(offset + i), @intCast(bind_index));
 }
 
 pub fn updateNamedBuffer(name: u32, size: usize, draw_hint: c.GLenum, data: []attributeData) void {
