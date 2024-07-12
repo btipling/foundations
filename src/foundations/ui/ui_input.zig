@@ -51,6 +51,10 @@ pub fn get() ?*Input {
     return input;
 }
 
+pub fn getReadOnly() ?*const Input {
+    return input;
+}
+
 fn registerGLFWCallbacks(win: *c.GLFWwindow) void {
     _ = c.glfwSetCursorPosCallback(win, cursorPosCallback);
     _ = c.glfwSetMouseButtonCallback(win, mouseButtonCallback);

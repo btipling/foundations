@@ -12,6 +12,7 @@ points: [point_limit]*Point = undefined,
 i_data: rhi.instanceData = undefined,
 num_points: usize = 0,
 highlighted_point: ?usize = null,
+dragging_point: ?usize = null,
 
 const point_limit: usize = 1000;
 
@@ -90,16 +91,66 @@ pub fn deinit(self: *Point, allocator: std.mem.Allocator) void {
 }
 
 pub fn addAt(self: *Point, allocator: std.mem.Allocator, x: f32, z: f32) void {
+    if (self.dragging_point != null) return;
     if (self.num_points == self.points.len) return;
     if (self.addAtTree(allocator, x, z, self.num_points)) |np| {
         self.points[self.num_points] = np;
         self.num_points += 1;
         self.deleteCircle();
         self.initCircle();
+        self.dragging_point = np.index;
     }
 }
 
+pub fn startDragging(self: *Point, pi: usize) void {
+    self.dragging_point = pi;
+}
+
+pub fn drag(self: *Point, x: f32, z: f32) bool {
+    const pi = self.dragging_point orelse return false;
+    if (self.index == pi) {
+        self.updatePoint(self, x, z);
+        return true;
+    }
+    const moved_p = self.points[pi];
+    self.updatePoint(moved_p, x, z);
+    return true;
+}
+
+fn updatePoint(self: *Point, moved_p: *Point, x: f32, z: f32) void {
+    var m = math.matrix.leftHandedXUpToNDC();
+    m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 0.05, 0.05));
+    const i_data: rhi.instanceData = .{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = .{ 1, 0, 1, 1 },
+    };
+    const px = coordinate(x);
+    const pz = coordinate(z);
+    moved_p.x = x;
+    moved_p.z = z;
+    moved_p.px = px;
+    moved_p.pz = pz;
+    moved_p.i_data = i_data;
+    self.deleteCircle();
+    self.initCircle();
+}
+
+pub fn release(self: *Point) void {
+    if (self.dragging_point) |pi| {
+        if (pi != self.index) {
+            const p = self.getAndRemoveAt(pi) orelse return;
+            _ = self.addPointAtTree(p.x, p.z, p) orelse return;
+        }
+    }
+    self.dragging_point = null;
+}
+
 pub fn highlight(self: *Point, index: usize) void {
+    if (self.num_points == 0) return;
     if (self.highlighted_point) |hp| {
         self.points[hp].i_data.color = normal_color;
     }
@@ -177,12 +228,79 @@ fn addAtTree(self: *Point, allocator: std.mem.Allocator, x: f32, z: f32, index: 
     return self.z_big_node;
 }
 
+fn addPointAtTree(self: *Point, x: f32, z: f32, p: *Point) ?*Point {
+    if (self.x <= x) {
+        if (self.x_small_node) |n| {
+            return n.addPointAtTree(x, z, p);
+        }
+        self.x_small_node = p;
+        return self.x_small_node;
+    }
+    if (self.x >= x) {
+        if (self.x_big_node) |n| {
+            return n.addPointAtTree(x, z, p);
+        }
+        self.x_big_node = p;
+        return self.x_big_node;
+    }
+    if (self.z <= z) {
+        if (self.z_small_node) |n| {
+            return n.addPointAtTree(x, z, p);
+        }
+        self.z_small_node = p;
+        return self.z_small_node;
+    }
+    if (self.z_big_node) |n| {
+        return n.addPointAtTree(x, z, p);
+    }
+    self.z_big_node = p;
+    return self.z_big_node;
+}
+
+pub fn getAddft(self: *Point, px: f32, pz: f32) ?*Point {
+    const p = self.getAt_(px, pz) orelse return null;
+    if (self.dragging_point) |_| return null;
+    return p;
+}
+
 pub fn getAt(self: *Point, px: f32, pz: f32) ?*Point {
     if (math.float.equal(self.px, px, 0.03) and math.float.equal(self.pz, pz, 0.03)) return self;
     if (self.px <= px) if (self.x_small_node) |n| if (n.getAt(px, pz)) |nn| return nn;
     if (self.px >= px) if (self.x_big_node) |n| if (n.getAt(px, pz)) |nn| return nn;
     if (self.pz <= pz) if (self.z_small_node) |n| if (n.getAt(px, pz)) |nn| return nn;
     if (self.pz >= pz) if (self.z_big_node) |n| if (n.getAt(px, pz)) |nn| return nn;
+    return null;
+}
+
+pub fn getAndRemoveAt(self: *Point, index: usize) ?*Point {
+    if (self.x_small_node) |p| {
+        if (p.index == index) {
+            self.x_small_node = null;
+            return p;
+        }
+        if (p.getAndRemoveAt(index)) |moved_p| return moved_p;
+    }
+    if (self.x_big_node) |p| {
+        if (p.index == index) {
+            self.x_big_node = null;
+            return p;
+        }
+        if (p.getAndRemoveAt(index)) |moved_p| return moved_p;
+    }
+    if (self.z_small_node) |p| {
+        if (p.index == index) {
+            self.z_small_node = null;
+            return p;
+        }
+        if (p.getAndRemoveAt(index)) |moved_p| return moved_p;
+    }
+    if (self.z_big_node) |p| {
+        if (p.index == index) {
+            self.z_big_node = null;
+            return p;
+        }
+        if (p.getAndRemoveAt(index)) |moved_p| return moved_p;
+    }
     return null;
 }
 

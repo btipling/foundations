@@ -54,22 +54,29 @@ fn handleOver(self: *Line) ?usize {
 
 fn handleInput(self: *Line) void {
     const p_index = self.handleOver();
-    const input = ui.input.get() orelse return;
+    const input = ui.input.getReadOnly() orelse return;
     const button = input.mouse_button orelse return;
     const action = input.mouse_action orelse return;
-    if (button != c.GLFW_MOUSE_BUTTON_1) return;
-    if (action != c.GLFW_PRESS) return;
     const x = input.mouse_x orelse return;
     const z = input.mouse_z orelse return;
+    if (action == c.GLFW_RELEASE) if (self.point) |p| {
+        p.release();
+        return;
+    };
     if (p_index) |pi| {
-        std.debug.print("moving point at index {d} to ({d}, {d})\n", .{ pi, x, z });
+        if (self.point) |p| {
+            if (button == c.GLFW_MOUSE_BUTTON_1) p.startDragging(pi);
+        }
         return;
     }
+    if (action != c.GLFW_PRESS) return;
+    if (button != c.GLFW_MOUSE_BUTTON_1) return;
     self.addPoint(x, z);
 }
 
 fn addPoint(self: *Line, x: f32, z: f32) void {
     if (self.point) |p| {
+        if (p.drag(x, z)) return;
         p.addAt(self.allocator, x, z);
         return;
     }
