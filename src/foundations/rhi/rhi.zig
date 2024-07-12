@@ -136,7 +136,7 @@ pub fn attachInstancedBuffer(
     c.glVertexArrayVertexBuffer(vao, vertex_bind_index, buffer, 0, @intCast(attribute_struct_data_size));
     c.glVertexArrayVertexBuffer(vao, instance_bind_index, buffer, @intCast(vertex_data_size), @intCast(instance_struct_data_size));
     defineVertexData(vao, vertex_bind_index);
-    defineInstanceData(vao, instance_bind_index, 2);
+    defineInstanceData(vao, instance_bind_index, std.meta.fields(attributeData).len);
 
     return .{ .vao = vao, .buffer = buffer };
 }
@@ -146,7 +146,7 @@ fn defineVertexData(vao: u32, vertex_bind_index: usize) void {
 }
 
 fn defineInstanceData(vao: u32, instance_bind_index: usize, offset: usize) void {
-    defineStructData(instanceData, vao, instance_bind_index, offset + 1);
+    defineStructData(instanceData, vao, instance_bind_index, offset);
     c.glVertexArrayBindingDivisor(vao, @intCast(instance_bind_index), 1);
 }
 
