@@ -35,8 +35,8 @@ pub fn draw(self: *Line, _: f64) void {
     self.ui_state.draw();
 }
 
-fn handleOver(self: *Line) bool {
-    const root_point = self.point orelse return false;
+fn handleOver(self: *Line) ?usize {
+    const root_point = self.point orelse return null;
     clear_highlight: {
         const input = ui.input.get() orelse break :clear_highlight;
         const x = input.mouse_x orelse break :clear_highlight;
@@ -45,15 +45,15 @@ fn handleOver(self: *Line) bool {
         const pz = point.coordinate(z);
         if (root_point.getAt(px, pz)) |p| {
             root_point.highlight(p.index);
-            return true;
+            return p.index;
         }
     }
     root_point.clearHighlight();
-    return false;
+    return null;
 }
 
 fn handleInput(self: *Line) void {
-    if (self.handleOver()) return;
+    const p_index = self.handleOver();
     const input = ui.input.get() orelse return;
     const button = input.mouse_button orelse return;
     const action = input.mouse_action orelse return;
@@ -61,6 +61,10 @@ fn handleInput(self: *Line) void {
     if (action != c.GLFW_PRESS) return;
     const x = input.mouse_x orelse return;
     const z = input.mouse_z orelse return;
+    if (p_index) |pi| {
+        std.debug.print("moving point at index {d} to ({d}, {d})\n", .{ pi, x, z });
+        return;
+    }
     self.addPoint(x, z);
 }
 

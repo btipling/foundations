@@ -5,6 +5,7 @@ mouse_action: ?c_int = null,
 mouse_mods: ?c_int = null,
 win_width: f32,
 win_height: f32,
+clear_input: bool = false,
 
 const Input = @This();
 
@@ -43,6 +44,7 @@ fn mouseButtonCallback(_: ?*c.GLFWwindow, button: c_int, action: c_int, mods: c_
     inp.mouse_button = button;
     inp.mouse_action = action;
     inp.mouse_mods = mods;
+    inp.clear_input = inp.mouse_action == c.GLFW_RELEASE;
 }
 
 pub fn get() ?*Input {
@@ -55,6 +57,7 @@ fn registerGLFWCallbacks(win: *c.GLFWwindow) void {
 }
 
 pub fn endFrame(self: *Input) void {
+    if (!self.clear_input) return;
     self.* = .{
         .win_width = self.win_width,
         .win_height = self.win_height,

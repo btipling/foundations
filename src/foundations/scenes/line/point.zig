@@ -8,10 +8,12 @@ x_big_node: ?*Point = null,
 x_small_node: ?*Point = null,
 z_big_node: ?*Point = null,
 z_small_node: ?*Point = null,
-points: [100]*Point = undefined,
+points: [point_limit]*Point = undefined,
 i_data: rhi.instanceData = undefined,
 num_points: usize = 0,
 highlighted_point: ?usize = null,
+
+const point_limit: usize = 1000;
 
 const Point = @This();
 
@@ -133,7 +135,7 @@ pub fn deleteCircle(self: *Point) void {
 pub fn initCircle(self: *Point) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    var i_data: [100]rhi.instanceData = undefined;
+    var i_data: [point_limit]rhi.instanceData = undefined;
     for (0..self.num_points) |i| {
         i_data[i] = self.points[i].i_data;
     }
