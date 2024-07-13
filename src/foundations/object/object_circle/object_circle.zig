@@ -1,4 +1,6 @@
 mesh: rhi.mesh,
+vertex_data_size: usize,
+instance_data_stride: usize,
 
 const Circle = @This();
 const num_vertices: usize = 100 * 3.14;
@@ -36,6 +38,8 @@ pub fn init(
                 },
             },
         },
+        .vertex_data_size = vao_buf.vertex_data_size,
+        .instance_data_stride = vao_buf.instance_data_stride,
     };
 }
 
