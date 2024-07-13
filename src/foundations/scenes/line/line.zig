@@ -1,4 +1,4 @@
-point: ?*point = null,
+manager: *manager = undefined,
 ui_state: line_ui,
 allocator: std.mem.Allocator,
 
@@ -17,26 +17,25 @@ pub fn init(allocator: std.mem.Allocator) *Line {
     line.* = .{
         .ui_state = .{},
         .allocator = allocator,
+        .manager = manager.init(allocator),
     };
 
     return line;
 }
 
 pub fn deinit(self: *Line, allocator: std.mem.Allocator) void {
-    if (self.point) |p| p.deinit(allocator);
+    self.manager.deinit(allocator);
     allocator.destroy(self);
 }
 
 pub fn draw(self: *Line, _: f64) void {
     self.handleInput();
-    if (self.point) |p| {
-        p.draw();
-    }
+    self.manager.draw();
     self.ui_state.draw();
 }
 
 fn handleOver(self: *Line) ?usize {
-    const root_point = self.point orelse return null;
+    const root_point = self.manager.rootPoint() orelse return null;
     clear_highlight: {
         const input = ui.input.get() orelse break :clear_highlight;
         const x = input.mouse_x orelse break :clear_highlight;
@@ -44,11 +43,11 @@ fn handleOver(self: *Line) ?usize {
         const px = point.coordinate(x);
         const pz = point.coordinate(z);
         if (root_point.getAt(px, pz)) |p| {
-            root_point.highlight(p.index);
+            self.manager.highlight(p.index);
             return p.index;
         }
     }
-    root_point.clearHighlight();
+    self.manager.clearHighlight();
     return null;
 }
 
@@ -59,14 +58,12 @@ fn handleInput(self: *Line) void {
     const action = input.mouse_action orelse return;
     const x = input.mouse_x orelse return;
     const z = input.mouse_z orelse return;
-    if (action == c.GLFW_RELEASE) if (self.point) |p| {
-        p.release();
+    if (action == c.GLFW_RELEASE) {
+        self.manager.release();
         return;
-    };
+    }
     if (p_index) |pi| {
-        if (self.point) |p| {
-            if (button == c.GLFW_MOUSE_BUTTON_1) p.startDragging(pi);
-        }
+        if (button == c.GLFW_MOUSE_BUTTON_1) self.manager.startDragging(pi);
     }
     if (action != c.GLFW_PRESS) return;
     if (button != c.GLFW_MOUSE_BUTTON_1) return;
@@ -74,13 +71,8 @@ fn handleInput(self: *Line) void {
 }
 
 fn addPoint(self: *Line, x: f32, z: f32) void {
-    if (self.point) |p| {
-        if (p.drag(x, z)) return;
-        p.addAt(self.allocator, x, z);
-        return;
-    }
-    const np = point.initRoot(self.allocator, x, z);
-    self.point = np;
+    if (self.manager.drag(x, z)) return;
+    self.manager.addAt(self.allocator, x, z);
 }
 
 const std = @import("std");
@@ -89,4 +81,5 @@ const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const line_ui = @import("line_ui.zig");
 const object = @import("../../object/object.zig");
-const point = @import("point.zig");
+const point = @import("line_point.zig");
+const manager = @import("line_manager.zig");
