@@ -148,6 +148,10 @@ pub fn attachInstancedBuffer(
     };
 }
 
+pub fn updateInstanceData(buffer: u32, vertex_data_size: usize, instance_data_stride: usize, index: usize, instance_data: instanceData) void {
+    c.glNamedBufferSubData(buffer, @intCast(vertex_data_size + instance_data_stride * index), @intCast(instance_data_stride), &instance_data);
+}
+
 fn defineVertexData(vao: u32, vertex_bind_index: usize) void {
     defineStructData(attributeData, vao, vertex_bind_index, 0);
 }

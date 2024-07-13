@@ -136,8 +136,12 @@ fn updatePoint(self: *Point, moved_p: *Point, x: f32, z: f32) void {
     moved_p.px = px;
     moved_p.pz = pz;
     moved_p.i_data = i_data;
-    self.deleteCircle();
-    self.initCircle();
+    if (self.circle) |o| {
+        switch (o) {
+            .circle => |c| c.updateInstanceAt(moved_p.index, i_data),
+            else => {},
+        }
+    }
 }
 
 pub fn release(self: *Point) void {
@@ -160,16 +164,26 @@ pub fn highlight(self: *Point, index: usize) void {
     }
     self.points[index].i_data.color = highlighted_color;
     self.highlighted_point = index;
-    self.deleteCircle();
-    self.initCircle();
+
+    if (self.circle) |o| {
+        switch (o) {
+            .circle => |c| c.updateInstanceAt(index, self.points[index].i_data),
+            else => {},
+        }
+    }
 }
 
 pub fn clearHighlight(self: *Point) void {
     const hp = self.highlighted_point orelse return;
     self.highlighted_point = null;
     self.points[hp].i_data.color = normal_color;
-    self.deleteCircle();
-    self.initCircle();
+
+    if (self.circle) |o| {
+        switch (o) {
+            .circle => |c| c.updateInstanceAt(hp, self.points[hp].i_data),
+            else => {},
+        }
+    }
 }
 
 pub fn draw(self: *Point) void {

@@ -43,6 +43,10 @@ pub fn init(
     };
 }
 
+pub fn updateInstanceAt(self: Circle, index: usize, instance_data: rhi.instanceData) void {
+    rhi.updateInstanceData(self.mesh.buffer, self.vertex_data_size, self.instance_data_stride, index, instance_data);
+}
+
 fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } {
     var p: [num_vertices][3]f32 = undefined;
     var indices: [num_indices]u32 = undefined;
