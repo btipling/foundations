@@ -34,7 +34,7 @@ fn messageCallback(
         c.GL_DEBUG_SEVERITY_LOW => "LOW",
         c.GL_DEBUG_SEVERITY_MEDIUM => "MEDIUM",
         c.GL_DEBUG_SEVERITY_HIGH => "HIGH",
-        else => "NOTIFICATION",
+        else => return, // "NOTIFICATION"
     };
     const msg_str: []const u8 = message[0..@intCast(length)];
     std.log.err("OpenGL Error: {s}, {s}, {s}, {d} {s}\n", .{
@@ -129,7 +129,7 @@ pub fn attachInstancedBuffer(
     const instance_data_stride = @sizeOf(instanceData);
     const vertex_data_size = vertex_data.len * vertex_data_stride;
     const instance_data_size = instance_data.len * instance_data_stride;
-    c.glNamedBufferData(buffer, @intCast(vertex_data_size + instance_data_size), null, c.GL_STATIC_DRAW);
+    c.glNamedBufferData(buffer, @intCast(vertex_data_size + instance_data_size), null, c.GL_DYNAMIC_DRAW);
     c.glNamedBufferSubData(buffer, 0, @intCast(vertex_data_size), vertex_data.ptr);
     c.glNamedBufferSubData(buffer, @intCast(vertex_data_size), @intCast(instance_data_size), instance_data.ptr);
 
