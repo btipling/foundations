@@ -3,32 +3,31 @@ vertex_data_size: usize,
 instance_data_stride: usize,
 
 const Strip = @This();
-const num_vertices: usize = 100 * 3.14;
-const num_indices: usize = (num_vertices - 2) * 3;
 
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
 ) Strip {
     // zig fmt: off
-    const d: [3][3]f32 = .{
-        .{ -1, -1,  0 },
-        .{  1, -1,  0 },
-        .{  0,  1,  0 },
+    const positions: [3][3]f32 = .{
+        .{ -1,  0, -1, },
+        .{ -1,  0,  1, },
+        .{  1,  0,  0, },
     };
     // zig fmt: on
+    var indices: [3]u32 = .{ 0, 1, 2 };
 
-    var rhi_data: [num_vertices]rhi.attributeData = undefined;
+    var rhi_data: [positions.len]rhi.attributeData = undefined;
     var i: usize = 0;
-    while (i < num_vertices) : (i += 1) {
+    while (i < positions.len) : (i += 1) {
         rhi_data[i] = .{
-            .position = d.positions[i],
+            .position = positions[i],
             .color = .{ 1, 0, 1, 1 },
             .normals = .{ 1, 0, 0 },
         };
     }
     const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data);
-    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
+    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
             .program = program,
@@ -36,7 +35,7 @@ pub fn init(
             .buffer = vao_buf.buffer,
             .instance_type = .{
                 .instanced = .{
-                    .index_count = num_indices,
+                    .index_count = indices.len,
                     .instances_count = instance_data.len,
                     .ebo = ebo,
                     .primitive = c.GL_TRIANGLES,

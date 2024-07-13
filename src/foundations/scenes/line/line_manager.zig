@@ -1,4 +1,5 @@
 circle: ?object.object = null,
+strip: ?object.object = null,
 points: [point_limit]*point = undefined,
 num_points: usize = 0,
 highlighted_point: ?usize = null,
@@ -47,6 +48,9 @@ pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32) void 
             self.initCircle();
             self.dragging_point = np.index;
         }
+    }
+    if (self.num_points > 1 and self.strip == null) {
+        self.initStrip();
     }
 }
 
@@ -119,8 +123,12 @@ pub fn clearHighlight(self: *Manager) void {
 }
 
 pub fn draw(self: *Manager) void {
-    if (self.circle) |c| {
-        const objects: [1]object.object = .{c};
+    if (self.circle) |cr| {
+        const objects: [1]object.object = .{cr};
+        rhi.drawObjects(objects[0..]);
+    }
+    if (self.strip) |s| {
+        const objects: [1]object.object = .{s};
         rhi.drawObjects(objects[0..]);
     }
 }
@@ -143,17 +151,38 @@ pub fn deleteCircle(self: *Manager) void {
 pub fn initCircle(self: *Manager) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    var i_data: [point_limit]rhi.instanceData = undefined;
+    var i_datas: [point_limit]rhi.instanceData = undefined;
     for (0..self.num_points) |i| {
-        i_data[i] = self.points[i].i_data;
+        i_datas[i] = self.points[i].i_data;
     }
     const circle: object.object = .{
         .circle = object.circle.init(
             program,
-            i_data[0..self.num_points],
+            i_datas[0..self.num_points],
         ),
     };
     self.circle = circle;
+}
+
+pub fn initStrip(self: *Manager) void {
+    const program = rhi.createProgram();
+    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const m = math.matrix.leftHandedXUpToNDC();
+    const i_data: rhi.instanceData = .{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = .{ 0, 0, 1, 1 },
+    };
+    var i_datas: [1]rhi.instanceData = .{i_data};
+    const strip: object.object = .{
+        .strip = object.strip.init(
+            program,
+            i_datas[0..],
+        ),
+    };
+    self.strip = strip;
 }
 
 const std = @import("std");
