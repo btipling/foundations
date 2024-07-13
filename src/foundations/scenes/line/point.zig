@@ -103,6 +103,7 @@ pub fn addAt(self: *Point, allocator: std.mem.Allocator, x: f32, z: f32) void {
 }
 
 pub fn startDragging(self: *Point, pi: usize) void {
+    if (self.dragging_point != null) return;
     self.dragging_point = pi;
 }
 
@@ -140,9 +141,10 @@ fn updatePoint(self: *Point, moved_p: *Point, x: f32, z: f32) void {
 }
 
 pub fn release(self: *Point) void {
-    if (self.dragging_point) |pi| {
-        if (pi != self.index) {
-            const p = self.getAndRemoveAt(pi) orelse return;
+    if (self.dragging_point) |_| {
+        self.clearTree();
+        for (1..self.num_points) |i| {
+            const p = self.points[i];
             _ = self.addPointAtTree(p.x, p.z, p) orelse return;
         }
     }
@@ -150,6 +152,8 @@ pub fn release(self: *Point) void {
 }
 
 pub fn highlight(self: *Point, index: usize) void {
+    if (self.highlighted_point != null) return;
+    if (self.dragging_point != null) return;
     if (self.num_points == 0) return;
     if (self.highlighted_point) |hp| {
         self.points[hp].i_data.color = normal_color;
@@ -197,6 +201,17 @@ pub fn initCircle(self: *Point) void {
         ),
     };
     self.circle = circle;
+}
+
+fn clearTree(self: *Point) void {
+    if (self.x_small_node) |n| n.clearTree();
+    self.x_small_node = null;
+    if (self.x_big_node) |n| n.clearTree();
+    self.x_big_node = null;
+    if (self.z_small_node) |n| n.clearTree();
+    self.z_small_node = null;
+    if (self.z_big_node) |n| n.clearTree();
+    self.z_big_node = null;
 }
 
 fn addAtTree(self: *Point, allocator: std.mem.Allocator, x: f32, z: f32, index: usize) ?*Point {
@@ -269,38 +284,6 @@ pub fn getAt(self: *Point, px: f32, pz: f32) ?*Point {
     if (self.px >= px) if (self.x_big_node) |n| if (n.getAt(px, pz)) |nn| return nn;
     if (self.pz <= pz) if (self.z_small_node) |n| if (n.getAt(px, pz)) |nn| return nn;
     if (self.pz >= pz) if (self.z_big_node) |n| if (n.getAt(px, pz)) |nn| return nn;
-    return null;
-}
-
-pub fn getAndRemoveAt(self: *Point, index: usize) ?*Point {
-    if (self.x_small_node) |p| {
-        if (p.index == index) {
-            self.x_small_node = null;
-            return p;
-        }
-        if (p.getAndRemoveAt(index)) |moved_p| return moved_p;
-    }
-    if (self.x_big_node) |p| {
-        if (p.index == index) {
-            self.x_big_node = null;
-            return p;
-        }
-        if (p.getAndRemoveAt(index)) |moved_p| return moved_p;
-    }
-    if (self.z_small_node) |p| {
-        if (p.index == index) {
-            self.z_small_node = null;
-            return p;
-        }
-        if (p.getAndRemoveAt(index)) |moved_p| return moved_p;
-    }
-    if (self.z_big_node) |p| {
-        if (p.index == index) {
-            self.z_big_node = null;
-            return p;
-        }
-        if (p.getAndRemoveAt(index)) |moved_p| return moved_p;
-    }
     return null;
 }
 
