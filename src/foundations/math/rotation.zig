@@ -123,11 +123,6 @@ test rotateVectorWithNormalizedQuat {
     const a_qn = vector.normalize(a_q1);
     const a_e: vector.vec3 = .{ -1, 0, 0 };
     const a_r = rotateVectorWithNormalizedQuat(a_v1, a_qn);
-    std.debug.print("a_r: ({d}, {d}, {d})", .{
-        a_r[0],
-        a_r[1],
-        a_r[2],
-    });
     try std.testing.expect(float.equal(a_e[0], a_r[0], 0.0001));
     try std.testing.expect(float.equal(a_e[1], a_r[1], 0.0001));
     try std.testing.expect(float.equal(a_e[2], a_r[2], 0.0001));
