@@ -114,31 +114,38 @@ pub fn attachBuffer(
 pub fn attachInstancedBuffer(
     vertex_data: []attributeData,
     instance_data: []instanceData,
-) struct { vao: u32, buffer: u32 } {
-    // _ = instance_data;
-
+) struct {
+    vao: u32,
+    buffer: u32,
+    vertex_data_size: usize,
+    instance_data_stride: usize,
+} {
     var buffer: c.GLuint = 0;
     const vertex_bind_index: usize = 0;
     const instance_bind_index: usize = 1;
     c.glCreateBuffers(1, @ptrCast(&buffer));
-    // _ = instance_bind_index;
 
-    const attribute_struct_data_size = @sizeOf(attributeData);
-    const instance_struct_data_size = @sizeOf(instanceData);
-    const vertex_data_size = vertex_data.len * attribute_struct_data_size;
-    const instance_data_size = instance_data.len * instance_struct_data_size;
+    const vertex_data_stride = @sizeOf(attributeData);
+    const instance_data_stride = @sizeOf(instanceData);
+    const vertex_data_size = vertex_data.len * vertex_data_stride;
+    const instance_data_size = instance_data.len * instance_data_stride;
     c.glNamedBufferData(buffer, @intCast(vertex_data_size + instance_data_size), null, c.GL_STATIC_DRAW);
     c.glNamedBufferSubData(buffer, 0, @intCast(vertex_data_size), vertex_data.ptr);
     c.glNamedBufferSubData(buffer, @intCast(vertex_data_size), @intCast(instance_data_size), instance_data.ptr);
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
-    c.glVertexArrayVertexBuffer(vao, vertex_bind_index, buffer, 0, @intCast(attribute_struct_data_size));
-    c.glVertexArrayVertexBuffer(vao, instance_bind_index, buffer, @intCast(vertex_data_size), @intCast(instance_struct_data_size));
+    c.glVertexArrayVertexBuffer(vao, vertex_bind_index, buffer, 0, @intCast(vertex_data_stride));
+    c.glVertexArrayVertexBuffer(vao, instance_bind_index, buffer, @intCast(vertex_data_size), @intCast(instance_data_stride));
     defineVertexData(vao, vertex_bind_index);
     defineInstanceData(vao, instance_bind_index, std.meta.fields(attributeData).len);
 
-    return .{ .vao = vao, .buffer = buffer };
+    return .{
+        .vao = vao,
+        .buffer = buffer,
+        .vertex_data_size = vertex_data_size,
+        .instance_data_stride = instance_data_stride,
+    };
 }
 
 fn defineVertexData(vao: u32, vertex_bind_index: usize) void {
