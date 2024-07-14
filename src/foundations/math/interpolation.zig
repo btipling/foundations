@@ -18,3 +18,4 @@ pub fn linear(t: f32, positions: []vector.vec4, times: []f32) vector.vec4 {
 
 const std = @import("std");
 const vector = @import("vector.zig");
+const matrix = @import("matrix.zig");

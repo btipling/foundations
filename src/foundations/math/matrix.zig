@@ -384,6 +384,17 @@ test scaleMatrix {
     try std.testing.expectEqual(a_e, a_r);
 }
 
+pub fn hermite_basis() matrix {
+    return .{
+        .columns = .{
+            .{ 2, -3, 0, 1 },
+            .{ -2, 3, 0, 0 },
+            .{ 1, -2, 1, 0 },
+            .{ 1, -1, 0, 0 },
+        },
+    };
+}
+
 pub fn transformVector(m: matrix, v: vector.vec4) vector.vec4 {
     const mt = transpose(m);
     return .{
@@ -424,6 +435,56 @@ test transformVector {
     const d_e = .{ 34, -37, 70, 1 };
     const d_r = transformVector(d_m, d_v);
     try std.testing.expectEqual(d_e, d_r);
+}
+
+pub fn preTransformVector(v: vector.vec4, m: matrix) vector.vec4 {
+    return .{
+        vector.dotProduct(v, @as(vector.vec4, .{
+            at(m, 0, 0),
+            at(m, 0, 1),
+            at(m, 0, 2),
+            at(m, 0, 3),
+        })),
+        vector.dotProduct(v, @as(vector.vec4, .{
+            at(m, 1, 0),
+            at(m, 1, 1),
+            at(m, 1, 2),
+            at(m, 1, 3),
+        })),
+        vector.dotProduct(v, @as(vector.vec4, .{
+            at(m, 2, 0),
+            at(m, 2, 1),
+            at(m, 2, 2),
+            at(m, 2, 3),
+        })),
+        vector.dotProduct(v, @as(vector.vec4, .{
+            at(m, 3, 0),
+            at(m, 3, 1),
+            at(m, 3, 2),
+            at(m, 3, 3),
+        })),
+    };
+}
+
+test preTransformVector {
+    const a_v: vector.vec4 = .{ 2, 3, 4, 1 };
+    const a_m: matrix = identity();
+    const a_e: vector.vec4 = .{ 2, 3, 4, 1 };
+    const a_r = preTransformVector(a_v, a_m);
+    try std.testing.expectEqual(a_e, a_r);
+
+    const b_v: vector.vec4 = .{ 2, 3, 4, 5 };
+    const b_m: matrix = .{
+        .columns = .{
+            .{ 3, 0, 0, 0 },
+            .{ 0, 4, 0, 0 },
+            .{ 0, 0, 5, 0 },
+            .{ 4, 4, 4, 1 },
+        },
+    };
+    const b_e: vector.vec4 = .{ 26, 32, 40, 5 };
+    const b_r = preTransformVector(b_v, b_m);
+    try std.testing.expectEqual(b_e, b_r);
 }
 
 pub inline fn transpose(m: matrix) matrix {
