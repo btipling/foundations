@@ -9,13 +9,15 @@ z_big_node: ?*Point = null,
 z_small_node: ?*Point = null,
 i_data: rhi.instanceData = undefined,
 tangent: bool = false,
+selected: bool = false,
 
 const point_limit: usize = 1000;
 
 const Point = @This();
 
-const normal_color: [4]f32 = .{ 1, 1, 1, 1 };
-const highlighted_color: [4]f32 = .{ 1, 0, 1, 1 };
+pub const normal_color: [4]f32 = .{ 1, 1, 1, 1 };
+pub const highlighted_color: [4]f32 = .{ 1, 0, 1, 1 };
+pub const selected_color: [4]f32 = .{ 0, 1, 0, 1 };
 
 const vertex_shader: []const u8 = @embedFile("line_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("line_frag.glsl");
@@ -80,6 +82,24 @@ pub fn update(self: *Point, x: f32, z: f32) void {
     self.px = px;
     self.pz = pz;
     self.i_data = i_data;
+}
+
+pub fn select(self: *Point) void {
+    self.selected = true;
+    self.i_data.color = selected_color;
+}
+
+pub fn resetColor(self: *Point) void {
+    if (self.selected) {
+        self.i_data.color = selected_color;
+        return;
+    }
+    self.i_data.color = normal_color;
+}
+
+pub fn unselect(self: *Point) void {
+    self.selected = false;
+    self.i_data.color = normal_color;
 }
 
 pub fn clearTree(self: *Point) void {

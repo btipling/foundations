@@ -5,14 +5,12 @@ num_points: usize = 0,
 num_tangents: usize = 0,
 highlighted_point: ?usize = null,
 dragging_point: ?usize = null,
+selected_point: ?usize = null,
 
 const point_limit: usize = 100;
 const strip_scale: f32 = 0.005;
 
 const Manager = @This();
-
-const normal_color: [4]f32 = .{ 1, 1, 1, 1 };
-const highlighted_color: [4]f32 = .{ 1, 0, 1, 1 };
 
 const vertex_shader: []const u8 = @embedFile("line_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("line_frag.glsl");
@@ -63,8 +61,35 @@ pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32, tange
 
 pub fn startDragging(self: *Manager, pi: usize) void {
     if (self.num_points == 0) return;
-    if (self.dragging_point != null) return;
+    if (self.dragging_point) |dp| {
+        if (self.selected_point) |sp| {
+            if (sp != dp) {
+                self.unselectPoint(sp);
+            }
+        }
+        self.selectPoint(dp);
+        return;
+    }
+    if (self.selected_point) |sp| {
+        if (sp != pi) {
+            self.unselectPoint(sp);
+        }
+    }
     self.dragging_point = pi;
+}
+
+pub fn selectPoint(self: *Manager, pi: usize) void {
+    var selected_p = self.points[pi];
+    if (selected_p.tangent) return;
+    selected_p.select();
+    self.updatePointData(pi);
+    self.selected_point = pi;
+}
+
+pub fn unselectPoint(self: *Manager, pi: usize) void {
+    var selected_p = self.points[pi];
+    selected_p.unselect();
+    self.updatePointData(pi);
 }
 
 pub fn drag(self: *Manager, x: f32, z: f32) bool {
@@ -72,12 +97,7 @@ pub fn drag(self: *Manager, x: f32, z: f32) bool {
     const pi = self.dragging_point orelse return false;
     var moved_p = self.points[pi];
     moved_p.update(x, z);
-    if (self.circle) |o| {
-        switch (o) {
-            .circle => |c| c.updateInstanceAt(moved_p.index, moved_p.i_data),
-            else => {},
-        }
-    }
+    self.updatePointData(pi);
     self.renderStrips();
     return true;
 }
@@ -103,11 +123,15 @@ pub fn highlight(self: *Manager, index: usize) void {
     if (self.dragging_point != null) return;
     if (self.num_points == 0) return;
     if (self.highlighted_point) |hp| {
-        self.points[hp].i_data.color = normal_color;
+        self.points[hp].resetColor();
+        self.updatePointData(hp);
     }
-    self.points[index].i_data.color = highlighted_color;
+    self.points[index].i_data.color = point.highlighted_color;
     self.highlighted_point = index;
+    self.updatePointData(index);
+}
 
+pub fn updatePointData(self: *Manager, index: usize) void {
     if (self.circle) |o| {
         switch (o) {
             .circle => |cr| cr.updateInstanceAt(index, self.points[index].i_data),
@@ -120,14 +144,8 @@ pub fn clearHighlight(self: *Manager) void {
     if (self.num_points == 0) return;
     const hp = self.highlighted_point orelse return;
     self.highlighted_point = null;
-    self.points[hp].i_data.color = normal_color;
-
-    if (self.circle) |o| {
-        switch (o) {
-            .circle => |cr| cr.updateInstanceAt(hp, self.points[hp].i_data),
-            else => {},
-        }
-    }
+    self.points[hp].resetColor();
+    self.updatePointData(hp);
 }
 
 pub fn draw(self: *Manager) void {
