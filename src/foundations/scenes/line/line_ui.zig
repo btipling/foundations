@@ -20,9 +20,9 @@ pub fn draw(self: *pr_ui) void {
     c.igSameLine(0, 0);
     _ = c.igRadioButton_IntPtr("hermite", &mode, 1);
     self.mode = @enumFromInt(mode);
-    if (self.mode == .hermite) {
-        c.igText("Ctrl+click points to create tangents");
-    }
+    c.igText("Click point to select it.");
+    c.igText("In hermite mode:");
+    c.igText("Ctrl+click to create tangents");
     c.igEnd();
 }
 
