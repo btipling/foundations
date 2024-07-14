@@ -1,13 +1,23 @@
 mode: interpolation = interpolation.linear,
 
-const pr_ui = @This();
+const line_ui = @This();
 
 pub const interpolation = enum(u8) {
     linear,
     hermite,
 };
 
-pub fn draw(self: *pr_ui) void {
+pub fn init(allocator: std.mem.Allocator) *line_ui {
+    const lu = allocator.create(line_ui) catch @panic("OOM");
+    lu.* = .{};
+    return lu;
+}
+
+pub fn deinit(self: *line_ui, allocator: std.mem.Allocator) void {
+    allocator.destroy(self);
+}
+
+pub fn draw(self: *line_ui) void {
     const vp: *c.ImGuiViewport = c.igGetMainViewport();
     const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);

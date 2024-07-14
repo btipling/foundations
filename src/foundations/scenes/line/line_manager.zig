@@ -237,22 +237,25 @@ pub fn renderStrips(self: *Manager) void {
     rhi.attachShaders(program, vertex_shader, frag_shader);
     var i_datas: [100_000]rhi.instanceData = undefined;
     var positions: [point_limit]math.vector.vec4 = undefined;
+    var tangents: [point_limit]math.vector.vec4 = undefined;
     var times: [point_limit]f32 = undefined;
     var points_added: usize = 0;
     for (0..self.num_points) |i| {
         const p = self.points[i];
         if (p.target != null) continue;
         positions[points_added] = p.toVector();
+        tangents[points_added] = .{ 0, 0, 0, 0 };
         times[points_added] = @floatFromInt(points_added);
         points_added += 1;
     }
+    if (self.ui_state.mode != .linear) {}
     for (0..points_added * 1_000) |i| {
         const t: f32 = @floatFromInt(i);
         var sp: math.vector.vec4 = undefined;
         if (self.ui_state.mode == .linear) {
             sp = math.interpolation.linear(t / 1_000.0, positions[0..points_added], times[0..points_added]);
         } else {
-            sp = math.interpolation.linear(t / 1_000.0, positions[0..points_added], times[0..points_added]);
+            sp = math.interpolation.hermiteCurve(t / 1_000.0, positions[0..points_added], tangents[0..points_added], times[0..points_added]);
         }
         var m = math.matrix.leftHandedXUpToNDC();
         m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));

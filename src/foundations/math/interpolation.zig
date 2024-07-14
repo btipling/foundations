@@ -25,7 +25,7 @@ pub fn hermiteCurve(t: f32, positions: []vector.vec4, tangents: []vector.vec4, t
     // setup matrices
     const U: vector.vec4 = .{ u * u * u, u * u, u, 1 };
     const M = matrix.hermite_basis();
-    const G: matrix.matrix = .{
+    const G: matrix = .{
         .columns = .{
             .{ p0[0], p1[0], pt0[0], pt1[0] },
             .{ p0[1], p1[1], pt0[1], pt1[1] },

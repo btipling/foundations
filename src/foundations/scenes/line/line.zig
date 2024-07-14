@@ -1,5 +1,5 @@
 manager: *manager = undefined,
-ui_state: line_ui,
+ui_state: *line_ui,
 allocator: std.mem.Allocator,
 
 const Line = @This();
@@ -13,11 +13,11 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator) *Line {
     const line = allocator.create(Line) catch @panic("OOM");
-    const ui_state: line_ui = .{};
+    const ui_state = line_ui.init(allocator);
     line.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
-        .manager = manager.init(allocator, &ui_state),
+        .manager = manager.init(allocator, ui_state),
     };
 
     return line;
@@ -25,6 +25,7 @@ pub fn init(allocator: std.mem.Allocator) *Line {
 
 pub fn deinit(self: *Line, allocator: std.mem.Allocator) void {
     self.manager.deinit(allocator);
+    self.ui_state.deinit(allocator);
     allocator.destroy(self);
 }
 
