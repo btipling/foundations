@@ -384,7 +384,7 @@ test scaleMatrix {
     try std.testing.expectEqual(a_e, a_r);
 }
 
-pub fn hermite_basis() matrix {
+pub inline fn hermite_basis() matrix {
     return .{
         .columns = .{
             .{ 2, -3, 0, 1 },
