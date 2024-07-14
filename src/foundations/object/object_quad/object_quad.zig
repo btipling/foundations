@@ -5,7 +5,7 @@ instanced: bool = false,
 
 const Quad = @This();
 
-pub const default_positions: [6][3]f32 = .{
+pub const default_deprecated_positions: [6][3]f32 = .{
     .{ -1, -1, 0 },
     .{ -1, 1, 0 },
     .{ 1, -1, 0 },
@@ -13,6 +13,17 @@ pub const default_positions: [6][3]f32 = .{
     .{ -1, 1, 0 },
     .{ 1, 1, 0 },
     .{ 1, -1, 0 },
+};
+
+pub const default_correct_positions: [4][3]f32 = .{
+    .{ -1, 0, -1 },
+    .{ -1, 0, 1 },
+    .{ 1, 0, -1 },
+    .{ 1, 0, 1 },
+};
+
+pub const default_correct_indices: [5]u32 = .{
+    0, 1, 2, 3, 2,
 };
 
 pub fn init(
@@ -52,9 +63,9 @@ pub fn initInstanced(
     instance_data: []rhi.instanceData,
 ) Quad {
     // zig fmt: off
-    const positions = default_positions;
+    const positions = default_correct_positions;
     // zig fmt: on
-    var indices = [_]u32{ 0, 1, 2, 3, 4, 5 };
+    var indices = default_correct_indices;
 
     var rhi_data: [positions.len]rhi.attributeData = undefined;
     var i: usize = 0;

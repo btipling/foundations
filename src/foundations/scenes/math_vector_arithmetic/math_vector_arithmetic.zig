@@ -87,7 +87,7 @@ fn addVector(self: *MathVectorArithmetic) void {
 
     pi = 0;
     while (pi < 6) : (pi += 1) {
-        var pv: math.vector.vec3 = object.quad.default_positions[pi];
+        var pv: math.vector.vec3 = object.quad.default_deprecated_positions[pi];
         pv = math.vector.mul(0.01, pv);
         const do_sum = math.float.equal(pv[1], 0.01, 0.001);
         const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);

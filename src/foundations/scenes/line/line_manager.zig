@@ -68,9 +68,8 @@ pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32, tange
         self.initCircle();
         self.dragging_point = np.index;
     }
-    if (self.num_points > 1) {
-        self.renderStrips();
-    }
+    self.renderStrips();
+    self.renderQuads();
 }
 
 pub fn startDragging(self: *Manager, pi: usize) void {
@@ -258,28 +257,19 @@ pub fn renderStrips(self: *Manager) void {
 }
 
 pub fn renderQuads(self: *Manager) void {
-    const num_points = self.num_points - self.num_tangents;
-    if (num_points < 2) return;
+    if (self.num_tangents < 1) return;
     self.deleteStrip();
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
     var i_datas: [100]rhi.instanceData = undefined;
-    var positions: [point_limit]math.vector.vec4 = undefined;
-    var times: [point_limit]f32 = undefined;
-    var points_added: usize = 0;
     for (0..self.num_points) |i| {
         const p = self.points[i];
-        if (p.tangent) continue;
-        positions[points_added] = p.toVector();
-        times[points_added] = @floatFromInt(points_added);
-        points_added += 1;
-    }
-    for (0..points_added) |i| {
-        const t: f32 = @floatFromInt(i);
-        const sp = math.interpolation.linear(t / 1_000.0, positions[0..points_added], times[0..points_added]);
+        const tangent = p.tangent orelse continue;
+        const v = math.vector.sub(p.toVector(), self.points[tangent].toVector());
+        const distance = math.vector.magnitude(v);
         var m = math.matrix.leftHandedXUpToNDC();
-        m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));
-        m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
+        m = math.matrix.transformMatrix(m, math.matrix.translate(p.x, 0, p.z));
+        m = math.matrix.transformMatrix(m, math.matrix.scale(0.001, 1, distance));
         const i_data: rhi.instanceData = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
@@ -290,9 +280,9 @@ pub fn renderQuads(self: *Manager) void {
         i_datas[i] = i_data;
     }
     const strip: object.object = .{
-        .strip = object.quad.initInstanced(
+        .quad = object.quad.initInstanced(
             program,
-            i_datas[0 .. points_added * 1_000],
+            i_datas[0..self.num_tangents],
         ),
     };
     self.strip = strip;
