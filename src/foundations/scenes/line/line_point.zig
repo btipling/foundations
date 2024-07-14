@@ -8,6 +8,7 @@ x_small_node: ?*Point = null,
 z_big_node: ?*Point = null,
 z_small_node: ?*Point = null,
 i_data: rhi.instanceData = undefined,
+tangent: bool = false,
 
 const point_limit: usize = 1000;
 
@@ -23,7 +24,7 @@ pub inline fn coordinate(c: f32) f32 {
     return c;
 }
 
-pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize) *Point {
+pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, tangent: bool) *Point {
     const p = allocator.create(Point) catch @panic("OOM");
     var m = math.matrix.leftHandedXUpToNDC();
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
@@ -44,6 +45,7 @@ pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize) *Point {
         .pz = pz,
         .index = index,
         .i_data = i_data,
+        .tangent = tangent,
     };
     return p;
 }
@@ -89,35 +91,6 @@ pub fn clearTree(self: *Point) void {
     self.z_small_node = null;
     if (self.z_big_node) |n| n.clearTree();
     self.z_big_node = null;
-}
-
-pub fn addAtTree(self: *Point, allocator: std.mem.Allocator, x: f32, z: f32, index: usize) ?*Point {
-    if (self.x <= x) {
-        if (self.x_small_node) |n| {
-            return n.addAtTree(allocator, x, z, index);
-        }
-        self.x_small_node = init(allocator, x, z, index);
-        return self.x_small_node;
-    }
-    if (self.x >= x) {
-        if (self.x_big_node) |n| {
-            return n.addAtTree(allocator, x, z, index);
-        }
-        self.x_big_node = init(allocator, x, z, index);
-        return self.x_big_node;
-    }
-    if (self.z <= z) {
-        if (self.z_small_node) |n| {
-            return n.addAtTree(allocator, x, z, index);
-        }
-        self.z_small_node = init(allocator, x, z, index);
-        return self.z_small_node;
-    }
-    if (self.z_big_node) |n| {
-        return n.addAtTree(allocator, x, z, index);
-    }
-    self.z_big_node = init(allocator, x, z, index);
-    return self.z_big_node;
 }
 
 pub fn addPointAtTree(self: *Point, x: f32, z: f32, p: *Point) ?*Point {

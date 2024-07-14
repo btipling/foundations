@@ -2,6 +2,7 @@ circle: ?object.object = null,
 strip: ?object.object = null,
 points: [point_limit]*point = undefined,
 num_points: usize = 0,
+num_tangents: usize = 0,
 highlighted_point: ?usize = null,
 dragging_point: ?usize = null,
 
@@ -32,23 +33,28 @@ pub fn deinit(self: *Manager, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32) void {
+pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32, tangent: bool) void {
     if (self.dragging_point != null) return;
     if (self.num_points == self.points.len) return;
+    const np = point.init(allocator, x, z, self.num_points, tangent);
     if (self.num_points == 0) {
-        const p = point.init(allocator, x, z, self.num_points);
-        self.points[0] = p;
+        self.points[0] = np;
         self.num_points += 1;
+        if (tangent) {
+            self.num_tangents += 1;
+        }
         self.initCircle();
     } else {
         var root_point = self.points[0];
-        if (root_point.addAtTree(allocator, x, z, self.num_points)) |np| {
-            self.points[self.num_points] = np;
-            self.num_points += 1;
-            self.deleteCircle();
-            self.initCircle();
-            self.dragging_point = np.index;
+        _ = root_point.addPointAtTree(x, z, np);
+        self.points[self.num_points] = np;
+        self.num_points += 1;
+        if (tangent) {
+            self.num_tangents += 1;
         }
+        self.deleteCircle();
+        self.initCircle();
+        self.dragging_point = np.index;
     }
     if (self.num_points > 1) {
         self.renderStrips();
@@ -175,20 +181,25 @@ pub fn initCircle(self: *Manager) void {
 }
 
 pub fn renderStrips(self: *Manager) void {
-    if (self.num_points < 2) return;
+    const num_points = self.num_points - self.num_tangents;
+    if (num_points < 2) return;
     self.deleteStrip();
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
     var i_datas: [100_000]rhi.instanceData = undefined;
     var positions: [point_limit]math.vector.vec4 = undefined;
     var times: [point_limit]f32 = undefined;
+    var points_added: usize = 0;
     for (0..self.num_points) |i| {
-        positions[i] = self.points[i].toVector();
-        times[i] = @floatFromInt(i);
+        const p = self.points[i];
+        if (p.tangent) continue;
+        positions[points_added] = p.toVector();
+        times[points_added] = @floatFromInt(points_added);
+        points_added += 1;
     }
-    for (0..self.num_points * 1_000) |i| {
+    for (0..points_added * 1_000) |i| {
         const t: f32 = @floatFromInt(i);
-        const sp = math.interpolation.linear(t / 1_000.0, positions[0..self.num_points], times[0..self.num_points]);
+        const sp = math.interpolation.linear(t / 1_000.0, positions[0..points_added], times[0..points_added]);
         var m = math.matrix.leftHandedXUpToNDC();
         m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
@@ -204,7 +215,7 @@ pub fn renderStrips(self: *Manager) void {
     const strip: object.object = .{
         .strip = object.strip.init(
             program,
-            i_datas[0 .. self.num_points * 1_000],
+            i_datas[0 .. points_added * 1_000],
         ),
     };
     self.strip = strip;

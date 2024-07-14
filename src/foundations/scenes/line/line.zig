@@ -56,6 +56,10 @@ fn handleInput(self: *Line) void {
     const input = ui.input.getReadOnly() orelse return;
     const button = input.mouse_button orelse return;
     const action = input.mouse_action orelse return;
+    var tangent = false;
+    if (input.mouse_mods) |m| {
+        tangent = self.ui_state.mode == .hermite and m == c.GLFW_MOD_CONTROL;
+    }
     const x = input.mouse_x orelse return;
     const z = input.mouse_z orelse return;
     if (action == c.GLFW_RELEASE) {
@@ -67,12 +71,12 @@ fn handleInput(self: *Line) void {
     }
     if (action != c.GLFW_PRESS) return;
     if (button != c.GLFW_MOUSE_BUTTON_1) return;
-    self.addPoint(x, z);
+    self.addPoint(x, z, tangent);
 }
 
-fn addPoint(self: *Line, x: f32, z: f32) void {
+fn addPoint(self: *Line, x: f32, z: f32, tangent: bool) void {
     if (self.manager.drag(x, z)) return;
-    self.manager.addAt(self.allocator, x, z);
+    self.manager.addAt(self.allocator, x, z, tangent);
 }
 
 const std = @import("std");
