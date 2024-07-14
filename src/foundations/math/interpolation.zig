@@ -27,13 +27,14 @@ pub fn hermiteCurve(t: f32, positions: []vector.vec4, tangents: []vector.vec4, t
     const M = matrix.hermite_basis();
     const G: matrix = .{
         .columns = .{
-            .{ p0[0], p1[0], pt0[0], pt1[0] },
-            .{ p0[1], p1[1], pt0[1], pt1[1] },
-            .{ p0[2], p1[2], pt0[2], pt1[2] },
-            .{ p0[3], p1[3], pt0[3], pt1[3] },
+            .{ p0[0], p0[1], p0[2], p0[3] },
+            .{ p1[0], p1[1], p1[2], p1[3] },
+            .{ pt0[0], pt0[1], pt0[2], pt0[3] },
+            .{ pt1[0], pt1[1], pt1[2], pt1[3] },
         },
     };
-    return matrix.preTransformVector(U, matrix.transformMatrix(M, G));
+    const m = matrix.transformMatrix(G, M);
+    return matrix.transformVector(m, U);
 }
 
 pub fn linear(t: f32, positions: []vector.vec4, times: []f32) vector.vec4 {

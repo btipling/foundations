@@ -238,17 +238,29 @@ pub fn renderStrips(self: *Manager) void {
     var i_datas: [100_000]rhi.instanceData = undefined;
     var positions: [point_limit]math.vector.vec4 = undefined;
     var tangents: [point_limit]math.vector.vec4 = undefined;
+    var tangent_map: [point_limit]math.vector.vec4 = undefined;
+    var has_tangent: [point_limit]u8 = std.mem.zeroes([point_limit]u8);
     var times: [point_limit]f32 = undefined;
     var points_added: usize = 0;
+    if (self.ui_state.mode != .linear) {
+        for (0..self.num_points) |i| {
+            const p = self.points[i];
+            const pti = p.target orelse continue;
+            tangent_map[pti] = p.toVector();
+            has_tangent[pti] = 1;
+        }
+    }
     for (0..self.num_points) |i| {
         const p = self.points[i];
         if (p.target != null) continue;
         positions[points_added] = p.toVector();
         tangents[points_added] = .{ 0, 0, 0, 0 };
+        if (self.ui_state.mode != .linear and has_tangent[i] == 1) {
+            tangents[points_added] = tangent_map[i];
+        }
         times[points_added] = @floatFromInt(points_added);
         points_added += 1;
     }
-    if (self.ui_state.mode != .linear) {}
     for (0..points_added * 1_000) |i| {
         const t: f32 = @floatFromInt(i);
         var sp: math.vector.vec4 = undefined;
