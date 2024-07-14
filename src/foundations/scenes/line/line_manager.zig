@@ -28,6 +28,8 @@ pub fn init(allocator: std.mem.Allocator) *Manager {
 
 pub fn deinit(self: *Manager, allocator: std.mem.Allocator) void {
     self.deleteCircle();
+    self.deleteStrip();
+    self.deleteQuad();
     if (self.num_points > 0) self.points[0].deinit(allocator);
     allocator.destroy(self);
 }
@@ -41,7 +43,7 @@ pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32, tange
         if (tangent_target == null) break :blk;
         for (0..self.num_points) |i| {
             const p = self.points[i];
-            if (p.tangent == tangent_target) {
+            if (p.target == tangent_target) {
                 // Already has a tangent.
                 tangent_target = null;
                 return;
@@ -93,7 +95,7 @@ pub fn startDragging(self: *Manager, pi: usize) void {
 
 pub fn selectPoint(self: *Manager, pi: usize) void {
     var selected_p = self.points[pi];
-    if (selected_p.tangent != null) return;
+    if (selected_p.target != null) return;
     selected_p.select();
     self.updatePointData(pi);
     self.selected_point = pi;
@@ -112,6 +114,7 @@ pub fn drag(self: *Manager, x: f32, z: f32) bool {
     moved_p.update(x, z);
     self.updatePointData(pi);
     self.renderStrips();
+    self.renderQuads();
     return true;
 }
 
@@ -199,6 +202,14 @@ pub fn deleteStrip(self: *Manager) void {
     }
 }
 
+pub fn deleteQuad(self: *Manager) void {
+    if (self.quad) |q| {
+        var objects: [1]object.object = .{q};
+        rhi.deleteObjects(objects[0..]);
+        self.quad = null;
+    }
+}
+
 pub fn initCircle(self: *Manager) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -227,7 +238,7 @@ pub fn renderStrips(self: *Manager) void {
     var points_added: usize = 0;
     for (0..self.num_points) |i| {
         const p = self.points[i];
-        if (p.tangent != null) continue;
+        if (p.target != null) continue;
         positions[points_added] = p.toVector();
         times[points_added] = @floatFromInt(points_added);
         points_added += 1;
@@ -258,17 +269,26 @@ pub fn renderStrips(self: *Manager) void {
 
 pub fn renderQuads(self: *Manager) void {
     if (self.num_tangents < 1) return;
-    self.deleteStrip();
+    self.deleteQuad();
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
     var i_datas: [100]rhi.instanceData = undefined;
+    var tangents_added: usize = 0;
     for (0..self.num_points) |i| {
-        const p = self.points[i];
-        const tangent = p.tangent orelse continue;
-        const v = math.vector.sub(p.toVector(), self.points[tangent].toVector());
+        const tangent = self.points[i];
+        const tangent_target = tangent.target orelse continue;
+        const target = self.points[tangent_target];
+        const v = math.vector.sub(tangent.toVector(), target.toVector());
         const distance = math.vector.magnitude(v);
+        const _2d_x_y: math.vector.vec2 = .{ v[2], v[0] };
+        const rot = math.rotation.cartesian2DToPolarCoordinates(_2d_x_y);
+        const angle = rot[1];
+        const y_basis: math.vector.vec3 = .{ 0, 1, 0 };
+        const q = math.rotation.axisAngleToQuat(angle, y_basis);
+        const qn = math.vector.normalize(q);
         var m = math.matrix.leftHandedXUpToNDC();
-        m = math.matrix.transformMatrix(m, math.matrix.translate(p.x, 0, p.z));
+        m = math.matrix.transformMatrix(m, math.matrix.translate(target.x, 0, target.z));
+        m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(qn));
         m = math.matrix.transformMatrix(m, math.matrix.scale(0.001, 1, distance));
         const i_data: rhi.instanceData = .{
             .t_column0 = m.columns[0],
@@ -277,15 +297,17 @@ pub fn renderQuads(self: *Manager) void {
             .t_column3 = m.columns[3],
             .color = .{ 0.5, 0.5, 0.5, 1 },
         };
-        i_datas[i] = i_data;
+        i_datas[tangents_added] = i_data;
+        tangents_added += 1;
+        if (tangents_added == self.num_tangents) break;
     }
-    const strip: object.object = .{
+    const quad: object.object = .{
         .quad = object.quad.initInstanced(
             program,
             i_datas[0..self.num_tangents],
         ),
     };
-    self.strip = strip;
+    self.quad = quad;
 }
 
 const std = @import("std");

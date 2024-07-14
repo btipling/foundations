@@ -857,4 +857,4 @@ test toReducedRowEchelonForm {
 const std = @import("std");
 const vector = @import("vector.zig");
 const float = @import("float.zig");
-const Quat = @import("rotation").Quat;
+const Quat = @import("rotation.zig").Quat;

@@ -8,7 +8,7 @@ x_small_node: ?*Point = null,
 z_big_node: ?*Point = null,
 z_small_node: ?*Point = null,
 i_data: rhi.instanceData = undefined,
-tangent: ?usize = null,
+target: ?usize = null,
 selected: bool = false,
 
 const point_limit: usize = 1000;
@@ -18,6 +18,7 @@ const Point = @This();
 pub const normal_color: [4]f32 = .{ 1, 1, 1, 1 };
 pub const highlighted_color: [4]f32 = .{ 1, 0, 1, 1 };
 pub const selected_color: [4]f32 = .{ 0, 1, 0, 1 };
+pub const tangent_color: [4]f32 = .{ 0.22, 0.22, 0.22, 1 };
 
 const vertex_shader: []const u8 = @embedFile("line_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("line_frag.glsl");
@@ -26,7 +27,7 @@ pub inline fn coordinate(c: f32) f32 {
     return c;
 }
 
-pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, tangent: ?usize) *Point {
+pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, target: ?usize) *Point {
     const p = allocator.create(Point) catch @panic("OOM");
     var m = math.matrix.leftHandedXUpToNDC();
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
@@ -47,8 +48,9 @@ pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, tangent:
         .pz = pz,
         .index = index,
         .i_data = i_data,
-        .tangent = tangent,
+        .target = target,
     };
+    p.resetColor();
     return p;
 }
 
@@ -82,6 +84,7 @@ pub fn update(self: *Point, x: f32, z: f32) void {
     self.px = px;
     self.pz = pz;
     self.i_data = i_data;
+    self.resetColor();
 }
 
 pub fn select(self: *Point) void {
@@ -92,6 +95,10 @@ pub fn select(self: *Point) void {
 pub fn resetColor(self: *Point) void {
     if (self.selected) {
         self.i_data.color = selected_color;
+        return;
+    }
+    if (self.target != null) {
+        self.i_data.color = tangent_color;
         return;
     }
     self.i_data.color = normal_color;

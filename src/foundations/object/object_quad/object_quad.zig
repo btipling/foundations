@@ -16,14 +16,14 @@ pub const default_deprecated_positions: [6][3]f32 = .{
 };
 
 pub const default_correct_positions: [4][3]f32 = .{
-    .{ -1, 0, -1 },
-    .{ -1, 0, 1 },
-    .{ 1, 0, -1 },
+    .{ 0, 0, 0 },
+    .{ 0, 0, 1 },
+    .{ 1, 0, 0 },
     .{ 1, 0, 1 },
 };
 
-pub const default_correct_indices: [5]u32 = .{
-    0, 1, 2, 3, 2,
+pub const default_correct_indices: [6]u32 = .{
+    0, 1, 2, 3, 1, 2,
 };
 
 pub fn init(
