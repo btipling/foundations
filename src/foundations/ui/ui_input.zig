@@ -32,6 +32,8 @@ pub fn deinit(self: *Input, allocator: std.mem.Allocator) void {
 }
 
 fn cursorPosCallback(_: ?*c.GLFWwindow, z: f64, x: f64) callconv(.C) void {
+    const io = c.igGetIO().*;
+    if (io.WantCaptureMouse) return;
     const inp = input orelse return;
     const _x: f32 = @floatCast(x);
     const _z: f32 = @floatCast(z);
@@ -40,6 +42,8 @@ fn cursorPosCallback(_: ?*c.GLFWwindow, z: f64, x: f64) callconv(.C) void {
 }
 
 fn mouseButtonCallback(_: ?*c.GLFWwindow, button: c_int, action: c_int, mods: c_int) callconv(.C) void {
+    const io = c.igGetIO().*;
+    if (io.WantCaptureMouse) return;
     const inp = input orelse return;
     inp.mouse_button = button;
     inp.mouse_action = action;
