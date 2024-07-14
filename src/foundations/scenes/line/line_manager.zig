@@ -6,7 +6,7 @@ highlighted_point: ?usize = null,
 dragging_point: ?usize = null,
 
 const point_limit: usize = 100;
-const strip_scale: f32 = 0.025;
+const strip_scale: f32 = 0.005;
 
 const Manager = @This();
 
