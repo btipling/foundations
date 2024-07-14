@@ -1,3 +1,4 @@
+ui_state: *const line_ui,
 circle: ?object.object = null,
 strip: ?object.object = null,
 quad: ?object.object = null,
@@ -20,9 +21,11 @@ pub inline fn coordinate(c: f32) f32 {
     return c;
 }
 
-pub fn init(allocator: std.mem.Allocator) *Manager {
+pub fn init(allocator: std.mem.Allocator, ui_state: *const line_ui) *Manager {
     const m = allocator.create(Manager) catch @panic("OOM");
-    m.* = .{};
+    m.* = .{
+        .ui_state = ui_state,
+    };
     return m;
 }
 
@@ -245,7 +248,12 @@ pub fn renderStrips(self: *Manager) void {
     }
     for (0..points_added * 1_000) |i| {
         const t: f32 = @floatFromInt(i);
-        const sp = math.interpolation.linear(t / 1_000.0, positions[0..points_added], times[0..points_added]);
+        var sp: math.vector.vec4 = undefined;
+        if (self.ui_state.mode == .linear) {
+            sp = math.interpolation.linear(t / 1_000.0, positions[0..points_added], times[0..points_added]);
+        } else {
+            sp = math.interpolation.linear(t / 1_000.0, positions[0..points_added], times[0..points_added]);
+        }
         var m = math.matrix.leftHandedXUpToNDC();
         m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
@@ -315,3 +323,4 @@ const math = @import("../../math/math.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const point = @import("line_point.zig");
+const line_ui = @import("line_ui.zig");

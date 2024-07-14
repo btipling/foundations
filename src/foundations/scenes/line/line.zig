@@ -13,11 +13,11 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator) *Line {
     const line = allocator.create(Line) catch @panic("OOM");
-
+    const ui_state: line_ui = .{};
     line.* = .{
-        .ui_state = .{},
+        .ui_state = ui_state,
         .allocator = allocator,
-        .manager = manager.init(allocator),
+        .manager = manager.init(allocator, &ui_state),
     };
 
     return line;
