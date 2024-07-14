@@ -5,7 +5,7 @@ num_points: usize = 0,
 highlighted_point: ?usize = null,
 dragging_point: ?usize = null,
 
-const point_limit: usize = 1000;
+const point_limit: usize = 100;
 const strip_scale: f32 = 0.025;
 
 const Manager = @This();
@@ -174,29 +174,24 @@ pub fn initCircle(self: *Manager) void {
     self.circle = circle;
 }
 
-fn nextStripTransform(self: *Manager, t: f32) math.matrix {
-    const t0: f32 = 0;
-    const t1: f32 = 1;
-    const u: f32 = (t - t0) / (t1 - t0);
-    std.debug.assert(self.num_points > 1);
-    const p1 = self.points[self.num_points - 1].toVector();
-    const p2 = self.points[self.num_points - 2].toVector();
-    const sp = math.vector.add(math.vector.mul(1.0 - u, p1), math.vector.mul(u, p2));
-    var m = math.matrix.leftHandedXUpToNDC();
-    m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));
-    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
-    return m;
-}
-
 pub fn renderStrips(self: *Manager) void {
     if (self.num_points < 2) return;
     self.deleteStrip();
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    var i_datas: [100]rhi.instanceData = undefined;
-    for (0..100) |i| {
+    var i_datas: [100_000]rhi.instanceData = undefined;
+    var positions: [point_limit]math.vector.vec4 = undefined;
+    var times: [point_limit]f32 = undefined;
+    for (0..self.num_points) |i| {
+        positions[i] = self.points[i].toVector();
+        times[i] = @floatFromInt(i);
+    }
+    for (0..self.num_points * 1_000) |i| {
         const t: f32 = @floatFromInt(i);
-        const m = self.nextStripTransform(t / 100.0);
+        const sp = math.interpolation.linear(t / 1_000.0, positions[0..self.num_points], times[0..self.num_points]);
+        var m = math.matrix.leftHandedXUpToNDC();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));
+        m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
         const i_data: rhi.instanceData = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
@@ -209,7 +204,7 @@ pub fn renderStrips(self: *Manager) void {
     const strip: object.object = .{
         .strip = object.strip.init(
             program,
-            i_datas[0..],
+            i_datas[0 .. self.num_points * 1_000],
         ),
     };
     self.strip = strip;
