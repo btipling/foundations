@@ -73,6 +73,10 @@ pub inline fn scale(x: f32, y: f32, z: f32) matrix {
     // zig fmt: on
 }
 
+pub inline fn uniformScale(s: f32) matrix {
+    return scale(s, s, s);
+}
+
 pub inline fn translate(x: f32, y: f32, z: f32) matrix {
     // zig fmt: off
     return .{

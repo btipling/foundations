@@ -56,6 +56,10 @@ pub fn deinit(self: *Point, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
+pub fn toVector(self: *Point) math.vector.vec4 {
+    return .{ self.x, 0, self.z, 0 };
+}
+
 pub fn update(self: *Point, x: f32, z: f32) void {
     var m = math.matrix.leftHandedXUpToNDC();
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));

@@ -6,6 +6,7 @@ highlighted_point: ?usize = null,
 dragging_point: ?usize = null,
 
 const point_limit: usize = 1000;
+const strip_scale: f32 = 0.025;
 
 const Manager = @This();
 
@@ -49,8 +50,8 @@ pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32) void 
             self.dragging_point = np.index;
         }
     }
-    if (self.num_points > 1 and self.strip == null) {
-        self.initStrip();
+    if (self.num_points > 1) {
+        self.renderStrips();
     }
 }
 
@@ -71,6 +72,7 @@ pub fn drag(self: *Manager, x: f32, z: f32) bool {
             else => {},
         }
     }
+    self.renderStrips();
     return true;
 }
 
@@ -141,10 +143,18 @@ pub fn rootPoint(self: *Manager) ?*point {
 }
 
 pub fn deleteCircle(self: *Manager) void {
-    if (self.circle) |c| {
-        var objects: [1]object.object = .{c};
+    if (self.circle) |cr| {
+        var objects: [1]object.object = .{cr};
         rhi.deleteObjects(objects[0..]);
         self.circle = null;
+    }
+}
+
+pub fn deleteStrip(self: *Manager) void {
+    if (self.strip) |s| {
+        var objects: [1]object.object = .{s};
+        rhi.deleteObjects(objects[0..]);
+        self.strip = null;
     }
 }
 
@@ -164,18 +174,38 @@ pub fn initCircle(self: *Manager) void {
     self.circle = circle;
 }
 
-pub fn initStrip(self: *Manager) void {
+fn nextStripTransform(self: *Manager, t: f32) math.matrix {
+    const t0: f32 = 0;
+    const t1: f32 = 1;
+    const u: f32 = (t - t0) / (t1 - t0);
+    std.debug.assert(self.num_points > 1);
+    const p1 = self.points[self.num_points - 1].toVector();
+    const p2 = self.points[self.num_points - 2].toVector();
+    const sp = math.vector.add(math.vector.mul(1.0 - u, p1), math.vector.mul(u, p2));
+    var m = math.matrix.leftHandedXUpToNDC();
+    m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
+    return m;
+}
+
+pub fn renderStrips(self: *Manager) void {
+    if (self.num_points < 2) return;
+    self.deleteStrip();
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    const m = math.matrix.leftHandedXUpToNDC();
-    const i_data: rhi.instanceData = .{
-        .t_column0 = m.columns[0],
-        .t_column1 = m.columns[1],
-        .t_column2 = m.columns[2],
-        .t_column3 = m.columns[3],
-        .color = .{ 0, 0, 1, 1 },
-    };
-    var i_datas: [1]rhi.instanceData = .{i_data};
+    var i_datas: [100]rhi.instanceData = undefined;
+    for (0..100) |i| {
+        const t: f32 = @floatFromInt(i);
+        const m = self.nextStripTransform(t / 100.0);
+        const i_data: rhi.instanceData = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 0.5, 0.5, 0.5, 1 },
+        };
+        i_datas[i] = i_data;
+    }
     const strip: object.object = .{
         .strip = object.strip.init(
             program,
