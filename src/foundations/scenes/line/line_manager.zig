@@ -1,5 +1,6 @@
 circle: ?object.object = null,
 strip: ?object.object = null,
+quad: ?object.object = null,
 points: [point_limit]*point = undefined,
 num_points: usize = 0,
 num_tangents: usize = 0,
@@ -34,11 +35,24 @@ pub fn deinit(self: *Manager, allocator: std.mem.Allocator) void {
 pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32, tangent: bool) void {
     if (self.dragging_point != null) return;
     if (self.num_points == self.points.len) return;
-    const np = point.init(allocator, x, z, self.num_points, tangent);
+    var tangent_target: ?usize = null;
+    if (tangent) blk: {
+        tangent_target = self.selected_point;
+        if (tangent_target == null) break :blk;
+        for (0..self.num_points) |i| {
+            const p = self.points[i];
+            if (p.tangent == tangent_target) {
+                // Already has a tangent.
+                tangent_target = null;
+                return;
+            }
+        }
+    }
+    const np = point.init(allocator, x, z, self.num_points, tangent_target);
     if (self.num_points == 0) {
         self.points[0] = np;
         self.num_points += 1;
-        if (tangent) {
+        if (tangent_target != null) {
             self.num_tangents += 1;
         }
         self.initCircle();
@@ -47,7 +61,7 @@ pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32, tange
         _ = root_point.addPointAtTree(x, z, np);
         self.points[self.num_points] = np;
         self.num_points += 1;
-        if (tangent) {
+        if (tangent_target != null) {
             self.num_tangents += 1;
         }
         self.deleteCircle();
@@ -80,7 +94,7 @@ pub fn startDragging(self: *Manager, pi: usize) void {
 
 pub fn selectPoint(self: *Manager, pi: usize) void {
     var selected_p = self.points[pi];
-    if (selected_p.tangent) return;
+    if (selected_p.tangent != null) return;
     selected_p.select();
     self.updatePointData(pi);
     self.selected_point = pi;
@@ -157,6 +171,10 @@ pub fn draw(self: *Manager) void {
         const objects: [1]object.object = .{s};
         rhi.drawObjects(objects[0..]);
     }
+    if (self.quad) |q| {
+        const objects: [1]object.object = .{q};
+        rhi.drawObjects(objects[0..]);
+    }
 }
 
 pub fn rootPoint(self: *Manager) ?*point {
@@ -210,7 +228,7 @@ pub fn renderStrips(self: *Manager) void {
     var points_added: usize = 0;
     for (0..self.num_points) |i| {
         const p = self.points[i];
-        if (p.tangent) continue;
+        if (p.tangent != null) continue;
         positions[points_added] = p.toVector();
         times[points_added] = @floatFromInt(points_added);
         points_added += 1;
@@ -232,6 +250,47 @@ pub fn renderStrips(self: *Manager) void {
     }
     const strip: object.object = .{
         .strip = object.strip.init(
+            program,
+            i_datas[0 .. points_added * 1_000],
+        ),
+    };
+    self.strip = strip;
+}
+
+pub fn renderQuads(self: *Manager) void {
+    const num_points = self.num_points - self.num_tangents;
+    if (num_points < 2) return;
+    self.deleteStrip();
+    const program = rhi.createProgram();
+    rhi.attachShaders(program, vertex_shader, frag_shader);
+    var i_datas: [100]rhi.instanceData = undefined;
+    var positions: [point_limit]math.vector.vec4 = undefined;
+    var times: [point_limit]f32 = undefined;
+    var points_added: usize = 0;
+    for (0..self.num_points) |i| {
+        const p = self.points[i];
+        if (p.tangent) continue;
+        positions[points_added] = p.toVector();
+        times[points_added] = @floatFromInt(points_added);
+        points_added += 1;
+    }
+    for (0..points_added) |i| {
+        const t: f32 = @floatFromInt(i);
+        const sp = math.interpolation.linear(t / 1_000.0, positions[0..points_added], times[0..points_added]);
+        var m = math.matrix.leftHandedXUpToNDC();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));
+        m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 0.5, 0.5, 0.5, 1 },
+        };
+        i_datas[i] = i_data;
+    }
+    const strip: object.object = .{
+        .strip = object.quad.initInstanced(
             program,
             i_datas[0 .. points_added * 1_000],
         ),

@@ -8,7 +8,7 @@ x_small_node: ?*Point = null,
 z_big_node: ?*Point = null,
 z_small_node: ?*Point = null,
 i_data: rhi.instanceData = undefined,
-tangent: bool = false,
+tangent: ?usize = null,
 selected: bool = false,
 
 const point_limit: usize = 1000;
@@ -26,7 +26,7 @@ pub inline fn coordinate(c: f32) f32 {
     return c;
 }
 
-pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, tangent: bool) *Point {
+pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, tangent: ?usize) *Point {
     const p = allocator.create(Point) catch @panic("OOM");
     var m = math.matrix.leftHandedXUpToNDC();
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));

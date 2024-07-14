@@ -55,4 +55,3 @@ pub fn updateInstanceAt(self: Strip, index: usize, instance_data: rhi.instanceDa
 const std = @import("std");
 const c = @import("../../c.zig").c;
 const rhi = @import("../../rhi/rhi.zig");
-const math = @import("../../math/math.zig");
