@@ -387,10 +387,10 @@ test scaleMatrix {
 pub inline fn hermite_basis() matrix {
     return .{
         .columns = .{
-            .{ 2, -2, 1, 1 },
-            .{ -3, 3, -2, -1 },
-            .{ 0, 0, 1, 0 },
-            .{ 1, 0, 0, 0 },
+            .{ 2, -3, 0, 1 },
+            .{ -2, 3, 0, 0 },
+            .{ 1, -2, 1, 0 },
+            .{ 1, -1, 0, 0 },
         },
     };
 }
@@ -441,26 +441,26 @@ pub fn preTransformVector(v: vector.vec4, m: matrix) vector.vec4 {
     return .{
         vector.dotProduct(v, @as(vector.vec4, .{
             at(m, 0, 0),
-            at(m, 0, 1),
-            at(m, 0, 2),
-            at(m, 0, 3),
-        })),
-        vector.dotProduct(v, @as(vector.vec4, .{
             at(m, 1, 0),
-            at(m, 1, 1),
-            at(m, 1, 2),
-            at(m, 1, 3),
-        })),
-        vector.dotProduct(v, @as(vector.vec4, .{
             at(m, 2, 0),
-            at(m, 2, 1),
-            at(m, 2, 2),
-            at(m, 2, 3),
+            at(m, 3, 0),
         })),
         vector.dotProduct(v, @as(vector.vec4, .{
-            at(m, 3, 0),
+            at(m, 0, 1),
+            at(m, 1, 1),
+            at(m, 2, 1),
             at(m, 3, 1),
+        })),
+        vector.dotProduct(v, @as(vector.vec4, .{
+            at(m, 0, 2),
+            at(m, 1, 2),
+            at(m, 2, 2),
             at(m, 3, 2),
+        })),
+        vector.dotProduct(v, @as(vector.vec4, .{
+            at(m, 0, 3),
+            at(m, 1, 3),
+            at(m, 2, 3),
             at(m, 3, 3),
         })),
     };
@@ -482,9 +482,22 @@ test preTransformVector {
             .{ 4, 4, 4, 1 },
         },
     };
-    const b_e: vector.vec4 = .{ 26, 32, 40, 5 };
+    const b_e: vector.vec4 = .{ 6, 12, 20, 41 };
     const b_r = preTransformVector(b_v, b_m);
     try std.testing.expectEqual(b_e, b_r);
+
+    const c_v: vector.vec4 = .{ 1, 2, 3, 4 };
+    const c_m: matrix = .{
+        .columns = .{
+            .{ -3, 0, 0, 0 },
+            .{ 3, 0, 0, 0 },
+            .{ -2, 0, 1, 0 },
+            .{ -1, 0, 0, 0 },
+        },
+    };
+    const c_e: vector.vec4 = .{ -3, 3, 1, -1 };
+    const c_r = preTransformVector(c_v, c_m);
+    try std.testing.expectEqual(c_e, c_r);
 }
 
 pub inline fn transpose(m: matrix) matrix {
