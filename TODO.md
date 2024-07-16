@@ -20,6 +20,12 @@ Things to try and do as I learn more about graphical programming
 - [ ] I really need to do a lot with the normalized plane equation to understand how it works once I have projections.
 - [ ] Do a thing to reflect something around an abitrary plane centered around the origin.
 
+## Interpolation, curves and arcs
+- [ ] Draw an arc in the world, maybe with some kind of animation going back and forth
+- [ ] maybe show a number in the animation above that shows the arc distance left from beginning to end
+- [ ] Draw a camera sequence that curves around a path using both constant rate and ease in and out methods
+- [ ] Do a slerp thing 
+
 
 ## Ideas
 
