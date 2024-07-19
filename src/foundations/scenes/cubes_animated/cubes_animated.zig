@@ -3,31 +3,46 @@ objects: [1]object.object = undefined,
 ui_state: ca_ui,
 
 const kf0: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(0),
-    @as(math.vector.vec3, .{ 0, 0, 1 }),
+    math.rotation.degreesToRadians(25),
+    @as(math.vector.vec3, .{ 0, 1, 1 }),
 );
 const kf1: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(90.0),
-    @as(math.vector.vec3, .{ 0, 0, 1 }),
+    math.rotation.degreesToRadians(100.0),
+    @as(math.vector.vec3, .{ 0, 1, 1 }),
 );
 const kf2: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(45.0),
+    math.rotation.degreesToRadians(175.0),
     @as(math.vector.vec3, .{ 0, 1, 1 }),
 );
 const kf3: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(80.0),
+    math.rotation.degreesToRadians(220.0),
     @as(math.vector.vec3, .{ 0, 1, 1 }),
 );
+const kf4: math.rotation.Quat = math.rotation.axisAngleToQuat(
+    math.rotation.degreesToRadians(280.0),
+    @as(math.vector.vec3, .{ 0, 1, 1 }),
+);
+const kf5: math.rotation.Quat = math.rotation.axisAngleToQuat(
+    math.rotation.degreesToRadians(80.0),
+    @as(math.vector.vec3, .{ 1, 0, 1 }),
+);
+const kf6: math.rotation.Quat = math.rotation.axisAngleToQuat(
+    math.rotation.degreesToRadians(30.0),
+    @as(math.vector.vec3, .{ 1, 0, 1 }),
+);
 
-const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf0 };
+const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf4, kf5, kf6, kf0 };
 
 const t0: f32 = 0;
 const t1: f32 = 1;
 const t2: f32 = 2;
 const t3: f32 = 3;
 const t4: f32 = 4;
+const t5: f32 = 5;
+const t6: f32 = 6;
+const t7: f32 = 7;
 
-const frame_times = [_]f32{ t0, t1, t2, t3, t4 };
+const frame_times = [_]f32{ t0, t1, t2, t3, t4, t5, t6, t7 };
 
 const LinearColorSpace = @This();
 
@@ -65,7 +80,7 @@ pub fn deinit(self: *LinearColorSpace, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-const animation_duration: f64 = @floatFromInt(key_frames.len);
+const animation_duration: f64 = @floatFromInt(key_frames.len - 1);
 
 pub fn draw(self: *LinearColorSpace, frame_time: f64) void {
     const t: f32 = @as(f32, @floatCast(@mod(frame_time, animation_duration)));
