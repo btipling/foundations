@@ -3,6 +3,7 @@ pub fn main() !void {
     _ = math.rotation;
     _ = math.float;
     _ = math.matrix;
+    _ = math.interpolation;
 }
 
 test {

@@ -56,6 +56,50 @@ pub fn linear(t: f32, positions: []vector.vec4, times: []f32) vector.vec4 {
     return vector.add(vector.mul(1.0 - u, p0), vector.mul(u, p1));
 }
 
+pub fn slerp(p: rotation.Quat, q: rotation.Quat, t: f32) rotation.Quat {
+    const pn = vector.normalize(p);
+    const qn = vector.normalize(q);
+
+    const angle: f32 = std.math.acos(vector.dotProduct(pn, qn));
+    const denominator: f32 = @sin(angle);
+
+    const pt: f32 = (1.0 - t) * angle;
+    const spt: f32 = @sin(pt);
+    const sptp: rotation.Quat = vector.mul(spt, pn);
+
+    const sqt: f32 = @sin(t * angle);
+    const sqtq: rotation.Quat = vector.mul(sqt, qn);
+
+    const numerator: rotation.Quat = vector.add(sptp, sqtq);
+
+    return vector.normalize(vector.mul(1.0 / denominator, numerator));
+}
+
+const epsilon = 0.0001;
+
+test slerp {
+    const a_p: rotation.Quat = rotation.axisAngleToQuat(
+        rotation.degreesToRadians(0),
+        @as(vector.vec3, .{ 0, 0, 1 }),
+    );
+    const a_q: rotation.Quat = rotation.axisAngleToQuat(
+        rotation.degreesToRadians(90.0),
+        @as(vector.vec3, .{ 0, 0, 1 }),
+    );
+    const a_t: f32 = 0.5;
+    const a_e: rotation.Quat = vector.normalize(rotation.axisAngleToQuat(
+        rotation.degreesToRadians(45.0),
+        @as(vector.vec3, .{ 0, 0, 1 }),
+    ));
+    const a_r = slerp(a_p, a_q, a_t);
+    try std.testing.expect(float.equal(a_e[0], a_r[0], epsilon));
+    try std.testing.expect(float.equal(a_e[1], a_r[1], epsilon));
+    try std.testing.expect(float.equal(a_e[2], a_r[2], epsilon));
+    try std.testing.expect(float.equal(a_e[3], a_r[3], epsilon));
+}
+
 const std = @import("std");
 const vector = @import("vector.zig");
+const float = @import("float.zig");
 const matrix = @import("matrix.zig");
+const rotation = @import("rotation.zig");
