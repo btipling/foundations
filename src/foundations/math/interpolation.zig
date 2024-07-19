@@ -61,6 +61,7 @@ pub fn slerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
     const qn = vector.normalize(q);
 
     const angle: f32 = std.math.acos(vector.dotProduct(pn, qn));
+    if (float.equal(@cos(angle), 1.0, 0.001)) return lerp(pn, qn, u);
     const denominator: f32 = @sin(angle);
 
     const pt: f32 = (1.0 - u) * angle;

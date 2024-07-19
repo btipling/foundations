@@ -6,7 +6,7 @@ x_translate: f32 = 0,
 y_translate: f32 = 0,
 z_translate: f32 = 0,
 use_lh_x_up: c_int = 1,
-animate: bool = false,
+animate: bool = true,
 use_slerp: c_int = 1,
 
 const ca_ui = @This();
