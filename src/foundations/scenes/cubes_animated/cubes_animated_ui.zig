@@ -7,6 +7,7 @@ y_translate: f32 = 0,
 z_translate: f32 = 0,
 use_lh_x_up: c_int = 1,
 animate: bool = false,
+use_slerp: c_int = 1,
 
 const ca_ui = @This();
 
@@ -37,6 +38,9 @@ pub fn draw(self: *ca_ui) void {
         c.igTreePop();
     }
     _ = c.igCheckbox("animate", &self.animate);
+    _ = c.igRadioButton_IntPtr("slerp", &self.use_slerp, 1);
+    c.igSameLine(0, 0);
+    _ = c.igRadioButton_IntPtr("lerp", &self.use_slerp, 0);
     _ = c.igRadioButton_IntPtr("left handed x up", &self.use_lh_x_up, 1);
     c.igSameLine(0, 0);
     _ = c.igRadioButton_IntPtr("NDC", &self.use_lh_x_up, 0);

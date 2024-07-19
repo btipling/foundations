@@ -56,18 +56,18 @@ pub fn linear(t: f32, positions: []vector.vec4, times: []f32) vector.vec4 {
     return vector.add(vector.mul(1.0 - u, p0), vector.mul(u, p1));
 }
 
-pub fn slerp(p: rotation.Quat, q: rotation.Quat, t: f32) rotation.Quat {
+pub fn slerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
     const pn = vector.normalize(p);
     const qn = vector.normalize(q);
 
     const angle: f32 = std.math.acos(vector.dotProduct(pn, qn));
     const denominator: f32 = @sin(angle);
 
-    const pt: f32 = (1.0 - t) * angle;
+    const pt: f32 = (1.0 - u) * angle;
     const spt: f32 = @sin(pt);
     const sptp: rotation.Quat = vector.mul(spt, pn);
 
-    const sqt: f32 = @sin(t * angle);
+    const sqt: f32 = @sin(u * angle);
     const sqtq: rotation.Quat = vector.mul(sqt, qn);
 
     const numerator: rotation.Quat = vector.add(sptp, sqtq);
@@ -114,6 +114,31 @@ pub fn piecewiseSlerp(orientations: []const rotation.Quat, times: []const f32, t
     const p: rotation.Quat = orientations[i];
     const q: rotation.Quat = orientations[i + 1];
     return slerp(p, q, u);
+}
+
+pub fn lerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
+    const pn = vector.normalize(p);
+    const qn = vector.normalize(q);
+
+    return vector.add(vector.mul(1.0 - u, pn), vector.mul(u, qn));
+}
+
+pub fn piecewiseLerp(orientations: []const rotation.Quat, times: []const f32, t: f32) rotation.Quat {
+    std.debug.assert(times.len == orientations.len);
+    if (t < times[0]) return orientations[0];
+    if (t > times[times.len - 1]) return orientations[orientations.len - 1];
+    var i: usize = 0;
+    while (true) {
+        if (t < times[i + 1]) break;
+        if (i + 1 == times.len - 1) break;
+        i += 1;
+    }
+    const t0: f32 = times[i];
+    const t1: f32 = times[i + 1];
+    const u: f32 = (t - t0) / (t1 - t0);
+    const p: rotation.Quat = orientations[i];
+    const q: rotation.Quat = orientations[i + 1];
+    return lerp(p, q, u);
 }
 
 const std = @import("std");

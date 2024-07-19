@@ -33,17 +33,6 @@ const kf6: math.rotation.Quat = math.rotation.axisAngleToQuat(
 
 const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf4, kf5, kf6, kf0 };
 
-const t0: f32 = 0;
-const t1: f32 = 1;
-const t2: f32 = 2;
-const t3: f32 = 3;
-const t4: f32 = 4;
-const t5: f32 = 5;
-const t6: f32 = 6;
-const t7: f32 = 7;
-
-const frame_times = [_]f32{ t0, t1, t2, t3, t4, t5, t6, t7 };
-
 const LinearColorSpace = @This();
 
 const vertex_shader: []const u8 = @embedFile("ca_vertex.glsl");
@@ -83,6 +72,12 @@ pub fn deinit(self: *LinearColorSpace, allocator: std.mem.Allocator) void {
 const animation_duration: f64 = @floatFromInt(key_frames.len - 1);
 
 pub fn draw(self: *LinearColorSpace, frame_time: f64) void {
+    var frame_times: [key_frames.len]f32 = undefined;
+    comptime var i: usize = 0;
+    inline while (i < key_frames.len) : (i += 1) {
+        frame_times[i] = @floatFromInt(i);
+    }
+
     const t: f32 = @as(f32, @floatCast(@mod(frame_time, animation_duration)));
     var m = math.matrix.identity();
     if (self.ui_state.use_lh_x_up == 1) {
@@ -97,8 +92,11 @@ pub fn draw(self: *LinearColorSpace, frame_time: f64) void {
         m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.x_rot));
         m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.y_rot));
         m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.z_rot));
-    } else {
+    } else if (self.ui_state.use_slerp == 1) {
         const orientation = math.interpolation.piecewiseSlerp(key_frames[0..], frame_times[0..], t);
+        m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(orientation));
+    } else {
+        const orientation = math.interpolation.piecewiseLerp(key_frames[0..], frame_times[0..], t);
         m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(orientation));
     }
     m = math.matrix.transformMatrix(m, math.matrix.scale(
