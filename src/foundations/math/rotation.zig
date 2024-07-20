@@ -59,6 +59,7 @@ pub inline fn identityQuat() Quat {
     return .{ 1, 0, 0, 0 };
 }
 
+// AKA as the conjugate
 pub inline fn inverseNormalizedQuat(q: Quat) Quat {
     return .{ q[0], -q[1], -q[2], -q[3] };
 }

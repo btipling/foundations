@@ -58,8 +58,11 @@ pub fn linear(t: f32, positions: []vector.vec4, times: []f32) vector.vec4 {
 
 pub fn slerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
     var pn = p;
-    const cs = vector.dotProduct(pn, q);
-    if (cs <= 0) pn = vector.negate(pn);
+    var cs = vector.dotProduct(pn, q);
+    if (cs <= 0) {
+        pn = vector.negate(pn);
+        cs = -cs;
+    }
     if (float.equal(cs, 1.0, 0.001)) return vector.normalize(lerp(pn, q, u));
     const angle: f32 = std.math.acos(cs);
     const denominator: f32 = @sin(angle);
