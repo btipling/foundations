@@ -27,6 +27,7 @@ Things to try and do as I learn more about graphical programming
 - [ ] maybe show a number in the animation above that shows the arc distance left from beginning to end
 - [ ] Draw a camera sequence that curves around a path using both constant rate and ease in and out methods
 - [ ] Do a slerp thing
+- [ ] Check handendess of spherical coordinate code. Make sure it works for x up left handed.
 
 ## Ideas
 
