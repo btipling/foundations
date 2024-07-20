@@ -76,7 +76,7 @@ pub fn slerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
 
     const numerator: rotation.Quat = vector.add(sptp, sqtq);
 
-    return vector.normalize(vector.mul(1.0 / denominator, numerator));
+    return vector.mul(1.0 / denominator, numerator);
 }
 
 const epsilon = 0.0001;
