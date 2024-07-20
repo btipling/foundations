@@ -35,4 +35,4 @@ Make a bunch of small single level games, a racing game, a 3D fps game of some k
 
 Armored core was a really cool game.
 
-- [ ] Make a flying game with a plane with proper yaw pitch roll for fun above some terrain. 
+- [ ] Make a flying game with a plane with proper yaw pitch roll for fun above some terrain.
