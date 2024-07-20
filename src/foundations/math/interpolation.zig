@@ -57,13 +57,11 @@ pub fn linear(t: f32, positions: []vector.vec4, times: []f32) vector.vec4 {
 }
 
 pub fn slerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
-    var pn = vector.normalize(p);
-    const qn = vector.normalize(q);
-
-    const angle: f32 = std.math.acos(vector.dotProduct(pn, qn));
-    const cs = @cos(angle);
-    if (float.equal(cs, 1.0, 0.001)) return lerp(pn, qn, u);
-    if (cs <= 0) pn = vector.normalize(vector.negate(pn));
+    var pn = p;
+    const cs = vector.dotProduct(pn, q);
+    if (cs <= 0) pn = vector.negate(pn);
+    if (float.equal(cs, 1.0, 0.001)) return vector.normalize(lerp(pn, q, u));
+    const angle: f32 = std.math.acos(cs);
     const denominator: f32 = @sin(angle);
 
     const pt: f32 = (1.0 - u) * angle;
@@ -71,7 +69,7 @@ pub fn slerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
     const sptp: rotation.Quat = vector.mul(spt, pn);
 
     const sqt: f32 = @sin(u * angle);
-    const sqtq: rotation.Quat = vector.mul(sqt, qn);
+    const sqtq: rotation.Quat = vector.mul(sqt, q);
 
     const numerator: rotation.Quat = vector.add(sptp, sqtq);
 
@@ -120,10 +118,7 @@ pub fn piecewiseSlerp(orientations: []const rotation.Quat, times: []const f32, t
 }
 
 pub fn lerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
-    const pn = vector.normalize(p);
-    const qn = vector.normalize(q);
-
-    return vector.add(vector.mul(1.0 - u, pn), vector.mul(u, qn));
+    return vector.add(vector.mul(1.0 - u, p), vector.mul(u, q));
 }
 
 pub fn piecewiseLerp(orientations: []const rotation.Quat, times: []const f32, t: f32) rotation.Quat {
