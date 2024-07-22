@@ -80,8 +80,8 @@ fn handleInput(self: *UnitCircle) void {
     const z = input.mouse_z orelse return;
     self.ui_state.x = x;
     self.ui_state.z = z;
-    self.ui_state.over_circle = math.geometry.implicitCircle(.{ z, x }, 0.01);
-    self.ui_state.within_circle = math.geometry.whitinCircle(.{ z, x });
+    self.ui_state.over_circle = math.geometry.implicitCircle(.{ 0, 0 }, 1.0, .{ z, x }, 0.01);
+    self.ui_state.within_circle = math.geometry.whitinCircle(.{ 0, 0 }, 1.0, .{ z, x });
 }
 
 const std = @import("std");
