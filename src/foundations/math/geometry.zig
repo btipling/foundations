@@ -17,7 +17,7 @@ pub fn implicitCircle(center: vector.vec2, radius: f32, point: vector.vec2, epsi
 pub fn withinCircle(center: vector.vec2, radius: f32, point: vector.vec2) bool {
     const x = point[0] - center[0];
     const y = point[1] - center[1];
-    return x * x + y * y < radius * radius;
+    return x * x + y * y <= radius * radius;
 }
 
 pub fn implicitSphere(center: vector.vec3, radius: f32, point: vector.vec3, epsilon: ?f32) bool {
@@ -36,7 +36,7 @@ pub fn withinSphere(center: vector.vec3, radius: f32, point: vector.vec3) bool {
     const x = point[0] - center[0];
     const y = point[1] - center[1];
     const z = point[2] - center[2];
-    return x * x + y * y + z * z < radius * radius;
+    return x * x + y * y + z * z <= radius * radius;
 }
 
 const std = @import("std");
