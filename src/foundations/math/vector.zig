@@ -343,7 +343,7 @@ pub inline fn isZeroVector(v: anytype) bool {
     const ti = @typeInfo(@TypeOf(v));
     if (ti != .Vector) @compileError("input must be a vector");
     var i: usize = 0;
-    while (i < ti.Vector.len) : (i += 1) if (v[i] != 0) return false;
+    while (i < ti.Vector.len) : (i += 1) if (!float.equal(v[i], 0.0, 0.00001)) return false;
     return true;
 }
 
