@@ -85,6 +85,5 @@ const c = @import("../../c.zig").c;
 const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const line_ui = @import("line_ui.zig");
-const object = @import("../../object/object.zig");
 const point = @import("line_point.zig");
 const manager = @import("line_manager.zig");

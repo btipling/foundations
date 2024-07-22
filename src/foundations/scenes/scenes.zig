@@ -11,7 +11,7 @@ pub fn init(allocator: std.mem.Allocator) *Scenes {
     scenes.* = .{
         .allocator = allocator,
     };
-    scenes.initScene(ui.ui_state.scene_type.cubes_animated);
+    scenes.initScene(ui.ui_state.scene_type.unit_circle);
     return scenes;
 }
 

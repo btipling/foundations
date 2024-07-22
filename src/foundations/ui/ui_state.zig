@@ -9,6 +9,7 @@ pub const scene_type = enum(usize) {
     circle,
     sphere,
     line,
+    unit_circle,
 };
 
 pub const scenes = union(scene_type) {
@@ -22,6 +23,7 @@ pub const scenes = union(scene_type) {
     circle: *circle,
     sphere: *sphere,
     line: *line,
+    unit_circle: *unit_circle,
 };
 
 pub const scene_nav_type = enum {
@@ -45,3 +47,4 @@ const cubes_animated = @import("../scenes/cubes_animated/cubes_animated.zig");
 const circle = @import("../scenes/circle/circle.zig");
 const sphere = @import("../scenes/sphere/sphere.zig");
 const line = @import("../scenes/line/line.zig");
+const unit_circle = @import("../scenes/unit_circle/unit_circle.zig");
