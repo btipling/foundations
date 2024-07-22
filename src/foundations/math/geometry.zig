@@ -5,8 +5,11 @@ pub fn parametricCircle(t: f32) vector.vec2 {
     };
 }
 
-pub fn implicitCircle(v: vector.vec2) bool {
-    return float.equal(v[0] * v[0] + v[1] * v[1], 1.0, 0.0001);
+const default_epsilon: f32 = 0.0001;
+
+pub fn implicitCircle(v: vector.vec2, epsilon: ?f32) bool {
+    const e = epsilon orelse default_epsilon;
+    return float.equal(v[0] * v[0] + v[1] * v[1], 1.0, e);
 }
 
 const std = @import("std");

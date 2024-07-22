@@ -74,9 +74,13 @@ pub fn draw(self: *UnitCircle, _: f64) void {
     self.ui_state.draw();
 }
 
-fn handleInput(_: *UnitCircle) void {
+fn handleInput(self: *UnitCircle) void {
     const input = ui.input.getReadOnly() orelse return;
-    _ = input;
+    const x = input.mouse_x orelse return;
+    const z = input.mouse_z orelse return;
+    self.ui_state.x = x;
+    self.ui_state.z = z;
+    self.ui_state.over_circle = math.geometry.implicitCircle(.{ z, x }, 0.01);
 }
 
 const std = @import("std");
