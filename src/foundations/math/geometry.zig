@@ -14,7 +14,7 @@ pub fn implicitCircle(center: vector.vec2, radius: f32, point: vector.vec2, epsi
     return float.equal(x * x + y * y, radius * radius, e);
 }
 
-pub fn whitinCircle(center: vector.vec2, radius: f32, point: vector.vec2) bool {
+pub fn withinCircle(center: vector.vec2, radius: f32, point: vector.vec2) bool {
     const x = point[0] - center[0];
     const y = point[1] - center[1];
     return x * x + y * y < radius * radius;

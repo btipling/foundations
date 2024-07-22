@@ -81,7 +81,7 @@ fn handleInput(self: *UnitCircle) void {
     self.ui_state.x = x;
     self.ui_state.z = z;
     self.ui_state.over_circle = math.geometry.implicitCircle(.{ 0, 0 }, 1.0, .{ z, x }, 0.01);
-    self.ui_state.within_circle = math.geometry.whitinCircle(.{ 0, 0 }, 1.0, .{ z, x });
+    self.ui_state.within_circle = math.geometry.withinCircle(.{ 0, 0 }, 1.0, .{ z, x });
 }
 
 const std = @import("std");
