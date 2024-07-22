@@ -28,6 +28,7 @@ Things to try and do as I learn more about graphical programming
 - [ ] Draw a camera sequence that curves around a path using both constant rate and ease in and out methods
 - [ ] Do a slerp thing
 - [ ] Check handendess of spherical coordinate code. Make sure it works for x up left handed.
+- [ ] Get fraction of the angular displacement of a quaternion, follow code example in 3D Math primer and my reading notes for that chapter
 
 ## Ideas
 
