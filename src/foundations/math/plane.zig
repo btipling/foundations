@@ -24,9 +24,29 @@ pub fn initFromPoints(p1: vector.vec3, p2: vector.vec3, p3: vector.vec3) PlaneEr
     return init(n, d);
 }
 
+pub fn bestFitFromPoints(points: []vector.vec3) PlaneError!Plane {
+    if (points.len < 3) return PlaneError.Invalid;
+    var result: vector.vec3 = .{ 0, 0, 0 };
+    var i: usize = 0;
+    while (i < points.len - 1) : (i += 1) {
+        const p = points[i];
+        const c = points[i + 1];
+        result[0] += p[2] + c[2] * p[1] - c[1];
+        result[1] += p[0] + c[0] * p[2] - c[2];
+        result[2] += p[1] + c[1] * p[0] - c[0];
+    }
+    const n = vector.normalize(result);
+    const d = vector.dotProduct(n, points[0]);
+    return init(n, d);
+}
+
 // isValid - p1 and p2 are points in the plane
 pub fn isValid(self: Plane, p1: vector.vec3, p2: vector.vec3) bool {
     return float.equal(vector.dotProduct(self.normal, (vector.sub(p1, p2))), 0.00001);
+}
+
+pub fn distanceToPoint(self: Plane, q: vector.vec3) f32 {
+    return vector.dotProduct(q, self.normal) - self.offset;
 }
 
 const vector = @import("vector.zig");
