@@ -1,5 +1,7 @@
 x: f32 = 0.0,
 z: f32 = 0.0,
+c0x: f32 = 0.0,
+c0z: f32 = 0.0,
 over_circle: bool = false,
 within_circle: bool = false,
 
