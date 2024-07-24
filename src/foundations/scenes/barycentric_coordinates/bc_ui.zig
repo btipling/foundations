@@ -1,12 +1,30 @@
 x: f32 = 0.0,
 z: f32 = 0.0,
-vs: [3]math.vector.vec3 = .{
-    .{ 0.5, 0.0, 0.0 },
-    .{ -0.5, 0.0, 0.5 },
-    .{ -0.5, 0.0, -0.5 },
+vs: [3]vData = .{
+    .{
+        .position = .{ 0.5, 0.0, 0.0 },
+        .color = yellow,
+    },
+    .{
+        .position = .{ -0.5, 0.0, 0.5 },
+        .color = yellow,
+    },
+    .{
+        .position = .{ -0.5, 0.0, -0.5 },
+        .color = yellow,
+    },
 },
 over_circle: bool = false,
 within_circle: bool = false,
+
+pub const vData = struct {
+    position: math.vector.vec3,
+    color: math.vector.vec4,
+};
+
+const green = .{ 0.41, 1.0, 0.71, 1 };
+const yellow = .{ 1.0, 0.95, 0.41, 1.0 };
+const pink = .{ 1.0, 0.41, 0.71, 1 };
 
 const pr_ui = @This();
 

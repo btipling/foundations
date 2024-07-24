@@ -78,14 +78,15 @@ pub fn renderCircle(self: *BCTriangle) void {
     for (0..num_cirles) |i| {
         var m = math.matrix.leftHandedXUpToNDC();
         const v = self.ui_state.vs[i];
-        m = math.matrix.transformMatrix(m, math.matrix.translate(v[0], v[1], v[2]));
+        const p = v.position;
+        m = math.matrix.transformMatrix(m, math.matrix.translate(p[0], p[1], p[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
         const i_data: rhi.instanceData = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
             .t_column2 = m.columns[2],
             .t_column3 = m.columns[3],
-            .color = .{ 1.0, 0.5, 0.5, 1 },
+            .color = v.color,
         };
         i_datas[i] = i_data;
     }
