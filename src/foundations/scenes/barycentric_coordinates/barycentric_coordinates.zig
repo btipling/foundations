@@ -75,21 +75,7 @@ pub fn renderStrip(self: *BCTriangle) void {
 pub fn renderCircle(self: *BCTriangle) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    for (0..num_cirles) |i| {
-        var m = math.matrix.leftHandedXUpToNDC();
-        const v = self.ui_state.vs[i];
-        const p = v.position;
-        m = math.matrix.transformMatrix(m, math.matrix.translate(p[0], p[1], p[2]));
-        m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
-        const i_data: rhi.instanceData = .{
-            .t_column0 = m.columns[0],
-            .t_column1 = m.columns[1],
-            .t_column2 = m.columns[2],
-            .t_column3 = m.columns[3],
-            .color = v.color,
-        };
-        self.points[i] = i_data;
-    }
+    for (0..num_cirles) |i| self.updatePointIData(i);
     const circle: object.object = .{
         .circle = object.circle.init(
             program,
@@ -116,6 +102,8 @@ fn handleInput(self: *BCTriangle) void {
     const input = ui.input.getReadOnly() orelse return;
     const x = input.mouse_x orelse return;
     const z = input.mouse_z orelse return;
+    const action = input.mouse_action;
+    const button = input.mouse_button;
     self.ui_state.x = x;
     self.ui_state.z = z;
     self.ui_state.over_circle = math.geometry.implicitCircle(.{ 0, 0 }, 1.0, .{ z, x }, 0.01);
@@ -132,12 +120,31 @@ fn handleInput(self: *BCTriangle) void {
     self.ui_state.over_vertex = ovi;
     if (self.ui_state.over_vertex) |vi| {
         self.ui_state.vs[vi].color = bc_ui.pink;
+        if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
+            self.ui_state.vs[vi].position = .{ x, 0, z };
+        }
         self.updatePointData(vi);
     }
 }
 
+fn updatePointIData(self: *BCTriangle, index: usize) void {
+    var m = math.matrix.leftHandedXUpToNDC();
+    const v = self.ui_state.vs[index];
+    const p = v.position;
+    m = math.matrix.transformMatrix(m, math.matrix.translate(p[0], p[1], p[2]));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
+    const i_data: rhi.instanceData = .{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = v.color,
+    };
+    self.points[index] = i_data;
+}
+
 fn updatePointData(self: *BCTriangle, index: usize) void {
-    self.points[index].color = self.ui_state.vs[index].color;
+    self.updatePointIData(index);
     switch (self.circle) {
         .circle => |cr| cr.updateInstanceAt(index, self.points[index]),
         else => {},
@@ -155,6 +162,7 @@ fn overVertex(self: *BCTriangle, x: f32, z: f32) ?usize {
 }
 
 const std = @import("std");
+const c = @import("../../c.zig").c;
 const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
