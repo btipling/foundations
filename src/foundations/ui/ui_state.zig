@@ -10,6 +10,7 @@ pub const scene_type = enum(usize) {
     sphere,
     line,
     unit_circle,
+    barycentric_coordinates,
 };
 
 pub const scenes = union(scene_type) {
@@ -24,6 +25,7 @@ pub const scenes = union(scene_type) {
     sphere: *sphere,
     line: *line,
     unit_circle: *unit_circle,
+    barycentric_coordinates: *barycentric_coordinates,
 };
 
 pub const scene_nav_type = enum {
@@ -48,3 +50,4 @@ const circle = @import("../scenes/circle/circle.zig");
 const sphere = @import("../scenes/sphere/sphere.zig");
 const line = @import("../scenes/line/line.zig");
 const unit_circle = @import("../scenes/unit_circle/unit_circle.zig");
+const barycentric_coordinates = @import("../scenes/barycentric_coordinates/barycentric_coordinates.zig");
