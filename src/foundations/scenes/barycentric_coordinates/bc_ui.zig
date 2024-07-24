@@ -16,7 +16,12 @@ vs: [3]vData = .{
 },
 over_circle: bool = false,
 within_circle: bool = false,
-over_vertex: ?usize = null,
+over_vertex: ?mouseVertexCapture = null,
+
+pub const mouseVertexCapture = struct {
+    dragging: bool = false,
+    vertex: usize = 0,
+};
 
 pub const vData = struct {
     position: math.vector.vec3,

@@ -108,23 +108,43 @@ fn handleInput(self: *BCTriangle) void {
     self.ui_state.z = z;
     self.ui_state.over_circle = math.geometry.implicitCircle(.{ 0, 0 }, 1.0, .{ z, x }, 0.01);
     self.ui_state.within_circle = math.geometry.withinCircle(.{ 0, 0 }, 1.0, .{ z, x });
+    if (action == c.GLFW_RELEASE) {
+        self.releaseCurrentMouseCapture();
+        return;
+    }
+    blk: {
+        const ovi = self.overVertex(x, z);
+        const ov = self.ui_state.over_vertex orelse {
+            self.ui_state.over_vertex = ovi;
+            break :blk;
+        };
+        const novi = ovi orelse {
+            if (!ov.dragging) self.releaseCurrentMouseCapture();
+            break :blk;
+        };
+        if (ov.vertex == novi.vertex) break :blk;
+        self.releaseCurrentMouseCapture();
+        self.ui_state.over_vertex = novi;
+    }
 
-    const ovi = self.overVertex(x, z);
-    if (ovi != self.ui_state.over_vertex) {
-        if (self.ui_state.over_vertex) |vi| {
-            self.ui_state.vs[vi].color = bc_ui.yellow;
-            self.ui_state.over_vertex = null;
-            self.updatePointData(vi);
-        }
-    }
-    self.ui_state.over_vertex = ovi;
-    if (self.ui_state.over_vertex) |vi| {
-        self.ui_state.vs[vi].color = bc_ui.pink;
+    if (self.ui_state.over_vertex) |*ov| {
         if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
-            self.ui_state.vs[vi].position = .{ x, 0, z };
+            ov.dragging = true;
+            self.ui_state.over_vertex = ov.*;
         }
-        self.updatePointData(vi);
+        self.ui_state.vs[ov.vertex].color = bc_ui.pink;
+        if (ov.dragging) {
+            self.ui_state.vs[ov.vertex].position = .{ x, 0, z };
+        }
+        self.updatePointData(ov.vertex);
     }
+}
+
+fn releaseCurrentMouseCapture(self: *BCTriangle) void {
+    const data = self.ui_state.over_vertex orelse return;
+    self.ui_state.vs[data.vertex].color = bc_ui.yellow;
+    self.ui_state.over_vertex = null;
+    self.updatePointData(data.vertex);
 }
 
 fn updatePointIData(self: *BCTriangle, index: usize) void {
@@ -151,11 +171,11 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
     }
 }
 
-fn overVertex(self: *BCTriangle, x: f32, z: f32) ?usize {
+fn overVertex(self: *BCTriangle, x: f32, z: f32) ?bc_ui.mouseVertexCapture {
     for (self.ui_state.vs, 0..) |v, i| {
         const p = v.position;
         if (math.geometry.withinCircle(.{ z, x }, point_scale, .{ p[2], p[0] })) {
-            return i;
+            return .{ .vertex = i };
         }
     }
     return null;
