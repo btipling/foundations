@@ -1,7 +1,10 @@
 x: f32 = 0.0,
 z: f32 = 0.0,
-c0x: f32 = 0.0,
-c0z: f32 = 0.0,
+vs: [3]math.vector.vec3 = .{
+    .{ 0.5, 0.0, 0.0 },
+    .{ -0.5, 0.0, 0.5 },
+    .{ -0.5, 0.0, -0.5 },
+},
 over_circle: bool = false,
 within_circle: bool = false,
 
@@ -29,3 +32,4 @@ pub fn draw(self: *pr_ui) void {
 
 const std = @import("std");
 const c = @import("../../c.zig").c;
+const math = @import("../../math/math.zig");

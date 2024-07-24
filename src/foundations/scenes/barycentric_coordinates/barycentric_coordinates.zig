@@ -76,14 +76,9 @@ pub fn renderCircle(self: *BCTriangle) void {
     rhi.attachShaders(program, vertex_shader, frag_shader);
     var i_datas: [num_triangles]rhi.instanceData = undefined;
     for (0..num_cirles) |i| {
-        const t: f32 = @floatFromInt(i);
         var m = math.matrix.leftHandedXUpToNDC();
-        if (i == 0) {
-            m = math.matrix.transformMatrix(m, math.matrix.translate(self.ui_state.c0x, 0.0, self.ui_state.c0z));
-        } else {
-            const res = math.geometry.parametricCircle(t / num_triangles_f);
-            m = math.matrix.transformMatrix(m, math.matrix.translate(res[1] * 0.5, 0.0, res[0] * 0.5));
-        }
+        const v = self.ui_state.vs[i];
+        m = math.matrix.transformMatrix(m, math.matrix.translate(v[0], v[1], v[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
         const i_data: rhi.instanceData = .{
             .t_column0 = m.columns[0],
