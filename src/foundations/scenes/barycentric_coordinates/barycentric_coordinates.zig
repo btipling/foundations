@@ -1,6 +1,7 @@
 strip: object.object = undefined,
 circle: object.object = undefined,
 ui_state: bc_ui,
+points: [3]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
 
 const BCTriangle = @This();
@@ -74,7 +75,6 @@ pub fn renderStrip(self: *BCTriangle) void {
 pub fn renderCircle(self: *BCTriangle) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    var i_datas: [num_triangles]rhi.instanceData = undefined;
     for (0..num_cirles) |i| {
         var m = math.matrix.leftHandedXUpToNDC();
         const v = self.ui_state.vs[i];
@@ -88,12 +88,12 @@ pub fn renderCircle(self: *BCTriangle) void {
             .t_column3 = m.columns[3],
             .color = v.color,
         };
-        i_datas[i] = i_data;
+        self.points[i] = i_data;
     }
     const circle: object.object = .{
         .circle = object.circle.init(
             program,
-            i_datas[0..],
+            self.points[0..],
         ),
     };
     self.circle = circle;
@@ -120,6 +120,38 @@ fn handleInput(self: *BCTriangle) void {
     self.ui_state.z = z;
     self.ui_state.over_circle = math.geometry.implicitCircle(.{ 0, 0 }, 1.0, .{ z, x }, 0.01);
     self.ui_state.within_circle = math.geometry.withinCircle(.{ 0, 0 }, 1.0, .{ z, x });
+
+    const ovi = self.overVertex(x, z);
+    if (ovi != self.ui_state.over_vertex) {
+        if (self.ui_state.over_vertex) |vi| {
+            self.ui_state.vs[vi].color = bc_ui.yellow;
+            self.ui_state.over_vertex = null;
+            self.updatePointData(vi);
+        }
+    }
+    self.ui_state.over_vertex = ovi;
+    if (self.ui_state.over_vertex) |vi| {
+        self.ui_state.vs[vi].color = bc_ui.pink;
+        self.updatePointData(vi);
+    }
+}
+
+fn updatePointData(self: *BCTriangle, index: usize) void {
+    self.points[index].color = self.ui_state.vs[index].color;
+    switch (self.circle) {
+        .circle => |cr| cr.updateInstanceAt(index, self.points[index]),
+        else => {},
+    }
+}
+
+fn overVertex(self: *BCTriangle, x: f32, z: f32) ?usize {
+    for (self.ui_state.vs, 0..) |v, i| {
+        const p = v.position;
+        if (math.geometry.withinCircle(.{ z, x }, point_scale, .{ p[2], p[0] })) {
+            return i;
+        }
+    }
+    return null;
 }
 
 const std = @import("std");

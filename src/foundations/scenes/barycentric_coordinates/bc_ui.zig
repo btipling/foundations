@@ -16,15 +16,16 @@ vs: [3]vData = .{
 },
 over_circle: bool = false,
 within_circle: bool = false,
+over_vertex: ?usize = null,
 
 pub const vData = struct {
     position: math.vector.vec3,
     color: math.vector.vec4,
 };
 
-const green = .{ 0.41, 1.0, 0.71, 1 };
-const yellow = .{ 1.0, 0.95, 0.41, 1.0 };
-const pink = .{ 1.0, 0.41, 0.71, 1 };
+pub const green = .{ 0.41, 1.0, 0.71, 1 };
+pub const yellow = .{ 1.0, 0.95, 0.41, 1.0 };
+pub const pink = .{ 1.0, 0.41, 0.71, 1 };
 
 const pr_ui = @This();
 
