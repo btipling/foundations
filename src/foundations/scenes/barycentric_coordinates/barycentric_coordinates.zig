@@ -1,13 +1,14 @@
-strip: object.object = undefined,
+strip: ?object.object = null,
 circle: object.object = undefined,
 ui_state: bc_ui,
-points: [3]rhi.instanceData = undefined,
+points: [num_points]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
 
 const BCTriangle = @This();
 
-const num_triangles: usize = 10_000;
-const num_cirles: usize = 3;
+const num_triangles: usize = 1_000;
+const num_points: usize = 3;
+const num_points_interpolated: usize = num_points + 1;
 const num_triangles_f: f32 = @floatFromInt(num_triangles);
 const strip_scale: f32 = 0.005;
 const point_scale: f32 = 0.05;
@@ -40,19 +41,29 @@ pub fn deinit(self: *BCTriangle, allocator: std.mem.Allocator) void {
 }
 
 pub fn deleteStrip(self: *BCTriangle) void {
-    var objects: [1]object.object = .{self.strip};
-    rhi.deleteObjects(objects[0..]);
+    if (self.strip) |s| {
+        var objects: [1]object.object = .{s};
+        rhi.deleteObjects(objects[0..]);
+    }
 }
 
 pub fn renderStrip(self: *BCTriangle) void {
+    self.deleteStrip();
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    var i_datas: [num_triangles]rhi.instanceData = undefined;
-    for (0..num_triangles) |i| {
+    var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
+    var positions: [num_points_interpolated]math.vector.vec4 = undefined;
+    var times: [num_points_interpolated]f32 = undefined;
+    for (0..num_points_interpolated) |i| {
+        const v = self.ui_state.vs[@mod(i, 3)].position;
+        positions[i] = .{ v[0], v[1], v[2], 1.0 };
+        times[i] = @floatFromInt(i);
+    }
+    for (0..num_points_interpolated * num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
-        const res = math.geometry.parametricCircle(t / num_triangles_f);
+        const res = math.interpolation.linear(t / 1_000.0, positions[0..num_points_interpolated], times[0..num_points_interpolated]);
         var m = math.matrix.leftHandedXUpToNDC();
-        m = math.matrix.transformMatrix(m, math.matrix.translate(res[1], 0.0, res[0]));
+        m = math.matrix.transformMatrix(m, math.matrix.translate(res[0], res[1], res[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
         const i_data: rhi.instanceData = .{
             .t_column0 = m.columns[0],
@@ -75,7 +86,7 @@ pub fn renderStrip(self: *BCTriangle) void {
 pub fn renderCircle(self: *BCTriangle) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    for (0..num_cirles) |i| self.updatePointIData(i);
+    for (0..num_points) |i| self.updatePointIData(i);
     const circle: object.object = .{
         .circle = object.circle.init(
             program,
@@ -88,11 +99,11 @@ pub fn renderCircle(self: *BCTriangle) void {
 pub fn draw(self: *BCTriangle, _: f64) void {
     self.handleInput();
     {
-        const objects: [1]object.object = .{self.strip};
+        const objects: [1]object.object = .{self.circle};
         rhi.drawObjects(objects[0..]);
     }
-    {
-        const objects: [1]object.object = .{self.circle};
+    if (self.strip) |s| {
+        const objects: [1]object.object = .{s};
         rhi.drawObjects(objects[0..]);
     }
     self.ui_state.draw();
@@ -135,6 +146,7 @@ fn handleInput(self: *BCTriangle) void {
         self.ui_state.vs[ov.vertex].color = bc_ui.pink;
         if (ov.dragging) {
             self.ui_state.vs[ov.vertex].position = .{ x, 0, z };
+            self.renderStrip();
         }
         self.updatePointData(ov.vertex);
     }
