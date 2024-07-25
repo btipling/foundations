@@ -1,5 +1,5 @@
 pub fn xUpLeftHandedTo2D(v: vector.vec3) vector.vec2 {
-    return .{ v[2], v[1] };
+    return .{ v[2], v[0] };
 }
 
 const vector = @import("../vector.zig");
