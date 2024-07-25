@@ -36,20 +36,11 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator) *BCTriangle {
     const bct = allocator.create(BCTriangle) catch @panic("OOM");
     const ui_state: bc_ui = .{};
-    const t = math.geometry.triangle.init(ui_state.vs[0].position, ui_state.vs[1].position, ui_state.vs[2].position);
-    const center_c_center = math.geometry.xUpLeftHandedTo2D(t.centerOfGravity());
-    const center_c: math.geometry.circle = .{ .center = center_c_center, .radius = point_scale };
-    const inscribed = t.incribedCircle();
-    const circumscribed = t.circumscribedCircle();
     bct.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
-        .triangle = t,
-        .center = center_c,
-        .inscribed = inscribed,
-        .circumscribed = circumscribed,
     };
-
+    bct.updateTriangle();
     bct.renderStrip();
     bct.renderCircle();
 
@@ -107,6 +98,9 @@ pub fn renderCircle(self: *BCTriangle) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
     for (0..num_points) |i| self.updatePointIData(i);
+    self.updatePointIData(center_circle_index);
+    self.updatePointIData(inscribed_circle_index);
+    self.updatePointIData(circumscribed_circle_index);
     const circle: object.object = .{
         .circle = object.circle.init(
             program,
@@ -166,19 +160,31 @@ fn handleInput(self: *BCTriangle) void {
         self.ui_state.vs[ov.vertex].color = bc_ui.pink;
         if (ov.dragging) {
             self.ui_state.vs[ov.vertex].position = .{ x, 0, z };
-            const t = math.geometry.triangle.init(
-                self.ui_state.vs[0].position,
-                self.ui_state.vs[1].position,
-                self.ui_state.vs[2].position,
-            );
-            self.triangle = t;
-            self.updatePointData(center_circle_index);
-            self.updatePointData(inscribed_circle_index);
-            self.updatePointData(circumscribed_circle_index);
             self.renderStrip();
+            self.updateTriangle();
+            self.updateCircle();
         }
         self.updatePointData(ov.vertex);
     }
+}
+
+fn updateTriangle(self: *BCTriangle) void {
+    const t = math.geometry.triangle.init(
+        self.ui_state.vs[0].position,
+        self.ui_state.vs[1].position,
+        self.ui_state.vs[2].position,
+    );
+    self.triangle = t;
+    const center_c_center = math.geometry.xUpLeftHandedTo2D(t.centerOfGravity());
+    self.center = .{ .center = center_c_center, .radius = point_scale };
+    self.inscribed = t.incribedCircle();
+    self.circumscribed = t.circumscribedCircle();
+}
+
+fn updateCircle(self: *BCTriangle) void {
+    self.updatePointData(center_circle_index);
+    self.updatePointData(inscribed_circle_index);
+    self.updatePointData(circumscribed_circle_index);
 }
 
 fn releaseCurrentMouseCapture(self: *BCTriangle) void {
