@@ -16,7 +16,7 @@ const num_circles = num_points + 3;
 const num_points_interpolated: usize = num_points + 1;
 const num_triangles_f: f32 = @floatFromInt(num_triangles);
 const strip_scale: f32 = 0.005;
-const point_scale: f32 = 0.05;
+const point_scale: f32 = 0.025;
 
 const vertex_last_index = 2;
 const center_circle_index = 3;
@@ -205,17 +205,17 @@ fn updatePointIData(self: *BCTriangle, index: usize) void {
         center_circle_index => {
             p = math.geometry.TwoDToXUpLeftHandedTo(self.center.center);
             scale = self.center.radius;
-            color = .{ 1.0, 1.0, 0.0, 0.1 };
+            color = .{ 1, 0.0, 1, 1 };
         },
         inscribed_circle_index => {
             p = math.geometry.TwoDToXUpLeftHandedTo(self.inscribed.center);
             scale = self.inscribed.radius;
-            color = .{ 1.0, 0.0, 1.0, 0.1 };
+            color = .{ 0.025, 0.025, 0.15, 1 };
         },
         circumscribed_circle_index => {
             p = math.geometry.TwoDToXUpLeftHandedTo(self.circumscribed.center);
             scale = self.circumscribed.radius;
-            color = .{ 0.0, 1.0, 1.0, 0.1 };
+            color = .{ 0.025, 0.15, 0.025, 11 };
         },
         else => {
             p = self.ui_state.vs[index].position;

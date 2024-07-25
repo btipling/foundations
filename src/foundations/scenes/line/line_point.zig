@@ -12,6 +12,7 @@ target: ?usize = null,
 selected: bool = false,
 
 const point_limit: usize = 1000;
+const point_scale: f32 = 0.025;
 
 const Point = @This();
 
@@ -31,7 +32,7 @@ pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, target: 
     const p = allocator.create(Point) catch @panic("OOM");
     var m = math.matrix.leftHandedXUpToNDC();
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 0.05, 0.05));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
     const i_data: rhi.instanceData = .{
         .t_column0 = m.columns[0],
         .t_column1 = m.columns[1],
@@ -69,7 +70,7 @@ pub fn toVector(self: *Point) math.vector.vec4 {
 pub fn update(self: *Point, x: f32, z: f32) void {
     var m = math.matrix.leftHandedXUpToNDC();
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 0.05, 0.05));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
     const i_data: rhi.instanceData = .{
         .t_column0 = m.columns[0],
         .t_column1 = m.columns[1],

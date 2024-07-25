@@ -71,7 +71,7 @@ pub fn incribedCircle(self: Triangle) circle {
     const a = self.area();
     return .{
         .center = geometry.xUpLeftHandedTo2D(c),
-        .radius = a / p,
+        .radius = (a / p) * 2,
     };
 }
 
@@ -100,10 +100,11 @@ pub fn circumscribedCircle(self: Triangle) circle {
     var cc_n = vector.mul(c1 + c2, self.v0);
     cc_n = vector.add(cc_n, vector.mul(c2 + c0, self.v1));
     cc_n = vector.add(cc_n, vector.mul(c0 + c1, self.v2));
-    const cc = vector.mul(1 / 2 * c, cc_n);
+    const cc = vector.mul(1 / (2 * c), cc_n);
     const r = @sqrt((d0 + d1) * (d1 + d2) * (d2 + d0) / c) / 2;
+    const center = geometry.xUpLeftHandedTo2D(cc);
     return .{
-        .center = geometry.xUpLeftHandedTo2D(cc),
+        .center = center,
         .radius = r,
     };
 }
@@ -117,6 +118,7 @@ pub fn vectorAt(self: Triangle, i: usize) vector.vec3 {
     };
 }
 
+const std = @import("std");
 const geometry = @import("geometry.zig");
 const circle = @import("circle.zig");
 const vector = @import("../vector.zig");

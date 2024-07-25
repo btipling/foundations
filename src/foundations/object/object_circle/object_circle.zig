@@ -48,6 +48,7 @@ pub fn updateInstanceAt(self: Circle, index: usize, instance_data: rhi.instanceD
 }
 
 fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } {
+    const r: f32 = 1.0;
     var p: [num_vertices][3]f32 = undefined;
     var indices: [num_indices]u32 = undefined;
     // origin:
@@ -58,7 +59,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     var last_index: u32 = 0;
     var indices_index: usize = 1;
     const angle: f32 = std.math.pi / 100.0;
-    var current_vector: [3]f32 = .{ 0, 0, 0.5 }; // start at z positive, move counter clockwise around the y axis
+    var current_vector: [3]f32 = .{ 0, 0, r }; // start at z positive, move counter clockwise around the y axis
     while (i < num_vertices) : (i += 1) {
         if (i > 2) {
             // Complete circle every with previous index and origin
@@ -72,7 +73,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         indices[indices_index] = last_index;
         indices_index += 1;
         const new_coordinates: [2]f32 = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{
-            0.5,
+            r,
             angle * @as(f32, @floatFromInt(i)),
         });
         current_vector[2] = new_coordinates[0];
