@@ -26,9 +26,12 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator) *BCTriangle {
     const bct = allocator.create(BCTriangle) catch @panic("OOM");
+    const ui_state: bc_ui = .{};
+    const t = math.geometry.triangle.init(ui_state.vs[0].position, ui_state.vs[1].position, ui_state.vs[2].position);
     bct.* = .{
-        .ui_state = .{},
+        .ui_state = ui_state,
         .allocator = allocator,
+        .triangle = t,
     };
 
     bct.renderStrip();
@@ -118,6 +121,8 @@ fn handleInput(self: *BCTriangle) void {
     const button = input.mouse_button;
     self.ui_state.x = x;
     self.ui_state.z = z;
+    const p: math.vector.vec3 = .{ x, 0.0, z };
+    self.ui_state.barycentric_coordinates = self.triangle.barycentricCooordinate(p);
     if (action == c.GLFW_RELEASE) {
         self.releaseCurrentMouseCapture();
         return;
