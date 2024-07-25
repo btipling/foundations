@@ -67,11 +67,11 @@ pub fn incenter(self: Triangle) vector.vec3 {
 
 pub fn incribedCircle(self: Triangle) circle {
     const c = self.incenter();
-    const p = self.perimiter();
+    const s = self.perimiter() / 2;
     const a = self.area();
     return .{
         .center = geometry.xUpLeftHandedTo2D(c),
-        .radius = (a / p) * 2,
+        .radius = a / s,
     };
 }
 
