@@ -112,12 +112,12 @@ pub fn renderCircle(self: *BCTriangle) void {
 
 pub fn draw(self: *BCTriangle, _: f64) void {
     self.handleInput();
-    {
-        const objects: [1]object.object = .{self.circle};
-        rhi.drawObjects(objects[0..]);
-    }
     if (self.strip) |s| {
         const objects: [1]object.object = .{s};
+        rhi.drawObjects(objects[0..]);
+    }
+    {
+        const objects: [1]object.object = .{self.circle};
         rhi.drawObjects(objects[0..]);
     }
     self.ui_state.draw();
@@ -207,7 +207,7 @@ fn overVertex(self: *BCTriangle, x: f32, z: f32) ?bc_ui.mouseVertexCapture {
     const p = math.geometry.xUpLeftHandedTo2D(.{ x, 0.0, z });
     for (self.ui_state.vs, 0..) |vs, i| {
         const center = math.geometry.xUpLeftHandedTo2D(vs.position);
-        const circle: math.geometry.circle = .{ .center = center, .radius = point_scale / 2.0 };
+        const circle: math.geometry.circle = .{ .center = center, .radius = point_scale };
         if (circle.withinCircle(p)) {
             return .{
                 .vertex = i,
