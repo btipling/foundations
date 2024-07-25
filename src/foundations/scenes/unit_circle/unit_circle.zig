@@ -1,6 +1,7 @@
 strip: object.object = undefined,
 ui_state: unit_circle_ui,
 allocator: std.mem.Allocator,
+circle: math.geometry.circle,
 
 const UnitCircle = @This();
 
@@ -23,6 +24,7 @@ pub fn init(allocator: std.mem.Allocator) *UnitCircle {
     unit_circle.* = .{
         .ui_state = .{},
         .allocator = allocator,
+        .circle = .{ .center = .{ 0, 0 }, .radius = 1.0 },
     };
 
     unit_circle.renderCircle();
@@ -45,7 +47,7 @@ pub fn renderCircle(self: *UnitCircle) void {
     var i_datas: [num_triangles]rhi.instanceData = undefined;
     for (0..num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
-        const res = math.geometry.circle.parametricCircle(t / num_triangles_f);
+        const res = self.circle.parametricCircle(t / num_triangles_f);
         var m = math.matrix.leftHandedXUpToNDC();
         m = math.matrix.transformMatrix(m, math.matrix.translate(res[1], 0.0, res[0]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
@@ -80,8 +82,8 @@ fn handleInput(self: *UnitCircle) void {
     const z = input.mouse_z orelse return;
     self.ui_state.x = x;
     self.ui_state.z = z;
-    self.ui_state.over_circle = math.geometry.circle.implicitCircle(.{ 0, 0 }, 1.0, .{ z, x }, 0.01);
-    self.ui_state.within_circle = math.geometry.circle.withinCircle(.{ 0, 0 }, 1.0, .{ z, x });
+    self.ui_state.over_circle = self.circle.implicitCircle(.{ z, x }, 0.01);
+    self.ui_state.within_circle = self.circle.withinCircle(.{ z, x });
 }
 
 const std = @import("std");
