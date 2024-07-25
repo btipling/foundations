@@ -5,17 +5,23 @@ center: math.geometry.circle = undefined,
 inscribed: math.geometry.circle = undefined,
 circumscribed: math.geometry.circle = undefined,
 ui_state: bc_ui,
-points: [num_points]rhi.instanceData = undefined,
+circles: [num_circles]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
 
 const BCTriangle = @This();
 
 const num_triangles: usize = 1_000;
 const num_points: usize = 3;
+const num_circles = num_points + 3;
 const num_points_interpolated: usize = num_points + 1;
 const num_triangles_f: f32 = @floatFromInt(num_triangles);
 const strip_scale: f32 = 0.005;
 const point_scale: f32 = 0.05;
+
+const vertex_last_index = 2;
+const center_circle_index = 3;
+const inscribed_circle_index = 4;
+const circumscribed_circle_index = 5;
 
 const vertex_shader: []const u8 = @embedFile("bc_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("bc_frag.glsl");
@@ -104,7 +110,7 @@ pub fn renderCircle(self: *BCTriangle) void {
     const circle: object.object = .{
         .circle = object.circle.init(
             program,
-            self.points[0..],
+            self.circles[0..],
         ),
     };
     self.circle = circle;
@@ -166,6 +172,9 @@ fn handleInput(self: *BCTriangle) void {
                 self.ui_state.vs[2].position,
             );
             self.triangle = t;
+            self.updatePointData(center_circle_index);
+            self.updatePointData(inscribed_circle_index);
+            self.updatePointData(circumscribed_circle_index);
             self.renderStrip();
         }
         self.updatePointData(ov.vertex);
@@ -181,24 +190,47 @@ fn releaseCurrentMouseCapture(self: *BCTriangle) void {
 
 fn updatePointIData(self: *BCTriangle, index: usize) void {
     var m = math.matrix.leftHandedXUpToNDC();
-    const v = self.ui_state.vs[index];
-    const p = v.position;
+    var p: math.vector.vec3 = undefined;
+    var color: math.vector.vec4 = undefined;
+    var scale: f32 = 0;
+    switch (index) {
+        center_circle_index => {
+            p = math.geometry.TwoDToXUpLeftHandedTo(self.center.center);
+            scale = self.center.radius;
+            color = .{ 1.0, 1.0, 0.0, 0.1 };
+        },
+        inscribed_circle_index => {
+            p = math.geometry.TwoDToXUpLeftHandedTo(self.inscribed.center);
+            scale = self.inscribed.radius;
+            color = .{ 1.0, 0.0, 1.0, 0.1 };
+        },
+        circumscribed_circle_index => {
+            p = math.geometry.TwoDToXUpLeftHandedTo(self.circumscribed.center);
+            scale = self.circumscribed.radius;
+            color = .{ 0.0, 1.0, 1.0, 0.1 };
+        },
+        else => {
+            p = self.ui_state.vs[index].position;
+            scale = point_scale;
+            color = self.ui_state.vs[index].color;
+        },
+    }
     m = math.matrix.transformMatrix(m, math.matrix.translate(p[0], p[1], p[2]));
-    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(scale));
     const i_data: rhi.instanceData = .{
         .t_column0 = m.columns[0],
         .t_column1 = m.columns[1],
         .t_column2 = m.columns[2],
         .t_column3 = m.columns[3],
-        .color = v.color,
+        .color = color,
     };
-    self.points[index] = i_data;
+    self.circles[index] = i_data;
 }
 
 fn updatePointData(self: *BCTriangle, index: usize) void {
     self.updatePointIData(index);
     switch (self.circle) {
-        .circle => |cr| cr.updateInstanceAt(index, self.points[index]),
+        .circle => |cr| cr.updateInstanceAt(index, self.circles[index]),
         else => {},
     }
 }
