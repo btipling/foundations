@@ -150,6 +150,12 @@ fn handleInput(self: *BCTriangle) void {
         self.ui_state.vs[ov.vertex].color = bc_ui.pink;
         if (ov.dragging) {
             self.ui_state.vs[ov.vertex].position = .{ x, 0, z };
+            const t = math.geometry.triangle.init(
+                self.ui_state.vs[0].position,
+                self.ui_state.vs[1].position,
+                self.ui_state.vs[2].position,
+            );
+            self.triangle = t;
             self.renderStrip();
         }
         self.updatePointData(ov.vertex);
@@ -188,9 +194,16 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
 }
 
 fn overVertex(self: *BCTriangle, x: f32, z: f32) ?bc_ui.mouseVertexCapture {
-    _ = self;
-    _ = x;
-    _ = z;
+    const p = math.geometry.xUpLeftHandedTo2D(.{ x, 0.0, z });
+    for (self.ui_state.vs, 0..) |vs, i| {
+        const center = math.geometry.xUpLeftHandedTo2D(vs.position);
+        const circle: math.geometry.circle = .{ .center = center, .radius = point_scale / 2.0 };
+        if (circle.withinCircle(p)) {
+            return .{
+                .vertex = i,
+            };
+        }
+    }
     return null;
 }
 
