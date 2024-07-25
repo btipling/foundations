@@ -179,6 +179,8 @@ fn updateTriangle(self: *BCTriangle) void {
     self.center = .{ .center = center_c_center, .radius = point_scale };
     self.inscribed = t.incribedCircle();
     self.circumscribed = t.circumscribedCircle();
+    self.ui_state.area = t.area();
+    self.ui_state.perimiter = t.perimiter();
 }
 
 fn updateCircle(self: *BCTriangle) void {

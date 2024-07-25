@@ -18,6 +18,8 @@ vs: [3]vData = .{
 over_circle: bool = false,
 within_circle: bool = false,
 over_vertex: ?mouseVertexCapture = null,
+area: f32 = 0.0,
+perimiter: f32 = 0.0,
 
 pub const mouseVertexCapture = struct {
     dragging: bool = false,
@@ -58,6 +60,15 @@ pub fn draw(self: *pr_ui) void {
             self.barycentric_coordinates[0],
             self.barycentric_coordinates[1],
             self.barycentric_coordinates[2],
+        }) catch @panic("bufsize too small");
+        c.igText(@ptrCast(txt));
+    }
+
+    {
+        var buf: [250]u8 = undefined;
+        const txt = std.fmt.bufPrintZ(&buf, "area: {d:.3} perimeter: {d:.3}", .{
+            self.area,
+            self.perimiter,
         }) catch @panic("bufsize too small");
         c.igText(@ptrCast(txt));
     }
