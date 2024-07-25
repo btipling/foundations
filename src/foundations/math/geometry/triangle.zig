@@ -26,7 +26,7 @@ pub fn init(v0: vector.vec3, v1: vector.vec3, v2: vector.vec3) Triangle {
 }
 
 pub fn area(self: Triangle) f32 {
-    return vector.crossProduct(self.e0, self.e1) / 2.0;
+    return vector.magnitude(vector.crossProduct(self.e0, self.e1)) / 2.0;
 }
 
 pub fn barycentricCooordinate(self: Triangle, point: vector.vec3) vector.vec3 {
@@ -70,7 +70,7 @@ pub fn incribedCircle(self: Triangle) circle {
     const p = self.perimiter();
     const a = self.area();
     return .{
-        .center = c,
+        .center = geometry.xUpLeftHandedTo2D(c),
         .radius = a / p,
     };
 }
@@ -97,13 +97,13 @@ pub fn circumscribedCircle(self: Triangle) circle {
     const c1: f32 = d2 * d0;
     const c2: f32 = d0 * d1;
     const c: f32 = c0 + c1 + c2;
-    var cc_n = vector.mul(vector.add(c1, c2), self.v0);
-    cc_n = vector.add(cc_n, vector.mul(vector.add(c2, c0), self.v1));
-    cc_n = vector.add(cc_n, vector.mul(vector.add(c0, c1), self.v2));
+    var cc_n = vector.mul(c1 + c2, self.v0);
+    cc_n = vector.add(cc_n, vector.mul(c2 + c0, self.v1));
+    cc_n = vector.add(cc_n, vector.mul(c0 + c1, self.v2));
     const cc = vector.mul(1 / 2 * c, cc_n);
-    const r = @sqrt((d0 + d1)(d1 + d2)(d2 + d0) / c) / 2;
+    const r = @sqrt((d0 + d1) * (d1 + d2) * (d2 + d0) / c) / 2;
     return .{
-        .center = cc,
+        .center = geometry.xUpLeftHandedTo2D(cc),
         .radius = r,
     };
 }
@@ -117,5 +117,6 @@ pub fn vectorAt(self: Triangle, i: usize) vector.vec3 {
     };
 }
 
+const geometry = @import("geometry.zig");
 const circle = @import("circle.zig");
 const vector = @import("../vector.zig");

@@ -1,6 +1,9 @@
 strip: ?object.object = null,
 circle: object.object = undefined,
 triangle: math.geometry.triangle = undefined,
+center: math.geometry.circle = undefined,
+inscribed: math.geometry.circle = undefined,
+circumscribed: math.geometry.circle = undefined,
 ui_state: bc_ui,
 points: [num_points]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
@@ -28,10 +31,17 @@ pub fn init(allocator: std.mem.Allocator) *BCTriangle {
     const bct = allocator.create(BCTriangle) catch @panic("OOM");
     const ui_state: bc_ui = .{};
     const t = math.geometry.triangle.init(ui_state.vs[0].position, ui_state.vs[1].position, ui_state.vs[2].position);
+    const center_c_center = math.geometry.xUpLeftHandedTo2D(t.centerOfGravity());
+    const center_c: math.geometry.circle = .{ .center = center_c_center, .radius = point_scale };
+    const inscribed = t.incribedCircle();
+    const circumscribed = t.circumscribedCircle();
     bct.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
         .triangle = t,
+        .center = center_c,
+        .inscribed = inscribed,
+        .circumscribed = circumscribed,
     };
 
     bct.renderStrip();
