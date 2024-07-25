@@ -117,8 +117,8 @@ fn handleInput(self: *BCTriangle) void {
     const button = input.mouse_button;
     self.ui_state.x = x;
     self.ui_state.z = z;
-    self.ui_state.over_circle = math.geometry.implicitCircle(.{ 0, 0 }, 1.0, .{ z, x }, 0.01);
-    self.ui_state.within_circle = math.geometry.withinCircle(.{ 0, 0 }, 1.0, .{ z, x });
+    self.ui_state.over_circle = math.geometry.circle.implicitCircle(.{ 0, 0 }, 1.0, .{ z, x }, 0.01);
+    self.ui_state.within_circle = math.geometry.circle.withinCircle(.{ 0, 0 }, 1.0, .{ z, x });
     if (action == c.GLFW_RELEASE) {
         self.releaseCurrentMouseCapture();
         return;
@@ -186,7 +186,7 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
 fn overVertex(self: *BCTriangle, x: f32, z: f32) ?bc_ui.mouseVertexCapture {
     for (self.ui_state.vs, 0..) |v, i| {
         const p = v.position;
-        if (math.geometry.withinCircle(.{ z, x }, point_scale, .{ p[2], p[0] })) {
+        if (math.geometry.circle.withinCircle(.{ z, x }, point_scale, .{ p[2], p[0] })) {
             return .{ .vertex = i };
         }
     }
