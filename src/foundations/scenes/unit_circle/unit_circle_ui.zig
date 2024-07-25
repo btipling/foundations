@@ -7,7 +7,7 @@ const pr_ui = @This();
 
 pub fn draw(self: *pr_ui) void {
     var buf: [250]u8 = undefined;
-    const txt = std.fmt.bufPrintZ(&buf, "last pos: ({d}, 0.0, {d})", .{
+    const txt = std.fmt.bufPrintZ(&buf, "last pos: ({d:.3}, 0.0, {d:.3})", .{
         self.x,
         self.z,
     }) catch @panic("bufsize too small");
