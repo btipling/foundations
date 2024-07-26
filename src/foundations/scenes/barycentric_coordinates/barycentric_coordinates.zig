@@ -205,17 +205,17 @@ fn updatePointIData(self: *BCTriangle, index: usize) void {
         center_circle_index => {
             p = math.geometry.TwoDToXUpLeftHandedTo(self.center.center);
             scale = self.center.radius;
-            color = .{ 1, 0.0, 1, 1 };
+            color = .{ 1.0, 0.255, 0.212, 1 };
         },
         inscribed_circle_index => {
             p = math.geometry.TwoDToXUpLeftHandedTo(self.inscribed.center);
             scale = self.inscribed.radius;
-            color = .{ 0.025, 0.025, 0.15, 1 };
+            color = .{ 0.4, 0.8, 0.8, 1 };
         },
         circumscribed_circle_index => {
             p = math.geometry.TwoDToXUpLeftHandedTo(self.circumscribed.center);
             scale = self.circumscribed.radius;
-            color = .{ 0.025, 0.15, 0.025, 11 };
+            color = .{ 0.596, 1.0, 0.596, 1 };
         },
         else => {
             p = self.ui_state.vs[index].position;
