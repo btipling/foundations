@@ -20,6 +20,7 @@ Things to try and do as I learn more about graphical programming
         prove that the +Z side by default faces the camera as NDC is a left handed coordinate system, the color should be the one facing the viewer
 - [ ] I really need to do a lot with the normalized plane equation to understand how it works once I have projections.
 - [ ] Do a thing to reflect something around an abitrary plane centered around the origin.
+- [ ] All the plane things from Chapter 3 in FGED, intersection of a line in a plane, reflecting a point across a plane, intersecting planes...
 
 ## Interpolation, curves and arcs
 
