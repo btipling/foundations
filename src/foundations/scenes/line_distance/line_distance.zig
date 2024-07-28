@@ -14,6 +14,7 @@ const strip_scale: f32 = 0.005;
 const point_scale: f32 = 0.025;
 
 const vertex_last_index = 1;
+const point_index = 2;
 
 const vertex_shader: []const u8 = @embedFile("line_distance_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("line_distance_frag.glsl");
@@ -151,6 +152,12 @@ fn handleInput(self: *LineDistance) void {
             self.updateLine();
         }
         self.updatePointData(ov.vertex);
+    } else if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
+        self.ui_state.point_vector = .{
+            .position = .{ x, 0, z },
+            .color = line_distance_ui.green,
+        };
+        self.updatePointData(point_index);
     }
 }
 
@@ -168,9 +175,17 @@ fn updatePointIData(self: *LineDistance, index: usize) void {
     var p: math.vector.vec3 = undefined;
     var color: math.vector.vec4 = undefined;
     var scale: f32 = 0;
-    p = self.ui_state.vs[index].position;
-    scale = point_scale;
-    color = self.ui_state.vs[index].color;
+    if (index <= vertex_last_index) {
+        p = self.ui_state.vs[index].position;
+        scale = point_scale;
+        color = self.ui_state.vs[index].color;
+    } else if (index == point_index) {
+        if (self.ui_state.point_vector) |pv| {
+            p = pv.position;
+            scale = point_scale;
+            color = pv.color;
+        }
+    }
     m = math.matrix.transformMatrix(m, math.matrix.translate(p[0], p[1], p[2]));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(scale));
     const i_data: rhi.instanceData = .{

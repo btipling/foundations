@@ -1,6 +1,7 @@
 x: f32 = 0.0,
 z: f32 = 0.0,
 distance_vector: math.vector.vec3 = .{ 0, 0, 0 },
+point_vector: ?vData = null,
 vs: [2]vData = .{
     .{
         .position = .{ 0.5, 0.0, 0.0 },
@@ -11,11 +12,7 @@ vs: [2]vData = .{
         .color = yellow,
     },
 },
-over_circle: bool = false,
-within_circle: bool = false,
 over_vertex: ?mouseVertexCapture = null,
-area: f32 = 0.0,
-perimiter: f32 = 0.0,
 
 pub const mouseVertexCapture = struct {
     dragging: bool = false,
@@ -56,6 +53,16 @@ pub fn draw(self: *pr_ui) void {
             self.distance_vector[0],
             self.distance_vector[1],
             self.distance_vector[2],
+        }) catch @panic("bufsize too small");
+        c.igText(@ptrCast(txt));
+    }
+
+    if (self.point_vector) |pv| {
+        var buf: [250]u8 = undefined;
+        const txt = std.fmt.bufPrintZ(&buf, "point: ({d:.3}, {d:.3}, {d:.3})", .{
+            pv.position[0],
+            pv.position[1],
+            pv.position[2],
         }) catch @panic("bufsize too small");
         c.igText(@ptrCast(txt));
     }
