@@ -8,7 +8,7 @@ const LineDistance = @This();
 
 const num_triangles: usize = 1_000;
 const num_points: usize = 3;
-const num_points_interpolated: usize = num_points - 1;
+const num_points_interpolated: usize = num_points;
 const num_triangles_f: f32 = @floatFromInt(num_triangles);
 const strip_scale: f32 = 0.005;
 const point_scale: f32 = 0.025;
@@ -71,10 +71,17 @@ pub fn renderStrip(self: *LineDistance) void {
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
     var times: [num_points_interpolated]f32 = undefined;
-    for (0..num_points_interpolated) |i| {
-        const v = self.ui_state.vs[@mod(i, 3)].position;
-        positions[i] = .{ v[0], v[1], v[2], 1.0 };
-        times[i] = @floatFromInt(i);
+    const line: math.geometry.line = .{
+        .direction = math.vector.sub(self.ui_state.vs[1].position, self.ui_state.vs[0].position),
+        .moment = math.vector.crossProduct(self.ui_state.vs[0].position, self.ui_state.vs[1].position),
+    };
+    const p1 = line.pointOnLine(-1);
+    positions[0] = .{ p1[0], p1[1], p1[2], 1.0 };
+    for (0..self.ui_state.vs.len) |i| {
+        const pi = i + 1;
+        const v = self.ui_state.vs[i].position;
+        positions[pi] = .{ v[0], v[1], v[2], 1.0 };
+        times[pi] = @floatFromInt(pi);
     }
     for (0..num_points_interpolated * num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
