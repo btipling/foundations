@@ -1,4 +1,5 @@
 strip: ?object.object = null,
+connection_strip: ?object.object = null,
 circle: object.object = undefined,
 ui_state: line_distance_ui,
 line: math.geometry.line = undefined,
@@ -53,6 +54,13 @@ pub fn deleteStrip(self: *LineDistance) void {
     }
 }
 
+pub fn deleteConnectionStrip(self: *LineDistance) void {
+    if (self.connection_strip) |s| {
+        var objects: [1]object.object = .{s};
+        rhi.deleteObjects(objects[0..]);
+    }
+}
+
 pub fn renderCircle(self: *LineDistance) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -73,8 +81,8 @@ pub fn renderStrip(self: *LineDistance) void {
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
     var times: [num_points_interpolated]f32 = undefined;
-    const p1 = self.line.pointOnLine(2);
     const p0 = self.line.pointOnLine(-2);
+    const p1 = self.line.pointOnLine(2);
     positions[0] = .{ p0[0], p0[1], p0[2], 1.0 };
     positions[1] = .{ p1[0], p1[1], p1[2], 1.0 };
     times[0] = 0;
@@ -101,11 +109,54 @@ pub fn renderStrip(self: *LineDistance) void {
         ),
     };
     self.strip = strip;
+    self.renderConnectionStrip();
+}
+
+pub fn renderConnectionStrip(self: *LineDistance) void {
+    const pv = self.ui_state.point_vector orelse return;
+    self.deleteConnectionStrip();
+    const program = rhi.createProgram();
+    rhi.attachShaders(program, vertex_shader, frag_shader);
+    var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
+    var positions: [num_points_interpolated]math.vector.vec4 = undefined;
+    var times: [num_points_interpolated]f32 = undefined;
+    const p0 = pv.position;
+    const p1 = self.line.vectorToPoint(p0);
+    positions[0] = .{ p0[0], p0[1], p0[2], 1.0 };
+    positions[1] = .{ p1[0], p1[1], p1[2], 1.0 };
+    times[0] = 0;
+    times[1] = 1;
+    for (0..num_points_interpolated * num_triangles) |i| {
+        const t: f32 = @floatFromInt(i);
+        const res = math.interpolation.linear(t / 1_000.0, positions[0..num_points_interpolated], times[0..num_points_interpolated]);
+        var m = math.matrix.leftHandedXUpToNDC();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(res[0], res[1], res[2]));
+        m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 0.5, 0.5, 0.5, 1 },
+        };
+        i_datas[i] = i_data;
+    }
+    const strip: object.object = .{
+        .strip = object.strip.init(
+            program,
+            i_datas[0..],
+        ),
+    };
+    self.connection_strip = strip;
 }
 
 pub fn draw(self: *LineDistance, _: f64) void {
     self.handleInput();
     if (self.strip) |s| {
+        const objects: [1]object.object = .{s};
+        rhi.drawObjects(objects[0..]);
+    }
+    if (self.connection_strip) |s| {
         const objects: [1]object.object = .{s};
         rhi.drawObjects(objects[0..]);
     }
@@ -160,6 +211,7 @@ fn handleInput(self: *LineDistance) void {
             .position = .{ x, 0, z },
             .color = line_distance_ui.green,
         };
+        self.renderStrip();
         self.updateLine();
         self.updatePointData(point_index);
     }

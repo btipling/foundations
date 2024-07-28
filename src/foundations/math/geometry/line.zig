@@ -29,4 +29,18 @@ pub fn distanceToPoint(self: Line, p: vector.vec3) f32 {
     return vector.magnitude(rv) / vector.magnitude(self.direction);
 }
 
+pub fn vectorToPoint(self: Line, p: vector.vec3) vector.vec3 {
+    const distance = self.distanceToPoint(p);
+    var perp = vector.decomposeProjection(p, self.direction).perp;
+    perp = vector.normalize(perp);
+    perp = vector.mul(distance, perp);
+    var rv = vector.add(p, perp);
+    if (!float.equal(self.distanceToPoint(rv), 0.0, 0.0001)) {
+        perp = vector.negate(perp);
+        rv = vector.add(p, perp);
+    }
+    return rv;
+}
+
+const float = @import("../float.zig");
 const vector = @import("../vector.zig");
