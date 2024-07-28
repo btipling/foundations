@@ -3,6 +3,14 @@ moment: vector.vec3,
 
 const Line = @This();
 
+pub fn init(p0: vector.vec3, p1: vector.vec3) Line {
+    const direction = vector.normalize(vector.sub(p1, p0));
+    return .{
+        .direction = direction,
+        .moment = vector.crossProduct(p0, direction),
+    };
+}
+
 pub fn closestPointToOrigin(self: Line) vector.vec3 {
     const vs = vector.dotProduct(self.direction, self.direction);
     const rv = vector.crossProduct(self.direction, self.moment);

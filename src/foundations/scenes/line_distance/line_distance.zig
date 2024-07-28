@@ -1,20 +1,22 @@
 strip: ?object.object = null,
 circle: object.object = undefined,
 ui_state: line_distance_ui,
+line: math.geometry.line = undefined,
 circles: [num_points]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
 
 const LineDistance = @This();
 
 const num_triangles: usize = 1_000;
-const num_points: usize = 3;
-const num_points_interpolated: usize = num_points;
+const num_points: usize = 4;
+const num_points_interpolated: usize = 2;
 const num_triangles_f: f32 = @floatFromInt(num_triangles);
 const strip_scale: f32 = 0.005;
 const point_scale: f32 = 0.025;
 
 const vertex_last_index = 1;
 const point_index = 2;
+const origin_point_index = 3;
 
 const vertex_shader: []const u8 = @embedFile("line_distance_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("line_distance_frag.glsl");
@@ -71,18 +73,12 @@ pub fn renderStrip(self: *LineDistance) void {
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
     var times: [num_points_interpolated]f32 = undefined;
-    const line: math.geometry.line = .{
-        .direction = math.vector.sub(self.ui_state.vs[1].position, self.ui_state.vs[0].position),
-        .moment = math.vector.crossProduct(self.ui_state.vs[0].position, self.ui_state.vs[1].position),
-    };
-    const p1 = line.pointOnLine(-1);
-    positions[0] = .{ p1[0], p1[1], p1[2], 1.0 };
-    for (0..self.ui_state.vs.len) |i| {
-        const pi = i + 1;
-        const v = self.ui_state.vs[i].position;
-        positions[pi] = .{ v[0], v[1], v[2], 1.0 };
-        times[pi] = @floatFromInt(pi);
-    }
+    const p1 = self.line.pointOnLine(2);
+    const p0 = self.line.pointOnLine(-2);
+    positions[0] = .{ p0[0], p0[1], p0[2], 1.0 };
+    positions[1] = .{ p1[0], p1[1], p1[2], 1.0 };
+    times[0] = 0;
+    times[1] = 1;
     for (0..num_points_interpolated * num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
         const res = math.interpolation.linear(t / 1_000.0, positions[0..num_points_interpolated], times[0..num_points_interpolated]);
@@ -168,7 +164,16 @@ fn handleInput(self: *LineDistance) void {
     }
 }
 
-fn updateLine(_: *LineDistance) void {}
+fn updateLine(self: *LineDistance) void {
+    const vs0 = self.ui_state.vs[0].position;
+    const vs1 = self.ui_state.vs[1].position;
+    self.line = math.geometry.line.init(vs0, vs1);
+    self.ui_state.origin_point = .{
+        .position = self.line.closestPointToOrigin(),
+        .color = line_distance_ui.green,
+    };
+    self.updatePointData(origin_point_index);
+}
 
 fn releaseCurrentMouseCapture(self: *LineDistance) void {
     const data = self.ui_state.over_vertex orelse return;
@@ -182,17 +187,26 @@ fn updatePointIData(self: *LineDistance, index: usize) void {
     var p: math.vector.vec3 = undefined;
     var color: math.vector.vec4 = undefined;
     var scale: f32 = 0;
-    if (index <= vertex_last_index) {
-        p = self.ui_state.vs[index].position;
-        scale = point_scale;
-        color = self.ui_state.vs[index].color;
-    } else if (index == point_index) {
-        if (self.ui_state.point_vector) |pv| {
+    switch (index) {
+        point_index => {
+            const pv = self.ui_state.point_vector orelse return;
             p = pv.position;
             scale = point_scale;
             color = pv.color;
-        }
+        },
+        origin_point_index => {
+            const op = self.ui_state.origin_point;
+            p = op.position;
+            scale = point_scale;
+            color = op.color;
+        },
+        else => {
+            p = self.ui_state.vs[index].position;
+            scale = point_scale;
+            color = self.ui_state.vs[index].color;
+        },
     }
+    if (index <= vertex_last_index) {} else if (index == point_index) {}
     m = math.matrix.transformMatrix(m, math.matrix.translate(p[0], p[1], p[2]));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(scale));
     const i_data: rhi.instanceData = .{

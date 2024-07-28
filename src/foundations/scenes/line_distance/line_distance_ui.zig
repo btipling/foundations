@@ -2,6 +2,10 @@ x: f32 = 0.0,
 z: f32 = 0.0,
 distance_vector: math.vector.vec3 = .{ 0, 0, 0 },
 point_vector: ?vData = null,
+origin_point: vData = .{
+    .position = .{ 0.5, 0.0, 0.0 },
+    .color = yellow,
+},
 vs: [2]vData = .{
     .{
         .position = .{ 0.5, 0.0, 0.0 },
