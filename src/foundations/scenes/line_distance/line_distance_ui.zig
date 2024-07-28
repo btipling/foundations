@@ -1,6 +1,6 @@
 x: f32 = 0.0,
 z: f32 = 0.0,
-distance_vector: math.vector.vec3 = .{ 0, 0, 0 },
+distance: f32 = 0.0,
 point_vector: ?vData = null,
 origin_point: vData = .{
     .position = .{ 0.5, 0.0, 0.0 },
@@ -44,21 +44,11 @@ pub fn draw(self: *pr_ui) void {
 
     {
         var buf: [250]u8 = undefined;
-        const txt = std.fmt.bufPrintZ(&buf, "last pos: ({d:.3}, 0.0, {d:.3})", .{
-            self.x,
-            self.z,
+        const txt = std.fmt.bufPrintZ(&buf, "distance to line: {d:.3}", .{
+            self.distance,
         }) catch @panic("bufsize too small");
-        c.igText(@ptrCast(txt));
-    }
-
-    {
-        var buf: [250]u8 = undefined;
-        const txt = std.fmt.bufPrintZ(&buf, "distance vector: ({d:.3}, {d:.3}, {d:.3})", .{
-            self.distance_vector[0],
-            self.distance_vector[1],
-            self.distance_vector[2],
-        }) catch @panic("bufsize too small");
-        c.igText(@ptrCast(txt));
+        const text_color = c.ImVec4_ImVec4_Float(0.41, 1.0, 0.71, 1);
+        c.igTextColored(text_color.*, @ptrCast(txt));
     }
 
     if (self.point_vector) |pv| {

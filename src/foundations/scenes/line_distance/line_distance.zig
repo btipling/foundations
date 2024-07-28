@@ -160,6 +160,7 @@ fn handleInput(self: *LineDistance) void {
             .position = .{ x, 0, z },
             .color = line_distance_ui.green,
         };
+        self.updateLine();
         self.updatePointData(point_index);
     }
 }
@@ -172,6 +173,9 @@ fn updateLine(self: *LineDistance) void {
         .position = self.line.closestPointToOrigin(),
         .color = line_distance_ui.green,
     };
+    if (self.ui_state.point_vector) |pv| {
+        self.ui_state.distance = self.line.distanceToPoint(pv.position);
+    }
     self.updatePointData(origin_point_index);
 }
 
