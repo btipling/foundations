@@ -13,10 +13,7 @@ const num_triangles_f: f32 = @floatFromInt(num_triangles);
 const strip_scale: f32 = 0.005;
 const point_scale: f32 = 0.025;
 
-const vertex_last_index = 2;
-const center_circle_index = 3;
-const inscribed_circle_index = 4;
-const circumscribed_circle_index = 5;
+const vertex_last_index = 1;
 
 const vertex_shader: []const u8 = @embedFile("line_distance_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("line_distance_frag.glsl");
@@ -37,6 +34,7 @@ pub fn init(allocator: std.mem.Allocator) *LineDistance {
     };
     bct.updateLine();
     bct.renderStrip();
+    bct.renderCircle();
 
     return bct;
 }
@@ -50,6 +48,19 @@ pub fn deleteStrip(self: *LineDistance) void {
         var objects: [1]object.object = .{s};
         rhi.deleteObjects(objects[0..]);
     }
+}
+
+pub fn renderCircle(self: *LineDistance) void {
+    const program = rhi.createProgram();
+    rhi.attachShaders(program, vertex_shader, frag_shader);
+    for (0..num_points - 1) |i| self.updatePointIData(i);
+    const circle: object.object = .{
+        .circle = object.circle.init(
+            program,
+            self.circles[0..],
+        ),
+    };
+    self.circle = circle;
 }
 
 pub fn renderStrip(self: *LineDistance) void {
@@ -138,19 +149,12 @@ fn handleInput(self: *LineDistance) void {
             self.ui_state.vs[ov.vertex].position = .{ x, 0, z };
             self.renderStrip();
             self.updateLine();
-            self.updateCircle();
         }
         self.updatePointData(ov.vertex);
     }
 }
 
 fn updateLine(_: *LineDistance) void {}
-
-fn updateCircle(self: *LineDistance) void {
-    self.updatePointData(center_circle_index);
-    self.updatePointData(inscribed_circle_index);
-    self.updatePointData(circumscribed_circle_index);
-}
 
 fn releaseCurrentMouseCapture(self: *LineDistance) void {
     const data = self.ui_state.over_vertex orelse return;
