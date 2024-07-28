@@ -1,7 +1,7 @@
 x: f32 = 0.0,
 z: f32 = 0.0,
-barycentric_coordinates: math.vector.vec3 = .{ 0, 0, 0 },
-vs: [3]vData = .{
+distance_vector: math.vector.vec3 = .{ 0, 0, 0 },
+vs: [2]vData = .{
     .{
         .position = .{ 0.5, 0.0, 0.0 },
         .color = yellow,
@@ -10,11 +10,9 @@ vs: [3]vData = .{
         .position = .{ -0.5, 0.0, 0.5 },
         .color = yellow,
     },
-    .{
-        .position = .{ -0.5, 0.0, -0.5 },
-        .color = yellow,
-    },
 },
+over_circle: bool = false,
+within_circle: bool = false,
 over_vertex: ?mouseVertexCapture = null,
 area: f32 = 0.0,
 perimiter: f32 = 0.0,
@@ -41,7 +39,7 @@ pub fn draw(self: *pr_ui) void {
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
     const size = c.ImVec2_ImVec2_Float(550, 680);
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
-    _ = c.igBegin("Barycentric coordinate", null, 0);
+    _ = c.igBegin("Distance to line", null, 0);
 
     {
         var buf: [250]u8 = undefined;
@@ -54,22 +52,14 @@ pub fn draw(self: *pr_ui) void {
 
     {
         var buf: [250]u8 = undefined;
-        const txt = std.fmt.bufPrintZ(&buf, "barycentric coordinates: ({d:.3}, {d:.3}, {d:.3})", .{
-            self.barycentric_coordinates[0],
-            self.barycentric_coordinates[1],
-            self.barycentric_coordinates[2],
+        const txt = std.fmt.bufPrintZ(&buf, "distance vector: ({d:.3}, {d:.3}, {d:.3})", .{
+            self.distance_vector[0],
+            self.distance_vector[1],
+            self.distance_vector[2],
         }) catch @panic("bufsize too small");
         c.igText(@ptrCast(txt));
     }
 
-    {
-        var buf: [250]u8 = undefined;
-        const txt = std.fmt.bufPrintZ(&buf, "area: {d:.3} perimeter: {d:.3}", .{
-            self.area,
-            self.perimiter,
-        }) catch @panic("bufsize too small");
-        c.igText(@ptrCast(txt));
-    }
     c.igEnd();
 }
 

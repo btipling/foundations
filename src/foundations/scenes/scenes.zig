@@ -11,7 +11,7 @@ pub fn init(allocator: std.mem.Allocator) *Scenes {
     scenes.* = .{
         .allocator = allocator,
     };
-    scenes.initScene(ui.ui_state.scene_type.barycentric_coordinates);
+    scenes.initScene(ui.ui_state.scene_type.line_distance);
     return scenes;
 }
 
