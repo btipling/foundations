@@ -105,10 +105,10 @@ pub fn draw(self: *LineDistance, _: f64) void {
         const objects: [1]object.object = .{s};
         rhi.drawObjects(objects[0..]);
     }
-    // {
-    //     const objects: [1]object.object = .{self.circle};
-    //     rhi.drawObjects(objects[0..]);
-    // }
+    {
+        const objects: [1]object.object = .{self.circle};
+        rhi.drawObjects(objects[0..]);
+    }
     self.ui_state.draw();
 }
 
