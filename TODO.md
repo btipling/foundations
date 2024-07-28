@@ -21,6 +21,7 @@ Things to try and do as I learn more about graphical programming
 - [ ] I really need to do a lot with the normalized plane equation to understand how it works once I have projections.
 - [ ] Do a thing to reflect something around an abitrary plane centered around the origin.
 - [ ] All the plane things from Chapter 3 in FGED, intersection of a line in a plane, reflecting a point across a plane, intersecting planes...
+- [ ] UI to show triangle winding order, in 3D with perspective because shit is suboptimal without an intentional perspective
 
 ## Interpolation, curves and arcs
 
