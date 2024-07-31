@@ -3,7 +3,7 @@ x_rot: f32 = 4.060,
 y_rot: f32 = 2.525,
 z_rot: f32 = 2.760,
 x_translate: f32 = 0,
-y_translate: f32 = 0,
+y_translate: f32 = 1.5,
 z_translate: f32 = 0,
 use_lh_x_up: c_int = 1,
 animate: bool = true,
@@ -32,9 +32,9 @@ pub fn draw(self: *ca_ui) void {
         c.igTreePop();
     }
     if (c.igTreeNode_Str("translate")) {
-        _ = c.igSliderFloat("x", &self.x_translate, -1, 1, "%.3f", c.ImGuiSliderFlags_None);
-        _ = c.igSliderFloat("y", &self.y_translate, -1, 1, "%.3f", c.ImGuiSliderFlags_None);
-        _ = c.igSliderFloat("z", &self.z_translate, -1, 1, "%.3f", c.ImGuiSliderFlags_None);
+        _ = c.igSliderFloat("x", &self.x_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
+        _ = c.igSliderFloat("y", &self.y_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
+        _ = c.igSliderFloat("z", &self.z_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
         c.igTreePop();
     }
     _ = c.igCheckbox("animate", &self.animate);

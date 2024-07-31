@@ -73,6 +73,21 @@ pub inline fn scale(x: f32, y: f32, z: f32) matrix {
     // zig fmt: on
 }
 
+pub inline fn perspectiveProjection(fovy: f32, s: f32, n: f32, f: f32) matrix {
+    const g: f32 = 1.0 / @tan(fovy * 0.5);
+    const k = f / (f - n);
+    // zig fmt: off
+    return .{
+        .columns = .{
+            .{  g/s,  0,  0,              0 },
+            .{    0,  g,  0,              0 },
+            .{    0,  0,  k,              1 },
+            .{    0,  0,  -n * k,  0 },
+        },
+    };
+    // zig fmt: on
+}
+
 pub inline fn uniformScale(s: f32) matrix {
     return scale(s, s, s);
 }
@@ -145,7 +160,7 @@ pub inline fn leftHandedXUpToNDC() matrix {
     return .{
         .columns = .{
             .{  0,  1,  0,  0 },
-            .{  0,  0,  -1,  0 },
+            .{  0,  0,  1,  0 },
             .{  1,  0,  0,  0 },
             .{  0,  0,  0,  1 },
         },
@@ -167,7 +182,7 @@ test leftHandedXUpToNDC {
         m.columns[2][2],
     };
     const result = vector.dotProduct(a, b);
-    try std.testing.expect(result < 0);
+    try std.testing.expect(result > 0);
 }
 
 pub fn debug(m: matrix, msg: []const u8) void {

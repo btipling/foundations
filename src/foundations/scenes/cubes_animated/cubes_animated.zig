@@ -79,9 +79,9 @@ pub fn draw(self: *LinearColorSpace, frame_time: f64) void {
     }
 
     const t: f32 = @as(f32, @floatCast(@mod(frame_time, animation_duration)));
-    var m = math.matrix.identity();
+    var m = math.matrix.perspectiveProjection(45.0, 1.0, 0.1, 500.0);
     if (self.ui_state.use_lh_x_up == 1) {
-        m = math.matrix.leftHandedXUpToNDC();
+        m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     }
     m = math.matrix.transformMatrix(m, math.matrix.translate(
         self.ui_state.x_translate,
