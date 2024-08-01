@@ -31,3 +31,4 @@ pub fn save(self: Config) void {
 
 const std = @import("std");
 const config_file = @import("config_file.zig");
+pub const parser = @import("config_parser.zig");

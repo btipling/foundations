@@ -4,6 +4,7 @@ pub fn main() !void {
     _ = math.float;
     _ = math.matrix;
     _ = math.interpolation;
+    _ = config.parser;
 }
 
 test {
@@ -12,3 +13,4 @@ test {
 
 const std = @import("std");
 const math = @import("foundations/math/math.zig");
+const config = @import("foundations/config/config.zig");
