@@ -44,7 +44,6 @@ pub fn open(self: *Config) void {
         self.width = std.fmt.parseInt(u32, v, 10) catch 0;
     }
     if (p.map.get("height")) |v| {
-        std.debug.print("height??? {d}\n", .{v});
         self.height = std.fmt.parseInt(u32, v, 10) catch 0;
     }
 }
@@ -72,6 +71,7 @@ pub fn save(self: Config) void {
         },
     ) catch @panic("failed to writ config");
     config_file.write(self.allocator, b);
+    std.log.info("saved config", .{});
 }
 
 const std = @import("std");

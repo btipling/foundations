@@ -2,8 +2,7 @@ io: *c.ImGuiIO,
 ctx: *c.ImGuiContext,
 win: *glfw.window,
 allocator: std.mem.Allocator,
-width: u32,
-height: u32,
+cfg: *config,
 helpers: ui_helpers,
 state: *ui_state,
 
@@ -11,11 +10,11 @@ const UI = @This();
 
 var ui: *UI = undefined;
 
-pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version: []const u8) void {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, glsl_version: []const u8) void {
     // Initialize windowing
-    glfw.init() catch @panic("no glfw");
+    glfw.init(cfg) catch @panic("no glfw");
     errdefer glfw.deinit();
-    const win = glfw.createWindow(@intCast(width), @intCast(height)) catch @panic("no window");
+    const win = glfw.createWindow(cfg) catch @panic("no window");
     errdefer glfw.destroyWindow(win);
 
     const inp = input.init(allocator, win);
@@ -41,14 +40,13 @@ pub fn init(allocator: std.mem.Allocator, width: u32, height: u32, glsl_version:
     ui = allocator.create(UI) catch @panic("OOM");
     errdefer allocator.destroy(ui);
     ui.* = .{
-        .width = width,
-        .height = height,
         .io = io,
         .ctx = ctx,
         .win = win,
         .helpers = .{ .scale = scale },
         .state = s,
         .allocator = allocator,
+        .cfg = cfg,
     };
 }
 
@@ -80,7 +78,7 @@ pub fn shouldClose() bool {
 }
 
 pub fn windowDimensions() [2]u32 {
-    return [2]u32{ ui.width, ui.height };
+    return [2]u32{ ui.cfg.width, ui.cfg.height };
 }
 
 pub fn hellWorld() void {
@@ -105,6 +103,7 @@ pub fn state() *ui_state {
 const std = @import("std");
 const c = @import("../c.zig").c;
 const ui_helpers = @import("ui_helpers.zig");
+const config = @import("../config/config.zig");
 pub const nav = @import("ui_navigation.zig");
 
 pub const glfw = @import("ui_glfw.zig");

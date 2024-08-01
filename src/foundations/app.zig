@@ -8,16 +8,14 @@ const App = @This();
 var app: *App = undefined;
 
 pub fn init(allocator: std.mem.Allocator) *App {
-    const width: u32 = 1080;
-    const height: u32 = 1080;
     const glsl_version: []const u8 = "#version 460";
 
     const cfg = config.init(allocator);
+    errdefer cfg.deinit();
     cfg.open();
     cfg.print();
-    cfg.save();
 
-    ui.init(allocator, width, height, glsl_version);
+    ui.init(allocator, cfg, glsl_version);
     errdefer ui.deinit();
     rhi.init(allocator);
     errdefer rhi.deinit();
