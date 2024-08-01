@@ -11,6 +11,8 @@ pub fn init(allocator: std.mem.Allocator) *App {
     const height: u32 = 1080;
     const glsl_version: []const u8 = "#version 460";
 
+    config.init(allocator);
+
     ui.init(allocator, width, height, glsl_version);
     errdefer ui.deinit();
     rhi.init(allocator);
@@ -49,3 +51,4 @@ const std = @import("std");
 const ui = @import("ui/ui.zig");
 const scenes = @import("scenes/scenes.zig");
 const rhi = @import("rhi/rhi.zig");
+const config = @import("config/config.zig");
