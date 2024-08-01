@@ -7,26 +7,71 @@ allocator: std.mem.Allocator,
 
 const Config = @This();
 
-pub fn open(self: Config) void {
+pub fn init(allocator: std.mem.Allocator) *Config {
+    const c = allocator.create(Config) catch @panic("OOM");
+    c.* = .{
+        .allocator = allocator,
+    };
+    return c;
+}
+
+pub fn deinit(self: *Config) void {
+    self.allocator.destroy(self);
+}
+
+pub fn open(self: *Config) void {
     const config_bytes = config_file.read(self.allocator);
-    if (config_bytes) |b| {
-        defer self.allocator.free(b);
-        std.debug.print("config bytes len {d}\n", .{b.len});
-    } else {
-        std.debug.print("no config\n", .{});
+    const b = config_bytes orelse {
+        std.log.info("No config found", .{});
+        return;
+    };
+    defer self.allocator.free(b);
+    std.log.info("config found", .{});
+
+    var p = parser.init(self.allocator, b);
+    p.parse();
+    defer p.deinit();
+    if (p.map.get("fullscreen")) |v| {
+        self.fullscreen = std.mem.eql(u8, v, "true");
     }
-    config_file.write(self.allocator, "lol");
+    if (p.map.get("maximized")) |v| {
+        self.fullscreen = std.mem.eql(u8, v, "true");
+    }
+    if (p.map.get("decorated")) |v| {
+        self.fullscreen = std.mem.eql(u8, v, "true");
+    }
+    if (p.map.get("width")) |v| {
+        self.width = std.fmt.parseInt(u32, v, 10) catch 0;
+    }
+    if (p.map.get("height")) |v| {
+        std.debug.print("height??? {d}\n", .{v});
+        self.height = std.fmt.parseInt(u32, v, 10) catch 0;
+    }
+}
+
+pub fn print(self: *Config) void {
+    std.log.info("Config:", .{});
+    std.log.info("fullscreen: {any}", .{self.fullscreen});
+    std.log.info("maximized: {any}", .{self.maximized});
+    std.log.info("decorated: {any}", .{self.decorated});
+    std.log.info("width: {d}", .{self.width});
+    std.log.info("height: {d}\n", .{self.height});
 }
 
 pub fn save(self: Config) void {
-    const config_bytes = config_file.read(self.allocator);
-    if (config_bytes) |b| {
-        defer self.allocator.free(b);
-        std.debug.print("config bytes len {d}\n", .{b.len});
-    } else {
-        std.debug.print("no config\n", .{});
-    }
-    config_file.write(self.allocator, "lol");
+    var buf: [config_file.max_file_size]u8 = undefined;
+    const b = std.fmt.bufPrint(
+        &buf,
+        "fullscreen={s};\nmaxmized={s};\ndecorated={s};\nwidth={d};\nheight={d};\n",
+        .{
+            if (self.fullscreen) "true" else "false",
+            if (self.maximized) "true" else "false",
+            if (self.decorated) "true" else "false",
+            self.width,
+            self.height,
+        },
+    ) catch @panic("failed to writ config");
+    config_file.write(self.allocator, b);
 }
 
 const std = @import("std");

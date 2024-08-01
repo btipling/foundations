@@ -1,6 +1,7 @@
 scenes: *scenes,
 nav: ui.nav,
 allocator: std.mem.Allocator,
+config: *config,
 
 const App = @This();
 
@@ -11,10 +12,10 @@ pub fn init(allocator: std.mem.Allocator) *App {
     const height: u32 = 1080;
     const glsl_version: []const u8 = "#version 460";
 
-    const cfg: config = .{
-        .allocator = allocator,
-    };
+    const cfg = config.init(allocator);
     cfg.open();
+    cfg.print();
+    cfg.save();
 
     ui.init(allocator, width, height, glsl_version);
     errdefer ui.deinit();
@@ -28,6 +29,7 @@ pub fn init(allocator: std.mem.Allocator) *App {
         .scenes = d,
         .allocator = allocator,
         .nav = ui.nav.init(d),
+        .config = cfg,
     };
     return app;
 }
@@ -36,6 +38,7 @@ pub fn deinit(self: *App) void {
     self.scenes.deinit();
     rhi.deinit();
     ui.deinit();
+    self.config.deinit();
     self.allocator.destroy(self);
 }
 

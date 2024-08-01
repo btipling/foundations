@@ -1,6 +1,6 @@
 const app_name: []const u8 = "foundations_game_engine";
 const config_file_name: []const u8 = "config.txt";
-const max_file_size: usize = 4096 << 8;
+pub const max_file_size: usize = 4096 << 8;
 
 pub fn read(allocator: std.mem.Allocator) ?[]u8 {
     const app_data_dir_path = std.fs.getAppDataDir(allocator, app_name) catch @panic("no app data dir");
