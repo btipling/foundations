@@ -11,7 +11,10 @@ pub fn init(allocator: std.mem.Allocator) *App {
     const height: u32 = 1080;
     const glsl_version: []const u8 = "#version 460";
 
-    config.init(allocator);
+    const cfg: config = .{
+        .allocator = allocator,
+    };
+    cfg.open();
 
     ui.init(allocator, width, height, glsl_version);
     errdefer ui.deinit();
