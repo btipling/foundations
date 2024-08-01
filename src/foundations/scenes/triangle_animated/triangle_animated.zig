@@ -2,6 +2,7 @@ program: u32,
 vao: u32,
 buffer: u32,
 count: usize,
+cfg: *config,
 
 const AnimatedTriangle = @This();
 
@@ -15,7 +16,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *AnimatedTriangle {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *AnimatedTriangle {
     const program = rhi.createProgram();
     const vao = rhi.createVAO();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -26,6 +27,7 @@ pub fn init(allocator: std.mem.Allocator) *AnimatedTriangle {
         .vao = vao,
         .buffer = 0,
         .count = 3,
+        .cfg = cfg,
     };
     return at;
 }
@@ -51,3 +53,4 @@ pub fn draw(self: *AnimatedTriangle, frame_time: f64) void {
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const ui = @import("../../ui/ui.zig");
+const config = @import("../../config/config.zig");

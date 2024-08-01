@@ -1,5 +1,6 @@
-program: u32,
+program: u32 = 0,
 objects: [1]object.object = undefined,
+cfg: *config,
 
 const Circle = @This();
 
@@ -13,8 +14,11 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *Circle {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Circle {
     const p = allocator.create(Circle) catch @panic("OOM");
+    p.* = .{
+        .cfg = cfg,
+    };
 
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -55,3 +59,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
 const ui = @import("../../ui/ui.zig");
+const config = @import("../../config/config.zig");

@@ -5,6 +5,7 @@ ui_state: line_distance_ui,
 line: math.geometry.line = undefined,
 circles: [num_points]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
+cfg: *config,
 
 const LineDistance = @This();
 
@@ -29,12 +30,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *LineDistance {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *LineDistance {
     const bct = allocator.create(LineDistance) catch @panic("OOM");
     const ui_state: line_distance_ui = .{};
     bct.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
+        .cfg = cfg,
     };
     bct.updateLine();
     bct.renderStrip();
@@ -304,3 +306,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
 const line_distance_ui = @import("line_distance_ui.zig");
 const object = @import("../../object/object.zig");
+const config = @import("../../config/config.zig");

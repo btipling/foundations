@@ -2,6 +2,7 @@ strip: object.object = undefined,
 ui_state: unit_circle_ui,
 allocator: std.mem.Allocator,
 circle: math.geometry.circle,
+cfg: *config,
 
 const UnitCircle = @This();
 
@@ -19,12 +20,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *UnitCircle {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *UnitCircle {
     const unit_circle = allocator.create(UnitCircle) catch @panic("OOM");
     unit_circle.* = .{
         .ui_state = .{},
         .allocator = allocator,
         .circle = .{ .center = .{ 0, 0 }, .radius = 1.0 },
+        .cfg = cfg,
     };
 
     unit_circle.renderCircle();
@@ -92,3 +94,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
 const unit_circle_ui = @import("unit_circle_ui.zig");
 const object = @import("../../object/object.zig");
+const config = @import("../../config/config.zig");

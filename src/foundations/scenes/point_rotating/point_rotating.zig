@@ -3,6 +3,7 @@ vao: u32,
 buffer: u32,
 count: usize,
 ui_state: pr_ui,
+cfg: *config,
 
 const RotatingPoint = @This();
 
@@ -16,7 +17,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *RotatingPoint {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *RotatingPoint {
     const program = rhi.createProgram();
     const vao = rhi.createVAO();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -31,6 +32,7 @@ pub fn init(allocator: std.mem.Allocator) *RotatingPoint {
             .r = 0.9,
             .rotation_time = 3,
         },
+        .cfg = cfg,
     };
     return p;
 }
@@ -55,3 +57,4 @@ const pr_ui = @import("point_rotating_ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
 const ui = @import("../../ui/ui.zig");
+const config = @import("../../config/config.zig");

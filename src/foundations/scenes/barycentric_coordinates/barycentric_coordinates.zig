@@ -7,6 +7,7 @@ circumscribed: math.geometry.circle = undefined,
 ui_state: bc_ui,
 circles: [num_circles]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
+cfg: *config,
 
 const BCTriangle = @This();
 
@@ -33,12 +34,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *BCTriangle {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *BCTriangle {
     const bct = allocator.create(BCTriangle) catch @panic("OOM");
     const ui_state: bc_ui = .{};
     bct.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
+        .cfg = cfg,
     };
     bct.updateTriangle();
     bct.renderStrip();
@@ -264,3 +266,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
 const bc_ui = @import("bc_ui.zig");
 const object = @import("../../object/object.zig");
+const config = @import("../../config/config.zig");

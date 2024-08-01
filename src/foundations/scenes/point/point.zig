@@ -2,6 +2,7 @@ program: u32,
 vao: u32,
 buffer: u32,
 count: usize,
+cfg: *config,
 
 x: f32 = 0,
 inc: f32 = 0.01,
@@ -18,7 +19,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *Point {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Point {
     const program = rhi.createProgram();
     const vao = rhi.createVAO();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -29,6 +30,7 @@ pub fn init(allocator: std.mem.Allocator) *Point {
         .vao = vao,
         .buffer = 0,
         .count = 1,
+        .cfg = cfg,
     };
     return p;
 }
@@ -53,3 +55,4 @@ pub fn draw(self: *Point, _: f64) void {
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const ui = @import("../../ui/ui.zig");
+const config = @import("../../config/config.zig");

@@ -1,15 +1,17 @@
 scene_instance: ?ui.ui_state.scenes = null,
 next_scene_type: ?ui.ui_state.scene_type = null,
+cfg: *config,
 
 allocator: std.mem.Allocator,
 
 const Scenes = @This();
 
-pub fn init(allocator: std.mem.Allocator) *Scenes {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Scenes {
     const scenes = allocator.create(Scenes) catch @panic("OOM");
     errdefer allocator.destroy(scenes);
     scenes.* = .{
         .allocator = allocator,
+        .cfg = cfg,
     };
     scenes.initScene(ui.ui_state.scene_type.cubes_animated);
     return scenes;
@@ -39,7 +41,7 @@ fn initScene(self: *Scenes, dt: ui.ui_state.scene_type) void {
                 ui.ui_state.scenes,
                 dtag,
             ),
-        ).init(self.allocator)),
+        ).init(self.allocator, self.cfg)),
     };
 }
 
@@ -65,3 +67,4 @@ pub fn drawScene(self: Scenes, frame_time: f64) void {
 
 const std = @import("std");
 const ui = @import("../ui/ui.zig");
+const config = @import("../config/config.zig");

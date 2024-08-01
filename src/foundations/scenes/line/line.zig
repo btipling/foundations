@@ -1,6 +1,7 @@
 manager: *manager = undefined,
 ui_state: *line_ui,
 allocator: std.mem.Allocator,
+cfg: *config,
 
 const Line = @This();
 
@@ -11,13 +12,14 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *Line {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Line {
     const line = allocator.create(Line) catch @panic("OOM");
     const ui_state = line_ui.init(allocator);
     line.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
         .manager = manager.init(allocator, ui_state),
+        .cfg = cfg,
     };
 
     return line;
@@ -87,3 +89,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const line_ui = @import("line_ui.zig");
 const point = @import("line_point.zig");
 const manager = @import("line_manager.zig");
+const config = @import("../../config/config.zig");

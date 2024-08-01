@@ -1,6 +1,8 @@
 program: u32,
 objects: [1]object.object = undefined,
 ui_state: sphere_ui,
+cfg: *config,
+aspect_ratio: f32,
 
 const Sphere = @This();
 
@@ -14,7 +16,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *Sphere {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
     const p = allocator.create(Sphere) catch @panic("OOM");
 
     const program = rhi.createProgram();
@@ -34,6 +36,8 @@ pub fn init(allocator: std.mem.Allocator) *Sphere {
             .wireframe = false,
             .rotation_time = 5.0,
         },
+        .cfg = cfg,
+        .aspect_ratio = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height)),
     };
 
     return p;
@@ -49,7 +53,10 @@ pub fn draw(self: *Sphere, frame_time: f64) void {
     const angle_radiants: f32 = @as(f32, @floatCast(rot)) * std.math.pi * 2;
     self.objects[0].sphere.mesh.wire_mesh = self.ui_state.wireframe;
     rhi.drawObjects(self.objects[0..]);
-    const m = math.matrix.leftHandedXUpToNDC();
+    var m = math.matrix.perspectiveProjection(45.0, self.aspect_ratio, 0.1, 500.0);
+    // var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
+    m = math.matrix.transformMatrix(m, math.matrix.translate(0, 3.5, 0));
     rhi.setUniformMatrix(self.program, "f_transform", m);
     rhi.setUniformMatrix(self.program, "f_color_transform", math.matrix.rotationY(angle_radiants));
     self.ui_state.draw();
@@ -61,3 +68,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const sphere_ui = @import("sphere_ui.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
+const config = @import("../../config/config.zig");

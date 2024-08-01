@@ -1,4 +1,5 @@
 objects: [2]object.object = undefined,
+cfg: *config,
 
 const LinearColorSpace = @This();
 
@@ -12,8 +13,11 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *LinearColorSpace {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
     const p = allocator.create(LinearColorSpace) catch @panic("OOM");
+    p.* = .{
+        .cfg = cfg,
+    };
 
     var triangle_positions: [3][3]f32 = undefined;
     const triangle_colors: [3][4]f32 = object.triangle.default_colors;
@@ -88,3 +92,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
 const ui = @import("../../ui/ui.zig");
+const config = @import("../../config/config.zig");

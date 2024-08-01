@@ -19,7 +19,7 @@ pub fn init(allocator: std.mem.Allocator) *App {
     errdefer ui.deinit();
     rhi.init(allocator);
     errdefer rhi.deinit();
-    const d = scenes.init(allocator);
+    const d = scenes.init(allocator, cfg);
     errdefer d.deinit();
 
     app = allocator.create(App) catch @panic("OOM");

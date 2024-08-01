@@ -2,6 +2,7 @@ ui_state: vma_ui,
 objects: [200]object.object = undefined,
 num_objects: usize = 0,
 num_vectors: usize = 0,
+cfg: *config,
 
 const MathVectorArithmetic = @This();
 
@@ -15,10 +16,11 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator) *MathVectorArithmetic {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *MathVectorArithmetic {
     const p = allocator.create(MathVectorArithmetic) catch @panic("OOM");
     p.* = .{
         .ui_state = vma_ui.init(),
+        .cfg = cfg,
     };
     return p;
 }
@@ -132,3 +134,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
 const ui = @import("../../ui/ui.zig");
+const config = @import("../../config/config.zig");
