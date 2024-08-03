@@ -48,9 +48,18 @@ pub fn draw(self: *AnimatedTriangle, frame_time: f64) void {
     }
     rhi.setUniform1f(self.program, "f_offset", x);
     rhi.drawArrays(self.program, self.vao, self.count);
+    rhi.setUniformMatrix(self.program, "f_transform", math.matrix.orthographicProjection(
+        0,
+        9,
+        0,
+        6,
+        self.cfg.near,
+        self.cfg.far,
+    ));
 }
 
 const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const ui = @import("../../ui/ui.zig");
 const config = @import("../../config/config.zig");
+const math = @import("../../math/math.zig");
