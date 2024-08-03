@@ -155,7 +155,7 @@ fn handleInput(self: *BCTriangle) void {
         return;
     }
     blk: {
-        const ovi = self.overVertex(x, z);
+        const ovi = self.overVertex(z, x);
         const ov = self.ui_state.over_vertex orelse {
             self.ui_state.over_vertex = ovi;
             break :blk;
@@ -261,8 +261,8 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
     }
 }
 
-fn overVertex(self: *BCTriangle, x: f32, z: f32) ?bc_ui.mouseVertexCapture {
-    const p = math.geometry.xUpLeftHandedTo2D(.{ x, 0.0, z });
+fn overVertex(self: *BCTriangle, x: f32, y: f32) ?bc_ui.mouseVertexCapture {
+    const p: math.vector.vec2 = .{ x, y };
     const m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
     for (self.ui_state.vs, 0..) |vs, i| {
         const v = math.matrix.transformVector(
