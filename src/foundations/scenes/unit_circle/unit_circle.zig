@@ -50,7 +50,8 @@ pub fn renderCircle(self: *UnitCircle) void {
     for (0..num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
         const res = self.circle.parametricCircle(t / num_triangles_f);
-        var m = math.matrix.leftHandedXUpToNDC();
+        var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.cfg.near, self.cfg.far);
+        m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
         m = math.matrix.transformMatrix(m, math.matrix.translate(res[1], 0.0, res[0]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
         const i_data: rhi.instanceData = .{

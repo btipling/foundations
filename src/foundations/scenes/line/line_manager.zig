@@ -8,6 +8,7 @@ num_tangents: usize = 0,
 highlighted_point: ?usize = null,
 dragging_point: ?usize = null,
 selected_point: ?usize = null,
+cfg: *config,
 
 const point_limit: usize = 100;
 const strip_scale: f32 = 0.005;
@@ -21,10 +22,11 @@ pub inline fn coordinate(c: f32) f32 {
     return c;
 }
 
-pub fn init(allocator: std.mem.Allocator, ui_state: *const line_ui) *Manager {
+pub fn init(allocator: std.mem.Allocator, ui_state: *const line_ui, cfg: *config) *Manager {
     const m = allocator.create(Manager) catch @panic("OOM");
     m.* = .{
         .ui_state = ui_state,
+        .cfg = cfg,
     };
     return m;
 }
@@ -53,7 +55,7 @@ pub fn addAt(self: *Manager, allocator: std.mem.Allocator, x: f32, z: f32, tange
             }
         }
     }
-    const np = point.init(allocator, x, z, self.num_points, tangent_target);
+    const np = point.init(allocator, x, z, self.num_points, tangent_target, self.cfg);
     if (self.num_points == 0) {
         self.points[0] = np;
         self.num_points += 1;
@@ -269,7 +271,8 @@ pub fn renderStrips(self: *Manager) void {
         } else {
             sp = math.interpolation.hermiteCurve(t / 1_000.0, positions[0..points_added], tangents[0..points_added], times[0..points_added]);
         }
-        var m = math.matrix.leftHandedXUpToNDC();
+        var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.cfg.near, self.cfg.far);
+        m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
         m = math.matrix.transformMatrix(m, math.matrix.translate(sp[0], sp[1], sp[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
         const i_data: rhi.instanceData = .{
@@ -309,7 +312,8 @@ pub fn renderQuads(self: *Manager) void {
         const y_basis: math.vector.vec3 = .{ 0, 1, 0 };
         const q = math.rotation.axisAngleToQuat(angle, y_basis);
         const qn = math.vector.normalize(q);
-        var m = math.matrix.leftHandedXUpToNDC();
+        var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.cfg.near, self.cfg.far);
+        m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
         m = math.matrix.transformMatrix(m, math.matrix.translate(target.x, 0, target.z));
         m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(qn));
         m = math.matrix.transformMatrix(m, math.matrix.scale(0.001, 1, distance));
@@ -339,3 +343,4 @@ const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const point = @import("line_point.zig");
 const line_ui = @import("line_ui.zig");
+const config = @import("../../config/config.zig");

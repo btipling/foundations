@@ -10,6 +10,7 @@ z_small_node: ?*Point = null,
 i_data: rhi.instanceData = undefined,
 target: ?usize = null,
 selected: bool = false,
+cfg: *config,
 
 const point_limit: usize = 1000;
 const point_scale: f32 = 0.025;
@@ -28,9 +29,10 @@ pub inline fn coordinate(c: f32) f32 {
     return c;
 }
 
-pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, target: ?usize) *Point {
+pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, target: ?usize, cfg: *config) *Point {
     const p = allocator.create(Point) catch @panic("OOM");
-    var m = math.matrix.leftHandedXUpToNDC();
+    var m = math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far);
+    m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
     const i_data: rhi.instanceData = .{
@@ -50,6 +52,7 @@ pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, target: 
         .index = index,
         .i_data = i_data,
         .target = target,
+        .cfg = cfg,
     };
     p.resetColor();
     return p;
@@ -68,7 +71,8 @@ pub fn toVector(self: *Point) math.vector.vec4 {
 }
 
 pub fn update(self: *Point, x: f32, z: f32) void {
-    var m = math.matrix.leftHandedXUpToNDC();
+    var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.cfg.near, self.cfg.far);
+    m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     m = math.matrix.transformMatrix(m, math.matrix.translate(x, 0, z));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(point_scale));
     const i_data: rhi.instanceData = .{
@@ -163,3 +167,4 @@ const std = @import("std");
 const math = @import("../../math/math.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
+const config = @import("../../config/config.zig");

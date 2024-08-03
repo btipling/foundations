@@ -18,7 +18,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Line {
     line.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
-        .manager = manager.init(allocator, ui_state),
+        .manager = manager.init(allocator, ui_state, cfg),
         .cfg = cfg,
     };
 
