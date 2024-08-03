@@ -81,11 +81,11 @@ pub fn draw(self: *UnitCircle, _: f64) void {
 fn handleInput(self: *UnitCircle) void {
     const input = ui.input.getReadOnly() orelse return;
     const x = input.mouse_x orelse return;
-    const z = input.mouse_z orelse return;
+    const y = input.mouse_y orelse return;
     self.ui_state.x = x;
-    self.ui_state.z = z;
-    self.ui_state.over_circle = self.circle.implicitCircle(.{ z, x }, 0.01);
-    self.ui_state.within_circle = self.circle.withinCircle(.{ z, x });
+    self.ui_state.y = y;
+    self.ui_state.over_circle = self.circle.implicitCircle(.{ x, y }, 0.01);
+    self.ui_state.within_circle = self.circle.withinCircle(.{ x, y });
 }
 
 const std = @import("std");

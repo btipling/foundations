@@ -143,19 +143,19 @@ pub fn draw(self: *BCTriangle, _: f64) void {
 fn handleInput(self: *BCTriangle) void {
     const input = ui.input.getReadOnly() orelse return;
     const x = input.mouse_x orelse return;
-    const z = input.mouse_z orelse return;
+    const y = input.mouse_y orelse return;
     const action = input.mouse_action;
     const button = input.mouse_button;
     self.ui_state.x = x;
-    self.ui_state.z = z;
-    const p: math.vector.vec3 = .{ x, 0.0, z };
+    self.ui_state.y = y;
+    const p: math.vector.vec3 = .{ x, y, 0 };
     self.ui_state.barycentric_coordinates = self.triangle.barycentricCooordinate(p);
     if (action == c.GLFW_RELEASE) {
         self.releaseCurrentMouseCapture();
         return;
     }
     blk: {
-        const ovi = self.overVertex(z, x);
+        const ovi = self.overVertex(x, y);
         const ov = self.ui_state.over_vertex orelse {
             self.ui_state.over_vertex = ovi;
             break :blk;
@@ -176,7 +176,7 @@ fn handleInput(self: *BCTriangle) void {
         }
         self.ui_state.vs[ov.vertex].color = bc_ui.pink;
         if (ov.dragging) {
-            self.ui_state.vs[ov.vertex].position = .{ x, 0, z, 1.0 };
+            self.ui_state.vs[ov.vertex].position = .{ x, y, 0, 1.0 }; // TODO: I borked it
             self.renderStrip();
             self.updateTriangle();
             self.updateCircle();

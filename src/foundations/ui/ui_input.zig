@@ -1,5 +1,5 @@
 mouse_x: ?f32 = null,
-mouse_z: ?f32 = null,
+mouse_y: ?f32 = null,
 mouse_button: ?c_int = null,
 mouse_action: ?c_int = null,
 mouse_mods: ?c_int = null,
@@ -31,14 +31,14 @@ pub fn deinit(self: *Input, allocator: std.mem.Allocator) void {
     input = null;
 }
 
-fn cursorPosCallback(_: ?*c.GLFWwindow, z: f64, x: f64) callconv(.C) void {
+fn cursorPosCallback(_: ?*c.GLFWwindow, x: f64, y: f64) callconv(.C) void {
     const io = c.igGetIO().*;
     if (io.WantCaptureMouse) return;
     const inp = input orelse return;
     const _x: f32 = @floatCast(x);
-    const _z: f32 = @floatCast(z);
+    const _y: f32 = @floatCast(y);
     inp.mouse_x = ((_x / inp.win_height) - 0.5) * -2;
-    inp.mouse_z = ((_z / inp.win_width) - 0.5) * 2;
+    inp.mouse_y = ((_y / inp.win_width) - 0.5) * 2;
 }
 
 fn mouseButtonCallback(_: ?*c.GLFWwindow, button: c_int, action: c_int, mods: c_int) callconv(.C) void {
@@ -70,7 +70,7 @@ pub fn endFrame(self: *Input) void {
         .win_width = self.win_width,
         .win_height = self.win_height,
         .mouse_x = self.mouse_x,
-        .mouse_z = self.mouse_z,
+        .mouse_y = self.mouse_y,
     };
 }
 

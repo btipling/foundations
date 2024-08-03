@@ -1,5 +1,5 @@
 x: f32 = 0.0,
-z: f32 = 0.0,
+y: f32 = 0.0,
 barycentric_coordinates: math.vector.vec3 = .{ 0, 0, 0 },
 vs: [3]vData = .{
     .{
@@ -47,7 +47,7 @@ pub fn draw(self: *pr_ui) void {
         var buf: [250]u8 = undefined;
         const txt = std.fmt.bufPrintZ(&buf, "last pos: ({d:.3}, 0.0, {d:.3})", .{
             self.x,
-            self.z,
+            self.y,
         }) catch @panic("bufsize too small");
         c.igText(@ptrCast(txt));
     }

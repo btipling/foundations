@@ -42,10 +42,10 @@ fn handleOver(self: *Line) ?usize {
     clear_highlight: {
         const input = ui.input.get() orelse break :clear_highlight;
         const x = input.mouse_x orelse break :clear_highlight;
-        const z = input.mouse_z orelse break :clear_highlight;
+        const y = input.mouse_y orelse break :clear_highlight;
         const px = point.coordinate(x);
-        const pz = point.coordinate(z);
-        if (root_point.getAt(px, pz)) |p| {
+        const py = point.coordinate(y);
+        if (root_point.getAt(px, py)) |p| {
             self.manager.highlight(p.index);
             return p.index;
         }
@@ -64,7 +64,7 @@ fn handleInput(self: *Line) void {
         tangent = self.ui_state.mode == .hermite and m == c.GLFW_MOD_CONTROL;
     }
     const x = input.mouse_x orelse return;
-    const z = input.mouse_z orelse return;
+    const y = input.mouse_y orelse return;
     if (action == c.GLFW_RELEASE) {
         self.manager.release();
         return;
@@ -74,12 +74,12 @@ fn handleInput(self: *Line) void {
     }
     if (action != c.GLFW_PRESS) return;
     if (button != c.GLFW_MOUSE_BUTTON_1) return;
-    self.addPoint(x, z, tangent);
+    self.addPoint(x, y, tangent);
 }
 
-fn addPoint(self: *Line, x: f32, z: f32, tangent: bool) void {
-    if (self.manager.drag(x, z)) return;
-    self.manager.addAt(self.allocator, x, z, tangent);
+fn addPoint(self: *Line, x: f32, y: f32, tangent: bool) void {
+    if (self.manager.drag(x, y)) return;
+    self.manager.addAt(self.allocator, x, y, tangent);
 }
 
 const std = @import("std");

@@ -1,5 +1,5 @@
 x: f32 = 0.0,
-z: f32 = 0.0,
+y: f32 = 0.0,
 over_circle: bool = false,
 within_circle: bool = false,
 
@@ -9,7 +9,7 @@ pub fn draw(self: *pr_ui) void {
     var buf: [250]u8 = undefined;
     const txt = std.fmt.bufPrintZ(&buf, "last pos: ({d:.3}, 0.0, {d:.3})", .{
         self.x,
-        self.z,
+        self.y,
     }) catch @panic("bufsize too small");
     const vp: *c.ImGuiViewport = c.igGetMainViewport();
     const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);
