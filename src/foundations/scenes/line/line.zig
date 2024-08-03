@@ -2,6 +2,7 @@ manager: *manager = undefined,
 ui_state: *line_ui,
 allocator: std.mem.Allocator,
 cfg: *config,
+ortho_persp: math.matrix,
 
 const Line = @This();
 
@@ -15,11 +16,20 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *Line {
     const line = allocator.create(Line) catch @panic("OOM");
     const ui_state = line_ui.init(allocator);
+    const ortho_persp = math.matrix.orthographicProjection(
+        0,
+        9,
+        0,
+        6,
+        cfg.near,
+        cfg.far,
+    );
     line.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
         .manager = manager.init(allocator, ui_state, cfg),
         .cfg = cfg,
+        .ortho_persp = ortho_persp,
     };
 
     return line;
@@ -41,11 +51,11 @@ fn handleOver(self: *Line) ?usize {
     const root_point = self.manager.rootPoint() orelse return null;
     clear_highlight: {
         const input = ui.input.get() orelse break :clear_highlight;
-        const x = input.mouse_x orelse break :clear_highlight;
-        const y = input.mouse_y orelse break :clear_highlight;
+        const x = input.coord_x orelse break :clear_highlight;
+        const z = input.coord_z orelse break :clear_highlight;
         const px = point.coordinate(x);
-        const py = point.coordinate(y);
-        if (root_point.getAt(px, py)) |p| {
+        const pz = point.coordinate(z);
+        if (root_point.getAt(px * 3.0, pz * 4.5)) |p| {
             self.manager.highlight(p.index);
             return p.index;
         }
@@ -63,8 +73,8 @@ fn handleInput(self: *Line) void {
     if (input.mouse_mods) |m| {
         tangent = self.ui_state.mode == .hermite and m == c.GLFW_MOD_CONTROL;
     }
-    const x = input.mouse_x orelse return;
-    const y = input.mouse_y orelse return;
+    const x = input.coord_x orelse return;
+    const z = input.coord_z orelse return;
     if (action == c.GLFW_RELEASE) {
         self.manager.release();
         return;
@@ -74,12 +84,12 @@ fn handleInput(self: *Line) void {
     }
     if (action != c.GLFW_PRESS) return;
     if (button != c.GLFW_MOUSE_BUTTON_1) return;
-    self.addPoint(x, y, tangent);
+    self.addPoint(x * 3, z * 4.5, tangent);
 }
 
-fn addPoint(self: *Line, x: f32, y: f32, tangent: bool) void {
-    if (self.manager.drag(x, y)) return;
-    self.manager.addAt(self.allocator, x, y, tangent);
+fn addPoint(self: *Line, x: f32, z: f32, tangent: bool) void {
+    if (self.manager.drag(x, z)) return;
+    self.manager.addAt(self.allocator, x, z, tangent);
 }
 
 const std = @import("std");
@@ -89,4 +99,5 @@ const rhi = @import("../../rhi/rhi.zig");
 const line_ui = @import("line_ui.zig");
 const point = @import("line_point.zig");
 const manager = @import("line_manager.zig");
+const math = @import("../../math/math.zig");
 const config = @import("../../config/config.zig");
