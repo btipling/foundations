@@ -1,5 +1,5 @@
 wireframe: bool = false,
-rotation_time: f32 = 5.0,
+rotation_time: f32 = 3.5,
 
 const pr_ui = @This();
 

@@ -53,10 +53,10 @@ pub fn draw(self: *Sphere, frame_time: f64) void {
     const angle_radiants: f32 = @as(f32, @floatCast(rot)) * std.math.pi * 2;
     self.objects[0].sphere.mesh.wire_mesh = self.ui_state.wireframe;
     rhi.drawObjects(self.objects[0..]);
-    var m = math.matrix.perspectiveProjection(self.cfg.fovy, self.aspect_ratio, self.cfg.near, self.cfg.far);
-    // var m = math.matrix.identity();
+    var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.cfg.near, self.cfg.far);
     m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     m = math.matrix.transformMatrix(m, math.matrix.translate(0, 3.5, 0));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(3));
     rhi.setUniformMatrix(self.program, "f_transform", m);
     rhi.setUniformMatrix(self.program, "f_color_transform", math.matrix.rotationY(angle_radiants));
     self.ui_state.draw();
