@@ -280,10 +280,14 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
 
 fn overVertex(self: *BCTriangle, pos: math.vector.vec4) ?bc_ui.mouseVertexCapture {
     const m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
-    const p: math.vector.vec4 = math.matrix.transformVector(
-        m,
-        pos,
-    );
+    const p: math.vector.vec2 = .{ pos[2], pos[0] };
+    // std.debug.print("pos: ({d}, {d}, {d}) p: ({d}, {d})\n", .{
+    //     pos[0],
+    //     pos[1],
+    //     pos[2],
+    //     p[0],
+    //     p[1],
+    // });
     for (self.ui_state.vs, 0..) |vs, i| {
         const v = math.matrix.transformVector(
             m,

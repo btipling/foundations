@@ -39,8 +39,8 @@ fn cursorPosCallback(_: ?*c.GLFWwindow, x: f64, y: f64) callconv(.C) void {
     const inp = input orelse return;
     const _x: f32 = @floatCast(x);
     const _y: f32 = @floatCast(y);
-    inp.mouse_x = _x + (inp.win_width / 2) - inp.win_width;
-    inp.mouse_y = (_y + (inp.win_height / 2) - inp.win_height) * -1;
+    inp.mouse_x = ((_x / inp.win_width) - 0.5) * 2;
+    inp.mouse_y = ((_y / inp.win_height) - 0.5) * -2;
     inp.coord_x = inp.mouse_y;
     inp.coord_z = inp.mouse_x;
 }
