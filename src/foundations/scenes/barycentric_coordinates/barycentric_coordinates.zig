@@ -263,8 +263,13 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
 
 fn overVertex(self: *BCTriangle, x: f32, z: f32) ?bc_ui.mouseVertexCapture {
     const p = math.geometry.xUpLeftHandedTo2D(.{ x, 0.0, z });
+    const m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
     for (self.ui_state.vs, 0..) |vs, i| {
-        const center = math.geometry.xUpLeftHandedTo2D(vs.position);
+        const v = math.matrix.transformVector(
+            m,
+            vs.position,
+        );
+        const center = .{ v[0], v[1] };
         const circle: math.geometry.circle = .{ .center = center, .radius = point_scale };
         if (circle.withinCircle(p)) {
             return .{
