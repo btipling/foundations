@@ -8,6 +8,7 @@ ui_state: bc_ui,
 circles: [num_circles]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
 cfg: *config,
+ortho_persp: math.matrix,
 
 const BCTriangle = @This();
 
@@ -37,10 +38,19 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *BCTriangle {
     const bct = allocator.create(BCTriangle) catch @panic("OOM");
     const ui_state: bc_ui = .{};
+    const ortho_persp = math.matrix.orthographicProjection(
+        0,
+        9,
+        0,
+        6,
+        cfg.near,
+        cfg.far,
+    );
     bct.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
         .cfg = cfg,
+        .ortho_persp = ortho_persp,
     };
     bct.updateTriangle();
     bct.renderStrip();
@@ -74,8 +84,13 @@ pub fn renderStrip(self: *BCTriangle) void {
     }
     for (0..num_points_interpolated * num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
-        const res = math.interpolation.linear(t / 1_000.0, positions[0..num_points_interpolated], times[0..num_points_interpolated]);
-        var m = math.matrix.leftHandedXUpToNDC();
+        const res = math.interpolation.linear(
+            t / 1_000.0,
+            positions[0..num_points_interpolated],
+            times[0..num_points_interpolated],
+        );
+        var m = self.ortho_persp;
+        m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
         m = math.matrix.transformMatrix(m, math.matrix.translate(res[0], res[1], res[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
         const i_data: rhi.instanceData = .{
@@ -161,7 +176,7 @@ fn handleInput(self: *BCTriangle) void {
         }
         self.ui_state.vs[ov.vertex].color = bc_ui.pink;
         if (ov.dragging) {
-            self.ui_state.vs[ov.vertex].position = .{ x, 0, z };
+            self.ui_state.vs[ov.vertex].position = .{ x, 0, z, 1.0 };
             self.renderStrip();
             self.updateTriangle();
             self.updateCircle();
@@ -172,9 +187,9 @@ fn handleInput(self: *BCTriangle) void {
 
 fn updateTriangle(self: *BCTriangle) void {
     const t = math.geometry.triangle.init(
-        self.ui_state.vs[0].position,
-        self.ui_state.vs[1].position,
-        self.ui_state.vs[2].position,
+        math.vector.vec4ToVec3(self.ui_state.vs[0].position),
+        math.vector.vec4ToVec3(self.ui_state.vs[1].position),
+        math.vector.vec4ToVec3(self.ui_state.vs[2].position),
     );
     self.triangle = t;
     const center_c_center = math.geometry.xUpLeftHandedTo2D(t.centerOfGravity());
@@ -199,8 +214,7 @@ fn releaseCurrentMouseCapture(self: *BCTriangle) void {
 }
 
 fn updatePointIData(self: *BCTriangle, index: usize) void {
-    var m = math.matrix.leftHandedXUpToNDC();
-    var p: math.vector.vec3 = undefined;
+    var p: math.vector.vec4 = undefined;
     var color: math.vector.vec4 = undefined;
     var scale: f32 = 0;
     switch (index) {
@@ -225,6 +239,8 @@ fn updatePointIData(self: *BCTriangle, index: usize) void {
             color = self.ui_state.vs[index].color;
         },
     }
+    var m = self.ortho_persp;
+    m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     m = math.matrix.transformMatrix(m, math.matrix.translate(p[0], p[1], p[2]));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(scale));
     const i_data: rhi.instanceData = .{

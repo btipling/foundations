@@ -2,6 +2,10 @@ pub const vec4 = @Vector(4, f32);
 pub const vec3 = @Vector(3, f32);
 pub const vec2 = @Vector(2, f32);
 
+pub fn vec4ToVec3(v: vec4) vec3 {
+    return .{ v[0], v[1], v[2] };
+}
+
 pub inline fn negate(v: anytype) @TypeOf(v) {
     return mul(-1, v);
 }

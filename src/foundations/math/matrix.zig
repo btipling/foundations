@@ -88,6 +88,23 @@ pub inline fn perspectiveProjection(fovy: f32, s: f32, n: f32, f: f32) matrix {
     // zig fmt: on
 }
 
+pub inline fn orthographicProjection(l: f32, r: f32, t: f32, b: f32, n: f32, f: f32) matrix {
+    // if (true) return identity();
+    const w_inv: f32 = 1.0 / (r - l);
+    const h_inv: f32 = 1.0 / (b - t);
+    const d_inv: f32 = 1.0 / (f - n);
+    // zig fmt: off
+    return .{
+        .columns = .{
+            .{       2.0 * w_inv,                  0,              0,         0 },
+            .{                 0,        2.0 * h_inv,              0,         0 },
+            .{                 0,                  0,          d_inv,         0 },
+            .{  0,   0,     0,         1 },
+        },
+    };
+    // zig fmt: on
+}
+
 pub inline fn uniformScale(s: f32) matrix {
     return scale(s, s, s);
 }

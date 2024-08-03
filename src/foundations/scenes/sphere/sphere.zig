@@ -53,7 +53,7 @@ pub fn draw(self: *Sphere, frame_time: f64) void {
     const angle_radiants: f32 = @as(f32, @floatCast(rot)) * std.math.pi * 2;
     self.objects[0].sphere.mesh.wire_mesh = self.ui_state.wireframe;
     rhi.drawObjects(self.objects[0..]);
-    var m = math.matrix.perspectiveProjection(45.0, self.aspect_ratio, 0.1, 500.0);
+    var m = math.matrix.perspectiveProjection(self.cfg.fovy, self.aspect_ratio, self.cfg.near, self.cfg.far);
     // var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     m = math.matrix.transformMatrix(m, math.matrix.translate(0, 3.5, 0));

@@ -3,15 +3,15 @@ z: f32 = 0.0,
 barycentric_coordinates: math.vector.vec3 = .{ 0, 0, 0 },
 vs: [3]vData = .{
     .{
-        .position = .{ 0.5, 0.0, 0.0 },
+        .position = .{ 0.5, 0.0, 0.0, 1.0 },
         .color = yellow,
     },
     .{
-        .position = .{ -0.5, 0.0, 0.5 },
+        .position = .{ -0.5, 0.0, 0.5, 1.0 },
         .color = yellow,
     },
     .{
-        .position = .{ -0.5, 0.0, -0.5 },
+        .position = .{ -0.5, 0.0, -0.5, 1.0 },
         .color = yellow,
     },
 },
@@ -25,7 +25,7 @@ pub const mouseVertexCapture = struct {
 };
 
 pub const vData = struct {
-    position: math.vector.vec3,
+    position: math.vector.vec4,
     color: math.vector.vec4,
 };
 
