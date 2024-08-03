@@ -150,15 +150,6 @@ fn handleInput(self: *BCTriangle) void {
     self.ui_state.z = z;
     const p4: math.vector.vec4 = .{ x, 0, z, 1.0 };
     const p3 = math.vector.vec4ToVec3(p4);
-    if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
-        std.debug.print("pos: ({d}, {d}, {d}), p: ({d}, 0, {d})\n", .{
-            p4[0],
-            p4[1],
-            p4[2],
-            x,
-            z,
-        });
-    }
     self.ui_state.barycentric_coordinates = self.triangle.barycentricCooordinate(p3);
     if (action == c.GLFW_RELEASE) {
         self.releaseCurrentMouseCapture();
@@ -183,17 +174,11 @@ fn handleInput(self: *BCTriangle) void {
         if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
             ov.dragging = true;
             self.ui_state.over_vertex = ov.*;
-            std.debug.print("pos: ({d}, {d}, {d}), p: ({d}, 0, {d})\n", .{
-                p4[0],
-                p4[1],
-                p4[2],
-                x,
-                z,
-            });
         }
         self.ui_state.vs[ov.vertex].color = bc_ui.pink;
+        const np: math.vector.vec4 = .{ x * 3.0, 0, z * 4.5, 1.0 };
         if (ov.dragging) {
-            self.ui_state.vs[ov.vertex].position = p4;
+            self.ui_state.vs[ov.vertex].position = np;
             self.renderStrip();
             self.updateTriangle();
             self.updateCircle();
@@ -281,26 +266,12 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
 fn overVertex(self: *BCTriangle, pos: math.vector.vec4) ?bc_ui.mouseVertexCapture {
     const m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
     const p: math.vector.vec2 = .{ pos[2], pos[0] };
-    // std.debug.print("pos: ({d}, {d}, {d}) p: ({d}, {d})\n", .{
-    //     pos[0],
-    //     pos[1],
-    //     pos[2],
-    //     p[0],
-    //     p[1],
-    // });
     for (self.ui_state.vs, 0..) |vs, i| {
         const v = math.matrix.transformVector(
             m,
             vs.position,
         );
         const center = .{ v[0], v[1] };
-        // std.debug.print("\tvs: ({d}, {d}, {d}) center: ({d}, {d})\n", .{
-        //     vs.position[0],
-        //     vs.position[1],
-        //     vs.position[2],
-        //     v[0],
-        //     v[1],
-        // });
         const circle: math.geometry.circle = .{ .center = center, .radius = point_scale };
         if (circle.withinCircle(.{ p[0], p[1] })) {
             return .{
