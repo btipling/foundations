@@ -6,6 +6,10 @@ pub fn vec4ToVec3(v: vec4) vec3 {
     return .{ v[0], v[1], v[2] };
 }
 
+pub fn vec3ToVec4(v: vec3) vec4 {
+    return .{ v[0], v[1], v[2], 1.0 };
+}
+
 pub inline fn negate(v: anytype) @TypeOf(v) {
     return mul(-1, v);
 }
