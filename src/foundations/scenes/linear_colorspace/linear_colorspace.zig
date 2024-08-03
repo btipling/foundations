@@ -36,7 +36,10 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
         });
         const nv = math.vector.mul(pm, p_r);
         const v = math.vector.add(offset, nv);
-        triangle_positions[pi] = v;
+        triangle_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(
+            math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far),
+            math.vector.vec3ToVec4(v),
+        ));
     }
     const triangle1: object.object = .{
         .triangle = object.triangle.init(
@@ -63,7 +66,10 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
         });
         const nv = math.vector.mul(pm, p_r);
         const v = math.vector.add(offset, nv);
-        triangle_positions[pi] = v;
+        triangle_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(
+            math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far),
+            math.vector.vec3ToVec4(v),
+        ));
     }
     var triangle2: object.object = .{
         .triangle = object.triangle.init(

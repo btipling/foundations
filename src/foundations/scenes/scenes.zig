@@ -13,7 +13,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Scenes {
         .allocator = allocator,
         .cfg = cfg,
     };
-    scenes.initScene(ui.ui_state.scene_type.math_vector_arithmetic);
+    scenes.initScene(ui.ui_state.scene_type.linear_colorspace);
     return scenes;
 }
 
