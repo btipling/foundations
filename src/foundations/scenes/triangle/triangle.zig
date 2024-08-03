@@ -7,9 +7,9 @@ cfg: *config,
 const Triangle = @This();
 
 const positions: [3][3]f32 = .{
-    .{ -0.5, 0.5, -0.5 },
-    .{ -0.5, -0.5, -0.5 },
-    .{ 0.5, -0.5, -0.5 },
+    .{ -0.5, 0.5, 0.5 },
+    .{ -0.5, -0.5, 0.5 },
+    .{ 0.5, -0.5, 0.5 },
 };
 
 const colors: [3][4]f32 = .{
@@ -35,9 +35,20 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Triangle {
 
     var data: [3]rhi.attributeData = undefined;
     var i: usize = 0;
+    const m = math.matrix.orthographicProjection(
+        0,
+        9,
+        0,
+        6,
+        cfg.near,
+        cfg.far,
+    );
     while (i < data.len) : (i += 1) {
+        const p = math.vector.vec4ToVec3(
+            math.matrix.transformVector(m, math.vector.vec3ToVec4(positions[i])),
+        );
         data[i] = .{
-            .position = positions[i],
+            .position = p,
             .color = colors[i],
         };
     }
@@ -65,3 +76,4 @@ const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const ui = @import("../../ui/ui.zig");
 const config = @import("../../config/config.zig");
+const math = @import("../../math/math.zig");
