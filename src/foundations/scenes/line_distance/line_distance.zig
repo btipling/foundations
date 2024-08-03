@@ -6,10 +6,11 @@ line: math.geometry.line = undefined,
 circles: [num_points]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
 cfg: *config,
+ortho_persp: math.matrix,
 
 const LineDistance = @This();
 
-const num_triangles: usize = 1_000;
+const num_triangles: usize = 20_000;
 const num_points: usize = 4;
 const num_points_interpolated: usize = 2;
 const num_triangles_f: f32 = @floatFromInt(num_triangles);
@@ -33,10 +34,19 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *LineDistance {
     const bct = allocator.create(LineDistance) catch @panic("OOM");
     const ui_state: line_distance_ui = .{};
+    const ortho_persp = math.matrix.orthographicProjection(
+        0,
+        4.5,
+        0,
+        3,
+        cfg.near,
+        cfg.far,
+    );
     bct.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
         .cfg = cfg,
+        .ortho_persp = ortho_persp,
     };
     bct.updateLine();
     bct.renderStrip();
@@ -92,7 +102,7 @@ pub fn renderStrip(self: *LineDistance) void {
     for (0..num_points_interpolated * num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
         const res = math.interpolation.linear(t / 1_000.0, positions[0..num_points_interpolated], times[0..num_points_interpolated]);
-        var m = math.matrix.leftHandedXUpToNDC();
+        var m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
         m = math.matrix.transformMatrix(m, math.matrix.translate(res[0], res[1], res[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
         const i_data: rhi.instanceData = .{
@@ -126,12 +136,13 @@ pub fn renderConnectionStrip(self: *LineDistance) void {
     const p1 = self.line.vectorToPoint(p0);
     positions[0] = .{ p0[0], p0[1], p0[2], 1.0 };
     positions[1] = .{ p1[0], p1[1], p1[2], 1.0 };
+    std.debug.print("wtf bro ({any})\n", .{positions});
     times[0] = 0;
     times[1] = 1;
     for (0..num_points_interpolated * num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
         const res = math.interpolation.linear(t / 1_000.0, positions[0..num_points_interpolated], times[0..num_points_interpolated]);
-        var m = math.matrix.leftHandedXUpToNDC();
+        var m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
         m = math.matrix.transformMatrix(m, math.matrix.translate(res[0], res[1], res[2]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
         const i_data: rhi.instanceData = .{
@@ -171,18 +182,18 @@ pub fn draw(self: *LineDistance, _: f64) void {
 
 fn handleInput(self: *LineDistance) void {
     const input = ui.input.getReadOnly() orelse return;
-    const x = input.mouse_x orelse return;
-    const y = input.mouse_y orelse return;
+    const x = input.coord_x orelse return;
+    const z = input.coord_z orelse return;
     const action = input.mouse_action;
     const button = input.mouse_button;
     self.ui_state.x = x;
-    self.ui_state.y = y;
+    self.ui_state.z = z;
     if (action == c.GLFW_RELEASE) {
         self.releaseCurrentMouseCapture();
         return;
     }
     blk: {
-        const ovi = self.overVertex(x, y);
+        const ovi = self.overVertex(x, z);
         const ov = self.ui_state.over_vertex orelse {
             self.ui_state.over_vertex = ovi;
             break :blk;
@@ -203,14 +214,14 @@ fn handleInput(self: *LineDistance) void {
         }
         self.ui_state.vs[ov.vertex].color = line_distance_ui.pink;
         if (ov.dragging) {
-            self.ui_state.vs[ov.vertex].position = .{ x, y, 0 };
+            self.ui_state.vs[ov.vertex].position = .{ x, 0, z };
             self.renderStrip();
             self.updateLine();
         }
         self.updatePointData(ov.vertex);
     } else if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
         self.ui_state.point_vector = .{
-            .position = .{ x, y, 0 },
+            .position = .{ x, 0, z },
             .color = line_distance_ui.green,
         };
         self.renderStrip();
@@ -241,7 +252,7 @@ fn releaseCurrentMouseCapture(self: *LineDistance) void {
 }
 
 fn updatePointIData(self: *LineDistance, index: usize) void {
-    var m = math.matrix.leftHandedXUpToNDC();
+    var m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
     var p: math.vector.vec3 = undefined;
     var color: math.vector.vec4 = undefined;
     var scale: f32 = 0;

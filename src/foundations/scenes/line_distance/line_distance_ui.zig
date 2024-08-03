@@ -1,5 +1,5 @@
 x: f32 = 0.0,
-y: f32 = 0.0,
+z: f32 = 0.0,
 distance: f32 = 0.0,
 point_vector: ?vData = null,
 origin_point: vData = .{
