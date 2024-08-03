@@ -10,7 +10,7 @@ ortho_persp: math.matrix,
 
 const LineDistance = @This();
 
-const num_triangles: usize = 20_000;
+const num_triangles: usize = 40_000;
 const num_points: usize = 4;
 const num_points_interpolated: usize = 2;
 const num_triangles_f: f32 = @floatFromInt(num_triangles);
@@ -93,8 +93,8 @@ pub fn renderStrip(self: *LineDistance) void {
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
     var times: [num_points_interpolated]f32 = undefined;
-    const p0 = self.line.pointOnLine(-2);
-    const p1 = self.line.pointOnLine(2);
+    const p0 = self.line.pointOnLine(-2.75);
+    const p1 = self.line.pointOnLine(2.75);
     positions[0] = .{ p0[0], p0[1], p0[2], 1.0 };
     positions[1] = .{ p1[0], p1[1], p1[2], 1.0 };
     times[0] = 0;
@@ -136,7 +136,6 @@ pub fn renderConnectionStrip(self: *LineDistance) void {
     const p1 = self.line.vectorToPoint(p0);
     positions[0] = .{ p0[0], p0[1], p0[2], 1.0 };
     positions[1] = .{ p1[0], p1[1], p1[2], 1.0 };
-    std.debug.print("wtf bro ({any})\n", .{positions});
     times[0] = 0;
     times[1] = 1;
     for (0..num_points_interpolated * num_triangles) |i| {
@@ -214,14 +213,14 @@ fn handleInput(self: *LineDistance) void {
         }
         self.ui_state.vs[ov.vertex].color = line_distance_ui.pink;
         if (ov.dragging) {
-            self.ui_state.vs[ov.vertex].position = .{ x, 0, z };
+            self.ui_state.vs[ov.vertex].position = .{ x * 1.5, 0, z * 2.25 };
             self.renderStrip();
             self.updateLine();
         }
         self.updatePointData(ov.vertex);
     } else if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
         self.ui_state.point_vector = .{
-            .position = .{ x, 0, z },
+            .position = .{ x * 1.5, 0, z * 2.25 },
             .color = line_distance_ui.green,
         };
         self.renderStrip();
@@ -297,9 +296,14 @@ fn updatePointData(self: *LineDistance, index: usize) void {
 }
 
 fn overVertex(self: *LineDistance, x: f32, z: f32) ?line_distance_ui.mouseVertexCapture {
-    const p = math.geometry.xUpLeftHandedTo2D(.{ x, 0.0, z });
+    const m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
+    const p: math.vector.vec2 = .{ z, x };
     for (self.ui_state.vs, 0..) |vs, i| {
-        const center = math.geometry.xUpLeftHandedTo2D(vs.position);
+        const v = math.matrix.transformVector(
+            m,
+            math.vector.vec3ToVec4(vs.position),
+        );
+        const center = .{ v[0], v[1] };
         const circle: math.geometry.circle = .{ .center = center, .radius = point_scale };
         if (circle.withinCircle(p)) {
             return .{
