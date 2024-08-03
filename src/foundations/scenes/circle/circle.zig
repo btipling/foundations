@@ -22,7 +22,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Circle {
 
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    var m = math.matrix.leftHandedXUpToNDC();
+    var m = math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far);
+    m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(0.5));
     var i_data: [1]rhi.instanceData = .{
         .{
