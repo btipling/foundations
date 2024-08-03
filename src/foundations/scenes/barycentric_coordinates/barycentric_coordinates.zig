@@ -142,20 +142,30 @@ pub fn draw(self: *BCTriangle, _: f64) void {
 
 fn handleInput(self: *BCTriangle) void {
     const input = ui.input.getReadOnly() orelse return;
-    const x = input.mouse_x orelse return;
-    const y = input.mouse_y orelse return;
+    const x = input.coord_x orelse return;
+    const z = input.coord_z orelse return;
     const action = input.mouse_action;
     const button = input.mouse_button;
     self.ui_state.x = x;
-    self.ui_state.y = y;
-    const p: math.vector.vec3 = .{ x, y, 0 };
-    self.ui_state.barycentric_coordinates = self.triangle.barycentricCooordinate(p);
+    self.ui_state.z = z;
+    const p4: math.vector.vec4 = .{ x, 0, z, 1.0 };
+    const p3 = math.vector.vec4ToVec3(p4);
+    if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
+        std.debug.print("pos: ({d}, {d}, {d}), p: ({d}, 0, {d})\n", .{
+            p4[0],
+            p4[1],
+            p4[2],
+            x,
+            z,
+        });
+    }
+    self.ui_state.barycentric_coordinates = self.triangle.barycentricCooordinate(p3);
     if (action == c.GLFW_RELEASE) {
         self.releaseCurrentMouseCapture();
         return;
     }
     blk: {
-        const ovi = self.overVertex(x, y);
+        const ovi = self.overVertex(p4);
         const ov = self.ui_state.over_vertex orelse {
             self.ui_state.over_vertex = ovi;
             break :blk;
@@ -173,10 +183,17 @@ fn handleInput(self: *BCTriangle) void {
         if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
             ov.dragging = true;
             self.ui_state.over_vertex = ov.*;
+            std.debug.print("pos: ({d}, {d}, {d}), p: ({d}, 0, {d})\n", .{
+                p4[0],
+                p4[1],
+                p4[2],
+                x,
+                z,
+            });
         }
         self.ui_state.vs[ov.vertex].color = bc_ui.pink;
         if (ov.dragging) {
-            self.ui_state.vs[ov.vertex].position = .{ x, y, 0, 1.0 }; // TODO: I borked it
+            self.ui_state.vs[ov.vertex].position = p4;
             self.renderStrip();
             self.updateTriangle();
             self.updateCircle();
@@ -261,17 +278,27 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
     }
 }
 
-fn overVertex(self: *BCTriangle, x: f32, y: f32) ?bc_ui.mouseVertexCapture {
-    const p: math.vector.vec2 = .{ x, y };
+fn overVertex(self: *BCTriangle, pos: math.vector.vec4) ?bc_ui.mouseVertexCapture {
     const m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
+    const p: math.vector.vec4 = math.matrix.transformVector(
+        m,
+        pos,
+    );
     for (self.ui_state.vs, 0..) |vs, i| {
         const v = math.matrix.transformVector(
             m,
             vs.position,
         );
         const center = .{ v[0], v[1] };
+        // std.debug.print("\tvs: ({d}, {d}, {d}) center: ({d}, {d})\n", .{
+        //     vs.position[0],
+        //     vs.position[1],
+        //     vs.position[2],
+        //     v[0],
+        //     v[1],
+        // });
         const circle: math.geometry.circle = .{ .center = center, .radius = point_scale };
-        if (circle.withinCircle(p)) {
+        if (circle.withinCircle(.{ p[0], p[1] })) {
             return .{
                 .vertex = i,
             };
