@@ -149,7 +149,8 @@ fn handleInput(self: *BCTriangle) void {
     self.ui_state.x = x;
     self.ui_state.z = z;
     const p4: math.vector.vec4 = .{ x, 0, z, 1.0 };
-    const p3 = math.vector.vec4ToVec3(p4);
+    const np: math.vector.vec4 = .{ x * 3.0, 0, z * 4.5, 1.0 };
+    const p3 = math.vector.vec4ToVec3(np);
     self.ui_state.barycentric_coordinates = self.triangle.barycentricCooordinate(p3);
     if (action == c.GLFW_RELEASE) {
         self.releaseCurrentMouseCapture();
@@ -176,7 +177,6 @@ fn handleInput(self: *BCTriangle) void {
             self.ui_state.over_vertex = ov.*;
         }
         self.ui_state.vs[ov.vertex].color = bc_ui.pink;
-        const np: math.vector.vec4 = .{ x * 3.0, 0, z * 4.5, 1.0 };
         if (ov.dragging) {
             self.ui_state.vs[ov.vertex].position = np;
             self.renderStrip();
