@@ -4,9 +4,10 @@ grid_y_translate: math.vector.vec3 = .{ -67, -2500, -5000 },
 grid_z_scale: math.vector.vec3 = .{ 5000, 0, 1 },
 grid_z_translate: math.vector.vec3 = .{ -67, -600, -2578 },
 grid_z_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 5.334, std.math.pi / 2.0 },
-cube_translate: math.vector.vec3 = .{ -67, -600, -2578 },
+cube_translate: math.vector.vec3 = .{ 0.0, 10.5, 0.0 },
 cube_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 5.334, std.math.pi / 2.0 },
 grid_updated: bool = false,
+cube_updated: bool = false,
 
 const pr_ui = @This();
 
@@ -155,6 +156,60 @@ pub fn draw(self: *pr_ui) void {
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
+        c.igTreePop();
+    }
+    if (c.igTreeNode_Str("cube translate")) {
+        if (c.igSliderFloat(
+            "x",
+            &self.cube_translate[0],
+            -2500,
+            2500,
+            "%.3f",
+            c.ImGuiSliderFlags_None,
+        )) self.cube_updated = true;
+        if (c.igSliderFloat(
+            "y",
+            &self.cube_translate[1],
+            -2500,
+            2500,
+            "%.3f",
+            c.ImGuiSliderFlags_None,
+        )) self.cube_updated = true;
+        if (c.igSliderFloat(
+            "z",
+            &self.cube_translate[2],
+            -5000,
+            5000,
+            "%.3f",
+            c.ImGuiSliderFlags_None,
+        )) self.cube_updated = true;
+        c.igTreePop();
+    }
+    if (c.igTreeNode_Str("cube rotate")) {
+        if (c.igSliderFloat(
+            "x",
+            &self.cube_rot[0],
+            0,
+            std.math.pi * 2,
+            "%.3f",
+            c.ImGuiSliderFlags_None,
+        )) self.cube_updated = true;
+        if (c.igSliderFloat(
+            "y",
+            &self.cube_rot[1],
+            0,
+            std.math.pi * 2,
+            "%.3f",
+            c.ImGuiSliderFlags_None,
+        )) self.cube_updated = true;
+        if (c.igSliderFloat(
+            "z",
+            &self.cube_rot[2],
+            0,
+            std.math.pi * 2,
+            "%.3f",
+            c.ImGuiSliderFlags_None,
+        )) self.cube_updated = true;
         c.igTreePop();
     }
     c.igEnd();

@@ -48,6 +48,7 @@ pub fn deinit(self: *LookAt, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *LookAt, _: f64) void {
     if (self.ui_state.grid_updated) self.updateGrid();
+    if (self.ui_state.cube_updated) self.updateCube();
     self.handleInput();
     {
         const objects: [1]object.object = .{self.quad};
@@ -69,6 +70,18 @@ fn handleInput(self: *LookAt) void {
     _ = self;
 }
 
+pub fn deleteCube(self: *LookAt) void {
+    var objects: [1]object.object = .{self.cube};
+    rhi.deleteObjects(objects[0..]);
+    self.cube = undefined;
+}
+
+pub fn updateCube(self: *LookAt) void {
+    self.ui_state.cube_updated = false;
+    self.deleteCube();
+    self.renderCube();
+}
+
 pub fn renderCube(self: *LookAt) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, cube_vertex_shader, cube_frag_shader);
@@ -80,6 +93,17 @@ pub fn renderCube(self: *LookAt) void {
         ),
     };
     var m = math.matrix.transformMatrix(self.mvp, math.matrix.translate(0.0, 10.5, 0.0));
+    m = math.matrix.transformMatrix(
+        m,
+        math.matrix.translate(
+            self.ui_state.cube_translate[0],
+            self.ui_state.cube_translate[1],
+            self.ui_state.cube_translate[2],
+        ),
+    );
+    m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.cube_rot[0]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.cube_rot[1]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.cube_rot[2]));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(1));
     rhi.setUniformMatrix(program, "f_transform", m);
     self.cube = cube;
