@@ -7,8 +7,9 @@ mvp: math.matrix,
 
 const LookAt = @This();
 
-const num_grid_lines: usize = 1;
-const grid_len = 2;
+const num_grid_lines: usize = 50;
+const grid_len: usize = 2;
+const grid_increments: usize = 25;
 
 const grid_vertex_shader: []const u8 = @embedFile("look_at_grid_vertex.glsl");
 const grid_frag_shader: []const u8 = @embedFile("look_at_grid_frag.glsl");
@@ -106,13 +107,12 @@ pub fn renderGrid(self: *LookAt) void {
     var i_datas: [num_grid_lines]rhi.instanceData = undefined;
     for (0..num_grid_lines) |i| {
         const grid_pos: f32 = @floatFromInt(i);
-        _ = grid_pos;
         var m = math.matrix.transformMatrix(
             self.mvp,
             math.matrix.translate(
                 self.ui_state.grid_translate[0],
                 self.ui_state.grid_translate[1],
-                self.ui_state.grid_translate[2],
+                self.ui_state.grid_translate[2] + grid_pos * grid_increments,
             ),
         );
         m = math.matrix.transformMatrix(m, math.matrix.scale(

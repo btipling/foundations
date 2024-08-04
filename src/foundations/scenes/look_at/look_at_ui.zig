@@ -1,6 +1,6 @@
 camera: usize = 0,
 grid_scale: math.vector.vec3 = .{ 0, 5000, 0.5 },
-grid_translate: math.vector.vec3 = .{ -30, -2500, -100 },
+grid_translate: math.vector.vec3 = .{ -60, -2500, -600 },
 grid_updated: bool = false,
 
 const pr_ui = @This();
@@ -64,8 +64,8 @@ pub fn draw(self: *pr_ui) void {
         if (c.igSliderFloat(
             "z",
             &self.grid_translate[2],
-            -100,
-            100,
+            -1000,
+            1000,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
