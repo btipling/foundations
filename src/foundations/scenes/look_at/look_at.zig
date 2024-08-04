@@ -126,7 +126,7 @@ pub fn renderGrid(self: *LookAt) void {
             .t_column1 = m.columns[1],
             .t_column2 = m.columns[2],
             .t_column3 = m.columns[3],
-            .color = .{ 1, 1, 1, 1 },
+            .color = .{ 0.15, 0.15, 0.25, 1 },
         };
         i_datas[i] = i_data;
     }
