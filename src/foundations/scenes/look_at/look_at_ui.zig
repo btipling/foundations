@@ -1,9 +1,9 @@
 camera: usize = 0,
 grid_y_scale: math.vector.vec3 = .{ 5000, 0, 1 },
-grid_y_translate: math.vector.vec3 = .{ -125, -2500, -650 },
-grid_z_scale: math.vector.vec3 = .{ 5000, 0, 0.24 },
-grid_z_translate: math.vector.vec3 = .{ -80, 100, -2312 },
-grid_z_rot: math.vector.vec3 = .{ 1.588, 0, 1.543 },
+grid_y_translate: math.vector.vec3 = .{ -144, -2500, -5000 },
+grid_z_scale: math.vector.vec3 = .{ 5000, 0, 0.201 },
+grid_z_translate: math.vector.vec3 = .{ -12, 83, -2578 },
+grid_z_rot: math.vector.vec3 = .{ 1.598, 0, 1.570 },
 // grid_z_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 0, std.math.pi / 2.0 },
 grid_updated: bool = false,
 
