@@ -7,7 +7,7 @@ mvp: math.matrix,
 
 const LookAt = @This();
 
-const num_grid_lines: usize = 50;
+const num_grid_lines: usize = 10000;
 const grid_len: usize = 2;
 const grid_increments: usize = 25;
 

@@ -106,16 +106,16 @@ pub fn draw(self: *pr_ui) void {
         if (c.igSliderFloat(
             "x",
             &self.grid_z_translate[0],
-            -100,
-            0,
+            -2500,
+            2500,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
         if (c.igSliderFloat(
             "y",
             &self.grid_z_translate[1],
-            50,
-            150,
+            -2500,
+            2500,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
@@ -133,8 +133,8 @@ pub fn draw(self: *pr_ui) void {
         if (c.igSliderFloat(
             "x",
             &self.grid_z_rot[0],
-            1.45,
-            1.75,
+            0,
+            std.math.pi * 2,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
@@ -149,8 +149,8 @@ pub fn draw(self: *pr_ui) void {
         if (c.igSliderFloat(
             "z",
             &self.grid_z_rot[2],
-            1.45,
-            1.75,
+            0,
+            std.math.pi * 2,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
