@@ -7,7 +7,7 @@ mvp: math.matrix,
 
 const LookAt = @This();
 
-const num_grid_lines: usize = 50;
+const num_grid_lines: usize = 1;
 const grid_len: usize = 2;
 const grid_increments: usize = 25;
 
@@ -104,31 +104,55 @@ pub fn updateGrid(self: *LookAt) void {
 pub fn renderGrid(self: *LookAt) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, grid_vertex_shader, grid_frag_shader);
-    var i_datas: [num_grid_lines]rhi.instanceData = undefined;
-    for (0..num_grid_lines) |i| {
-        const grid_pos: f32 = @floatFromInt(i);
-        var m = math.matrix.transformMatrix(
-            self.mvp,
-            math.matrix.translate(
-                self.ui_state.grid_translate[0],
-                self.ui_state.grid_translate[1],
-                self.ui_state.grid_translate[2] + grid_pos * grid_increments,
-            ),
-        );
-        m = math.matrix.transformMatrix(m, math.matrix.scale(
-            self.ui_state.grid_scale[0],
-            self.ui_state.grid_scale[1],
-            self.ui_state.grid_scale[2],
-        ));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
-        const i_data: rhi.instanceData = .{
-            .t_column0 = m.columns[0],
-            .t_column1 = m.columns[1],
-            .t_column2 = m.columns[2],
-            .t_column3 = m.columns[3],
-            .color = .{ 0.15, 0.15, 0.25, 1 },
-        };
-        i_datas[i] = i_data;
+    var i_datas: [num_grid_lines * 2]rhi.instanceData = undefined;
+    var i_data_i: usize = 0;
+    for (0..2) |axis| {
+        for (0..num_grid_lines) |i| {
+            const grid_pos: f32 = @floatFromInt(i);
+            var m = self.mvp;
+            if (axis == 0) {
+                m = math.matrix.transformMatrix(
+                    m,
+                    math.matrix.translate(
+                        self.ui_state.grid_y_translate[0],
+                        self.ui_state.grid_y_translate[1],
+                        self.ui_state.grid_y_translate[2] + grid_pos * grid_increments,
+                    ),
+                );
+                m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
+                m = math.matrix.transformMatrix(m, math.matrix.scale(
+                    self.ui_state.grid_y_scale[0],
+                    self.ui_state.grid_y_scale[1],
+                    self.ui_state.grid_y_scale[2],
+                ));
+            } else {
+                m = math.matrix.transformMatrix(
+                    m,
+                    math.matrix.translate(
+                        self.ui_state.grid_z_translate[0],
+                        self.ui_state.grid_z_translate[1],
+                        self.ui_state.grid_z_translate[2] + grid_pos * grid_increments,
+                    ),
+                );
+                m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.grid_z_rot[0]));
+                m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.grid_z_rot[1]));
+                m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.grid_z_rot[2]));
+                m = math.matrix.transformMatrix(m, math.matrix.scale(
+                    self.ui_state.grid_z_scale[0],
+                    self.ui_state.grid_z_scale[1],
+                    self.ui_state.grid_z_scale[2],
+                ));
+            }
+            const i_data: rhi.instanceData = .{
+                .t_column0 = m.columns[0],
+                .t_column1 = m.columns[1],
+                .t_column2 = m.columns[2],
+                .t_column3 = m.columns[3],
+                .color = .{ 0.15, 0.15, 0.25, 1 },
+            };
+            i_datas[i_data_i] = i_data;
+            i_data_i += 1;
+        }
     }
     const quad: object.object = .{
         .quad = object.quad.initInstanced(
