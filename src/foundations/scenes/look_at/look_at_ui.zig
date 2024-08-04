@@ -1,6 +1,6 @@
 camera: usize = 0,
-grid_scale: math.vector.vec3 = .{ 0, 0, 0 },
-grid_translate: math.vector.vec3 = .{ 0, 0, 0 },
+grid_scale: math.vector.vec3 = .{ 115, 500, 0.5 },
+grid_translate: math.vector.vec3 = .{ -21, 18, -55 },
 grid_updated: bool = false,
 
 const pr_ui = @This();
@@ -22,7 +22,7 @@ pub fn draw(self: *pr_ui) void {
             "x",
             &self.grid_scale[0],
             0.5,
-            100,
+            2500,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
@@ -30,7 +30,7 @@ pub fn draw(self: *pr_ui) void {
             "y",
             &self.grid_scale[1],
             0.5,
-            100,
+            2500,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
@@ -38,7 +38,7 @@ pub fn draw(self: *pr_ui) void {
             "z",
             &self.grid_scale[2],
             0.5,
-            100,
+            500,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
@@ -48,24 +48,24 @@ pub fn draw(self: *pr_ui) void {
         if (c.igSliderFloat(
             "x",
             &self.grid_translate[0],
-            -25,
-            25,
+            -525,
+            525,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
         if (c.igSliderFloat(
             "y",
             &self.grid_translate[1],
-            -25,
-            25,
+            0,
+            525,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;
         if (c.igSliderFloat(
             "z",
             &self.grid_translate[2],
-            -25,
-            25,
+            -525,
+            525,
             "%.3f",
             c.ImGuiSliderFlags_None,
         )) self.grid_updated = true;

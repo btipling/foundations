@@ -96,7 +96,8 @@ pub fn deleteGrid(self: *LookAt) void {
 
 pub fn updateGrid(self: *LookAt) void {
     self.ui_state.grid_updated = false;
-    std.debug.print("updated grid\n", .{});
+    self.deleteGrid();
+    self.renderGrid();
 }
 
 pub fn renderGrid(self: *LookAt) void {
@@ -105,11 +106,21 @@ pub fn renderGrid(self: *LookAt) void {
     var i_datas: [num_grid_lines]rhi.instanceData = undefined;
     for (0..num_grid_lines) |i| {
         const grid_pos: f32 = @floatFromInt(i);
+        _ = grid_pos;
         var m = math.matrix.transformMatrix(
             self.mvp,
-            math.matrix.translate(grid_pos, 10, 0.5),
+            math.matrix.translate(
+                self.ui_state.grid_translate[0],
+                self.ui_state.grid_translate[1],
+                self.ui_state.grid_translate[2],
+            ),
         );
-        m = math.matrix.transformMatrix(m, math.matrix.scale(2, 100, 2));
+        m = math.matrix.transformMatrix(m, math.matrix.scale(
+            self.ui_state.grid_scale[0],
+            self.ui_state.grid_scale[1],
+            self.ui_state.grid_scale[2],
+        ));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
         const i_data: rhi.instanceData = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
