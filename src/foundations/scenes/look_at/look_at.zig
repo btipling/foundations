@@ -27,7 +27,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
     const ui_state: look_at_ui = .{};
     const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
     const mvp = math.matrix.transformMatrix(
-        math.matrix.perspectiveProjection(cfg.fovy, s, cfg.near, cfg.far),
+        math.matrix.perspectiveProjection(cfg.fovy, s, 1, 1000),
         math.matrix.leftHandedXUpToNDC(),
     );
     lkt.* = .{
