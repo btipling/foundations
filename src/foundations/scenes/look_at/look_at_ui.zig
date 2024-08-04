@@ -1,10 +1,11 @@
 camera: usize = 0,
 grid_y_scale: math.vector.vec3 = .{ 5000, 0, 1 },
-grid_y_translate: math.vector.vec3 = .{ -144, -2500, -5000 },
-grid_z_scale: math.vector.vec3 = .{ 5000, 0, 0.201 },
-grid_z_translate: math.vector.vec3 = .{ -12, 83, -2578 },
-grid_z_rot: math.vector.vec3 = .{ 1.598, 0, 1.570 },
-// grid_z_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 0, std.math.pi / 2.0 },
+grid_y_translate: math.vector.vec3 = .{ -67, -2500, -5000 },
+grid_z_scale: math.vector.vec3 = .{ 5000, 0, 1 },
+grid_z_translate: math.vector.vec3 = .{ -67, -600, -2578 },
+grid_z_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 5.334, std.math.pi / 2.0 },
+cube_translate: math.vector.vec3 = .{ -67, -600, -2578 },
+cube_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 5.334, std.math.pi / 2.0 },
 grid_updated: bool = false,
 
 const pr_ui = @This();

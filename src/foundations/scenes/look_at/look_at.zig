@@ -79,11 +79,7 @@ pub fn renderCube(self: *LookAt) void {
             .{ 1, 0, 1, 1 },
         ),
     };
-    var m = math.matrix.transformMatrix(
-        self.mvp,
-        math.matrix.translate(0.5, 0.5, 0.5),
-    );
-    m = math.matrix.transformMatrix(m, math.matrix.translate(0.0, 10.5, 0.0));
+    var m = math.matrix.transformMatrix(self.mvp, math.matrix.translate(0.0, 10.5, 0.0));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(1));
     rhi.setUniformMatrix(program, "f_transform", m);
     self.cube = cube;
@@ -130,8 +126,8 @@ pub fn renderGrid(self: *LookAt) void {
                     m,
                     math.matrix.translate(
                         self.ui_state.grid_z_translate[0],
-                        self.ui_state.grid_z_translate[1],
-                        self.ui_state.grid_z_translate[2] + grid_pos * grid_increments,
+                        self.ui_state.grid_z_translate[1] + grid_pos * grid_increments,
+                        self.ui_state.grid_z_translate[2],
                     ),
                 );
                 m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.grid_z_rot[0]));
