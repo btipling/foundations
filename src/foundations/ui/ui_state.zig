@@ -12,6 +12,7 @@ pub const scene_type = enum(usize) {
     unit_circle,
     barycentric_coordinates,
     line_distance,
+    look_at,
 };
 
 pub const scenes = union(scene_type) {
@@ -28,6 +29,7 @@ pub const scenes = union(scene_type) {
     unit_circle: *unit_circle,
     barycentric_coordinates: *barycentric_coordinates,
     line_distance: *line_distance,
+    look_at: *look_at,
 };
 
 pub const scene_nav_type = enum {
@@ -54,3 +56,4 @@ const line = @import("../scenes/line/line.zig");
 const unit_circle = @import("../scenes/unit_circle/unit_circle.zig");
 const barycentric_coordinates = @import("../scenes/barycentric_coordinates/barycentric_coordinates.zig");
 const line_distance = @import("../scenes/line_distance/line_distance.zig");
+const look_at = @import("../scenes/look_at/look_at.zig");
