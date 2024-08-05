@@ -17,6 +17,7 @@ const num_grid_lines: usize = 10000;
 const grid_len: usize = 2;
 const grid_increments: usize = 25;
 const world_up: math.vector.vec3 = .{ 1, 0, 0 };
+const world_right: math.vector.vec3 = .{ 0, 0, 1 };
 
 const grid_vertex_shader: []const u8 = @embedFile("look_at_grid_vertex.glsl");
 const grid_frag_shader: []const u8 = @embedFile("look_at_grid_frag.glsl");
@@ -108,12 +109,23 @@ fn handleCursor(self: *LookAt, new_cursor_coords: math.vector.vec3) void {
         self.cursor_pos = new_cursor_coords;
         return;
     }
-    std.debug.print("new cursor pos ({d}, {d}, {d})\n", .{
-        new_cursor_coords[0],
-        new_cursor_coords[1],
-        new_cursor_coords[2],
-    });
+    const z_change = self.cursor_pos[2] - new_cursor_coords[2];
+    var a: math.rotation.AxisAngle = .{
+        .angle = z_change,
+        .axis = world_up,
+    };
+    var q = math.rotation.axisAngleToQuat(a);
+    self.camera_orientation = math.vector.normalize(math.rotation.multiplyQuaternions(self.camera_orientation, q));
+    const x_change = self.cursor_pos[0] - new_cursor_coords[0];
+    a = .{
+        .angle = x_change,
+        .axis = world_right,
+    };
+    q = math.rotation.axisAngleToQuat(a);
+    self.camera_orientation = math.vector.normalize(math.rotation.multiplyQuaternions(self.camera_orientation, q));
     self.cursor_pos = new_cursor_coords;
+    self.updateCameraMatrix();
+    self.updateCamera();
 }
 
 fn toggleCursor(self: *LookAt) void {
@@ -141,8 +153,7 @@ fn orientationAngle(self: *LookAt) f32 {
 
 fn moveCameraUp(self: *LookAt) void {
     const speed: f32 = 0.01;
-    const camera_orientation = world_up;
-    const orientation_vector = math.vector.normalize(camera_orientation);
+    const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
     const velocity = math.vector.mul(speed, orientation_vector);
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
@@ -151,33 +162,8 @@ fn moveCameraUp(self: *LookAt) void {
 
 fn moveCameraDown(self: *LookAt) void {
     const speed: f32 = 0.01;
-    const camera_orientation = world_up;
-    const orientation_vector = math.vector.normalize(camera_orientation);
+    const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
     const velocity = math.vector.negate(math.vector.mul(speed, orientation_vector));
-    self.camera_pos = math.vector.add(self.camera_pos, velocity);
-    self.updateCameraMatrix();
-    self.updateCamera();
-}
-
-fn moveCameraLeft(self: *LookAt) void {
-    const speed: f32 = 0.01;
-    const direction_vector = math.vector.normalize(self.camera_pos);
-    const camera_orientation = world_up;
-    const orientation_vector = math.vector.normalize(camera_orientation);
-    const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
-    const velocity = math.vector.mul(speed, left_vector);
-    self.camera_pos = math.vector.add(self.camera_pos, velocity);
-    self.updateCameraMatrix();
-    self.updateCamera();
-}
-
-fn moveCameraRight(self: *LookAt) void {
-    const speed: f32 = 0.01;
-    const direction_vector = math.vector.normalize(self.camera_pos);
-    const camera_orientation = world_up;
-    const orientation_vector = math.vector.normalize(camera_orientation);
-    const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
-    const velocity = math.vector.negate(math.vector.mul(speed, left_vector));
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
     self.updateCamera();
@@ -185,8 +171,10 @@ fn moveCameraRight(self: *LookAt) void {
 
 fn moveCameraForward(self: *LookAt) void {
     const speed: f32 = 0.01;
-    const direction_vector = math.vector.normalize(self.camera_pos);
-    const velocity = math.vector.mul(speed, direction_vector);
+    const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
+    const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
+    const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
+    const velocity = math.vector.mul(speed, left_vector);
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
     self.updateCamera();
@@ -194,7 +182,27 @@ fn moveCameraForward(self: *LookAt) void {
 
 fn moveCameraBackward(self: *LookAt) void {
     const speed: f32 = 0.01;
-    const direction_vector = math.vector.normalize(self.camera_pos);
+    const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
+    const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
+    const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
+    const velocity = math.vector.negate(math.vector.mul(speed, left_vector));
+    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    self.updateCameraMatrix();
+    self.updateCamera();
+}
+
+fn moveCameraRight(self: *LookAt) void {
+    const speed: f32 = 0.01;
+    const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
+    const velocity = math.vector.mul(speed, direction_vector);
+    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    self.updateCameraMatrix();
+    self.updateCamera();
+}
+
+fn moveCameraLeft(self: *LookAt) void {
+    const speed: f32 = 0.01;
+    const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
     const velocity = math.vector.negate(math.vector.mul(speed, direction_vector));
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
@@ -226,6 +234,7 @@ pub fn updateCameraMatrix(self: *LookAt) void {
         self.camera_pos[1],
         self.camera_pos[2],
     ));
+    m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(self.camera_orientation));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(0.1));
     self.camera_matrix = m;
 }
