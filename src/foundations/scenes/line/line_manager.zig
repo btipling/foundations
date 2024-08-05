@@ -310,7 +310,7 @@ pub fn renderQuads(self: *Manager) void {
         const rot = math.rotation.cartesian2DToPolarCoordinates(_2d_x_y);
         const angle = rot[1];
         const y_basis: math.vector.vec3 = .{ 0, 1, 0 };
-        const q = math.rotation.axisAngleToQuat(angle, y_basis);
+        const q = math.rotation.axisAngleToQuat(.{ .angle = angle, .axis = y_basis });
         const qn = math.vector.normalize(q);
         var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.cfg.near, self.cfg.far);
         m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());

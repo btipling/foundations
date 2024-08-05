@@ -82,19 +82,19 @@ pub fn slerp(p: rotation.Quat, q: rotation.Quat, u: f32) rotation.Quat {
 const epsilon = 0.0001;
 
 test slerp {
-    const a_p: rotation.Quat = rotation.axisAngleToQuat(
-        rotation.degreesToRadians(0),
-        @as(vector.vec3, .{ 0, 0, 1 }),
-    );
-    const a_q: rotation.Quat = rotation.axisAngleToQuat(
-        rotation.degreesToRadians(90.0),
-        @as(vector.vec3, .{ 0, 0, 1 }),
-    );
+    const a_p: rotation.Quat = rotation.axisAngleToQuat(.{
+        .angle = rotation.degreesToRadians(0),
+        .axis = @as(vector.vec3, .{ 0, 0, 1 }),
+    });
+    const a_q: rotation.Quat = rotation.axisAngleToQuat(.{
+        .angle = rotation.degreesToRadians(90.0),
+        .axis = @as(vector.vec3, .{ 0, 0, 1 }),
+    });
     const a_t: f32 = 0.5;
-    const a_e: rotation.Quat = vector.normalize(rotation.axisAngleToQuat(
-        rotation.degreesToRadians(45.0),
-        @as(vector.vec3, .{ 0, 0, 1 }),
-    ));
+    const a_e: rotation.Quat = vector.normalize(rotation.axisAngleToQuat(.{
+        .angle = rotation.degreesToRadians(45.0),
+        .axis = @as(vector.vec3, .{ 0, 0, 1 }),
+    }));
     const a_r = slerp(a_p, a_q, a_t);
     try std.testing.expect(float.equal(a_e[0], a_r[0], epsilon));
     try std.testing.expect(float.equal(a_e[1], a_r[1], epsilon));

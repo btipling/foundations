@@ -4,20 +4,26 @@ pub const AxisAngle = struct {
     axis: vector.vec3,
 };
 
-pub fn axisAngleToQuat(angle: f32, axis: vector.vec3) Quat {
-    const half_angle = angle * 0.5;
+pub fn axisAngleToQuat(a: AxisAngle) Quat {
+    const half_angle = a.angle * 0.5;
     const w = @cos(half_angle);
-    const nv = vector.normalize(axis);
+    const nv = vector.normalize(a.axis);
     const v: vector.vec3 = vector.mul(@sin(half_angle), nv);
     return .{ w, v[0], v[1], v[2] };
 }
 
 test axisAngleToQuat {
-    const a_q: Quat = axisAngleToQuat(degreesToRadians(90), .{ 1, 0, 0 });
+    const a_q: Quat = axisAngleToQuat(.{
+        .angle = degreesToRadians(90),
+        .axis = .{ 1, 0, 0 },
+    });
     const a_e: Quat = .{ 0.70710677, 0.70710677, 0, 0 };
     try std.testing.expectEqual(a_e, a_q);
 
-    const b_q: Quat = axisAngleToQuat(degreesToRadians(90), .{ 0, 1, 0 });
+    const b_q: Quat = axisAngleToQuat(.{
+        .angle = degreesToRadians(90),
+        .axis = .{ 0, 1, 0 },
+    });
     const b_e: Quat = .{ 0.70710677, 0, 0.70710677, 0 };
     try std.testing.expectEqual(b_e, b_q);
 }
@@ -56,7 +62,10 @@ pub fn multiplyQuaternions(q2: Quat, q1: Quat) Quat {
 }
 
 test multiplyQuaternions {
-    const a_q: Quat = axisAngleToQuat(degreesToRadians(90), .{ 1, 0, 0 });
+    const a_q: Quat = axisAngleToQuat(.{
+        .angle = degreesToRadians(90),
+        .axis = .{ 1, 0, 0 },
+    });
     const a_e = a_q;
     const a_r = multiplyQuaternions(a_q, identityQuat());
     try std.testing.expectEqual(a_e, a_r);
@@ -147,7 +156,10 @@ pub fn rotateVectorWithNormalizedQuat(v: vector.vec3, q: Quat) vector.vec3 {
 
 test rotateVectorWithNormalizedQuat {
     const a_v1: vector.vec3 = .{ 1, 0, 0 };
-    const a_q1: Quat = axisAngleToQuat(degreesToRadians(180), .{ 0, 1, 0 });
+    const a_q1: Quat = axisAngleToQuat(.{
+        .angle = degreesToRadians(180),
+        .axis = .{ 0, 1, 0 },
+    });
     const a_qn = vector.normalize(a_q1);
     const a_e: vector.vec3 = .{ -1, 0, 0 };
     const a_r = rotateVectorWithNormalizedQuat(a_v1, a_qn);

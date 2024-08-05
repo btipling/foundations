@@ -4,34 +4,34 @@ ui_state: ca_ui,
 cfg: *config,
 aspect_ratio: f32,
 
-const kf0: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(25),
-    @as(math.vector.vec3, .{ 0, 1, 1 }),
-);
-const kf1: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(100.0),
-    @as(math.vector.vec3, .{ 0, 1, 1 }),
-);
-const kf2: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(175.0),
-    @as(math.vector.vec3, .{ 0, 1, 1 }),
-);
-const kf3: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(220.0),
-    @as(math.vector.vec3, .{ 0, 1, 1 }),
-);
-const kf4: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(280.0),
-    @as(math.vector.vec3, .{ 0, 1, 1 }),
-);
-const kf5: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(80.0),
-    @as(math.vector.vec3, .{ 1, 0, 1 }),
-);
-const kf6: math.rotation.Quat = math.rotation.axisAngleToQuat(
-    math.rotation.degreesToRadians(30.0),
-    @as(math.vector.vec3, .{ 1, 0, 1 }),
-);
+const kf0: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
+    .angle = math.rotation.degreesToRadians(25),
+    .axis = @as(math.vector.vec3, .{ 0, 1, 1 }),
+});
+const kf1: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
+    .angle = math.rotation.degreesToRadians(100.0),
+    .axis = @as(math.vector.vec3, .{ 0, 1, 1 }),
+});
+const kf2: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
+    .angle = math.rotation.degreesToRadians(175.0),
+    .axis = @as(math.vector.vec3, .{ 0, 1, 1 }),
+});
+const kf3: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
+    .angle = math.rotation.degreesToRadians(220.0),
+    .axis = @as(math.vector.vec3, .{ 0, 1, 1 }),
+});
+const kf4: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
+    .angle = math.rotation.degreesToRadians(280.0),
+    .axis = @as(math.vector.vec3, .{ 0, 1, 1 }),
+});
+const kf5: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
+    .angle = math.rotation.degreesToRadians(80.0),
+    .axis = @as(math.vector.vec3, .{ 1, 0, 1 }),
+});
+const kf6: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
+    .angle = math.rotation.degreesToRadians(30.0),
+    .axis = @as(math.vector.vec3, .{ 1, 0, 1 }),
+});
 
 const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf4, kf5, kf6, kf0 };
 
