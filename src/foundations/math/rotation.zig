@@ -1,4 +1,8 @@
 pub const Quat = vector.vec4;
+pub const AxisAngle = struct {
+    angle: f32,
+    axis: vector.vec3,
+};
 
 pub fn axisAngleToQuat(angle: f32, axis: vector.vec3) Quat {
     const half_angle = angle * 0.5;
@@ -16,6 +20,29 @@ test axisAngleToQuat {
     const b_q: Quat = axisAngleToQuat(degreesToRadians(90), .{ 0, 1, 0 });
     const b_e: Quat = .{ 0.70710677, 0, 0.70710677, 0 };
     try std.testing.expectEqual(b_e, b_q);
+}
+
+pub fn quatToAngleAxis(q: Quat) AxisAngle {
+    const w: f32 = q[0];
+    const angle: f32 = 2.0 * std.math.acos(w);
+    var axis: vector.vec3 = .{ q[1], q[2], q[3] };
+    const v_len: f32 = @sqrt(1 - w * w);
+    axis = vector.mul(1.0 / v_len, axis);
+    return .{
+        .angle = angle,
+        .axis = axis,
+    };
+}
+
+test quatToAngleAxis {
+    const a_q: Quat = .{ 0.70710677, 0.70710677, 0, 0 };
+    const a_expected_angle: f32 = degreesToRadians(90);
+    const a_expected_axis: vector.vec3 = .{ 1, 0, 0 };
+    const a_r: AxisAngle = quatToAngleAxis(a_q);
+    try std.testing.expect(float.equal(a_expected_angle, a_r.angle, 0.00001));
+    try std.testing.expect(float.equal(a_expected_axis[0], a_r.axis[0], 0.00001));
+    try std.testing.expect(float.equal(a_expected_axis[1], a_r.axis[1], 0.00001));
+    try std.testing.expect(float.equal(a_expected_axis[2], a_r.axis[2], 0.00001));
 }
 
 pub fn multiplyQuaternions(q2: Quat, q1: Quat) Quat {
