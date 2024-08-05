@@ -5,6 +5,9 @@ coord_z: ?f32 = null,
 mouse_button: ?c_int = null,
 mouse_action: ?c_int = null,
 mouse_mods: ?c_int = null,
+key_mods: ?c_int = null,
+key_action: ?c_int = null,
+key: ?c_int = null,
 win_width: f32,
 win_height: f32,
 clear_input: bool = false,
@@ -45,6 +48,14 @@ fn cursorPosCallback(_: ?*c.GLFWwindow, x: f64, y: f64) callconv(.C) void {
     inp.coord_z = inp.mouse_x;
 }
 
+fn keyCallback(_: ?*c.GLFWwindow, key: c_int, _: c_int, action: c_int, mods: c_int) callconv(.C) void {
+    const inp = input orelse return;
+    inp.key = key;
+    inp.key_action = action;
+    inp.key_mods = mods;
+    inp.clear_input = inp.key_action == c.GLFW_RELEASE;
+}
+
 fn mouseButtonCallback(_: ?*c.GLFWwindow, button: c_int, action: c_int, mods: c_int) callconv(.C) void {
     const io = c.igGetIO().*;
     if (io.WantCaptureMouse) return;
@@ -66,6 +77,7 @@ pub fn getReadOnly() ?*const Input {
 fn registerGLFWCallbacks(win: *c.GLFWwindow) void {
     _ = c.glfwSetCursorPosCallback(win, cursorPosCallback);
     _ = c.glfwSetMouseButtonCallback(win, mouseButtonCallback);
+    _ = c.glfwSetKeyCallback(win, keyCallback);
 }
 
 pub fn endFrame(self: *Input) void {

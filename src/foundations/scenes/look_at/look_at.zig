@@ -6,6 +6,7 @@ cube: object.object = undefined,
 camera: object.object = undefined,
 camera_matrix: math.matrix = undefined,
 camera_pos: math.vector.vec3 = .{ 1, 3.5, 1 },
+camera_orientation: math.vector.vec3 = .{ 1, 0, 0 },
 mvp: math.matrix,
 
 const LookAt = @This();
@@ -74,11 +75,75 @@ pub fn draw(self: *LookAt, _: f64) void {
 
 fn handleInput(self: *LookAt) void {
     const input = ui.input.getReadOnly() orelse return;
-    const x = input.coord_x orelse return;
-    const z = input.coord_z orelse return;
-    _ = x;
-    _ = z;
-    _ = self;
+    if (input.key) |k| {
+        switch (k) {
+            c.GLFW_KEY_W => self.moveCameraForward(),
+            c.GLFW_KEY_S => self.moveCameraBackward(),
+            c.GLFW_KEY_A => self.moveCameraLeft(),
+            c.GLFW_KEY_D => self.moveCameraRight(),
+            c.GLFW_KEY_LEFT_SHIFT => self.moveCameraUp(),
+            c.GLFW_KEY_LEFT_CONTROL => self.moveCameraDown(),
+            else => {},
+        }
+    }
+}
+
+fn moveCameraUp(self: *LookAt) void {
+    const speed: f32 = 0.01;
+    const orientation_vector = math.vector.normalize(self.camera_orientation);
+    const velocity = math.vector.mul(speed, orientation_vector);
+    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    self.updateCameraMatrix();
+    self.updateCamera();
+}
+
+fn moveCameraDown(self: *LookAt) void {
+    const speed: f32 = 0.01;
+    const orientation_vector = math.vector.normalize(self.camera_orientation);
+    const velocity = math.vector.negate(math.vector.mul(speed, orientation_vector));
+    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    self.updateCameraMatrix();
+    self.updateCamera();
+}
+
+fn moveCameraLeft(self: *LookAt) void {
+    const speed: f32 = 0.01;
+    const direction_vector = math.vector.normalize(self.camera_pos);
+    const orientation_vector = math.vector.normalize(self.camera_orientation);
+    const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
+    const velocity = math.vector.mul(speed, left_vector);
+    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    self.updateCameraMatrix();
+    self.updateCamera();
+}
+
+fn moveCameraRight(self: *LookAt) void {
+    const speed: f32 = 0.01;
+    const direction_vector = math.vector.normalize(self.camera_pos);
+    const orientation_vector = math.vector.normalize(self.camera_orientation);
+    const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
+    const velocity = math.vector.negate(math.vector.mul(speed, left_vector));
+    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    self.updateCameraMatrix();
+    self.updateCamera();
+}
+
+fn moveCameraForward(self: *LookAt) void {
+    const speed: f32 = 0.01;
+    const direction_vector = math.vector.normalize(self.camera_pos);
+    const velocity = math.vector.mul(speed, direction_vector);
+    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    self.updateCameraMatrix();
+    self.updateCamera();
+}
+
+fn moveCameraBackward(self: *LookAt) void {
+    const speed: f32 = 0.01;
+    const direction_vector = math.vector.normalize(self.camera_pos);
+    const velocity = math.vector.negate(math.vector.mul(speed, direction_vector));
+    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    self.updateCameraMatrix();
+    self.updateCamera();
 }
 
 pub fn deleteCube(self: *LookAt) void {
@@ -90,7 +155,7 @@ pub fn deleteCube(self: *LookAt) void {
 pub fn deleteCamera(self: *LookAt) void {
     var objects: [1]object.object = .{self.camera};
     rhi.deleteObjects(objects[0..]);
-    self.cube = undefined;
+    self.camera = undefined;
 }
 
 pub fn updateCube(self: *LookAt) void {
