@@ -7,6 +7,7 @@ camera: object.object = undefined,
 camera_matrix: math.matrix = undefined,
 camera_pos: math.vector.vec3 = .{ 1, 3.5, 1 },
 camera_orientation: math.vector.vec3 = .{ 1, 0, 0 },
+cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
 cursor_mode: bool = false,
 mvp: math.matrix,
 
@@ -76,6 +77,12 @@ pub fn draw(self: *LookAt, _: f64) void {
 
 fn handleInput(self: *LookAt) void {
     const input = ui.input.getReadOnly() orelse return;
+    var new_cursor_coords: ?math.vector.vec3 = null;
+    cursor: {
+        const x = input.coord_x orelse break :cursor;
+        const z = input.coord_z orelse break :cursor;
+        new_cursor_coords = .{ x, 0, z };
+    }
     if (input.key) |k| {
         switch (k) {
             c.GLFW_KEY_C => {
@@ -92,6 +99,16 @@ fn handleInput(self: *LookAt) void {
             else => {},
         }
     }
+    if (new_cursor_coords) |cc| self.handleCursor(cc);
+}
+
+fn handleCursor(self: LookAt, new_cursor_coords: math.vector.vec3) void {
+    if (!self.cursor_mode) return;
+    std.debug.print("new cursor pos ({d}, {d}, {d})\n", .{
+        new_cursor_coords[0],
+        new_cursor_coords[1],
+        new_cursor_coords[2],
+    });
 }
 
 fn toggleCursor(self: *LookAt) void {
