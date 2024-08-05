@@ -8,6 +8,8 @@ layout (location = 5) in vec4 f_t_column2;
 layout (location = 6) in vec4 f_t_column3;
 layout (location = 7) in vec4 f_i_color;
 
+uniform mat4 f_mvp;
+
 out vec4 fo_color;
 out vec3 fo_normals;
 
@@ -19,7 +21,7 @@ void main()
         f_t_column2,
         f_t_column3
     );
-    vec4 pos = f_transform * vec4(f_position.xyz, 1.0);
+    vec4 pos = f_mvp * f_transform * vec4(f_position.xyz, 1.0);
     gl_Position = pos;
     fo_color = f_i_color;
     fo_normals = f_normals;

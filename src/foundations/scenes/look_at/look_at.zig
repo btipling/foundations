@@ -9,6 +9,7 @@ camera_pos: math.vector.vec3 = .{ 1, 3.5, 1 },
 camera_orientation: math.rotation.Quat = .{ 1, 0, 0, 0 },
 cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
 cursor_mode: bool = false,
+use_camera: bool = false,
 mvp: math.matrix,
 
 const LookAt = @This();
@@ -92,6 +93,11 @@ fn handleInput(self: *LookAt) void {
                     if (action == c.GLFW_RELEASE) self.toggleCursor();
                 }
             },
+            c.GLFW_KEY_V => {
+                if (input.key_action) |action| {
+                    if (action == c.GLFW_RELEASE) self.toggleView();
+                }
+            },
             c.GLFW_KEY_W => self.moveCameraForward(),
             c.GLFW_KEY_S => self.moveCameraBackward(),
             c.GLFW_KEY_A => self.moveCameraLeft(),
@@ -126,6 +132,7 @@ fn handleCursor(self: *LookAt, new_cursor_coords: math.vector.vec3) void {
     self.cursor_pos = new_cursor_coords;
     self.updateCameraMatrix();
     self.updateCamera();
+    self.updateMVP();
 }
 
 fn toggleCursor(self: *LookAt) void {
@@ -139,16 +146,13 @@ fn toggleCursor(self: *LookAt) void {
     return;
 }
 
-fn orientationAxis(self: *LookAt) math.vector.vec3 {
-    const direction_vector = math.vector.normalize(self.camera_pos);
-    const camera_orientation = world_up;
-    const orientation_vector = math.vector.normalize(camera_orientation);
-    const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
-    return math.vector.normalize(left_vector);
-}
-
-fn orientationAngle(self: *LookAt) f32 {
-    _ = self;
+fn toggleView(self: *LookAt) void {
+    if (self.use_camera) {
+        self.use_camera = false;
+        return;
+    }
+    self.use_camera = true;
+    return;
 }
 
 fn moveCameraUp(self: *LookAt) void {
@@ -158,6 +162,7 @@ fn moveCameraUp(self: *LookAt) void {
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
     self.updateCamera();
+    self.updateMVP();
 }
 
 fn moveCameraDown(self: *LookAt) void {
@@ -167,6 +172,7 @@ fn moveCameraDown(self: *LookAt) void {
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
     self.updateCamera();
+    self.updateMVP();
 }
 
 fn moveCameraForward(self: *LookAt) void {
@@ -178,6 +184,7 @@ fn moveCameraForward(self: *LookAt) void {
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
     self.updateCamera();
+    self.updateMVP();
 }
 
 fn moveCameraBackward(self: *LookAt) void {
@@ -189,6 +196,7 @@ fn moveCameraBackward(self: *LookAt) void {
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
     self.updateCamera();
+    self.updateMVP();
 }
 
 fn moveCameraRight(self: *LookAt) void {
@@ -198,6 +206,7 @@ fn moveCameraRight(self: *LookAt) void {
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
     self.updateCamera();
+    self.updateMVP();
 }
 
 fn moveCameraLeft(self: *LookAt) void {
@@ -207,6 +216,7 @@ fn moveCameraLeft(self: *LookAt) void {
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
     self.updateCameraMatrix();
     self.updateCamera();
+    self.updateMVP();
 }
 
 pub fn deleteCube(self: *LookAt) void {
@@ -239,6 +249,12 @@ pub fn updateCameraMatrix(self: *LookAt) void {
     self.camera_matrix = m;
 }
 
+pub fn updateMVP(self: *LookAt) void {
+    rhi.setUniformMatrix(self.grid.parallelepiped.mesh.program, "f_mvp", self.mvp);
+    rhi.setUniformMatrix(self.cube.cube.mesh.program, "f_mvp", self.mvp);
+    rhi.setUniformMatrix(self.camera.cube.mesh.program, "f_mvp", self.mvp);
+}
+
 pub fn updateCamera(self: *LookAt) void {
     self.deleteCamera();
     self.renderCamera();
@@ -254,7 +270,7 @@ pub fn renderCube(self: *LookAt) void {
             .{ 1, 0, 1, 1 },
         ),
     };
-    var m = math.matrix.transformMatrix(self.lookAt(), math.matrix.translate(0.0, 10.5, 0.0));
+    var m = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(0.0, 10.5, 0.0));
     m = math.matrix.transformMatrix(
         m,
         math.matrix.translate(
@@ -268,6 +284,7 @@ pub fn renderCube(self: *LookAt) void {
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.cube_rot[2]));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(1));
     rhi.setUniformMatrix(program, "f_transform", m);
+    rhi.setUniformMatrix(program, "f_mvp", self.mvp);
     self.cube = cube;
 }
 
@@ -281,13 +298,10 @@ pub fn renderCamera(self: *LookAt) void {
             .{ 1, 0, 1, 1 },
         ),
     };
-    const m = math.matrix.transformMatrix(self.lookAt(), self.camera_matrix);
+    const m = math.matrix.transformMatrix(math.matrix.identity(), self.camera_matrix);
     rhi.setUniformMatrix(program, "f_camera_transform", m);
+    rhi.setUniformMatrix(program, "f_mvp", self.mvp);
     self.camera = camera;
-}
-
-pub fn lookAt(self: *LookAt) math.matrix {
-    return self.mvp;
 }
 
 pub fn deleteGrid(self: *LookAt) void {
@@ -310,7 +324,7 @@ pub fn renderGrid(self: *LookAt) void {
     for (0..2) |axis| {
         for (0..num_grid_lines) |i| {
             const grid_pos: f32 = @floatFromInt(i);
-            var m = self.lookAt();
+            var m = math.matrix.identity();
             if (axis == 0) {
                 m = math.matrix.transformMatrix(
                     m,
@@ -361,6 +375,7 @@ pub fn renderGrid(self: *LookAt) void {
             i_datas[0..],
         ),
     };
+    rhi.setUniformMatrix(program, "f_mvp", self.mvp);
     self.grid = grid;
 }
 
