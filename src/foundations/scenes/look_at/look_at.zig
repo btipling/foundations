@@ -10,6 +10,7 @@ camera_orientation: math.rotation.Quat = .{ 1, 0, 0, 0 },
 cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
 cursor_mode: bool = false,
 use_camera: bool = false,
+persp_m: math.matrix,
 mvp: math.matrix,
 
 const LookAt = @This();
@@ -19,6 +20,7 @@ const grid_len: usize = 2;
 const grid_increments: usize = 25;
 const world_up: math.vector.vec3 = .{ 1, 0, 0 };
 const world_right: math.vector.vec3 = .{ 0, 0, 1 };
+const speed: f32 = 0.05;
 
 const grid_vertex_shader: []const u8 = @embedFile("look_at_grid_vertex.glsl");
 const grid_frag_shader: []const u8 = @embedFile("look_at_grid_frag.glsl");
@@ -46,6 +48,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
         .ui_state = ui_state,
         .allocator = allocator,
         .cfg = cfg,
+        .persp_m = mvp,
         .mvp = mvp,
     };
     lkt.renderGrid();
@@ -115,7 +118,7 @@ fn handleCursor(self: *LookAt, new_cursor_coords: math.vector.vec3) void {
         self.cursor_pos = new_cursor_coords;
         return;
     }
-    const z_change = self.cursor_pos[2] - new_cursor_coords[2];
+    const z_change = new_cursor_coords[2] - self.cursor_pos[2];
     var a: math.rotation.AxisAngle = .{
         .angle = z_change,
         .axis = world_up,
@@ -156,7 +159,6 @@ fn toggleView(self: *LookAt) void {
 }
 
 fn moveCameraUp(self: *LookAt) void {
-    const speed: f32 = 0.01;
     const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
     const velocity = math.vector.mul(speed, orientation_vector);
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
@@ -166,7 +168,6 @@ fn moveCameraUp(self: *LookAt) void {
 }
 
 fn moveCameraDown(self: *LookAt) void {
-    const speed: f32 = 0.01;
     const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
     const velocity = math.vector.negate(math.vector.mul(speed, orientation_vector));
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
@@ -176,7 +177,6 @@ fn moveCameraDown(self: *LookAt) void {
 }
 
 fn moveCameraForward(self: *LookAt) void {
-    const speed: f32 = 0.01;
     const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
     const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
     const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
@@ -188,7 +188,6 @@ fn moveCameraForward(self: *LookAt) void {
 }
 
 fn moveCameraBackward(self: *LookAt) void {
-    const speed: f32 = 0.01;
     const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
     const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
     const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
@@ -200,7 +199,6 @@ fn moveCameraBackward(self: *LookAt) void {
 }
 
 fn moveCameraRight(self: *LookAt) void {
-    const speed: f32 = 0.01;
     const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
     const velocity = math.vector.mul(speed, direction_vector);
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
@@ -210,7 +208,6 @@ fn moveCameraRight(self: *LookAt) void {
 }
 
 fn moveCameraLeft(self: *LookAt) void {
-    const speed: f32 = 0.01;
     const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
     const velocity = math.vector.negate(math.vector.mul(speed, direction_vector));
     self.camera_pos = math.vector.add(self.camera_pos, velocity);
@@ -250,6 +247,12 @@ pub fn updateCameraMatrix(self: *LookAt) void {
 }
 
 pub fn updateMVP(self: *LookAt) void {
+    if (self.use_camera) {
+        var m = math.matrix.translate(self.camera_pos[0], self.camera_pos[1], self.camera_pos[2]);
+        m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(self.camera_orientation));
+        m = math.matrix.inverse(m);
+        self.mvp = math.matrix.transformMatrix(self.persp_m, m);
+    } else self.mvp = self.persp_m;
     rhi.setUniformMatrix(self.grid.parallelepiped.mesh.program, "f_mvp", self.mvp);
     rhi.setUniformMatrix(self.cube.cube.mesh.program, "f_mvp", self.mvp);
     rhi.setUniformMatrix(self.camera.cube.mesh.program, "f_mvp", self.mvp);
