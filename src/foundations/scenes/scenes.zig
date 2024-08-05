@@ -25,6 +25,7 @@ fn updateSceneType(self: *Scenes) void {
     const dt = self.next_scene_type orelse return;
     self.next_scene_type = null;
     if (self.scene_instance) |cdt| if (cdt == dt) return;
+    ui.showCursor();
     self.deinitScene();
     self.initScene(dt);
 }

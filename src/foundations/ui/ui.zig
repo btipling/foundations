@@ -100,6 +100,14 @@ pub fn state() *ui_state {
     return ui.state;
 }
 
+pub fn hideCursor() void {
+    c.glfwSetInputMode(ui.win, c.GLFW_CURSOR, c.GLFW_CURSOR_DISABLED);
+}
+
+pub fn showCursor() void {
+    c.glfwSetInputMode(ui.win, c.GLFW_CURSOR, c.GLFW_CURSOR_NORMAL);
+}
+
 const std = @import("std");
 const c = @import("../c.zig").c;
 const ui_helpers = @import("ui_helpers.zig");

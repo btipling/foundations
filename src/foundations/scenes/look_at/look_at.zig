@@ -7,6 +7,7 @@ camera: object.object = undefined,
 camera_matrix: math.matrix = undefined,
 camera_pos: math.vector.vec3 = .{ 1, 3.5, 1 },
 camera_orientation: math.vector.vec3 = .{ 1, 0, 0 },
+cursor_mode: bool = false,
 mvp: math.matrix,
 
 const LookAt = @This();
@@ -77,6 +78,11 @@ fn handleInput(self: *LookAt) void {
     const input = ui.input.getReadOnly() orelse return;
     if (input.key) |k| {
         switch (k) {
+            c.GLFW_KEY_C => {
+                if (input.key_action) |action| {
+                    if (action == c.GLFW_RELEASE) self.toggleCursor();
+                }
+            },
             c.GLFW_KEY_W => self.moveCameraForward(),
             c.GLFW_KEY_S => self.moveCameraBackward(),
             c.GLFW_KEY_A => self.moveCameraLeft(),
@@ -86,6 +92,17 @@ fn handleInput(self: *LookAt) void {
             else => {},
         }
     }
+}
+
+fn toggleCursor(self: *LookAt) void {
+    if (self.cursor_mode) {
+        self.cursor_mode = false;
+        ui.showCursor();
+        return;
+    }
+    self.cursor_mode = true;
+    ui.hideCursor();
+    return;
 }
 
 fn moveCameraUp(self: *LookAt) void {
