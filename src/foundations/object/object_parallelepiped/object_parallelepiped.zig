@@ -11,7 +11,7 @@ pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
 ) Parallelepied {
-    const d = data();
+    var d = data();
 
     const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
@@ -44,9 +44,9 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     const num_pp_vertices = 8;
     const origin: [3]f32 = .{ 0, 0, 0 };
     const pp: math.geometry.parallelepiped = .{
-        .v1 = .{ 1, 0, 0 },
-        .v2 = .{ 0, 1, 0 },
-        .v3 = .{ 0, 0, 1 },
+        .v0 = .{ 1, 0, 0 },
+        .v1 = .{ 0, 1, 0 },
+        .v2 = .{ 0, 0, 1 },
     };
     const pos: [num_pp_vertices]math.vector.vec3 = .{
         origin,
@@ -62,24 +62,10 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     var i_os: usize = 0;
     // front origin_z_pos
     s_os = addSurface(&rv_data, pos[0], pos[1], pos[2], pos[4], s_os);
-    i_os = addIndicesPerSurface(
-        &indices,
-        pos[0],
-        pos[4],
-        pos[1],
-        pos[2],
-        i_os,
-    );
+    i_os = addIndicesPerSurface(&indices, 0, 4, 1, 2, i_os);
     // left origin_x_pos
     s_os = addSurface(&rv_data, pos[0], pos[1], pos[3], pos[5], s_os);
-    i_os = addIndicesPerSurface(
-        &indices,
-        pos[0],
-        pos[5],
-        pos[1],
-        pos[3],
-        i_os,
-    );
+    i_os = addIndicesPerSurface(&indices, 0, 5, 1, 3, i_os);
     // back y_pos_z_pos
     s_os = addSurface(&rv_data, pos[3], pos[5], pos[6], pos[7], s_os);
     i_os = addIndicesPerSurface(&indices, 3, 7, 5, 6, i_os);
@@ -92,15 +78,15 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     // top x_pos_y_pos
     _ = addSurface(&rv_data, pos[1], pos[5], pos[4], pos[7], s_os);
     i_os = addIndicesPerSurface(&indices, 1, 7, 5, 4, i_os);
-    return .{ .data = data, .indices = indices };
+    return .{ .data = rv_data, .indices = indices };
 }
 
 fn addIndicesPerSurface(
-    indices: *[num_indices]usize,
-    far_corner0: usize,
-    far_corner1: usize,
-    shared_0: usize,
-    shared_1: usize,
+    indices: *[num_indices]u32,
+    far_corner0: u32,
+    far_corner1: u32,
+    shared_0: u32,
+    shared_1: u32,
     offset: usize,
 ) usize {
     // first surface triangle

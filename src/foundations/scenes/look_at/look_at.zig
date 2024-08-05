@@ -175,7 +175,7 @@ pub fn renderGrid(self: *LookAt) void {
         }
     }
     const quad: object.object = .{
-        .quad = object.quad.initInstanced(
+        .parallelepiped = object.parallelepiped.init(
             program,
             i_datas[0..],
         ),
