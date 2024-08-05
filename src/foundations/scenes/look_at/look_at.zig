@@ -6,6 +6,8 @@ cube: object.object = undefined,
 camera: object.object = undefined,
 camera_matrix: math.matrix = undefined,
 camera_pos: math.vector.vec3 = .{ 1, 3.5, 1 },
+camera_orientation_pitch: math.rotation.Quat = .{ 1, 0, 0, 0 },
+camera_orientation_heading: math.rotation.Quat = .{ 1, 0, 0, 0 },
 camera_orientation: math.rotation.Quat = .{ 1, 0, 0, 0 },
 cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
 cursor_mode: bool = false,
@@ -118,20 +120,32 @@ fn handleCursor(self: *LookAt, new_cursor_coords: math.vector.vec3) void {
         self.cursor_pos = new_cursor_coords;
         return;
     }
-    const z_change = new_cursor_coords[2] - self.cursor_pos[2];
-    var a: math.rotation.AxisAngle = .{
-        .angle = z_change,
-        .axis = world_up,
-    };
-    var q = math.rotation.axisAngleToQuat(a);
-    self.camera_orientation = math.vector.normalize(math.rotation.multiplyQuaternions(self.camera_orientation, q));
-    const x_change = self.cursor_pos[0] - new_cursor_coords[0];
-    a = .{
-        .angle = x_change,
-        .axis = world_right,
-    };
-    q = math.rotation.axisAngleToQuat(a);
-    self.camera_orientation = math.vector.normalize(math.rotation.multiplyQuaternions(self.camera_orientation, q));
+    {
+        const z_change = new_cursor_coords[2] - self.cursor_pos[2];
+        const a: math.rotation.AxisAngle = .{
+            .angle = z_change,
+            .axis = world_up,
+        };
+        var q = math.rotation.axisAngleToQuat(a);
+        q = math.vector.normalize(q);
+        q = math.rotation.multiplyQuaternions(self.camera_orientation_heading, q);
+        self.camera_orientation_heading = math.vector.normalize(q);
+    }
+    {
+        const x_change = self.cursor_pos[0] - new_cursor_coords[0];
+        const a: math.rotation.AxisAngle = .{
+            .angle = x_change,
+            .axis = world_right,
+        };
+        var q = math.rotation.axisAngleToQuat(a);
+        q = math.vector.normalize(q);
+        q = math.rotation.multiplyQuaternions(self.camera_orientation_pitch, q);
+        self.camera_orientation_pitch = math.vector.normalize(q);
+    }
+    self.camera_orientation = math.rotation.multiplyQuaternions(
+        self.camera_orientation_heading,
+        self.camera_orientation_pitch,
+    );
     self.cursor_pos = new_cursor_coords;
     self.updateCameraMatrix();
     self.updateCamera();
