@@ -1,8 +1,11 @@
 ui_state: look_at_ui,
 allocator: std.mem.Allocator,
 cfg: *config,
-quad: object.object = undefined,
+grid: object.object = undefined,
 cube: object.object = undefined,
+camera: object.object = undefined,
+camera_matrix: math.matrix = undefined,
+camera_pos: math.vector.vec3 = .{ 1, 3.5, 1 },
 mvp: math.matrix,
 
 const LookAt = @This();
@@ -15,6 +18,8 @@ const grid_vertex_shader: []const u8 = @embedFile("look_at_grid_vertex.glsl");
 const grid_frag_shader: []const u8 = @embedFile("look_at_grid_frag.glsl");
 const cube_vertex_shader: []const u8 = @embedFile("look_at_cube_vertex.glsl");
 const cube_frag_shader: []const u8 = @embedFile("look_at_cube_frag.glsl");
+const camera_vertex_shader: []const u8 = @embedFile("look_at_camera_vertex.glsl");
+const camera_frag_shader: []const u8 = @embedFile("look_at_camera_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -39,6 +44,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
     };
     lkt.renderGrid();
     lkt.renderCube();
+    lkt.updateCameraMatrix();
+    lkt.renderCamera();
     return lkt;
 }
 
@@ -51,11 +58,15 @@ pub fn draw(self: *LookAt, _: f64) void {
     if (self.ui_state.cube_updated) self.updateCube();
     self.handleInput();
     {
-        const objects: [1]object.object = .{self.quad};
+        const objects: [1]object.object = .{self.grid};
         rhi.drawObjects(objects[0..]);
     }
     {
         const objects: [1]object.object = .{self.cube};
+        rhi.drawObjects(objects[0..]);
+    }
+    {
+        const objects: [1]object.object = .{self.camera};
         rhi.drawObjects(objects[0..]);
     }
     self.ui_state.draw();
@@ -76,10 +87,32 @@ pub fn deleteCube(self: *LookAt) void {
     self.cube = undefined;
 }
 
+pub fn deleteCamera(self: *LookAt) void {
+    var objects: [1]object.object = .{self.camera};
+    rhi.deleteObjects(objects[0..]);
+    self.cube = undefined;
+}
+
 pub fn updateCube(self: *LookAt) void {
     self.ui_state.cube_updated = false;
     self.deleteCube();
     self.renderCube();
+}
+
+pub fn updateCameraMatrix(self: *LookAt) void {
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.translate(
+        self.camera_pos[0],
+        self.camera_pos[1],
+        self.camera_pos[2],
+    ));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(0.1));
+    self.camera_matrix = m;
+}
+
+pub fn updateCamera(self: *LookAt) void {
+    self.deleteCamera();
+    self.renderCamera();
 }
 
 pub fn renderCube(self: *LookAt) void {
@@ -92,7 +125,7 @@ pub fn renderCube(self: *LookAt) void {
             .{ 1, 0, 1, 1 },
         ),
     };
-    var m = math.matrix.transformMatrix(self.mvp, math.matrix.translate(0.0, 10.5, 0.0));
+    var m = math.matrix.transformMatrix(self.lookAt(), math.matrix.translate(0.0, 10.5, 0.0));
     m = math.matrix.transformMatrix(
         m,
         math.matrix.translate(
@@ -109,10 +142,29 @@ pub fn renderCube(self: *LookAt) void {
     self.cube = cube;
 }
 
+pub fn renderCamera(self: *LookAt) void {
+    const program = rhi.createProgram();
+    rhi.attachShaders(program, camera_vertex_shader, camera_frag_shader);
+    const camera: object.object = .{
+        .cube = object.cube.init(
+            program,
+            object.cube.default_positions,
+            .{ 1, 0, 1, 1 },
+        ),
+    };
+    const m = math.matrix.transformMatrix(self.lookAt(), self.camera_matrix);
+    rhi.setUniformMatrix(program, "f_camera_transform", m);
+    self.camera = camera;
+}
+
+pub fn lookAt(self: *LookAt) math.matrix {
+    return self.mvp;
+}
+
 pub fn deleteGrid(self: *LookAt) void {
-    var objects: [1]object.object = .{self.quad};
+    var objects: [1]object.object = .{self.grid};
     rhi.deleteObjects(objects[0..]);
-    self.quad = undefined;
+    self.grid = undefined;
 }
 
 pub fn updateGrid(self: *LookAt) void {
@@ -129,7 +181,7 @@ pub fn renderGrid(self: *LookAt) void {
     for (0..2) |axis| {
         for (0..num_grid_lines) |i| {
             const grid_pos: f32 = @floatFromInt(i);
-            var m = self.mvp;
+            var m = self.lookAt();
             if (axis == 0) {
                 m = math.matrix.transformMatrix(
                     m,
@@ -174,13 +226,13 @@ pub fn renderGrid(self: *LookAt) void {
             i_data_i += 1;
         }
     }
-    const quad: object.object = .{
+    const grid: object.object = .{
         .parallelepiped = object.parallelepiped.init(
             program,
             i_datas[0..],
         ),
     };
-    self.quad = quad;
+    self.grid = grid;
 }
 
 const std = @import("std");
