@@ -1,5 +1,5 @@
 camera: usize = 0,
-grid_y_scale: math.vector.vec3 = .{ 5000, 0, 1 },
+grid_y_scale: math.vector.vec3 = .{ 5000, 1, 1 },
 grid_y_translate: math.vector.vec3 = .{ -67, -2500, -5000 },
 grid_z_scale: math.vector.vec3 = .{ 5000, 1, 1 },
 grid_z_translate: math.vector.vec3 = .{ -67, -1071, -2578 },
