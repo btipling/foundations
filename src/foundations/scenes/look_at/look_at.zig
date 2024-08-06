@@ -110,15 +110,15 @@ fn handleInput(self: *LookAt) void {
                     if (action == c.GLFW_RELEASE) self.fly_mode = !self.fly_mode;
                 }
             },
-            c.GLFW_KEY_W => self.moveCameraForward(),
-            c.GLFW_KEY_S => self.moveCameraBackward(),
-            c.GLFW_KEY_A => if (self.fly_mode) self.rollLeft() else self.moveCameraLeft(),
-            c.GLFW_KEY_D => if (self.fly_mode) self.rollRight() else self.moveCameraRight(),
-            c.GLFW_KEY_LEFT_SHIFT => self.moveCameraUp(),
-            c.GLFW_KEY_LEFT_CONTROL => self.moveCameraDown(),
             else => {},
         }
     }
+    if (ui.input.keyPressed(c.GLFW_KEY_W)) self.moveCameraForward();
+    if (ui.input.keyPressed(c.GLFW_KEY_S)) self.moveCameraBackward();
+    if (ui.input.keyPressed(c.GLFW_KEY_A)) if (self.fly_mode) self.rollLeft() else self.moveCameraLeft();
+    if (ui.input.keyPressed(c.GLFW_KEY_D)) if (self.fly_mode) self.rollRight() else self.moveCameraRight();
+    if (ui.input.keyPressed(c.GLFW_KEY_LEFT_SHIFT)) self.moveCameraUp();
+    if (ui.input.keyPressed(c.GLFW_KEY_LEFT_CONTROL)) self.moveCameraDown();
     if (new_cursor_coords) |cc| self.handleCursor(cc);
 }
 

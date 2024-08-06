@@ -8,6 +8,8 @@ mouse_mods: ?c_int = null,
 key_mods: ?c_int = null,
 key_action: ?c_int = null,
 key: ?c_int = null,
+keys: [10]c_int = undefined,
+num_keys: usize = 0,
 win_width: f32,
 win_height: f32,
 clear_input: bool = false,
@@ -47,6 +49,40 @@ fn cursorPosCallback(_: ?*c.GLFWwindow, x: f64, y: f64) callconv(.C) void {
     inp.coord_x = inp.mouse_y;
     inp.coord_z = inp.mouse_x;
 }
+var num_keys: usize = 0;
+
+pub fn keyPressed(key: c_int) bool {
+    const inp = input orelse return false;
+    if (num_keys != inp.num_keys) {
+        num_keys = inp.num_keys;
+    }
+    if (inp.num_keys == 0) return false;
+    for (0..inp.num_keys) |i| if (inp.keys[i] == key) return true;
+    return false;
+}
+
+fn keyReleasedEvent(key: c_int) void {
+    const inp = input orelse return;
+    if (inp.num_keys == 0) return;
+    if (!keyPressed(key)) return;
+    var keys: [10]c_int = undefined;
+    var num: usize = 0;
+    for (0..inp.num_keys) |i| {
+        if (inp.keys[i] == key) continue;
+        keys[num] = inp.keys[i];
+        num += 1;
+    }
+    inp.keys = keys;
+    inp.num_keys = num;
+}
+
+fn keyPressedEvent(key: c_int) void {
+    const inp = input orelse return;
+    if (inp.num_keys == inp.keys.len) return;
+    if (keyPressed(key)) return;
+    inp.keys[inp.num_keys] = key;
+    inp.num_keys += 1;
+}
 
 fn keyCallback(_: ?*c.GLFWwindow, key: c_int, _: c_int, action: c_int, mods: c_int) callconv(.C) void {
     const inp = input orelse return;
@@ -54,6 +90,8 @@ fn keyCallback(_: ?*c.GLFWwindow, key: c_int, _: c_int, action: c_int, mods: c_i
     inp.key_action = action;
     inp.key_mods = mods;
     inp.clear_input = inp.key_action == c.GLFW_RELEASE;
+    if (inp.key_action == c.GLFW_RELEASE) keyReleasedEvent(key);
+    if (inp.key_action == c.GLFW_PRESS) keyPressedEvent(key);
 }
 
 fn mouseButtonCallback(_: ?*c.GLFWwindow, button: c_int, action: c_int, mods: c_int) callconv(.C) void {
@@ -89,6 +127,8 @@ pub fn endFrame(self: *Input) void {
         .mouse_y = self.mouse_y,
         .coord_x = self.coord_x,
         .coord_z = self.coord_z,
+        .keys = self.keys,
+        .num_keys = self.num_keys,
     };
 }
 
