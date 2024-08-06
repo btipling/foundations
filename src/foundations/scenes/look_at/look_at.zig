@@ -119,6 +119,10 @@ fn handleInput(self: *LookAt) void {
     if (ui.input.keyPressed(c.GLFW_KEY_D)) if (self.fly_mode) self.rollRight() else self.moveCameraRight();
     if (ui.input.keyPressed(c.GLFW_KEY_LEFT_SHIFT)) self.moveCameraUp();
     if (ui.input.keyPressed(c.GLFW_KEY_LEFT_CONTROL)) self.moveCameraDown();
+    if (ui.input.keyPressed(c.GLFW_KEY_J)) if (self.fly_mode) self.turnLeft();
+    if (ui.input.keyPressed(c.GLFW_KEY_SEMICOLON)) if (self.fly_mode) self.turnRight();
+    if (ui.input.keyPressed(c.GLFW_KEY_K)) if (self.fly_mode) self.turnUp();
+    if (ui.input.keyPressed(c.GLFW_KEY_L)) if (self.fly_mode) self.turnDown();
     if (new_cursor_coords) |cc| self.handleCursor(cc);
 }
 
@@ -170,6 +174,42 @@ fn handleCursor(self: *LookAt, new_cursor_coords: math.vector.vec3) void {
     self.updateCameraMatrix();
     self.updateCamera();
     self.updateMVP();
+}
+
+fn turnUp(self: *LookAt) void {
+    self.camera_orientation = updateOrientation(
+        self.camera_orientation,
+        world_right,
+        0,
+        0.01,
+    );
+}
+
+fn turnDown(self: *LookAt) void {
+    self.camera_orientation = updateOrientation(
+        self.camera_orientation,
+        world_right,
+        0.01,
+        0,
+    );
+}
+
+fn turnRight(self: *LookAt) void {
+    self.camera_orientation = updateOrientation(
+        self.camera_orientation,
+        world_up,
+        0,
+        0.01,
+    );
+}
+
+fn turnLeft(self: *LookAt) void {
+    self.camera_orientation = updateOrientation(
+        self.camera_orientation,
+        world_up,
+        0.01,
+        0,
+    );
 }
 
 fn rollRight(self: *LookAt) void {
