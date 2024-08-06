@@ -12,6 +12,7 @@ camera_orientation: math.rotation.Quat = .{ 1, 0, 0, 0 },
 cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
 cursor_mode: bool = false,
 use_camera: bool = false,
+fly_mode: bool = false,
 persp_m: math.matrix,
 mvp: math.matrix,
 
@@ -22,6 +23,7 @@ const grid_len: usize = 2;
 const grid_increments: usize = 25;
 const world_up: math.vector.vec3 = .{ 1, 0, 0 };
 const world_right: math.vector.vec3 = .{ 0, 0, 1 };
+const world_forward: math.vector.vec3 = .{ 0, 1, 0 };
 const speed: f32 = 0.05;
 
 const grid_vertex_shader: []const u8 = @embedFile("look_at_grid_vertex.glsl");
@@ -103,10 +105,15 @@ fn handleInput(self: *LookAt) void {
                     if (action == c.GLFW_RELEASE) self.toggleView();
                 }
             },
+            c.GLFW_KEY_B => {
+                if (input.key_action) |action| {
+                    if (action == c.GLFW_RELEASE) self.fly_mode = !self.fly_mode;
+                }
+            },
             c.GLFW_KEY_W => self.moveCameraForward(),
             c.GLFW_KEY_S => self.moveCameraBackward(),
-            c.GLFW_KEY_A => self.moveCameraLeft(),
-            c.GLFW_KEY_D => self.moveCameraRight(),
+            c.GLFW_KEY_A => if (self.fly_mode) self.rollLeft() else self.moveCameraLeft(),
+            c.GLFW_KEY_D => if (self.fly_mode) self.rollRight() else self.moveCameraRight(),
             c.GLFW_KEY_LEFT_SHIFT => self.moveCameraUp(),
             c.GLFW_KEY_LEFT_CONTROL => self.moveCameraDown(),
             else => {},
@@ -120,36 +127,84 @@ fn handleCursor(self: *LookAt, new_cursor_coords: math.vector.vec3) void {
         self.cursor_pos = new_cursor_coords;
         return;
     }
-    {
-        const z_change = new_cursor_coords[2] - self.cursor_pos[2];
-        const a: math.rotation.AxisAngle = .{
-            .angle = z_change,
-            .axis = world_up,
-        };
-        var q = math.rotation.axisAngleToQuat(a);
-        q = math.vector.normalize(q);
-        q = math.rotation.multiplyQuaternions(self.camera_orientation_heading, q);
-        self.camera_orientation_heading = math.vector.normalize(q);
+    if (self.fly_mode) {
+        {
+            self.camera_orientation = updateOrientation(
+                self.camera_orientation,
+                world_up,
+                new_cursor_coords[2],
+                self.cursor_pos[2],
+            );
+        }
+        {
+            self.camera_orientation = updateOrientation(
+                self.camera_orientation,
+                world_right,
+                self.cursor_pos[0],
+                new_cursor_coords[0],
+            );
+        }
+    } else {
+        {
+            self.camera_orientation_heading = updateOrientation(
+                self.camera_orientation_heading,
+                world_up,
+                new_cursor_coords[2],
+                self.cursor_pos[2],
+            );
+        }
+        {
+            self.camera_orientation_pitch = updateOrientation(
+                self.camera_orientation_pitch,
+                world_right,
+                self.cursor_pos[0],
+                new_cursor_coords[0],
+            );
+        }
+        self.camera_orientation = math.rotation.multiplyQuaternions(
+            self.camera_orientation_heading,
+            self.camera_orientation_pitch,
+        );
     }
-    {
-        const x_change = self.cursor_pos[0] - new_cursor_coords[0];
-        const a: math.rotation.AxisAngle = .{
-            .angle = x_change,
-            .axis = world_right,
-        };
-        var q = math.rotation.axisAngleToQuat(a);
-        q = math.vector.normalize(q);
-        q = math.rotation.multiplyQuaternions(self.camera_orientation_pitch, q);
-        self.camera_orientation_pitch = math.vector.normalize(q);
-    }
-    self.camera_orientation = math.rotation.multiplyQuaternions(
-        self.camera_orientation_heading,
-        self.camera_orientation_pitch,
-    );
     self.cursor_pos = new_cursor_coords;
     self.updateCameraMatrix();
     self.updateCamera();
     self.updateMVP();
+}
+
+fn rollRight(self: *LookAt) void {
+    self.camera_orientation = updateOrientation(
+        self.camera_orientation,
+        world_forward,
+        0,
+        0.01,
+    );
+}
+
+fn rollLeft(self: *LookAt) void {
+    self.camera_orientation = updateOrientation(
+        self.camera_orientation,
+        world_forward,
+        0.01,
+        0,
+    );
+}
+
+fn updateOrientation(
+    orientation: math.rotation.Quat,
+    axis: math.vector.vec3,
+    a_pos: f32,
+    b_pos: f32,
+) math.rotation.Quat {
+    const change = a_pos - b_pos;
+    const a: math.rotation.AxisAngle = .{
+        .angle = change,
+        .axis = axis,
+    };
+    var q = math.rotation.axisAngleToQuat(a);
+    q = math.vector.normalize(q);
+    q = math.rotation.multiplyQuaternions(orientation, q);
+    return math.vector.normalize(q);
 }
 
 fn toggleCursor(self: *LookAt) void {
