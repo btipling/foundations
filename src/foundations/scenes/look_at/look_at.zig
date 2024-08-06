@@ -115,14 +115,14 @@ fn handleInput(self: *LookAt) void {
     }
     if (ui.input.keyPressed(c.GLFW_KEY_W)) self.moveCameraForward();
     if (ui.input.keyPressed(c.GLFW_KEY_S)) self.moveCameraBackward();
-    if (ui.input.keyPressed(c.GLFW_KEY_A)) if (self.fly_mode) self.rollLeft() else self.moveCameraLeft();
-    if (ui.input.keyPressed(c.GLFW_KEY_D)) if (self.fly_mode) self.rollRight() else self.moveCameraRight();
+    if (ui.input.keyPressed(c.GLFW_KEY_A)) if (self.fly_mode) self.turnRight() else self.moveCameraLeft();
+    if (ui.input.keyPressed(c.GLFW_KEY_D)) if (self.fly_mode) self.turnLeft() else self.moveCameraRight();
     if (ui.input.keyPressed(c.GLFW_KEY_LEFT_SHIFT)) self.moveCameraUp();
     if (ui.input.keyPressed(c.GLFW_KEY_LEFT_CONTROL)) self.moveCameraDown();
-    if (ui.input.keyPressed(c.GLFW_KEY_J)) if (self.fly_mode) self.turnLeft();
-    if (ui.input.keyPressed(c.GLFW_KEY_SEMICOLON)) if (self.fly_mode) self.turnRight();
-    if (ui.input.keyPressed(c.GLFW_KEY_K)) if (self.fly_mode) self.turnUp();
-    if (ui.input.keyPressed(c.GLFW_KEY_L)) if (self.fly_mode) self.turnDown();
+    if (ui.input.keyPressed(c.GLFW_KEY_J)) if (self.fly_mode) self.rollLeft();
+    if (ui.input.keyPressed(c.GLFW_KEY_SEMICOLON)) if (self.fly_mode) self.rollRight();
+    if (ui.input.keyPressed(c.GLFW_KEY_L)) if (self.fly_mode) self.turnUp();
+    if (ui.input.keyPressed(c.GLFW_KEY_K)) if (self.fly_mode) self.turnDown();
     if (new_cursor_coords) |cc| self.handleCursor(cc);
 }
 
