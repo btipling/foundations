@@ -88,6 +88,20 @@ pub inline fn perspectiveProjection(fovy: f32, s: f32, n: f32, f: f32) matrix {
     // zig fmt: on
 }
 
+pub inline fn infinityProjection(fovy: f32, s: f32, n: f32, epsilon: f32) matrix {
+    const g: f32 = 1.0 / @tan(fovy * 0.5);
+    // zig fmt: off
+    return .{
+        .columns = .{
+            .{  g/s,  0,                    0,  0 },
+            .{    0,  g,                    0,  0 },
+            .{    0,  0,              epsilon,  1 },
+            .{    0,  0,  n * (1.0 - epsilon),  0 },
+        },
+    };
+    // zig fmt: on
+}
+
 pub inline fn orthographicProjection(_: f32, r: f32, _: f32, b: f32, n: f32, f: f32) matrix {
     const d_inv: f32 = 1.0 / (f - n);
     // zig fmt: off

@@ -5,7 +5,7 @@ width: u32 = 0,
 height: u32 = 0,
 near: f32 = 0.1,
 far: f32 = 500,
-fovy: f32 = 45,
+fovy: f32 = std.math.degreesToRadians(70),
 allocator: std.mem.Allocator,
 
 const Config = @This();

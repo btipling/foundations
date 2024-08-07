@@ -75,22 +75,7 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     // top x_pos_y_pos
     _ = addSurface(&rv_data, p4, p1, p7, p5, s_os);
     i_os = addIndicesPerSurface(&indices, 20, 21, 22, 23, i_os);
-    debugPrint(rv_data[0..], 0);
-    debugPrint(rv_data[0..], 1);
-    debugPrint(rv_data[0..], 2);
-    debugPrint(rv_data[0..], 3);
     return .{ .data = rv_data, .indices = indices };
-}
-
-fn debugPrint(rv_data: []rhi.attributeData, i: usize) void {
-    std.debug.print("what is d00? ({d}, {d}, {d}) normals: ({d}, {d}, {d})\n", .{
-        rv_data[i].position[0],
-        rv_data[i].position[1],
-        rv_data[i].position[2],
-        rv_data[i].normals[0],
-        rv_data[i].normals[1],
-        rv_data[i].normals[2],
-    });
 }
 
 fn addIndicesPerSurface(
