@@ -1,20 +1,27 @@
 scene_instance: ?ui.ui_state.scenes = null,
 next_scene_type: ?ui.ui_state.scene_type = null,
 cfg: *config,
+world: *c.ecs_world_t,
 
 allocator: std.mem.Allocator,
 
 const Scenes = @This();
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *Scenes {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, world: *c.ecs_world_t) *Scenes {
     const scenes = allocator.create(Scenes) catch @panic("OOM");
     errdefer allocator.destroy(scenes);
     scenes.* = .{
         .allocator = allocator,
         .cfg = cfg,
+        .world = world,
     };
     scenes.initScene(ui.ui_state.scene_type.look_at);
     return scenes;
+}
+
+pub fn deinit(self: *Scenes) void {
+    self.deinitScene();
+    self.allocator.destroy(self);
 }
 
 pub fn setScene(self: *Scenes, dt: ui.ui_state.scene_type) void {
@@ -28,11 +35,6 @@ fn updateSceneType(self: *Scenes) void {
     ui.showCursor();
     self.deinitScene();
     self.initScene(dt);
-}
-
-pub fn deinit(self: *Scenes) void {
-    self.deinitScene();
-    self.allocator.destroy(self);
 }
 
 fn initScene(self: *Scenes, dt: ui.ui_state.scene_type) void {
@@ -67,5 +69,6 @@ pub fn drawScene(self: Scenes, frame_time: f64) void {
 }
 
 const std = @import("std");
+const c = @import("../c.zig").c;
 const ui = @import("../ui/ui.zig");
 const config = @import("../config/config.zig");
