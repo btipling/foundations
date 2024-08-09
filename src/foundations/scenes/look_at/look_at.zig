@@ -13,6 +13,7 @@ cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
 cursor_mode: bool = false,
 use_camera: bool = false,
 fly_mode: bool = false,
+step: ?physics.step = null,
 persp_m: math.matrix,
 mvp: math.matrix,
 
@@ -66,7 +67,16 @@ pub fn deinit(self: *LookAt, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn draw(self: *LookAt, _: f64) void {
+pub fn draw(self: *LookAt, dt: f64) void {
+    if (self.step) |s| {
+        const new_step = physics.timestep(s, dt);
+        if (math.float.equal(new_step.state.position, s.state.position, 0.00001)) {
+            self.step = null;
+        } else {
+            // do something
+            self.step = new_step;
+        }
+    }
     if (self.ui_state.grid_updated) self.updateGrid();
     if (self.ui_state.cube_updated) self.updateCube();
     self.handleInput();
@@ -493,3 +503,4 @@ const math = @import("../../math/math.zig");
 const look_at_ui = @import("look_at_ui.zig");
 const object = @import("../../object/object.zig");
 const config = @import("../../config/config.zig");
+const physics = @import("../../physics/physics.zig");
