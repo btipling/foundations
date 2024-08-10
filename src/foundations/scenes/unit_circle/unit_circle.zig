@@ -20,7 +20,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *UnitCircle {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *UnitCircle {
     const unit_circle = allocator.create(UnitCircle) catch @panic("OOM");
     unit_circle.* = .{
         .ui_state = .{},
@@ -90,6 +90,7 @@ fn handleInput(self: *UnitCircle) void {
 }
 
 const std = @import("std");
+const c = @import("../../c.zig").c;
 const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");

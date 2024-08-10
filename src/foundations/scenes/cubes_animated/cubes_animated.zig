@@ -47,7 +47,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *LinearColorSpace {
     const p = allocator.create(LinearColorSpace) catch @panic("OOM");
 
     const program = rhi.createProgram();
@@ -117,6 +117,7 @@ pub fn draw(self: *LinearColorSpace, frame_time: f64) void {
 }
 
 const std = @import("std");
+const c = @import("../../c.zig").c;
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");

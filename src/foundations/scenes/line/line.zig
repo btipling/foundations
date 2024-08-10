@@ -13,7 +13,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *Line {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *Line {
     const line = allocator.create(Line) catch @panic("OOM");
     const ui_state = line_ui.init(allocator);
     const ortho_persp = math.matrix.orthographicProjection(

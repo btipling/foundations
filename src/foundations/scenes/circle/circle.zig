@@ -14,7 +14,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *Circle {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *Circle {
     const p = allocator.create(Circle) catch @panic("OOM");
     p.* = .{
         .cfg = cfg,
@@ -56,6 +56,7 @@ pub fn draw(self: *Circle, _: f64) void {
 }
 
 const std = @import("std");
+const c = @import("../../c.zig").c;
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");

@@ -17,7 +17,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *MathVectorArithmetic {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *MathVectorArithmetic {
     const p = allocator.create(MathVectorArithmetic) catch @panic("OOM");
     const ortho_persp = math.matrix.orthographicProjection(
         0,
@@ -139,6 +139,7 @@ fn clearVectors(self: *MathVectorArithmetic) void {
 }
 
 const std = @import("std");
+const c = @import("../../c.zig").c;
 const vma_ui = @import("math_vector_arithmetic_ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");

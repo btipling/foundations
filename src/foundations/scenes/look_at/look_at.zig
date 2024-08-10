@@ -41,7 +41,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *LookAt {
     const lkt = allocator.create(LookAt) catch @panic("OOM");
     const ui_state: look_at_ui = .{};
     const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));

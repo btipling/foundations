@@ -44,7 +44,7 @@ fn initScene(self: *Scenes, dt: ui.ui_state.scene_type) void {
                 ui.ui_state.scenes,
                 dtag,
             ),
-        ).init(self.allocator, self.cfg)),
+        ).init(self.allocator, self.cfg, self.world)),
     };
 }
 

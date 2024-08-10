@@ -31,7 +31,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *LineDistance {
+pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *LineDistance {
     const bct = allocator.create(LineDistance) catch @panic("OOM");
     const ui_state: line_distance_ui = .{};
     const ortho_persp = math.matrix.orthographicProjection(
