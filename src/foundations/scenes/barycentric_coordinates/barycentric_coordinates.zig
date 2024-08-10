@@ -35,7 +35,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *BCTriangle {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *BCTriangle {
     const bct = allocator.create(BCTriangle) catch @panic("OOM");
     const ui_state: bc_ui = .{};
     const ortho_persp = math.matrix.orthographicProjection(

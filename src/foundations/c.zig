@@ -6,5 +6,4 @@ pub const c = @cImport({
     @cDefine("CIMGUI_USE_OPENGL3", {});
     @cInclude("cimgui.h");
     @cInclude("cimgui_impl.h");
-    @cInclude("flecs.h");
 });

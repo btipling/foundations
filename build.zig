@@ -20,7 +20,6 @@ pub fn build(b: *std.Build) void {
     exe.addIncludePath(b.path("libs/cimgui/generator/output"));
     exe.addIncludePath(b.path("libs/cimgui/imgui"));
     exe.addIncludePath(b.path("libs/cimgui/imgui/backends"));
-    exe.addIncludePath(b.path("libs/flecs/include"));
     exe.linkLibC();
     exe.linkLibCpp();
     switch (target.result.os.tag) {
@@ -78,12 +77,6 @@ pub fn build(b: *std.Build) void {
                     "libs/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
                 },
                 .flags = &(cflags.* ++ .{"-DIMGUI_IMPL_API=extern \"C\" __declspec(dllexport)"}),
-            });
-            exe.addCSourceFiles(.{
-                .files = &.{
-                    "libs/flecs/src/flecs.c",
-                },
-                .flags = &(cflags.* ++ .{"-DIMGUI_IMPL_API=extern \"C\" __declspec(htons)"}),
             });
         },
         else => @panic("this project only builds on windows"),

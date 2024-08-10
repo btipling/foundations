@@ -19,7 +19,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *Point {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Point {
     const program = rhi.createProgram();
     const vao = rhi.createVAO();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -53,7 +53,6 @@ pub fn draw(self: *Point, _: f64) void {
 }
 
 const std = @import("std");
-const c = @import("../../c.zig").c;
 const rhi = @import("../../rhi/rhi.zig");
 const ui = @import("../../ui/ui.zig");
 const config = @import("../../config/config.zig");

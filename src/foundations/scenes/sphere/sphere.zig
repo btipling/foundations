@@ -16,7 +16,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *Sphere {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
     const p = allocator.create(Sphere) catch @panic("OOM");
 
     const program = rhi.createProgram();
@@ -63,7 +63,6 @@ pub fn draw(self: *Sphere, frame_time: f64) void {
 }
 
 const std = @import("std");
-const c = @import("../../c.zig").c;
 const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const sphere_ui = @import("sphere_ui.zig");

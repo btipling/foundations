@@ -28,7 +28,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config, _: *c.ecs_world_t) *Triangle {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Triangle {
     const t = allocator.create(Triangle) catch @panic("OOM");
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -73,7 +73,6 @@ pub fn draw(self: *Triangle, _: f64) void {
 }
 
 const std = @import("std");
-const c = @import("../../c.zig").c;
 const rhi = @import("../../rhi/rhi.zig");
 const ui = @import("../../ui/ui.zig");
 const config = @import("../../config/config.zig");

@@ -1,19 +1,17 @@
 scene_instance: ?ui.ui_state.scenes = null,
 next_scene_type: ?ui.ui_state.scene_type = null,
 cfg: *config,
-world: *c.ecs_world_t,
 
 allocator: std.mem.Allocator,
 
 const Scenes = @This();
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config, world: *c.ecs_world_t) *Scenes {
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *Scenes {
     const scenes = allocator.create(Scenes) catch @panic("OOM");
     errdefer allocator.destroy(scenes);
     scenes.* = .{
         .allocator = allocator,
         .cfg = cfg,
-        .world = world,
     };
     scenes.initScene(ui.ui_state.scene_type.look_at);
     return scenes;
@@ -44,7 +42,7 @@ fn initScene(self: *Scenes, dt: ui.ui_state.scene_type) void {
                 ui.ui_state.scenes,
                 dtag,
             ),
-        ).init(self.allocator, self.cfg, self.world)),
+        ).init(self.allocator, self.cfg)),
     };
 }
 
@@ -69,6 +67,5 @@ pub fn drawScene(self: Scenes, frame_time: f64) void {
 }
 
 const std = @import("std");
-const c = @import("../c.zig").c;
 const ui = @import("../ui/ui.zig");
 const config = @import("../config/config.zig");
