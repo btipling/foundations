@@ -1,5 +1,5 @@
 strip: object.object = undefined,
-ui_state: unit_circle_ui,
+ui_state: UnitCircleUI,
 allocator: std.mem.Allocator,
 circle: math.geometry.Circle,
 cfg: *config,
@@ -93,6 +93,6 @@ const std = @import("std");
 const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
-const unit_circle_ui = @import("unit_circle_ui.zig");
+const UnitCircleUI = @import("UnitCircleUI.zig");
 const object = @import("../../object/object.zig");
 const config = @import("../../config/config.zig");

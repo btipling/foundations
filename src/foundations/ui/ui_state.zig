@@ -27,7 +27,7 @@ pub const scenes = union(scene_type) {
     circle: *circle,
     sphere: *sphere,
     line: *line,
-    unit_circle: *unit_circle,
+    unit_circle: *UnitCircle,
     barycentric_coordinates: *BarycentricCoordinates,
     line_distance: *LineDistance,
     look_at: *look_at,
@@ -55,7 +55,7 @@ const CubeAnimated = @import("../scenes/cubes_animated/CubeAnimated.zig");
 const circle = @import("../scenes/circle/circle.zig");
 const sphere = @import("../scenes/sphere/sphere.zig");
 const line = @import("../scenes/line/line.zig");
-const unit_circle = @import("../scenes/unit_circle/unit_circle.zig");
+const UnitCircle = @import("../scenes/unit_circle/UnitCircle.zig");
 const BarycentricCoordinates = @import("../scenes/barycentric_coordinates/BarycentricCoordinates.zig");
 const LineDistance = @import("../scenes/line_distance/LineDistance.zig");
 const look_at = @import("../scenes/look_at/look_at.zig");
