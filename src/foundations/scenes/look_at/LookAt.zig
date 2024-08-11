@@ -1,4 +1,4 @@
-ui_state: look_at_ui,
+ui_state: LookAtUI,
 allocator: std.mem.Allocator,
 grid: *scenery.grid = undefined,
 cube: object.object = undefined,
@@ -26,7 +26,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
     errdefer cam.deinit(allocator);
     const grid = scenery.grid.init(allocator);
     errdefer grid.deinit();
-    const ui_state: look_at_ui = .{};
+    const ui_state: LookAtUI = .{};
 
     lkt.* = .{
         .ui_state = ui_state,
@@ -130,7 +130,7 @@ const c = @import("../../c.zig").c;
 const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
-const look_at_ui = @import("look_at_ui.zig");
+const LookAtUI = @import("LookAtUI.zig");
 const object = @import("../../object/object.zig");
 const config = @import("../../config/config.zig");
 const physics = @import("../../physics/physics.zig");

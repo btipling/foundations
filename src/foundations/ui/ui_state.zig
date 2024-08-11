@@ -30,7 +30,7 @@ pub const scenes = union(scene_type) {
     unit_circle: *UnitCircle,
     barycentric_coordinates: *BarycentricCoordinates,
     line_distance: *LineDistance,
-    look_at: *look_at,
+    look_at: *LookAt,
     plane_distance: *PlaneDistance,
 };
 
@@ -58,5 +58,5 @@ const line = @import("../scenes/line/line.zig");
 const UnitCircle = @import("../scenes/unit_circle/UnitCircle.zig");
 const BarycentricCoordinates = @import("../scenes/barycentric_coordinates/BarycentricCoordinates.zig");
 const LineDistance = @import("../scenes/line_distance/LineDistance.zig");
-const look_at = @import("../scenes/look_at/look_at.zig");
+const LookAt = @import("../scenes/look_at/LookAt.zig");
 const PlaneDistance = @import("../scenes/plane_distance/PlaneDistance.zig");
