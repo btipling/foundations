@@ -1,6 +1,6 @@
 program: u32,
 objects: [1]object.object = undefined,
-ui_state: ca_ui,
+ui_state: CubeAnimatedUI,
 cfg: *config,
 aspect_ratio: f32,
 
@@ -61,7 +61,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
     };
     p.* = .{
         .program = program,
-        .ui_state = ca_ui.init(),
+        .ui_state = CubeAnimatedUI.init(),
         .cfg = cfg,
         .aspect_ratio = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height)),
     };
@@ -120,6 +120,6 @@ const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
-const ca_ui = @import("cubes_animated_ui.zig");
+const CubeAnimatedUI = @import("CubeAnimatedUI.zig");
 const ui = @import("../../ui/ui.zig");
 const config = @import("../../config/config.zig");
