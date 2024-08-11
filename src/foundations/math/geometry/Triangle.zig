@@ -65,7 +65,7 @@ pub fn incenter(self: Triangle) vector.vec3 {
     return vector.mul(1.0 / (l0 + l1 + l2), rv);
 }
 
-pub fn incribedCircle(self: Triangle) circle {
+pub fn incribedCircle(self: Triangle) Circle {
     const c = self.incenter();
     const s = self.perimiter() / 2;
     const a = self.area();
@@ -89,7 +89,7 @@ pub fn circumCenter(self: Triangle) f32 {
     return vector.mul(1 / 2 * c, cc_n);
 }
 
-pub fn circumscribedCircle(self: Triangle) circle {
+pub fn circumscribedCircle(self: Triangle) Circle {
     const d0: f32 = vector.dotProduct(vector.negate(self.e1), self.e2);
     const d1: f32 = vector.dotProduct(vector.negate(self.e2), self.e0);
     const d2: f32 = vector.dotProduct(vector.negate(self.e0), self.e1);
@@ -120,5 +120,5 @@ pub fn vectorAt(self: Triangle, i: usize) vector.vec3 {
 
 const std = @import("std");
 const geometry = @import("geometry.zig");
-const circle = @import("circle.zig");
+const Circle = @import("Circle.zig");
 const vector = @import("../vector.zig");

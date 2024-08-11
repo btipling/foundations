@@ -2,7 +2,7 @@ strip: ?object.object = null,
 connection_strip: ?object.object = null,
 circle: object.object = undefined,
 ui_state: line_distance_ui,
-line: math.geometry.line = undefined,
+line: math.geometry.Line = undefined,
 circles: [num_points]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
 cfg: *config,
@@ -232,7 +232,7 @@ fn handleInput(self: *LineDistance) void {
 fn updateLine(self: *LineDistance) void {
     const vs0 = self.ui_state.vs[0].position;
     const vs1 = self.ui_state.vs[1].position;
-    self.line = math.geometry.line.init(vs0, vs1);
+    self.line = math.geometry.Line.init(vs0, vs1);
     self.ui_state.origin_point = .{
         .position = self.line.closestPointToOrigin(),
         .color = line_distance_ui.green,
@@ -304,7 +304,7 @@ fn overVertex(self: *LineDistance, x: f32, z: f32) ?line_distance_ui.mouseVertex
             math.vector.vec3ToVec4(vs.position),
         );
         const center = .{ v[0], v[1] };
-        const circle: math.geometry.circle = .{ .center = center, .radius = point_scale };
+        const circle: math.geometry.Circle = .{ .center = center, .radius = point_scale };
         if (circle.withinCircle(p)) {
             return .{
                 .vertex = i,

@@ -1,9 +1,9 @@
 strip: ?object.object = null,
 circle: object.object = undefined,
-triangle: math.geometry.triangle = undefined,
-center: math.geometry.circle = undefined,
-inscribed: math.geometry.circle = undefined,
-circumscribed: math.geometry.circle = undefined,
+triangle: math.geometry.Triangle = undefined,
+center: math.geometry.Circle = undefined,
+inscribed: math.geometry.Circle = undefined,
+circumscribed: math.geometry.Circle = undefined,
 ui_state: bc_ui,
 circles: [num_circles]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
@@ -188,7 +188,7 @@ fn handleInput(self: *BCTriangle) void {
 }
 
 fn updateTriangle(self: *BCTriangle) void {
-    const t = math.geometry.triangle.init(
+    const t = math.geometry.Triangle.init(
         math.vector.vec4ToVec3(self.ui_state.vs[0].position),
         math.vector.vec4ToVec3(self.ui_state.vs[1].position),
         math.vector.vec4ToVec3(self.ui_state.vs[2].position),
@@ -272,7 +272,7 @@ fn overVertex(self: *BCTriangle, pos: math.vector.vec4) ?bc_ui.mouseVertexCaptur
             vs.position,
         );
         const center = .{ v[0], v[1] };
-        const circle: math.geometry.circle = .{ .center = center, .radius = point_scale };
+        const circle: math.geometry.Circle = .{ .center = center, .radius = point_scale };
         if (circle.withinCircle(.{ p[0], p[1] })) {
             return .{
                 .vertex = i,

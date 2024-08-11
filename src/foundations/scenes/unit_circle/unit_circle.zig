@@ -1,7 +1,7 @@
 strip: object.object = undefined,
 ui_state: unit_circle_ui,
 allocator: std.mem.Allocator,
-circle: math.geometry.circle,
+circle: math.geometry.Circle,
 cfg: *config,
 
 const UnitCircle = @This();

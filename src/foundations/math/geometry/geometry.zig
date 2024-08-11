@@ -7,9 +7,9 @@ pub fn TwoDToXUpLeftHandedTo(v: vector.vec2) vector.vec4 {
 }
 
 const vector = @import("../vector.zig");
-pub const circle = @import("circle.zig");
-pub const sphere = @import("sphere.zig");
-pub const plane = @import("plane.zig");
-pub const line = @import("line.zig");
-pub const triangle = @import("triangle.zig");
-pub const parallelepiped = @import("parallelepiped.zig");
+pub const Circle = @import("Circle.zig");
+pub const Sphere = @import("Sphere.zig");
+pub const Plane = @import("Plane.zig");
+pub const Line = @import("Line.zig");
+pub const Triangle = @import("Triangle.zig");
+pub const Parallelepiped = @import("Parallelepiped.zig");
