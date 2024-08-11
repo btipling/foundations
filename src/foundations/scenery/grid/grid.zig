@@ -101,7 +101,7 @@ pub fn renderGrid(self: *Grid) void {
         }
     }
     const grid: object.object = .{
-        .parallelepiped = object.parallelepiped.init(
+        .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
         ),
