@@ -101,3 +101,4 @@ pub fn timestep(s: step, new_time: f64) step {
 const std = @import("std");
 const math = @import("../math/math.zig");
 pub const movement = @import("movement.zig");
+pub const camera = @import("camera.zig");
