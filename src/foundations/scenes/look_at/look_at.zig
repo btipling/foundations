@@ -50,8 +50,6 @@ pub fn deinit(self: *LookAt, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *LookAt, dt: f64) void {
-    if (self.ui_state.grid_updated) self.updateGrid();
-    if (self.ui_state.cube_updated) self.updateCube();
     self.view_camera.update(dt);
     {
         const objects: [1]object.object = .{self.grid};
@@ -78,12 +76,6 @@ pub fn deleteCamera(self: *LookAt) void {
     var objects: [1]object.object = .{self.camera};
     rhi.deleteObjects(objects[0..]);
     self.camera = undefined;
-}
-
-pub fn updateCube(self: *LookAt) void {
-    self.ui_state.cube_updated = false;
-    self.deleteCube();
-    self.renderCube();
 }
 
 pub fn updateCamera(self: *LookAt) void {
@@ -139,12 +131,6 @@ pub fn deleteGrid(self: *LookAt) void {
     var objects: [1]object.object = .{self.grid};
     rhi.deleteObjects(objects[0..]);
     self.grid = undefined;
-}
-
-pub fn updateGrid(self: *LookAt) void {
-    self.ui_state.grid_updated = false;
-    self.deleteGrid();
-    self.renderGrid();
 }
 
 pub fn renderGrid(self: *LookAt) void {
