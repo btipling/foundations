@@ -1,7 +1,7 @@
 strip: ?object.object = null,
 connection_strip: ?object.object = null,
 circle: object.object = undefined,
-ui_state: line_distance_ui,
+ui_state: LineDistanceUI,
 line: math.geometry.Line = undefined,
 circles: [num_points]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
@@ -33,7 +33,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *LineDistance {
     const bct = allocator.create(LineDistance) catch @panic("OOM");
-    const ui_state: line_distance_ui = .{};
+    const ui_state: LineDistanceUI = .{};
     const ortho_persp = math.matrix.orthographicProjection(
         0,
         4.5,
@@ -211,7 +211,7 @@ fn handleInput(self: *LineDistance) void {
             ov.dragging = true;
             self.ui_state.over_vertex = ov.*;
         }
-        self.ui_state.vs[ov.vertex].color = line_distance_ui.pink;
+        self.ui_state.vs[ov.vertex].color = LineDistanceUI.pink;
         if (ov.dragging) {
             self.ui_state.vs[ov.vertex].position = .{ x * 1.5, 0, z * 2.25 };
             self.renderStrip();
@@ -221,7 +221,7 @@ fn handleInput(self: *LineDistance) void {
     } else if (action == c.GLFW_PRESS and button == c.GLFW_MOUSE_BUTTON_1) {
         self.ui_state.point_vector = .{
             .position = .{ x * 1.5, 0, z * 2.25 },
-            .color = line_distance_ui.green,
+            .color = LineDistanceUI.green,
         };
         self.renderStrip();
         self.updateLine();
@@ -235,7 +235,7 @@ fn updateLine(self: *LineDistance) void {
     self.line = math.geometry.Line.init(vs0, vs1);
     self.ui_state.origin_point = .{
         .position = self.line.closestPointToOrigin(),
-        .color = line_distance_ui.green,
+        .color = LineDistanceUI.green,
     };
     if (self.ui_state.point_vector) |pv| {
         self.ui_state.distance = self.line.distanceToPoint(pv.position);
@@ -245,7 +245,7 @@ fn updateLine(self: *LineDistance) void {
 
 fn releaseCurrentMouseCapture(self: *LineDistance) void {
     const data = self.ui_state.over_vertex orelse return;
-    self.ui_state.vs[data.vertex].color = line_distance_ui.yellow;
+    self.ui_state.vs[data.vertex].color = LineDistanceUI.yellow;
     self.ui_state.over_vertex = null;
     self.updatePointData(data.vertex);
 }
@@ -295,7 +295,7 @@ fn updatePointData(self: *LineDistance, index: usize) void {
     }
 }
 
-fn overVertex(self: *LineDistance, x: f32, z: f32) ?line_distance_ui.mouseVertexCapture {
+fn overVertex(self: *LineDistance, x: f32, z: f32) ?LineDistanceUI.mouseVertexCapture {
     const m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
     const p: math.vector.vec2 = .{ z, x };
     for (self.ui_state.vs, 0..) |vs, i| {
@@ -319,6 +319,6 @@ const c = @import("../../c.zig").c;
 const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
-const line_distance_ui = @import("line_distance_ui.zig");
+const LineDistanceUI = @import("LineDistanceUI.zig");
 const object = @import("../../object/object.zig");
 const config = @import("../../config/config.zig");
