@@ -75,15 +75,29 @@ pub const step = struct {
     t: f64,
     current_time: f64,
     state: state,
+    max_time: f64,
+
+    pub fn debug(self: step) void {
+        std.debug.print("t: {d} current_time: {d} position: {d} velocity: {d}\n", .{
+            self.t,
+            self.current_time,
+            self.state.position,
+            self.state.velocity,
+        });
+    }
 };
 
 pub fn timestep(s: step, new_time: f64) step {
+    if (s.t >= s.max_time) return s;
     const frame_time = new_time - s.current_time;
     return .{
         .t = s.t + frame_time,
         .state = integrate(s.state, s.t, frame_time),
         .current_time = new_time,
+        .max_time = s.max_time,
     };
 }
 
+const std = @import("std");
 const math = @import("../math/math.zig");
+pub const movement = @import("movement.zig");

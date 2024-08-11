@@ -15,6 +15,7 @@ use_camera: bool = false,
 fly_mode: bool = false,
 persp_m: math.matrix,
 mvp: math.matrix,
+forward: physics.movement,
 
 const LookAt = @This();
 
@@ -55,7 +56,9 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
         .cfg = cfg,
         .persp_m = mvp,
         .mvp = mvp,
+        .forward = undefined,
     };
+    lkt.forward = physics.movement.init(lkt.camera_pos, 0);
     lkt.renderGrid();
     lkt.renderCube();
     lkt.updateCameraMatrix();
@@ -67,10 +70,11 @@ pub fn deinit(self: *LookAt, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn draw(self: *LookAt, _: f64) void {
+pub fn draw(self: *LookAt, dt: f64) void {
     if (self.ui_state.grid_updated) self.updateGrid();
     if (self.ui_state.cube_updated) self.updateCube();
-    self.handleInput();
+    self.integrate(dt);
+    self.handleInput(dt);
     {
         const objects: [1]object.object = .{self.grid};
         rhi.drawObjects(objects[0..]);
@@ -86,7 +90,12 @@ pub fn draw(self: *LookAt, _: f64) void {
     self.ui_state.draw();
 }
 
-fn handleInput(self: *LookAt) void {
+fn integrate(self: *LookAt, t: f64) void {
+    self.forward.step = physics.timestep(self.forward.step, t);
+    self.moveCameraForward();
+}
+
+fn handleInput(self: *LookAt, t: f64) void {
     const input = ui.input.getReadOnly() orelse return;
     var new_cursor_coords: ?math.vector.vec3 = null;
     cursor: {
@@ -114,7 +123,7 @@ fn handleInput(self: *LookAt) void {
             else => {},
         }
     }
-    if (ui.input.keyPressed(c.GLFW_KEY_W)) self.moveCameraForward();
+    if (ui.input.keyPressed(c.GLFW_KEY_W)) self.accelerateForward(t);
     if (ui.input.keyPressed(c.GLFW_KEY_S)) self.moveCameraBackward();
     if (ui.input.keyPressed(c.GLFW_KEY_A)) if (self.fly_mode) self.turnRight() else self.moveCameraLeft();
     if (ui.input.keyPressed(c.GLFW_KEY_D)) if (self.fly_mode) self.turnLeft() else self.moveCameraRight();
@@ -282,12 +291,17 @@ fn moveCameraDown(self: *LookAt) void {
     self.updateCameraComplex();
 }
 
+fn accelerateForward(self: *LookAt, t: f64) void {
+    self.forward = physics.movement.init(self.camera_pos, t);
+    self.forward.step.state.position = 0.5;
+}
+
 fn moveCameraForward(self: *LookAt) void {
     const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
     const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
     const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
-    const velocity = math.vector.mul(speed, left_vector);
-    self.camera_pos = math.vector.add(self.camera_pos, velocity);
+    const velocity = math.vector.mul(self.forward.step.state.position, left_vector);
+    self.camera_pos = math.vector.add(self.forward.start, velocity);
     self.updateCameraComplex();
 }
 
@@ -494,3 +508,4 @@ const math = @import("../../math/math.zig");
 const look_at_ui = @import("look_at_ui.zig");
 const object = @import("../../object/object.zig");
 const config = @import("../../config/config.zig");
+const physics = @import("../../physics/physics.zig");
