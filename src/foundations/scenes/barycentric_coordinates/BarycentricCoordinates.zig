@@ -4,7 +4,7 @@ triangle: math.geometry.Triangle = undefined,
 center: math.geometry.Circle = undefined,
 inscribed: math.geometry.Circle = undefined,
 circumscribed: math.geometry.Circle = undefined,
-ui_state: bc_ui,
+ui_state: BarycentricCoordinatesUI,
 circles: [num_circles]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
 cfg: *config,
@@ -37,7 +37,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *BCTriangle {
     const bct = allocator.create(BCTriangle) catch @panic("OOM");
-    const ui_state: bc_ui = .{};
+    const ui_state: BarycentricCoordinatesUI = .{};
     const ortho_persp = math.matrix.orthographicProjection(
         0,
         9,
@@ -176,7 +176,7 @@ fn handleInput(self: *BCTriangle) void {
             ov.dragging = true;
             self.ui_state.over_vertex = ov.*;
         }
-        self.ui_state.vs[ov.vertex].color = bc_ui.pink;
+        self.ui_state.vs[ov.vertex].color = BarycentricCoordinatesUI.pink;
         if (ov.dragging) {
             self.ui_state.vs[ov.vertex].position = np;
             self.renderStrip();
@@ -210,7 +210,7 @@ fn updateCircle(self: *BCTriangle) void {
 
 fn releaseCurrentMouseCapture(self: *BCTriangle) void {
     const data = self.ui_state.over_vertex orelse return;
-    self.ui_state.vs[data.vertex].color = bc_ui.yellow;
+    self.ui_state.vs[data.vertex].color = BarycentricCoordinatesUI.yellow;
     self.ui_state.over_vertex = null;
     self.updatePointData(data.vertex);
 }
@@ -263,7 +263,7 @@ fn updatePointData(self: *BCTriangle, index: usize) void {
     }
 }
 
-fn overVertex(self: *BCTriangle, pos: math.vector.vec4) ?bc_ui.mouseVertexCapture {
+fn overVertex(self: *BCTriangle, pos: math.vector.vec4) ?BarycentricCoordinatesUI.mouseVertexCapture {
     const m = math.matrix.transformMatrix(self.ortho_persp, math.matrix.leftHandedXUpToNDC());
     const p: math.vector.vec2 = .{ pos[2], pos[0] };
     for (self.ui_state.vs, 0..) |vs, i| {
@@ -287,6 +287,6 @@ const c = @import("../../c.zig").c;
 const ui = @import("../../ui/ui.zig");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
-const bc_ui = @import("bc_ui.zig");
+const BarycentricCoordinatesUI = @import("BarycentricCoordinatesUI.zig");
 const object = @import("../../object/object.zig");
 const config = @import("../../config/config.zig");
