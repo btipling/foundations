@@ -1,9 +1,20 @@
 start: math.vector.vec3,
 step: physics.step,
+direction: direction,
 
 const movement = @This();
 
-pub fn init(start: math.vector.vec3, t: f64) movement {
+pub const direction = enum {
+    none,
+    forward,
+    backward,
+    left,
+    right,
+    up,
+    down,
+};
+
+pub fn init(start: math.vector.vec3, t: f64, dir: direction) movement {
     return .{
         .step = .{
             .state = .{
@@ -14,6 +25,7 @@ pub fn init(start: math.vector.vec3, t: f64) movement {
             .current_time = t,
         },
         .start = start,
+        .direction = dir,
     };
 }
 

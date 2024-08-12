@@ -13,7 +13,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         fly_mode: bool = false,
         persp_m: math.matrix,
         mvp: math.matrix,
-        forward: physics.movement,
+        movement: physics.movement,
         programs: std.ArrayListUnmanaged(program) = .{},
         scene: T,
         integrator: IntegratorT,
@@ -43,11 +43,11 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .cfg = cfg,
                 .persp_m = mvp,
                 .mvp = mvp,
-                .forward = undefined,
+                .movement = undefined,
                 .scene = scene,
                 .integrator = integrator,
             };
-            cam.forward = physics.movement.init(cam.camera_pos, 0);
+            cam.movement = physics.movement.init(cam.camera_pos, 0, .none);
             cam.updateCameraMatrix();
             return cam;
         }
@@ -63,8 +63,11 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         fn integrate(self: *Self, t: f64) void {
-            self.forward.step = self.integrator.timestep(self.forward.step, t);
-            self.moveCameraForward();
+            self.movement.step = self.integrator.timestep(self.movement.step, t);
+            switch (self.movement.direction) {
+                .forward => self.moveCameraForward(),
+                else => {},
+            }
         }
 
         fn handleInput(self: *Self, t: f64) void {
@@ -263,17 +266,17 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         fn accelerateForward(self: *Self, t: f64, go_fast: bool) void {
-            self.forward = physics.movement.init(self.camera_pos, t);
-            self.forward.step.state.position = if (go_fast) 0.5 else 0.05;
+            self.movement = physics.movement.init(self.camera_pos, t, .forward);
+            self.movement.step.state.position = if (go_fast) 0.5 else 0.05;
         }
 
         fn moveCameraForward(self: *Self) void {
             const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
             const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
             const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
-            const velocity = math.vector.mul(self.forward.step.state.position, left_vector);
-            self.camera_pos = math.vector.add(self.forward.start, velocity);
-            self.forward.start = self.camera_pos;
+            const velocity = math.vector.mul(self.movement.step.state.position, left_vector);
+            self.camera_pos = math.vector.add(self.movement.start, velocity);
+            self.movement.start = self.camera_pos;
             self.updateCameraComplex();
         }
 
