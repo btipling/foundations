@@ -14,7 +14,7 @@ pub inline fn accelerationOverTime(dv: f32, dt: f32) f32 {
     return dv / dt;
 }
 
-pub inline fn velocityOverTim(dx: f32, dt: f32) f32 {
+pub inline fn velocityOverTime(dx: f32, dt: f32) f32 {
     if (math.floatequal(dt, 0, epsilon)) return 0;
     return dx / dt;
 }
@@ -36,7 +36,7 @@ pub const SpringDampener = struct {
     }
 };
 
-pub const smoothDeceleration = struct {
+pub const SmoothDeceleration = struct {
     omega: f32 = 16.0,
     const Self = @This();
     pub fn acceleration(self: Self, s: state, _: f64) f32 {
@@ -94,10 +94,21 @@ pub fn Integrator(comptime T: type) type {
         }
 
         pub fn timestep(self: Self, s: step, new_time: f64) step {
-            const frame_time = new_time - s.current_time;
+            var t: f64 = s.t;
+            const dt: f64 = 1.0 / 60.0;
+            var frame_time = new_time - s.current_time;
+
+            var st: state = undefined;
+            while (frame_time > 0) {
+                const delta_time: f64 = @min(frame_time, dt);
+                st = self.integrate(s.state, s.t, delta_time);
+                frame_time -= delta_time;
+                t += delta_time;
+            }
+
             const rv: step = .{
-                .t = s.t + frame_time,
-                .state = self.integrate(s.state, s.t, frame_time),
+                .t = t,
+                .state = st,
                 .current_time = new_time,
             };
             return rv;
