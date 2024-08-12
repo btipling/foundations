@@ -1,4 +1,4 @@
-pub fn Camera(comptime T: type) type {
+pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
     return struct {
         allocator: std.mem.Allocator,
         cfg: *config,
@@ -16,6 +16,7 @@ pub fn Camera(comptime T: type) type {
         forward: physics.movement,
         programs: std.ArrayListUnmanaged(program) = .{},
         scene: T,
+        integrator: IntegratorT,
 
         const Self = @This();
 
@@ -29,7 +30,7 @@ pub fn Camera(comptime T: type) type {
         const world_forward: math.vector.vec3 = .{ 0, 1, 0 };
         const speed: f32 = 0.05;
 
-        pub fn init(allocator: std.mem.Allocator, cfg: *config, scene: T) *Self {
+        pub fn init(allocator: std.mem.Allocator, cfg: *config, scene: T, integrator: IntegratorT) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");
             const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
             const mvp = math.matrix.transformMatrix(
@@ -44,6 +45,7 @@ pub fn Camera(comptime T: type) type {
                 .mvp = mvp,
                 .forward = undefined,
                 .scene = scene,
+                .integrator = integrator,
             };
             cam.forward = physics.movement.init(cam.camera_pos, 0);
             cam.updateCameraMatrix();
@@ -61,7 +63,7 @@ pub fn Camera(comptime T: type) type {
         }
 
         fn integrate(self: *Self, t: f64) void {
-            self.forward.step = physics.timestep(self.forward.step, t);
+            self.forward.step = self.integrator.timestep(self.forward.step, t);
             self.moveCameraForward();
         }
 
@@ -93,7 +95,7 @@ pub fn Camera(comptime T: type) type {
                     else => {},
                 }
             }
-            if (ui.input.keyPressed(c.GLFW_KEY_W)) self.accelerateForward(t);
+            if (ui.input.keyPressed(c.GLFW_KEY_W)) self.accelerateForward(t, ui.input.keyPressed(c.GLFW_KEY_LEFT_SHIFT));
             if (ui.input.keyPressed(c.GLFW_KEY_S)) self.moveCameraBackward();
             if (ui.input.keyPressed(c.GLFW_KEY_A)) if (self.fly_mode) self.turnRight() else self.moveCameraLeft();
             if (ui.input.keyPressed(c.GLFW_KEY_D)) if (self.fly_mode) self.turnLeft() else self.moveCameraRight();
@@ -260,9 +262,9 @@ pub fn Camera(comptime T: type) type {
             self.updateCameraComplex();
         }
 
-        fn accelerateForward(self: *Self, t: f64) void {
+        fn accelerateForward(self: *Self, t: f64, go_fast: bool) void {
             self.forward = physics.movement.init(self.camera_pos, t);
-            self.forward.step.state.position = 0.5;
+            self.forward.step.state.position = if (go_fast) 0.5 else 0.05;
         }
 
         fn moveCameraForward(self: *Self) void {
@@ -271,6 +273,7 @@ pub fn Camera(comptime T: type) type {
             const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
             const velocity = math.vector.mul(self.forward.step.state.position, left_vector);
             self.camera_pos = math.vector.add(self.forward.start, velocity);
+            self.forward.start = self.camera_pos;
             self.updateCameraComplex();
         }
 

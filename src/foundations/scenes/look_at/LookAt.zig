@@ -3,7 +3,7 @@ allocator: std.mem.Allocator,
 grid: *scenery.grid = undefined,
 cube: object.object = undefined,
 camera: object.object = undefined,
-view_camera: *physics.camera.Camera(*LookAt),
+view_camera: *physics.camera.Camera(*LookAt, physics.Integrator(physics.Linear)),
 
 const LookAt = @This();
 
@@ -22,7 +22,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
     const lkt = allocator.create(LookAt) catch @panic("OOM");
     errdefer allocator.destroy(lkt);
-    const cam = physics.camera.Camera(*LookAt).init(allocator, cfg, lkt);
+    const integrator = physics.Integrator(physics.Linear).init(.{});
+    const cam = physics.camera.Camera(*LookAt, physics.Integrator(physics.Linear)).init(
+        allocator,
+        cfg,
+        lkt,
+        integrator,
+    );
     errdefer cam.deinit(allocator);
     const grid = scenery.grid.init(allocator);
     errdefer grid.deinit();

@@ -12,7 +12,6 @@ pub fn init(start: math.vector.vec3, t: f64) movement {
             },
             .t = 0,
             .current_time = t,
-            .max_time = 2,
         },
         .start = start,
     };
