@@ -1,3 +1,9 @@
+const turn_sensitivity: f32 = 1.0;
+const roll_sensitivity: f32 = 1.0;
+const pitch_sensitivity: f32 = 1.5;
+const cursor_vertical_sensitivity: f32 = 0.4;
+const cursor_horizontal_sensitivity: f32 = 0.65;
+
 pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
     return struct {
         allocator: std.mem.Allocator,
@@ -28,7 +34,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         const world_up: math.vector.vec3 = .{ 1, 0, 0 };
         const world_right: math.vector.vec3 = .{ 0, 0, 1 };
         const world_forward: math.vector.vec3 = .{ 0, 1, 0 };
-        const speed: f32 = 0.05;
 
         pub fn init(allocator: std.mem.Allocator, cfg: *config, scene: T, integrator: IntegratorT) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");
@@ -66,6 +71,11 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             self.movement.step = self.integrator.timestep(self.movement.step, t);
             switch (self.movement.direction) {
                 .forward => self.moveCameraForward(),
+                .backward => self.moveCameraBackward(),
+                .left => self.moveCameraLeft(),
+                .right => self.moveCameraRight(),
+                .up => self.moveCameraUp(),
+                .down => self.moveCameraDown(),
                 else => {},
             }
         }
@@ -98,16 +108,17 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                     else => {},
                 }
             }
-            if (ui.input.keyPressed(c.GLFW_KEY_W)) self.accelerateForward(t, ui.input.keyPressed(c.GLFW_KEY_LEFT_SHIFT));
-            if (ui.input.keyPressed(c.GLFW_KEY_S)) self.moveCameraBackward();
-            if (ui.input.keyPressed(c.GLFW_KEY_A)) if (self.fly_mode) self.turnRight() else self.moveCameraLeft();
-            if (ui.input.keyPressed(c.GLFW_KEY_D)) if (self.fly_mode) self.turnLeft() else self.moveCameraRight();
-            if (ui.input.keyPressed(c.GLFW_KEY_LEFT_SHIFT)) self.moveCameraUp();
-            if (ui.input.keyPressed(c.GLFW_KEY_LEFT_CONTROL)) self.moveCameraDown();
+            const go_fast = ui.input.keyPressed(c.GLFW_KEY_LEFT_SHIFT);
+            if (ui.input.keyPressed(c.GLFW_KEY_W)) self.accelerate(t, go_fast, .forward);
+            if (ui.input.keyPressed(c.GLFW_KEY_S)) self.accelerate(t, go_fast, .backward);
+            if (ui.input.keyPressed(c.GLFW_KEY_A)) if (self.fly_mode) self.turnRight() else self.accelerate(t, go_fast, .left);
+            if (ui.input.keyPressed(c.GLFW_KEY_D)) if (self.fly_mode) self.turnLeft() else self.accelerate(t, go_fast, .right);
+            if (ui.input.keyPressed(c.GLFW_KEY_SPACE)) self.accelerate(t, go_fast, .up);
+            if (ui.input.keyPressed(c.GLFW_KEY_LEFT_CONTROL)) self.accelerate(t, go_fast, .down);
             if (ui.input.keyPressed(c.GLFW_KEY_J)) if (self.fly_mode) self.rollLeft();
             if (ui.input.keyPressed(c.GLFW_KEY_SEMICOLON)) if (self.fly_mode) self.rollRight();
-            if (ui.input.keyPressed(c.GLFW_KEY_L)) if (self.fly_mode) self.turnUp();
-            if (ui.input.keyPressed(c.GLFW_KEY_K)) if (self.fly_mode) self.turnDown();
+            if (ui.input.keyPressed(c.GLFW_KEY_L)) if (self.fly_mode) self.pitchUp();
+            if (ui.input.keyPressed(c.GLFW_KEY_K)) if (self.fly_mode) self.pitchDown();
             if (new_cursor_coords) |cc| self.handleCursor(cc);
         }
 
@@ -123,6 +134,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                         world_up,
                         new_cursor_coords[2],
                         self.cursor_pos[2],
+                        cursor_horizontal_sensitivity,
                     );
                 }
                 {
@@ -131,6 +143,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                         world_right,
                         self.cursor_pos[0],
                         new_cursor_coords[0],
+                        cursor_vertical_sensitivity,
                     );
                 }
             } else {
@@ -140,6 +153,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                         world_up,
                         new_cursor_coords[2],
                         self.cursor_pos[2],
+                        cursor_horizontal_sensitivity,
                     );
                 }
                 {
@@ -148,6 +162,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                         world_right,
                         self.cursor_pos[0],
                         new_cursor_coords[0],
+                        cursor_vertical_sensitivity,
                     );
                 }
                 self.camera_orientation = math.rotation.multiplyQuaternions(
@@ -160,21 +175,23 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             self.updateMVP();
         }
 
-        fn turnUp(self: *Self) void {
+        fn pitchUp(self: *Self) void {
             self.camera_orientation = updateOrientation(
                 self.camera_orientation,
                 world_right,
                 0,
                 0.01,
+                pitch_sensitivity,
             );
         }
 
-        fn turnDown(self: *Self) void {
+        fn pitchDown(self: *Self) void {
             self.camera_orientation = updateOrientation(
                 self.camera_orientation,
                 world_right,
                 0.01,
                 0,
+                pitch_sensitivity,
             );
         }
 
@@ -184,6 +201,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 world_up,
                 0,
                 0.01,
+                turn_sensitivity,
             );
         }
 
@@ -193,6 +211,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 world_up,
                 0.01,
                 0,
+                turn_sensitivity,
             );
         }
 
@@ -202,6 +221,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 world_forward,
                 0,
                 0.01,
+                roll_sensitivity,
             );
         }
 
@@ -211,6 +231,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 world_forward,
                 0.01,
                 0,
+                roll_sensitivity,
             );
         }
 
@@ -219,8 +240,9 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             axis: math.vector.vec3,
             a_pos: f32,
             b_pos: f32,
+            sensitivity: f32,
         ) math.rotation.Quat {
-            const change = a_pos - b_pos;
+            const change = (a_pos - b_pos) * sensitivity;
             const a: math.rotation.AxisAngle = .{
                 .angle = change,
                 .axis = axis,
@@ -253,20 +275,22 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
         fn moveCameraUp(self: *Self) void {
             const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
-            const velocity = math.vector.mul(speed, orientation_vector);
-            self.camera_pos = math.vector.add(self.camera_pos, velocity);
+            const velocity = math.vector.mul(self.movement.step.state.position, orientation_vector);
+            self.camera_pos = math.vector.add(self.movement.start, velocity);
+            self.movement.start = self.camera_pos;
             self.updateCameraComplex();
         }
 
         fn moveCameraDown(self: *Self) void {
             const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
-            const velocity = math.vector.negate(math.vector.mul(speed, orientation_vector));
-            self.camera_pos = math.vector.add(self.camera_pos, velocity);
+            const velocity = math.vector.negate(math.vector.mul(self.movement.step.state.position, orientation_vector));
+            self.camera_pos = math.vector.add(self.movement.start, velocity);
+            self.movement.start = self.camera_pos;
             self.updateCameraComplex();
         }
 
-        fn accelerateForward(self: *Self, t: f64, go_fast: bool) void {
-            self.movement = physics.movement.init(self.camera_pos, t, .forward);
+        fn accelerate(self: *Self, t: f64, go_fast: bool, direction: physics.movement.direction) void {
+            self.movement = physics.movement.init(self.camera_pos, t, direction);
             self.movement.step.state.position = if (go_fast) 0.5 else 0.05;
         }
 
@@ -284,22 +308,25 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
             const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
             const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
-            const velocity = math.vector.negate(math.vector.mul(speed, left_vector));
-            self.camera_pos = math.vector.add(self.camera_pos, velocity);
+            const velocity = math.vector.negate(math.vector.mul(self.movement.step.state.position, left_vector));
+            self.camera_pos = math.vector.add(self.movement.start, velocity);
+            self.movement.start = self.camera_pos;
             self.updateCameraComplex();
         }
 
         fn moveCameraRight(self: *Self) void {
             const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
-            const velocity = math.vector.mul(speed, direction_vector);
-            self.camera_pos = math.vector.add(self.camera_pos, velocity);
+            const velocity = math.vector.mul(self.movement.step.state.position, direction_vector);
+            self.camera_pos = math.vector.add(self.movement.start, velocity);
+            self.movement.start = self.camera_pos;
             self.updateCameraComplex();
         }
 
         fn moveCameraLeft(self: *Self) void {
             const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_right, self.camera_orientation));
-            const velocity = math.vector.negate(math.vector.mul(speed, direction_vector));
-            self.camera_pos = math.vector.add(self.camera_pos, velocity);
+            const velocity = math.vector.negate(math.vector.mul(self.movement.step.state.position, direction_vector));
+            self.camera_pos = math.vector.add(self.movement.start, velocity);
+            self.movement.start = self.camera_pos;
             self.updateCameraComplex();
         }
 

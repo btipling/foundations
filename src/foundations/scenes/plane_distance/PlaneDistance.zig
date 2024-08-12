@@ -1,7 +1,7 @@
 ui_state: PlaneDistanceUI,
 allocator: std.mem.Allocator,
 grid: *scenery.grid = undefined,
-view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.Linear)),
+view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.smoothDeceleration)),
 
 const PlaneDistance = @This();
 
@@ -15,8 +15,8 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
     const pd = allocator.create(PlaneDistance) catch @panic("OOM");
     errdefer allocator.destroy(pd);
-    const integrator = physics.Integrator(physics.Linear).init(.{});
-    const cam = physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.Linear)).init(
+    const integrator = physics.Integrator(physics.smoothDeceleration).init(.{});
+    const cam = physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.smoothDeceleration)).init(
         allocator,
         cfg,
         pd,

@@ -36,7 +36,7 @@ pub const SpringDampener = struct {
     }
 };
 
-pub const Linear = struct {
+pub const smoothDeceleration = struct {
     omega: f32 = 16.0,
     const Self = @This();
     pub fn acceleration(self: Self, s: state, _: f64) f32 {
