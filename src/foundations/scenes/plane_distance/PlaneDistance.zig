@@ -7,7 +7,9 @@ view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.S
 
 const PlaneDistance = @This();
 
-const default_plane_surface_normal: math.vector.vec3 = .{ 0, -1, 0 }; // points into the screen.
+const default_plane_parallepiped_direction: math.vector.vec3 = .{ 0, 1, 0 }; // points into the screen.
+const default_plane_parallepiped_direction_orth: math.vector.vec3 = .{ 0, 0, 1 };
+const default_plane_surface_normal: math.vector.vec3 = .{ 0, -1, 0 }; // points out of the screen.
 const default_plane_distance_to_origin: f32 = 0.0; // always intersects with origin for now
 
 const grid_vertex_shader: []const u8 = @embedFile("plane_vertex.glsl");
@@ -58,6 +60,7 @@ pub fn deinit(self: *PlaneDistance, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *PlaneDistance, dt: f64) void {
     self.updatePlane();
+    self.updatePlaneTransform(self.plane_visualization.parallelepiped.mesh.program);
     self.view_camera.update(dt);
     self.grid.draw(dt);
     const objects: [1]object.object = .{self.plane_visualization};
@@ -77,8 +80,31 @@ pub fn updatePlane(self: *PlaneDistance) void {
     self.plane = math.geometry.Plane.init(math.vector.vec4ToVec3(transformed_normal), default_plane_distance_to_origin);
 }
 
-pub fn updatePlaneTransform(self: *PlaneDistance) void {
-    _ = self;
+pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
+    const n: math.vector.vec3 = self.plane.normal;
+    const p_dir: math.vector.vec3 = default_plane_parallepiped_direction;
+    const dp: f32 = math.vector.dotProduct(n, p_dir);
+    const reflect: bool = math.float.equal(@abs(dp), 1.0, 0.0001) and dp < 0.0;
+    {
+        var m = math.matrix.identity();
+        _ = &m;
+        m = math.matrix.transformMatrix(m, math.matrix.translate(-100, 300, -200));
+        {
+            if (reflect) {
+                m = math.matrix.transformMatrix(m, math.matrix.rotationY(std.math.pi));
+                m = math.matrix.transformMatrix(m, math.matrix.uniformScale(-1));
+            } else {
+                const angle: f32 = math.vector.angleBetweenVectors(n, p_dir);
+                const axis = math.vector.crossProduct(n, p_dir);
+                const a: math.rotation.AxisAngle = .{ .angle = angle, .axis = axis };
+                var q = math.rotation.axisAngleToQuat(a);
+                q = math.vector.normalize(q);
+                m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(q));
+            }
+        }
+        m = math.matrix.transformMatrix(m, math.matrix.scale(200.0, 0.01, 400.0));
+        rhi.setUniformMatrix(prog, "f_plane_transform", m);
+    }
 }
 
 pub fn updateCamera(_: *PlaneDistance) void {}
@@ -104,12 +130,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
             true,
         ),
     };
-    {
-        var m = math.matrix.identity();
-        m = math.matrix.transformMatrix(m, math.matrix.translate(-100, 300, -200));
-        m = math.matrix.transformMatrix(m, math.matrix.scale(200.0, 0.01, 400.0));
-        rhi.setUniformMatrix(prog, "f_plane_transform", m);
-    }
+    self.updatePlaneTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
     self.plane_visualization = plane_vis;
 }
