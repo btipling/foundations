@@ -10,6 +10,7 @@ const num_indices: usize = 36; // because normals
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
+    blend: bool,
 ) Parallelepied {
     var d = data();
 
@@ -29,6 +30,7 @@ pub fn init(
                     .format = c.GL_UNSIGNED_INT,
                 },
             },
+            .blend = blend,
         },
         .vertex_data_size = vao_buf.vertex_data_size,
         .instance_data_stride = vao_buf.instance_data_stride,

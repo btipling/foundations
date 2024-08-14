@@ -52,6 +52,7 @@ pub fn init(allocator: std.mem.Allocator) void {
     c.glClipControl(c.GL_LOWER_LEFT, c.GL_NEGATIVE_ONE_TO_ONE);
     c.glEnable(c.GL_DEPTH_TEST);
     c.glFrontFace(c.GL_CCW);
+    c.glEnable(c.GL_CULL_FACE);
     c.glClipControl(c.GL_LOWER_LEFT, c.GL_ZERO_TO_ONE);
     rhi = allocator.create(RHI) catch @panic("OOM");
     rhi.* = .{ .allocator = allocator };
@@ -326,10 +327,17 @@ pub fn drawMesh(m: mesh) void {
     if (m.wire_mesh) {
         c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
     }
+    if (m.blend) {
+        c.glEnable(c.GL_BLEND);
+        c.glBlendFunc(c.GL_SRC_ALPHA, c.GL_ONE_MINUS_SRC_ALPHA);
+    }
     switch (m.instance_type) {
         .array => |a| drawArrays(m.program, m.vao, a.count),
         .element => |e| drawElements(m, e),
         .instanced => |i| drawInstances(m, i),
+    }
+    if (m.blend) {
+        c.glDisable(c.GL_BLEND);
     }
     if (m.linear_colorspace) {
         c.glDisable(c.GL_FRAMEBUFFER_SRGB);

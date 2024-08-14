@@ -3,6 +3,7 @@ vao: u32,
 buffer: u32,
 instance_type: mesh_instance,
 wire_mesh: bool = false,
+blend: bool = false,
 
 linear_colorspace: bool = true,
 
