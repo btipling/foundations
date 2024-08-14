@@ -1,1 +1,1 @@
-pub const grid = @import("grid/grid.zig");
+pub const Grid = @import("grid/Grid.zig");

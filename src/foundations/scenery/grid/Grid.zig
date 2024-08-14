@@ -104,6 +104,7 @@ pub fn renderGrid(self: *Grid) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
+            false,
         ),
     };
     self.grid = grid;

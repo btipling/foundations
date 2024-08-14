@@ -1,6 +1,6 @@
 ui_state: LookAtUI,
 allocator: std.mem.Allocator,
-grid: *scenery.grid = undefined,
+grid: *scenery.Grid = undefined,
 cube: object.object = undefined,
 camera: object.object = undefined,
 view_camera: *physics.camera.Camera(*LookAt, physics.Integrator(physics.SmoothDeceleration)),
@@ -31,7 +31,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
         .{ 1, 3.5, 1 },
     );
     errdefer cam.deinit(allocator);
-    const grid = scenery.grid.init(allocator);
+    const grid = scenery.Grid.init(allocator);
     errdefer grid.deinit();
     const ui_state: LookAtUI = .{};
 
@@ -42,7 +42,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
         .grid = grid,
     };
     grid.renderGrid();
-    cam.addProgram(grid.program(), scenery.grid.mvp_uniform_name);
+    cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     lkt.renderCube();
     lkt.renderCamera();
     return lkt;
