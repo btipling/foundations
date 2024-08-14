@@ -1,4 +1,6 @@
 distance: usize = 0,
+rotation_angle: f32 = 0,
+rotation_axis: [3]f32 = .{ 0, 0, 1 },
 
 const PlaneDistanceUI = @This();
 
@@ -14,6 +16,15 @@ pub fn draw(self: *PlaneDistanceUI) void {
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Distance to Plane", null, 0);
     c.igText(@ptrCast(txt));
+
+    if (c.igTreeNode_Str("plane normal")) {
+        _ = c.igSliderFloat("angle", &self.rotation_angle, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
+        c.igText("axis of rotation");
+        _ = c.igSliderFloat("x", &self.rotation_axis[0], -1, 1, "%.3f", c.ImGuiSliderFlags_None);
+        _ = c.igSliderFloat("y", &self.rotation_axis[1], -1, 1, "%.3f", c.ImGuiSliderFlags_None);
+        _ = c.igSliderFloat("z", &self.rotation_axis[2], -1, 1, "%.3f", c.ImGuiSliderFlags_None);
+        c.igTreePop();
+    }
     c.igEnd();
 }
 

@@ -28,6 +28,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
         cfg,
         lkt,
         integrator,
+        .{ 1, 3.5, 1 },
     );
     errdefer cam.deinit(allocator);
     const grid = scenery.grid.init(allocator);

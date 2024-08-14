@@ -9,7 +9,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         allocator: std.mem.Allocator,
         cfg: *config,
         camera_matrix: math.matrix = undefined,
-        camera_pos: math.vector.vec3 = .{ 1, 3.5, 1 },
+        camera_pos: math.vector.vec3 = undefined,
         camera_orientation_pitch: math.rotation.Quat = .{ 1, 0, 0, 0 },
         camera_orientation_heading: math.rotation.Quat = .{ 1, 0, 0, 0 },
         camera_orientation: math.rotation.Quat = .{ 1, 0, 0, 0 },
@@ -35,7 +35,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         const world_right: math.vector.vec3 = .{ 0, 0, 1 };
         const world_forward: math.vector.vec3 = .{ 0, 1, 0 };
 
-        pub fn init(allocator: std.mem.Allocator, cfg: *config, scene: T, integrator: IntegratorT) *Self {
+        pub fn init(allocator: std.mem.Allocator, cfg: *config, scene: T, integrator: IntegratorT, pos: math.vector.vec3) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");
             const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
             const mvp = math.matrix.transformMatrix(
@@ -45,6 +45,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
             cam.* = .{
                 .allocator = allocator,
+                .camera_pos = pos,
                 .cfg = cfg,
                 .persp_m = mvp,
                 .mvp = mvp,
