@@ -1,10 +1,14 @@
 ui_state: PlaneDistanceUI,
 allocator: std.mem.Allocator,
 grid: *scenery.Grid = undefined,
-plane: object.object = undefined,
+plane_visualization: object.object = undefined,
+plane: math.geometry.Plane = undefined,
 view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.SmoothDeceleration)),
 
 const PlaneDistance = @This();
+
+const default_plane_surface_normal: math.vector.vec3 = .{ 0, -1, 0 }; // points into the screen.
+const default_plane_distance_to_origin: f32 = 0.0; // always intersects with origin for now
 
 const grid_vertex_shader: []const u8 = @embedFile("plane_vertex.glsl");
 const grid_frag_shader: []const u8 = @embedFile("plane_frag.glsl");
@@ -37,6 +41,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
         .allocator = allocator,
         .view_camera = cam,
         .grid = grid,
+        .plane = math.geometry.Plane.init(default_plane_surface_normal, default_plane_distance_to_origin),
     };
     grid.renderGrid();
     pd.renderPlane();
@@ -52,11 +57,28 @@ pub fn deinit(self: *PlaneDistance, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *PlaneDistance, dt: f64) void {
+    self.updatePlane();
     self.view_camera.update(dt);
     self.grid.draw(dt);
-    const objects: [1]object.object = .{self.plane};
+    const objects: [1]object.object = .{self.plane_visualization};
     rhi.drawObjects(objects[0..]);
     self.ui_state.draw();
+}
+
+pub fn updatePlane(self: *PlaneDistance) void {
+    const a: math.rotation.AxisAngle = .{
+        .angle = self.ui_state.rotation_angle,
+        .axis = self.ui_state.rotation_axis,
+    };
+    var q = math.rotation.axisAngleToQuat(a);
+    q = math.vector.normalize(q);
+    const m = math.matrix.normalizedQuaternionToMatrix(q);
+    const transformed_normal = math.matrix.transformVector(m, math.vector.vec3ToVec4(default_plane_surface_normal));
+    self.plane = math.geometry.Plane.init(math.vector.vec4ToVec3(transformed_normal), default_plane_distance_to_origin);
+}
+
+pub fn updatePlaneTransform(self: *PlaneDistance) void {
+    _ = self;
 }
 
 pub fn updateCamera(_: *PlaneDistance) void {}
@@ -75,7 +97,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
             .color = .{ 1, 0, 0, 0.1 },
         };
     }
-    const plane: object.object = .{
+    const plane_vis: object.object = .{
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
@@ -89,7 +111,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
         rhi.setUniformMatrix(prog, "f_plane_transform", m);
     }
     self.view_camera.addProgram(prog, "f_mvp");
-    self.plane = plane;
+    self.plane_visualization = plane_vis;
 }
 
 const std = @import("std");
