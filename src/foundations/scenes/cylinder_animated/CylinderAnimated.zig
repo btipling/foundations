@@ -43,7 +43,7 @@ const frag_shader: []const u8 = @embedFile("ca_frag.glsl");
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .shape,
-        .name = "Cube",
+        .name = "Cylinder",
     };
 }
 
@@ -52,10 +52,10 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *CylinderAnimated {
 
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    const cube: object.object = .{
-        .cube = object.Cube.init(
+    const cylinder: object.object = .{
+        .cylinder = object.Cylinder.init(
             program,
-            object.Cube.default_positions,
+            object.Cylinder.default_positions,
             .{ 1, 0, 1, 1 },
         ),
     };
@@ -65,7 +65,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *CylinderAnimated {
         .cfg = cfg,
         .aspect_ratio = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height)),
     };
-    p.objects[0] = cube;
+    p.objects[0] = cylinder;
     return p;
 }
 

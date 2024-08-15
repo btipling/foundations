@@ -6,6 +6,7 @@ pub const object_type = enum {
     sphere,
     strip,
     parallelepiped,
+    cylinder,
 };
 
 pub const object = union(object_type) {
@@ -16,6 +17,7 @@ pub const object = union(object_type) {
     sphere: Sphere,
     strip: Strip,
     parallelepiped: Parallelepiped,
+    cylinder: Cylinder,
 };
 
 pub const Triangle = @import("object_triangle/ObjectTriangle.zig");
@@ -25,3 +27,4 @@ pub const Circle = @import("object_circle/ObjectCircle.zig");
 pub const Sphere = @import("object_sphere/ObjectSphere.zig");
 pub const Strip = @import("object_strip/ObjectStrip.zig");
 pub const Parallelepiped = @import("object_parallelepiped/ObjectParallelepiped.zig");
+pub const Cylinder = @import("object_cylinder/ObjectCylinder.zig");
