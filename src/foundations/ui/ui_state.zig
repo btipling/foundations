@@ -15,6 +15,7 @@ pub const scene_type = enum(usize) {
     look_at,
     plane_distance,
     cylinder_animated,
+    cone_animated,
 };
 
 pub const scenes = union(scene_type) {
@@ -34,6 +35,7 @@ pub const scenes = union(scene_type) {
     look_at: *LookAt,
     plane_distance: *PlaneDistance,
     cylinder_animated: *CylinderAnimated,
+    cone_animated: *ConeAnimated,
 };
 
 pub const scene_nav_type = enum {
@@ -63,3 +65,4 @@ const LineDistance = @import("../scenes/line_distance/LineDistance.zig");
 const LookAt = @import("../scenes/look_at/LookAt.zig");
 const PlaneDistance = @import("../scenes/plane_distance/PlaneDistance.zig");
 const CylinderAnimated = @import("../scenes/cylinder_animated/CylinderAnimated.zig");
+const ConeAnimated = @import("../scenes/cone_animated/ConeAnimated.zig");
