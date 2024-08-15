@@ -66,7 +66,7 @@ fn addVector(self: *MathVectorArithmetic) void {
     // x axis (1, 0) this math would say to rotate by (0° - 90° = -90°), which is correct, to turn the upwards pointing trianglen CW to the x pos direction
     const rotation = vec2DPC[1] - math.rotation.degreesToRadians(90.0);
     while (pi < 3) : (pi += 1) {
-        const pv: math.vector.vec3 = object.triangle.default_positions[pi];
+        const pv: math.vector.vec3 = object.Triangle.default_positions[pi];
         const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);
         const new_angle = current_angle[1] + rotation;
         const pm = math.vector.magnitude(pv);
@@ -85,7 +85,7 @@ fn addVector(self: *MathVectorArithmetic) void {
     }
 
     self.objects[self.num_objects] = .{
-        .triangle = object.triangle.init(
+        .triangle = object.Triangle.init(
             vertex_shader,
             frag_shader,
             triangle_positions,
@@ -99,7 +99,7 @@ fn addVector(self: *MathVectorArithmetic) void {
 
     pi = 0;
     while (pi < 6) : (pi += 1) {
-        var pv: math.vector.vec3 = object.quad.default_deprecated_positions[pi];
+        var pv: math.vector.vec3 = object.Quad.default_deprecated_positions[pi];
         pv = math.vector.mul(0.01, pv);
         const do_sum = math.float.equal(pv[1], 0.01, 0.001);
         const current_angle = math.rotation.cartesian2DToPolarCoordinates(pv);
@@ -121,7 +121,7 @@ fn addVector(self: *MathVectorArithmetic) void {
     }
 
     self.objects[self.num_objects] = .{
-        .quad = object.quad.init(
+        .quad = object.Quad.init(
             vertex_shader,
             frag_shader,
             quad_positions,

@@ -78,7 +78,7 @@ pub fn renderCircle(self: *LineDistance) void {
     rhi.attachShaders(program, vertex_shader, frag_shader);
     for (0..num_points - 1) |i| self.updatePointIData(i);
     const circle: object.object = .{
-        .circle = object.circle.init(
+        .circle = object.Circle.init(
             program,
             self.circles[0..],
         ),
@@ -115,7 +115,7 @@ pub fn renderStrip(self: *LineDistance) void {
         i_datas[i] = i_data;
     }
     const strip: object.object = .{
-        .strip = object.strip.init(
+        .strip = object.Strip.init(
             program,
             i_datas[0..],
         ),
@@ -154,7 +154,7 @@ pub fn renderConnectionStrip(self: *LineDistance) void {
         i_datas[i] = i_data;
     }
     const strip: object.object = .{
-        .strip = object.strip.init(
+        .strip = object.Strip.init(
             program,
             i_datas[0..],
         ),

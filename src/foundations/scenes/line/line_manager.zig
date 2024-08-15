@@ -223,7 +223,7 @@ pub fn initCircle(self: *Manager) void {
         i_datas[i] = self.points[i].i_data;
     }
     const circle: object.object = .{
-        .circle = object.circle.init(
+        .circle = object.Circle.init(
             program,
             i_datas[0..self.num_points],
         ),
@@ -285,7 +285,7 @@ pub fn renderStrips(self: *Manager) void {
         i_datas[i] = i_data;
     }
     const strip: object.object = .{
-        .strip = object.strip.init(
+        .strip = object.Strip.init(
             program,
             i_datas[0 .. points_added * 1_000],
         ),
@@ -329,7 +329,7 @@ pub fn renderQuads(self: *Manager) void {
         if (tangents_added == self.num_tangents) break;
     }
     const quad: object.object = .{
-        .quad = object.quad.initInstanced(
+        .quad = object.Quad.initInstanced(
             program,
             i_datas[0..self.num_tangents],
         ),

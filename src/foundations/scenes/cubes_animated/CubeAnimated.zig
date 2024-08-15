@@ -53,9 +53,9 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
     const cube: object.object = .{
-        .cube = object.cube.init(
+        .cube = object.Cube.init(
             program,
-            object.cube.default_positions,
+            object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
         ),
     };

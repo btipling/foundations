@@ -64,7 +64,7 @@ pub fn renderCircle(self: *UnitCircle) void {
         i_datas[i] = i_data;
     }
     const strip: object.object = .{
-        .strip = object.strip.init(
+        .strip = object.Strip.init(
             program,
             i_datas[0..],
         ),
