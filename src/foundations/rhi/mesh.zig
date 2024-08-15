@@ -4,6 +4,7 @@ buffer: u32,
 instance_type: mesh_instance,
 wire_mesh: bool = false,
 blend: bool = false,
+cull: bool = true,
 
 linear_colorspace: bool = true,
 

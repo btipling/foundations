@@ -67,7 +67,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *CylinderAnimated {
         .cylinder = object.Cylinder.init(
             program,
             i_datas[0..],
-            true,
+            false,
         ),
     };
     p.* = .{

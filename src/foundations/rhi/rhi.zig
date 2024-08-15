@@ -331,10 +331,16 @@ pub fn drawMesh(m: mesh) void {
         c.glEnable(c.GL_BLEND);
         c.glBlendFunc(c.GL_SRC_ALPHA, c.GL_ONE_MINUS_SRC_ALPHA);
     }
+    if (!m.cull) {
+        c.glDisable(c.GL_CULL_FACE);
+    }
     switch (m.instance_type) {
         .array => |a| drawArrays(m.program, m.vao, a.count),
         .element => |e| drawElements(m, e),
         .instanced => |i| drawInstances(m, i),
+    }
+    if (!m.cull) {
+        c.glEnable(c.GL_CULL_FACE);
     }
     if (m.blend) {
         c.glDisable(c.GL_BLEND);
