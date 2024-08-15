@@ -17,6 +17,7 @@ pub fn init(
     while (i < num_vertices) : (i += 1) {
         rhi_data[i] = .{
             .position = d.positions[i],
+            .normals = d.normals[i],
             .color = color,
         };
     }
@@ -40,9 +41,10 @@ pub fn init(
     };
 }
 
-fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } {
+fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32, normals: [num_vertices][3]f32 } {
     var p: [num_vertices][3]f32 = undefined;
     var indices: [num_indices]u32 = undefined;
+    var normals: [num_vertices][3]f32 = undefined;
 
     const angle_delta: f32 = 2 * std.math.pi / angle_div;
     var y_axis_angle: f32 = angle_delta;
@@ -85,6 +87,19 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             const bot_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = bot_index;
             prev_bot_vertex_index = bot_index;
+            if (current_i_index > 1) {
+                const p0: math.vector.vec3 = p[current_p_index - 2];
+                const p1: math.vector.vec3 = p[current_p_index - 1];
+                const p2: math.vector.vec3 = p[current_p_index];
+                normals[current_p_index] = math.vector.normalize(math.vector.crossProduct(
+                    math.vector.sub(p0, p2),
+                    math.vector.sub(p1, p0),
+                ));
+                if (current_p_index == 2) {
+                    normals[0] = normals[current_p_index];
+                    normals[1] = normals[current_p_index];
+                }
+            }
             current_p_index += 1;
             current_i_index += 1;
             i += 1;
@@ -114,6 +129,13 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             const top_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = top_index;
             current_top_vertex_index = top_index;
+            const p0: math.vector.vec3 = p[current_p_index - 2];
+            const p1: math.vector.vec3 = p[current_p_index - 1];
+            const p2: math.vector.vec3 = p[current_p_index];
+            normals[current_p_index] = math.vector.normalize(math.vector.crossProduct(
+                math.vector.sub(p0, p2),
+                math.vector.sub(p1, p0),
+            ));
             current_p_index += 1;
             current_i_index += 1;
             if (y_axis_angle != first_ya) {
@@ -138,6 +160,13 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
             );
             const bot_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = bot_index;
+            const p0: math.vector.vec3 = p[current_p_index - 2];
+            const p1: math.vector.vec3 = p[current_p_index - 1];
+            const p2: math.vector.vec3 = p[current_p_index];
+            normals[current_p_index] = math.vector.normalize(math.vector.crossProduct(
+                math.vector.sub(p0, p2),
+                math.vector.sub(p1, p0),
+            ));
             current_p_index += 1;
             current_i_index += 1;
         }
@@ -163,6 +192,13 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 const bot_index: u32 = @intCast(current_p_index);
                 indices[current_i_index] = bot_index;
                 current_bot_vertex_index = bot_index;
+                const p0: math.vector.vec3 = p[current_p_index - 2];
+                const p1: math.vector.vec3 = p[current_p_index - 1];
+                const p2: math.vector.vec3 = p[current_p_index];
+                normals[current_p_index] = math.vector.normalize(math.vector.crossProduct(
+                    math.vector.sub(p0, p2),
+                    math.vector.sub(p1, p0),
+                ));
                 current_p_index += 1;
                 current_i_index += 1;
             } else {
@@ -182,6 +218,13 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 const top_index: u32 = @intCast(current_p_index);
                 indices[current_i_index] = top_index;
                 current_top_vertex_index = top_index;
+                const p0: math.vector.vec3 = p[current_p_index - 2];
+                const p1: math.vector.vec3 = p[current_p_index - 1];
+                const p2: math.vector.vec3 = p[current_p_index];
+                normals[current_p_index] = math.vector.normalize(math.vector.crossProduct(
+                    math.vector.sub(p0, p2),
+                    math.vector.sub(p1, p0),
+                ));
                 current_p_index += 1;
                 current_i_index += 1;
             }
@@ -196,7 +239,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         }
     }
     std.debug.print("vertices: {d} indices: {d}\n", .{ current_p_index, current_i_index });
-    return .{ .positions = p, .indices = indices };
+    return .{ .positions = p, .indices = indices, .normals = normals };
 }
 
 const std = @import("std");
