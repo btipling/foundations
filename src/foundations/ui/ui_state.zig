@@ -14,6 +14,7 @@ pub const scene_type = enum(usize) {
     line_distance,
     look_at,
     plane_distance,
+    cylinder_animated,
 };
 
 pub const scenes = union(scene_type) {
@@ -32,6 +33,7 @@ pub const scenes = union(scene_type) {
     line_distance: *LineDistance,
     look_at: *LookAt,
     plane_distance: *PlaneDistance,
+    cylinder_animated: *CylinderAnimated,
 };
 
 pub const scene_nav_type = enum {
@@ -60,3 +62,4 @@ const BarycentricCoordinates = @import("../scenes/barycentric_coordinates/Baryce
 const LineDistance = @import("../scenes/line_distance/LineDistance.zig");
 const LookAt = @import("../scenes/look_at/LookAt.zig");
 const PlaneDistance = @import("../scenes/plane_distance/PlaneDistance.zig");
+const CylinderAnimated = @import("../scenes/cylinder_animated/CylinderAnimated.zig");
