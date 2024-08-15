@@ -4,8 +4,9 @@ instance_data_stride: usize,
 
 const Cylinder = @This();
 
-const num_vertices: usize = 4;
-const num_indices: usize = 6; // because normals
+const num_sides = 10;
+const num_vertices: usize = 4 * num_sides;
+const num_indices: usize = 6 * num_sides; // because normals
 
 pub fn init(
     program: u32,
@@ -49,14 +50,30 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
         .v1 = .{ 0, 1, 0 },
         .v2 = .{ 0, 0, 1 },
     };
-    const p0 = origin;
-    const p1 = pp.v0;
-    const p2 = pp.v2;
-    const p3 = math.vector.add(p1, p2);
+    const p0: math.vector.vec3 = origin;
+    const p1: math.vector.vec3 = pp.v0;
+    const p2: math.vector.vec3 = pp.v2;
+    const p3: math.vector.vec3 = math.vector.add(p1, p2);
     var s_os: usize = 0;
     var i_os: usize = 0;
-    s_os = addSurface(&rv_data, p0, p1, p2, p3, s_os);
-    i_os = addIndicesPerSurface(&indices, 0, 1, 2, 3, i_os);
+
+    // const r: f32 = 1.0;
+    // const angle: f32 = std.math.pi / 100.0;
+    // var current_vector: [3]f32 = .{ 0, 0, r }; // start at z positive, move counter clockwise around the y axis
+    var offset: u32 = 0;
+    for (0..num_sides) |i| {
+        const fi: f32 = @floatFromInt(i);
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0, fi));
+        const ip0 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p0)));
+        const ip1 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p1)));
+        const ip2 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p2)));
+        const ip3 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p3)));
+        std.debug.print("ip0: ({d}, {d}, {d})\n", .{ ip0[0], ip0[1], ip0[2] });
+        s_os = addSurface(&rv_data, ip0, ip1, ip2, ip3, s_os);
+        i_os = addIndicesPerSurface(&indices, offset, offset + 1, offset + 2, offset + 3, i_os);
+        offset += 4;
+    }
     return .{ .data = rv_data, .indices = indices };
 }
 
