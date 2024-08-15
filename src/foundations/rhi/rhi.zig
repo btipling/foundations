@@ -82,7 +82,7 @@ pub fn createVAO() u32 {
 
 pub const attributeData = struct {
     position: [3]f32,
-    color: [4]f32,
+    color: [4]f32 = .{ 1, 0, 1, 1 },
     normals: [3]f32 = .{ 1, 1, 1 },
 };
 
@@ -95,7 +95,7 @@ pub const instanceData = struct {
 };
 
 pub fn attachBuffer(
-    data: []attributeData,
+    data: []const attributeData,
 ) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
     const bind_index: usize = 0;
@@ -177,7 +177,7 @@ fn defineStructData(comptime T: type, vao: u32, bind_index: usize, offset: usize
     inline for (0..fields.len) |i| c.glVertexArrayAttribBinding(vao, @intCast(offset + i), @intCast(bind_index));
 }
 
-pub fn updateNamedBuffer(name: u32, size: usize, draw_hint: c.GLenum, data: []attributeData) void {
+pub fn updateNamedBuffer(name: u32, size: usize, draw_hint: c.GLenum, data: []const attributeData) void {
     c.glNamedBufferData(name, @intCast(size), data.ptr, draw_hint);
 }
 

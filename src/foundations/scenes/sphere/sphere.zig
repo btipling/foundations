@@ -24,7 +24,6 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
     const sphere: object.object = .{
         .sphere = object.Sphere.init(
             program,
-            .{ 1, 1, 1, 1 },
         ),
     };
     p.* = .{

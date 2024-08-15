@@ -8,19 +8,10 @@ const angle_div: f32 = 80.0;
 
 pub fn init(
     program: u32,
-    color: [4]f32,
 ) Sphere {
     const d = data();
 
-    var rhi_data: [num_vertices]rhi.attributeData = undefined;
-    var i: usize = 0;
-    while (i < num_vertices) : (i += 1) {
-        rhi_data[i] = .{
-            .position = d.positions[i],
-            .color = color,
-        };
-    }
-    const vao_buf = rhi.attachBuffer(rhi_data[0..]);
+    const vao_buf = rhi.attachBuffer(d.attribute_data[0..]);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
@@ -40,8 +31,8 @@ pub fn init(
     };
 }
 
-fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } {
-    var p: [num_vertices][3]f32 = undefined;
+fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
+    var attribute_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
 
     const angle_delta: f32 = 2 * std.math.pi / angle_div;
@@ -54,7 +45,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
 
     {
         const start: [3]f32 = .{ sphere_scale, 0, 0 };
-        p[0] = start;
+        attribute_data[0] = .{ .position = start };
         indices[0] = 0;
         current_p_index += 1;
         current_i_index += 1;
@@ -68,14 +59,16 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 y_axis_angle,
                 x_angle,
             });
-            p[current_p_index] = math.vector.mul(
-                sphere_scale,
-                @as(math.vector.vec3, .{
-                    new_coordinates[2],
-                    new_coordinates[1],
-                    new_coordinates[0],
-                }),
-            );
+            attribute_data[current_p_index] = .{
+                .position = math.vector.mul(
+                    sphere_scale,
+                    @as(math.vector.vec3, .{
+                        new_coordinates[2],
+                        new_coordinates[1],
+                        new_coordinates[0],
+                    }),
+                ),
+            };
             if (i >= 2) {
                 indices[current_i_index] = 0;
                 current_i_index += 1;
@@ -103,14 +96,17 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 y_axis_angle,
                 x_angle,
             });
-            p[current_p_index] = math.vector.mul(
-                sphere_scale,
-                @as(math.vector.vec3, .{
-                    new_coordinates[2],
-                    new_coordinates[1],
-                    new_coordinates[0],
-                }),
-            );
+
+            attribute_data[current_p_index] = .{
+                .position = math.vector.mul(
+                    sphere_scale,
+                    @as(math.vector.vec3, .{
+                        new_coordinates[2],
+                        new_coordinates[1],
+                        new_coordinates[0],
+                    }),
+                ),
+            };
             const top_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = top_index;
             current_top_vertex_index = top_index;
@@ -128,14 +124,17 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                 y_axis_angle + angle_delta,
                 x_angle,
             });
-            p[current_p_index] = math.vector.mul(
-                sphere_scale,
-                @as(math.vector.vec3, .{
-                    new_coordinates[2],
-                    new_coordinates[1],
-                    new_coordinates[0],
-                }),
-            );
+
+            attribute_data[current_p_index] = .{
+                .position = math.vector.mul(
+                    sphere_scale,
+                    @as(math.vector.vec3, .{
+                        new_coordinates[2],
+                        new_coordinates[1],
+                        new_coordinates[0],
+                    }),
+                ),
+            };
             const bot_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = bot_index;
             current_p_index += 1;
@@ -152,14 +151,17 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                     y_axis_angle + angle_delta,
                     x_angle,
                 });
-                p[current_p_index] = math.vector.mul(
-                    sphere_scale,
-                    @as(math.vector.vec3, .{
-                        new_coordinates[2],
-                        new_coordinates[1],
-                        new_coordinates[0],
-                    }),
-                );
+
+                attribute_data[current_p_index] = .{
+                    .position = math.vector.mul(
+                        sphere_scale,
+                        @as(math.vector.vec3, .{
+                            new_coordinates[2],
+                            new_coordinates[1],
+                            new_coordinates[0],
+                        }),
+                    ),
+                };
                 const bot_index: u32 = @intCast(current_p_index);
                 indices[current_i_index] = bot_index;
                 current_bot_vertex_index = bot_index;
@@ -171,14 +173,17 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
                     y_axis_angle,
                     x_angle,
                 });
-                p[current_p_index] = math.vector.mul(
-                    sphere_scale,
-                    @as(math.vector.vec3, .{
-                        new_coordinates[2],
-                        new_coordinates[1],
-                        new_coordinates[0],
-                    }),
-                );
+
+                attribute_data[current_p_index] = .{
+                    .position = math.vector.mul(
+                        sphere_scale,
+                        @as(math.vector.vec3, .{
+                            new_coordinates[2],
+                            new_coordinates[1],
+                            new_coordinates[0],
+                        }),
+                    ),
+                };
                 const top_index: u32 = @intCast(current_p_index);
                 indices[current_i_index] = top_index;
                 current_top_vertex_index = top_index;
@@ -196,7 +201,7 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
         }
     }
     std.debug.print("vertices: {d} indices: {d}\n", .{ current_p_index, current_i_index });
-    return .{ .positions = p, .indices = indices };
+    return .{ .attribute_data = attribute_data, .indices = indices };
 }
 
 const std = @import("std");
