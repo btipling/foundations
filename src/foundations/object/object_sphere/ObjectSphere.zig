@@ -59,16 +59,20 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                 y_axis_angle,
                 x_angle,
             });
-            attribute_data[current_p_index] = .{
-                .position = math.vector.mul(
+            {
+                const p = math.vector.mul(
                     sphere_scale,
                     @as(math.vector.vec3, .{
                         new_coordinates[2],
                         new_coordinates[1],
                         new_coordinates[0],
                     }),
-                ),
-            };
+                );
+                attribute_data[current_p_index] = .{
+                    .position = p,
+                    .normals = math.vector.normalize(p),
+                };
+            }
             if (i >= 2) {
                 indices[current_i_index] = 0;
                 current_i_index += 1;
@@ -97,16 +101,20 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                 x_angle,
             });
 
-            attribute_data[current_p_index] = .{
-                .position = math.vector.mul(
+            {
+                const p = math.vector.mul(
                     sphere_scale,
                     @as(math.vector.vec3, .{
                         new_coordinates[2],
                         new_coordinates[1],
                         new_coordinates[0],
                     }),
-                ),
-            };
+                );
+                attribute_data[current_p_index] = .{
+                    .position = p,
+                    .normals = math.vector.normalize(p),
+                };
+            }
             const top_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = top_index;
             current_top_vertex_index = top_index;
@@ -125,16 +133,20 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                 x_angle,
             });
 
-            attribute_data[current_p_index] = .{
-                .position = math.vector.mul(
+            {
+                const p = math.vector.mul(
                     sphere_scale,
                     @as(math.vector.vec3, .{
                         new_coordinates[2],
                         new_coordinates[1],
                         new_coordinates[0],
                     }),
-                ),
-            };
+                );
+                attribute_data[current_p_index] = .{
+                    .position = p,
+                    .normals = math.vector.normalize(p),
+                };
+            }
             const bot_index: u32 = @intCast(current_p_index);
             indices[current_i_index] = bot_index;
             current_p_index += 1;
@@ -152,16 +164,20 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                     x_angle,
                 });
 
-                attribute_data[current_p_index] = .{
-                    .position = math.vector.mul(
+                {
+                    const p = math.vector.mul(
                         sphere_scale,
                         @as(math.vector.vec3, .{
                             new_coordinates[2],
                             new_coordinates[1],
                             new_coordinates[0],
                         }),
-                    ),
-                };
+                    );
+                    attribute_data[current_p_index] = .{
+                        .position = p,
+                        .normals = math.vector.normalize(p),
+                    };
+                }
                 const bot_index: u32 = @intCast(current_p_index);
                 indices[current_i_index] = bot_index;
                 current_bot_vertex_index = bot_index;
@@ -174,16 +190,20 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                     x_angle,
                 });
 
-                attribute_data[current_p_index] = .{
-                    .position = math.vector.mul(
+                {
+                    const p = math.vector.mul(
                         sphere_scale,
                         @as(math.vector.vec3, .{
                             new_coordinates[2],
                             new_coordinates[1],
                             new_coordinates[0],
                         }),
-                    ),
-                };
+                    );
+                    attribute_data[current_p_index] = .{
+                        .position = p,
+                        .normals = math.vector.normalize(p),
+                    };
+                }
                 const top_index: u32 = @intCast(current_p_index);
                 indices[current_i_index] = top_index;
                 current_top_vertex_index = top_index;
@@ -197,6 +217,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                 indices[current_i_index] = current_bot_vertex_index;
                 current_i_index += 1;
             }
+
             i += 1;
         }
     }
