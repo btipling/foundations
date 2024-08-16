@@ -55,7 +55,6 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *ConeAnimated {
     const cone: object.object = .{
         .cone = object.Cone.init(
             program,
-            .{ 1, 0, 0, 1 },
         ),
     };
     p.* = .{

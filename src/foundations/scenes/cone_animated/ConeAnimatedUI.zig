@@ -1,12 +1,12 @@
-scale: f32 = 0.25,
-x_rot: f32 = 4.060,
-y_rot: f32 = 2.525,
-z_rot: f32 = 2.760,
+scale: f32 = 1,
+x_rot: f32 = 0,
+y_rot: f32 = 0,
+z_rot: f32 = 0,
 x_translate: f32 = 0,
-y_translate: f32 = 3.5,
+y_translate: f32 = 2,
 z_translate: f32 = 0,
 use_lh_x_up: c_int = 1,
-animate: bool = true,
+animate: bool = false,
 use_slerp: c_int = 1,
 
 const ca_ui = @This();
@@ -24,7 +24,7 @@ pub fn draw(self: *ca_ui) void {
     const size = c.ImVec2_ImVec2_Float(550, 680);
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Animated cylinders", null, 0);
-    _ = c.igSliderFloat("scale", &self.scale, 0.01, 1, "%.3f", c.ImGuiSliderFlags_None);
+    _ = c.igSliderFloat("scale", &self.scale, 0.01, 10, "%.3f", c.ImGuiSliderFlags_None);
     if (c.igTreeNode_Str("rotation")) {
         _ = c.igSliderFloat("x", &self.x_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
         _ = c.igSliderFloat("y", &self.y_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
