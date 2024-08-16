@@ -1,8 +1,10 @@
 mesh: rhi.mesh,
 
 const Cone = @This();
-const num_vertices: usize = 3;
-const num_indices: usize = 3;
+const num_triangles: usize = 256;
+const change: f32 = std.math.pi / 128.0;
+const num_vertices: usize = 4 * num_triangles;
+const num_indices: usize = 3 * num_triangles;
 
 pub fn init(
     program: u32,
@@ -25,6 +27,7 @@ pub fn init(
                     .format = c.GL_UNSIGNED_INT,
                 },
             },
+            .cull = false,
         },
     };
 }
@@ -33,25 +36,35 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     var attribute_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
 
-    const p0: math.vector.vec3 = .{ 0, 0, 1 };
-    const p1: math.vector.vec3 = .{ 0.5, 0, 0.5 };
-    const p2: math.vector.vec3 = .{ 0, 0, 0 };
-    const tri = math.geometry.Triangle.init(p0, p1, p2);
-    attribute_data[0] = .{
-        .position = tri.p0,
-        .normals = tri.normal,
-    };
-    indices[0] = 0;
-    attribute_data[1] = .{
-        .position = tri.p1,
-        .normals = tri.normal,
-    };
-    indices[1] = 1;
-    attribute_data[2] = .{
-        .position = tri.p2,
-        .normals = tri.normal,
-    };
-    indices[2] = 2;
+    const start: math.vector.vec3 = .{ 1, 0, 0 };
+    var offset: usize = 0;
+    var angle: f32 = 0;
+    for (0..num_triangles) |_| {
+        const uoffset: u32 = @intCast(offset);
+        var coords = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{ 1.0, angle });
+        const p0: math.vector.vec3 = .{ 0, coords[1], coords[0] };
+        angle = angle + change;
+        coords = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{ 1.0, angle });
+        const p1: math.vector.vec3 = .{ 0, coords[1], coords[0] };
+        const p2 = start;
+        const tri = math.geometry.Triangle.init(p0, p1, p2);
+        attribute_data[offset + 0] = .{
+            .position = tri.p0,
+            .normals = tri.normal,
+        };
+        indices[offset + 0] = uoffset + 0;
+        attribute_data[uoffset + 1] = .{
+            .position = tri.p1,
+            .normals = tri.normal,
+        };
+        indices[offset + 1] = uoffset + 1;
+        attribute_data[uoffset + 2] = .{
+            .position = tri.p2,
+            .normals = tri.normal,
+        };
+        indices[offset + 2] = uoffset + 2;
+        offset += 3;
+    }
 
     return .{ .attribute_data = attribute_data, .indices = indices };
 }
