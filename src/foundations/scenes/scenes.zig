@@ -13,7 +13,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Scenes {
         .allocator = allocator,
         .cfg = cfg,
     };
-    scenes.initScene(ui.ui_state.scene_type.plane_distance);
+    scenes.initScene(ui.ui_state.scene_type.look_at);
     return scenes;
 }
 

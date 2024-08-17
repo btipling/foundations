@@ -1,17 +1,16 @@
 allocator: std.mem.Allocator,
 grid: object.object = undefined,
-grid_y_scale: math.vector.vec3 = .{ 5000, 1, 1 },
-grid_y_translate: math.vector.vec3 = .{ -67, -2500, -5000 },
-grid_z_scale: math.vector.vec3 = .{ 5000, 1, 1 },
-grid_z_translate: math.vector.vec3 = .{ -68.5, -1071, -2578 },
+grid_y_scale: math.vector.vec3 = .{ 100, 0.05, 0.05 },
+grid_y_translate: math.vector.vec3 = .{ 0, 0, 0 },
+grid_z_scale: math.vector.vec3 = .{ 100, 0.05, 0.05 },
+grid_z_translate: math.vector.vec3 = .{ -0.5, 0, 0 },
 grid_z_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 0, std.math.pi / 2.0 },
 
 const Grid = @This();
 pub const mvp_uniform_name: []const u8 = "f_mvp";
 
 const num_grid_lines: usize = 500;
-const grid_len: usize = 2;
-const grid_increments: usize = 25;
+const grid_increments: usize = 1;
 
 const grid_vertex_shader: []const u8 = @embedFile("grid_vertex.glsl");
 const grid_frag_shader: []const u8 = @embedFile("grid_frag.glsl");
