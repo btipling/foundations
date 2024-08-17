@@ -16,6 +16,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
         cursor_mode: bool = false,
         use_camera: bool = true,
+        can_toggle_view: bool = false,
         fly_mode: bool = false,
         persp_m: math.matrix,
         mvp: math.matrix,
@@ -118,12 +119,12 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                             if (action == c.GLFW_RELEASE) self.toggleCursor();
                         }
                     },
-                    c.GLFW_KEY_V => {
+                    c.GLFW_KEY_ESCAPE => {
                         if (input.key_action) |action| {
                             if (action == c.GLFW_RELEASE) self.toggleView();
                         }
                     },
-                    c.GLFW_KEY_B => {
+                    c.GLFW_KEY_TAB => {
                         if (input.key_action) |action| {
                             if (action == c.GLFW_RELEASE) self.fly_mode = !self.fly_mode;
                         }
@@ -288,6 +289,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         fn toggleView(self: *Self) void {
+            if (!self.can_toggle_view) return;
             if (self.use_camera) {
                 self.use_camera = false;
                 return;
