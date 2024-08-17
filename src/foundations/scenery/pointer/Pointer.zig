@@ -4,6 +4,7 @@ cylinder: object.object = undefined,
 
 const Pointer = @This();
 pub const mvp_uniform_name: []const u8 = "f_mvp";
+pub const pointer_uniform_name: []const u8 = "f_pointer_transform";
 
 const pointer_vertex_shader: []const u8 = @embedFile("pointer_vertex.glsl");
 const pointer_frag_shader: []const u8 = @embedFile("pointer_frag.glsl");
