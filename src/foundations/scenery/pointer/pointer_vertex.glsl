@@ -28,5 +28,5 @@ void main()
     vec4 pos = f_mvp * f_transform * vec4(f_position.xyz, 1.0);
     gl_Position = pos;
     fo_color = f_i_color;
-    fo_normals = transpose(inverse(f_n_transform)) * f_normals;
+    fo_normals = normalize(transpose(inverse(f_n_transform)) * f_normals);
 }
