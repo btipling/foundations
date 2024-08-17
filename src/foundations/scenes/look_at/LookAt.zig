@@ -4,6 +4,7 @@ grid: *scenery.Grid = undefined,
 cube: object.object = undefined,
 camera: object.object = undefined,
 view_camera: *physics.camera.Camera(*LookAt, physics.Integrator(physics.SmoothDeceleration)),
+initialized: bool = false,
 
 const LookAt = @This();
 
@@ -42,9 +43,11 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
         .view_camera = cam,
         .grid = grid,
     };
-    cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     lkt.renderCube();
     lkt.renderCamera();
+    cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
+    cam.can_toggle_view = true;
+    lkt.initialized = true;
     return lkt;
 }
 
@@ -84,6 +87,7 @@ pub fn deleteCamera(self: *LookAt) void {
 }
 
 pub fn updateCamera(self: *LookAt) void {
+    if (!self.initialized) return;
     const m = math.matrix.transformMatrix(math.matrix.identity(), self.view_camera.camera_matrix);
     rhi.setUniformMatrix(self.camera.cube.mesh.program, "f_camera_transform", m);
 }
