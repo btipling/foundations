@@ -16,6 +16,7 @@ pub fn init(allocator: std.mem.Allocator) *Pointer {
         .allocator = allocator,
     };
     pointer.renderCylinder();
+    pointer.renderCone();
     return pointer;
 }
 
@@ -25,18 +26,18 @@ pub fn deinit(self: *Pointer) void {
 }
 
 pub fn draw(self: *Pointer, _: f64) void {
-    const objects: [1]object.object = .{self.cylinder};
+    const objects: [2]object.object = .{ self.cylinder, self.cone };
     rhi.drawObjects(objects[0..]);
 }
 
 pub fn deletePointer(self: *Pointer) void {
-    var objects: [1]object.object = .{self.cylinder};
+    var objects: [2]object.object = .{ self.cylinder, self.cone };
     rhi.deleteObjects(objects[0..]);
     self.cylinder = undefined;
 }
 
-pub fn program(self: *Pointer) u32 {
-    return self.cylinder.cylinder.mesh.program;
+pub fn programs(self: *Pointer) [2]u32 {
+    return .{ self.cylinder.cylinder.mesh.program, self.cone.cone.mesh.program };
 }
 
 pub fn renderCylinder(self: *Pointer) void {
@@ -65,16 +66,27 @@ pub fn renderCylinder(self: *Pointer) void {
 }
 
 pub fn renderCone(self: *Pointer) void {
-    _ = self;
-    // const prog = rhi.createProgram();
-    // rhi.attachShaders(prog, pointer_vertex_shader, pointer_frag_shader);
-    // var m = math.matrix.identity();
-    // _ = &m;
+    const prog = rhi.createProgram();
+    rhi.attachShaders(prog, pointer_vertex_shader, pointer_frag_shader);
+    var i_datas: [1]rhi.instanceData = undefined;
+    var m = math.matrix.identity();
+    _ = &m;
 
-    // const cone: object.object = .{
-    //     .cone = object.Cone.init(prog),
-    // };
-    // self.cone = cone;
+    const i_data: rhi.instanceData = .{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = .{ 0.15, 0.15, 0.25, 1 },
+    };
+    i_datas[0] = i_data;
+    const cone: object.object = .{
+        .cone = object.Cone.init(
+            prog,
+            i_datas[0..],
+        ),
+    };
+    self.cone = cone;
 }
 
 const std = @import("std");

@@ -51,7 +51,12 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
     };
     pd.renderPlane();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
-    cam.addProgram(pointer.program(), scenery.Pointer.mvp_uniform_name);
+    {
+        const progs = pointer.programs();
+        for (progs) |p| {
+            cam.addProgram(p, scenery.Pointer.mvp_uniform_name);
+        }
+    }
     return pd;
 }
 
