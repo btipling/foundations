@@ -51,10 +51,22 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *ConeAnimated {
     const p = allocator.create(ConeAnimated) catch @panic("OOM");
 
     const program = rhi.createProgram();
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        const m = math.matrix.identity();
+        i_datas[0] = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 0, 0.1 },
+        };
+    }
     rhi.attachShaders(program, vertex_shader, frag_shader);
     const cone: object.object = .{
         .cone = object.Cone.init(
             program,
+            i_datas[0..],
         ),
     };
     p.* = .{

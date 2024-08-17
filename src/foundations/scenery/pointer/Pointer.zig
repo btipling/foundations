@@ -44,7 +44,7 @@ pub fn renderCylinder(self: *Pointer) void {
     rhi.attachShaders(prog, pointer_vertex_shader, pointer_frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;
     var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
+    _ = &m;
 
     const i_data: rhi.instanceData = .{
         .t_column0 = m.columns[0],
@@ -62,6 +62,19 @@ pub fn renderCylinder(self: *Pointer) void {
         ),
     };
     self.cylinder = cylinder;
+}
+
+pub fn renderCone(self: *Pointer) void {
+    _ = self;
+    // const prog = rhi.createProgram();
+    // rhi.attachShaders(prog, pointer_vertex_shader, pointer_frag_shader);
+    // var m = math.matrix.identity();
+    // _ = &m;
+
+    // const cone: object.object = .{
+    //     .cone = object.Cone.init(prog),
+    // };
+    // self.cone = cone;
 }
 
 const std = @import("std");
