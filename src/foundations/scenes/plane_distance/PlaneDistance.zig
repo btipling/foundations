@@ -30,7 +30,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
         cfg,
         pd,
         integrator,
-        .{ 0, 0, 0 },
+        .{ 0, 200, -100 },
+        std.math.pi * 0.75,
     );
     errdefer cam.deinit(allocator);
     const grid = scenery.Grid.init(allocator);
@@ -88,7 +89,6 @@ pub fn updatePlane(self: *PlaneDistance, m: math.matrix) void {
     const n = math.vector.normalize(math.vector.crossProduct(u, v));
     const d: f32 = math.vector.dotProduct(math.vector.negate(n), q);
     self.plane = math.geometry.Plane.init(n, d);
-    self.plane.debug();
 }
 
 pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {

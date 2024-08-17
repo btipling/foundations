@@ -15,7 +15,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         camera_orientation: math.rotation.Quat = .{ 1, 0, 0, 0 },
         cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
         cursor_mode: bool = false,
-        use_camera: bool = false,
+        use_camera: bool = true,
         fly_mode: bool = false,
         persp_m: math.matrix,
         mvp: math.matrix,
@@ -35,13 +35,33 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         const world_right: math.vector.vec3 = .{ 0, 0, 1 };
         const world_forward: math.vector.vec3 = .{ 0, 1, 0 };
 
-        pub fn init(allocator: std.mem.Allocator, cfg: *config, scene: T, integrator: IntegratorT, pos: math.vector.vec3) *Self {
+        pub fn init(
+            allocator: std.mem.Allocator,
+            cfg: *config,
+            scene: T,
+            integrator: IntegratorT,
+            pos: math.vector.vec3,
+            heading: ?f32,
+        ) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");
             const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
             const mvp = math.matrix.transformMatrix(
                 math.matrix.perspectiveProjection(cfg.fovy, s, 0.01, 750),
                 math.matrix.leftHandedXUpToNDC(),
             );
+
+            var camera_heading: math.rotation.Quat = .{ 1, 0, 0, 0 };
+            if (heading) |h| {
+                std.debug.print("setting heading\n", .{});
+                const a: math.rotation.AxisAngle = .{
+                    .angle = h,
+                    .axis = world_up,
+                };
+                var q = math.rotation.axisAngleToQuat(a);
+                q = math.vector.normalize(q);
+                q = math.rotation.multiplyQuaternions(camera_heading, q);
+                camera_heading = math.vector.normalize(q);
+            }
 
             cam.* = .{
                 .allocator = allocator,
@@ -52,6 +72,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .movement = undefined,
                 .scene = scene,
                 .integrator = integrator,
+                .camera_orientation = camera_heading,
+                .camera_orientation_heading = camera_heading,
             };
             cam.movement = physics.movement.init(cam.camera_pos, 0, .none);
             cam.updateCameraMatrix();
@@ -371,6 +393,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .{ .program = p, .uniform = uniform },
             ) catch @panic("OOM");
             rhi.setUniformMatrix(p, uniform, self.mvp);
+            self.updateMVP();
         }
     };
 }
