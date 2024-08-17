@@ -24,9 +24,8 @@ void main()
         f_t_column3
     );
     f_transform = f_pointer_transform * f_transform;
-    mat3 f_n_transform = mat3(f_pointer_transform) * mat3(f_transform);
     vec4 pos = f_mvp * f_transform * vec4(f_position.xyz, 1.0);
     gl_Position = pos;
     fo_color = f_i_color;
-    fo_normals = normalize(transpose(inverse(f_n_transform)) * f_normals);
+    fo_normals = normalize(transpose(inverse(mat3(f_pointer_transform))) * f_normals);
 }

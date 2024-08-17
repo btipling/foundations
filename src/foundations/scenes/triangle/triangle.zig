@@ -45,7 +45,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Triangle {
     );
     while (i < data.len) : (i += 1) {
         const p = math.vector.vec4ToVec3(
-            math.matrix.transformVector(m, math.vector.vec3ToVec4(positions[i])),
+            math.matrix.transformVector(m, math.vector.vec3ToVec4Point(positions[i])),
         );
         data[i] = .{
             .position = p,

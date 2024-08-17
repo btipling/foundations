@@ -38,7 +38,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
         const v = math.vector.add(offset, nv);
         triangle_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(
             math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far),
-            math.vector.vec3ToVec4(v),
+            math.vector.vec3ToVec4Point(v),
         ));
     }
     const triangle1: object.object = .{
@@ -68,7 +68,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
         const v = math.vector.add(offset, nv);
         triangle_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(
             math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far),
-            math.vector.vec3ToVec4(v),
+            math.vector.vec3ToVec4Point(v),
         ));
     }
     var triangle2: object.object = .{

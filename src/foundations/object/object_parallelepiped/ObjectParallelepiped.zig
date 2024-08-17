@@ -7,6 +7,12 @@ const Parallelepied = @This();
 const num_vertices: usize = 24;
 const num_indices: usize = 36; // because normals
 
+pub const pp: math.geometry.Parallelepiped = .{
+    .v0 = .{ 1, 0, 0 },
+    .v1 = .{ 0, 1, 0 },
+    .v2 = .{ 0, 0, 1 },
+};
+
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
@@ -44,11 +50,6 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     var rv_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
     const origin: [3]f32 = .{ 0, 0, 0 };
-    const pp: math.geometry.Parallelepiped = .{
-        .v0 = .{ 1, 0, 0 },
-        .v1 = .{ 0, 1, 0 },
-        .v2 = .{ 0, 0, 1 },
-    };
     const p0 = origin;
     const p1 = pp.v0;
     const p2 = pp.v1;

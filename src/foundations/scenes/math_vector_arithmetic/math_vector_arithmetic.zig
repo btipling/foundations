@@ -77,7 +77,7 @@ fn addVector(self: *MathVectorArithmetic) void {
         var nv = math.vector.mul(pm, p_r);
         nv = math.vector.add(nv, origin);
         const v = math.vector.add(nv, vec);
-        triangle_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(self.ortho_persp, math.vector.vec3ToVec4(v)));
+        triangle_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(self.ortho_persp, math.vector.vec3ToVec4Point(v)));
         triangle_colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
         triangle_colors[pi][1] = 0.75 + 0.25 * v[0];
         triangle_colors[pi][2] = 0.75 + 0.25 * v[1];
@@ -113,7 +113,7 @@ fn addVector(self: *MathVectorArithmetic) void {
         nv = math.vector.add(nv, origin);
         if (do_sum) nv = math.vector.add(nv, vec);
         const v = nv;
-        quad_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(self.ortho_persp, math.vector.vec3ToVec4(v)));
+        quad_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(self.ortho_persp, math.vector.vec3ToVec4Point(v)));
         quad_colors[pi][0] = 0.75 + 0.25 * (rotation / (std.math.pi * 2));
         quad_colors[pi][1] = 0.75 + 0.25 * v[0];
         quad_colors[pi][2] = 0.75 + 0.25 * v[1];

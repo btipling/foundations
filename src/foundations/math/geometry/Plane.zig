@@ -49,5 +49,15 @@ pub fn distanceToPoint(self: Plane, q: vector.vec3) f32 {
     return vector.dotProduct(q, self.normal) - self.offset;
 }
 
+pub fn debug(self: Plane) void {
+    std.debug.print("plane: ({d}, {d}, {d}| {d})\n", .{
+        self.parameterized[0],
+        self.parameterized[1],
+        self.parameterized[2],
+        self.parameterized[3],
+    });
+}
+
+const std = @import("std");
 const vector = @import("../vector.zig");
 const float = @import("../float.zig");

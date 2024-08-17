@@ -59,10 +59,10 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     {
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.scale(1, 1, 0.0125));
-        p0 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p0)));
-        p1 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p1)));
-        p2 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p2)));
-        p3 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p3)));
+        p0 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(p0)));
+        p1 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(p1)));
+        p2 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(p2)));
+        p3 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(p3)));
     }
 
     var offset: u32 = 0;
@@ -70,10 +70,10 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0, 0.0125));
         m = math.matrix.transformMatrix(m, math.matrix.rotationX(0.0125 * std.math.pi));
-        p0 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p0)));
-        p1 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p1)));
-        p2 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p2)));
-        p3 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4(p3)));
+        p0 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(p0)));
+        p1 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(p1)));
+        p2 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(p2)));
+        p3 = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(p3)));
         s_os = addSurface(&rv_data, p0, p1, p2, p3, s_os);
         i_os = addIndicesPerSurface(&indices, offset, offset + 1, offset + 2, offset + 3, i_os);
         offset += 4;

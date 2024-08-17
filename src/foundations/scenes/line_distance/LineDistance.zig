@@ -301,7 +301,7 @@ fn overVertex(self: *LineDistance, x: f32, z: f32) ?LineDistanceUI.mouseVertexCa
     for (self.ui_state.vs, 0..) |vs, i| {
         const v = math.matrix.transformVector(
             m,
-            math.vector.vec3ToVec4(vs.position),
+            math.vector.vec3ToVec4Point(vs.position),
         );
         const center = .{ v[0], v[1] };
         const circle: math.geometry.Circle = .{ .center = center, .radius = point_scale };
