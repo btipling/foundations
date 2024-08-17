@@ -22,9 +22,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
     const sphere: object.object = .{
-        .sphere = object.sphere.init(
+        .sphere = object.Sphere.init(
             program,
-            .{ 1, 1, 1, 1 },
         ),
     };
     p.* = .{

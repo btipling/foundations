@@ -1,6 +1,6 @@
 program: u32,
 objects: [1]object.object = undefined,
-ui_state: CubeAnimatedUI,
+ui_state: ConeAnimatedUI,
 cfg: *config,
 aspect_ratio: f32,
 
@@ -35,7 +35,7 @@ const kf6: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
 
 const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf4, kf5, kf6, kf0 };
 
-const CubeAnimated = @This();
+const ConeAnimated = @This();
 
 const vertex_shader: []const u8 = @embedFile("ca_vertex.glsl");
 const frag_shader: []const u8 = @embedFile("ca_frag.glsl");
@@ -43,39 +43,49 @@ const frag_shader: []const u8 = @embedFile("ca_frag.glsl");
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .shape,
-        .name = "Cube",
+        .name = "Cone",
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *CubeAnimated {
-    const p = allocator.create(CubeAnimated) catch @panic("OOM");
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *ConeAnimated {
+    const p = allocator.create(ConeAnimated) catch @panic("OOM");
 
     const program = rhi.createProgram();
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        const m = math.matrix.identity();
+        i_datas[0] = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 0, 0.1 },
+        };
+    }
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    const cube: object.object = .{
-        .cube = object.Cube.init(
+    const cone: object.object = .{
+        .cone = object.Cone.init(
             program,
-            object.Cube.default_positions,
-            .{ 1, 0, 1, 1 },
+            i_datas[0..],
         ),
     };
     p.* = .{
         .program = program,
-        .ui_state = CubeAnimatedUI.init(),
+        .ui_state = ConeAnimatedUI.init(),
         .cfg = cfg,
         .aspect_ratio = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height)),
     };
-    p.objects[0] = cube;
+    p.objects[0] = cone;
     return p;
 }
 
-pub fn deinit(self: *CubeAnimated, allocator: std.mem.Allocator) void {
+pub fn deinit(self: *ConeAnimated, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
 const animation_duration: f64 = @floatFromInt(key_frames.len - 1);
 
-pub fn draw(self: *CubeAnimated, frame_time: f64) void {
+pub fn draw(self: *ConeAnimated, frame_time: f64) void {
     var frame_times: [key_frames.len]f32 = undefined;
     comptime var i: usize = 0;
     inline while (i < key_frames.len) : (i += 1) {
@@ -111,8 +121,6 @@ pub fn draw(self: *CubeAnimated, frame_time: f64) void {
 
     rhi.drawObjects(self.objects[0..]);
     rhi.setUniformMatrix(self.program, "f_transform", m);
-    const pinhole_distance: f32 = 0;
-    rhi.setUniform1f(self.program, "f_pinhole", pinhole_distance);
     self.ui_state.draw();
 }
 
@@ -120,6 +128,6 @@ const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
-const CubeAnimatedUI = @import("CubeAnimatedUI.zig");
+const ConeAnimatedUI = @import("ConeAnimatedUI.zig");
 const ui = @import("../../ui/ui.zig");
 const config = @import("../../config/config.zig");

@@ -35,7 +35,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Circle {
         },
     };
     const circle: object.object = .{
-        .circle = object.circle.init(
+        .circle = object.Circle.init(
             program,
             i_data[0..],
         ),

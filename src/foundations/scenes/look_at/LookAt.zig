@@ -41,7 +41,6 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
         .view_camera = cam,
         .grid = grid,
     };
-    grid.renderGrid();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     lkt.renderCube();
     lkt.renderCamera();
@@ -92,9 +91,9 @@ pub fn renderCube(self: *LookAt) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, cube_vertex_shader, cube_frag_shader);
     const cube: object.object = .{
-        .cube = object.cube.init(
+        .cube = object.Cube.init(
             program,
-            object.cube.default_positions,
+            object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
         ),
     };
@@ -120,9 +119,9 @@ pub fn renderCamera(self: *LookAt) void {
     const program = rhi.createProgram();
     rhi.attachShaders(program, camera_vertex_shader, camera_frag_shader);
     const camera: object.object = .{
-        .cube = object.cube.init(
+        .cube = object.Cube.init(
             program,
-            object.cube.default_positions,
+            object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
         ),
     };

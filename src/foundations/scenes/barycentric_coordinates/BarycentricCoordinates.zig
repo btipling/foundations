@@ -103,7 +103,7 @@ pub fn renderStrip(self: *BCTriangle) void {
         i_datas[i] = i_data;
     }
     const strip: object.object = .{
-        .strip = object.strip.init(
+        .strip = object.Strip.init(
             program,
             i_datas[0..],
         ),
@@ -119,7 +119,7 @@ pub fn renderCircle(self: *BCTriangle) void {
     self.updatePointIData(inscribed_circle_index);
     self.updatePointIData(circumscribed_circle_index);
     const circle: object.object = .{
-        .circle = object.circle.init(
+        .circle = object.Circle.init(
             program,
             self.circles[0..],
         ),

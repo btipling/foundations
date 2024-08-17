@@ -47,7 +47,7 @@ pub fn program(self: *Grid) u32 {
     return self.grid.parallelepiped.mesh.program;
 }
 
-pub fn renderGrid(self: *Grid) void {
+fn renderGrid(self: *Grid) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, grid_vertex_shader, grid_frag_shader);
     var i_datas: [num_grid_lines * 2]rhi.instanceData = undefined;
@@ -114,4 +114,3 @@ const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");
 const math = @import("../../math/math.zig");
 const object = @import("../../object/object.zig");
-const physics = @import("../../physics/physics.zig");

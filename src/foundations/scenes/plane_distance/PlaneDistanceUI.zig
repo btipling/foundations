@@ -1,6 +1,11 @@
 distance: usize = 0,
-rotation_angle: f32 = 0,
-rotation_axis: [3]f32 = .{ 0, 0, 1 },
+rotation: [3]f32 = .{
+    std.math.pi,
+    std.math.pi,
+    std.math.pi,
+},
+translate: [3]f32 = .{ -100, 100, -100 },
+updated: bool = true,
 
 const PlaneDistanceUI = @This();
 
@@ -17,12 +22,16 @@ pub fn draw(self: *PlaneDistanceUI) void {
     _ = c.igBegin("Distance to Plane", null, 0);
     c.igText(@ptrCast(txt));
 
-    if (c.igTreeNode_Str("plane normal")) {
-        _ = c.igSliderFloat("angle", &self.rotation_angle, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
-        c.igText("axis of rotation");
-        _ = c.igSliderFloat("x", &self.rotation_axis[0], -1, 1, "%.3f", c.ImGuiSliderFlags_None);
-        _ = c.igSliderFloat("y", &self.rotation_axis[1], -1, 1, "%.3f", c.ImGuiSliderFlags_None);
-        _ = c.igSliderFloat("z", &self.rotation_axis[2], -1, 1, "%.3f", c.ImGuiSliderFlags_None);
+    if (c.igTreeNode_Str("plane normal rotation")) {
+        if (c.igSliderFloat("x", &self.rotation[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
+        if (c.igSliderFloat("y", &self.rotation[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
+        if (c.igSliderFloat("z", &self.rotation[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
+        c.igTreePop();
+    }
+    if (c.igTreeNode_Str("plane normal translate")) {
+        if (c.igSliderFloat("x", &self.translate[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
+        if (c.igSliderFloat("y", &self.translate[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
+        if (c.igSliderFloat("z", &self.translate[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
         c.igTreePop();
     }
     c.igEnd();
