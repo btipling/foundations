@@ -1,6 +1,7 @@
 ui_state: PlaneDistanceUI,
 allocator: std.mem.Allocator,
 grid: *scenery.Grid = undefined,
+pointer: *scenery.Pointer = undefined,
 plane_visualization: object.object = undefined,
 plane: math.geometry.Plane = undefined,
 view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.SmoothDeceleration)),
@@ -36,6 +37,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
     errdefer cam.deinit(allocator);
     const grid = scenery.Grid.init(allocator);
     errdefer grid.deinit();
+    const pointer = scenery.Pointer.init(allocator);
+    errdefer pointer.deinit();
     const ui_state: PlaneDistanceUI = .{};
 
     pd.* = .{
@@ -43,16 +46,18 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
         .allocator = allocator,
         .view_camera = cam,
         .grid = grid,
+        .pointer = pointer,
         .plane = math.geometry.Plane.init(default_plane_surface_normal, default_plane_distance_to_origin),
     };
-    grid.renderGrid();
     pd.renderPlane();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
+    cam.addProgram(pointer.program(), scenery.Pointer.mvp_uniform_name);
     return pd;
 }
 
 pub fn deinit(self: *PlaneDistance, allocator: std.mem.Allocator) void {
     self.grid.deinit();
+    self.pointer.deinit();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -63,6 +68,7 @@ pub fn draw(self: *PlaneDistance, dt: f64) void {
     self.updatePlaneTransform(self.plane_visualization.parallelepiped.mesh.program);
     self.view_camera.update(dt);
     self.grid.draw(dt);
+    self.pointer.draw(dt);
     const objects: [1]object.object = .{self.plane_visualization};
     rhi.drawObjects(objects[0..]);
     self.ui_state.draw();

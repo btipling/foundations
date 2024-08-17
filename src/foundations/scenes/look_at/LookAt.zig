@@ -41,7 +41,6 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
         .view_camera = cam,
         .grid = grid,
     };
-    grid.renderGrid();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     lkt.renderCube();
     lkt.renderCamera();
