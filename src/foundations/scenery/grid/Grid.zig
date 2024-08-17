@@ -1,9 +1,9 @@
 allocator: std.mem.Allocator,
 grid: object.object = undefined,
-grid_y_scale: math.vector.vec3 = .{ 5000, 1, 1 },
-grid_y_translate: math.vector.vec3 = .{ -67, -2500, -5000 },
-grid_z_scale: math.vector.vec3 = .{ 5000, 1, 1 },
-grid_z_translate: math.vector.vec3 = .{ -68.5, -1071, -2578 },
+grid_y_scale: math.vector.vec3 = .{ 2000, 1, 1 },
+grid_y_translate: math.vector.vec3 = .{ 0, 0, 0 },
+grid_z_scale: math.vector.vec3 = .{ 2000, 1, 1 },
+grid_z_translate: math.vector.vec3 = .{ -1.5, 0, 0 },
 grid_z_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 0, std.math.pi / 2.0 },
 
 const Grid = @This();
