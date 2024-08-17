@@ -38,14 +38,12 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
 
     const start: math.vector.vec3 = .{ 1, 0, 0 };
     var offset: usize = 0;
-    var angle: f32 = 0;
+    var rad: f32 = 0;
     for (0..num_triangles) |_| {
         const uoffset: u32 = @intCast(offset);
-        var coords = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{ 1.0, angle });
-        const p0: math.vector.vec3 = .{ 0, coords[1], coords[0] };
-        angle = angle + change;
-        coords = math.rotation.polarCoordinatesToCartesian2D(math.vector.vec2, .{ 1.0, angle });
-        const p1: math.vector.vec3 = .{ 0, coords[1], coords[0] };
+        const p0: math.vector.vec3 = .{ 0, @cos(rad), @sin(rad) };
+        rad += change;
+        const p1: math.vector.vec3 = .{ 0, @cos(rad), @sin(rad) };
         const p2 = start;
         const tri = math.geometry.Triangle.init(p0, p1, p2);
         attribute_data[offset + 0] = .{
