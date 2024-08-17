@@ -43,9 +43,9 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     var rad: f32 = 0;
     for (0..num_triangles) |_| {
         const uoffset: u32 = @intCast(offset);
-        const p0: math.vector.vec3 = .{ 0, @cos(rad), @sin(rad) };
+        const p0: math.vector.vec3 = .{ 0, @cos(rad), -@sin(rad) };
         rad += change;
-        const p1: math.vector.vec3 = .{ 0, @cos(rad), @sin(rad) };
+        const p1: math.vector.vec3 = .{ 0, @cos(rad), -@sin(rad) };
         const p2 = start;
         const tri = math.geometry.Triangle.init(p0, p1, p2);
         attribute_data[offset + 0] = .{

@@ -45,7 +45,7 @@ pub fn renderCylinder(self: *Pointer) void {
     rhi.attachShaders(prog, pointer_vertex_shader, pointer_frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;
     var m = math.matrix.identity();
-    _ = &m;
+    m = math.matrix.transformMatrix(m, math.matrix.scale(2, 1, 1));
 
     const i_data: rhi.instanceData = .{
         .t_column0 = m.columns[0],
