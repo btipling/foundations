@@ -47,7 +47,10 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
 
     {
         const start: [3]f32 = .{ sphere_scale, 0, 0 };
-        attribute_data[0] = .{ .position = start };
+        attribute_data[0] = .{
+            .position = start,
+            .normals = math.vector.normalize(@as(math.vector.vec3, start)),
+        };
         indices[0] = 0;
         current_p_index += 1;
         current_i_index += 1;
