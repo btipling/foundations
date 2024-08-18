@@ -24,6 +24,7 @@ pub fn init(
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
             .wire_mesh = wireframe,
+            .cull = false,
             .instance_type = .{
                 .instanced = .{
                     .index_count = num_indices,
@@ -78,7 +79,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         var last: usize = 0;
         var fl: usize = 0;
         var sl: usize = 0;
-        for (0..quad_dimensions) |qi| {
+        for (0..quad_dimensions) |_| {
             for (0..quad_dimensions) |_| {
                 const i = fl + sl;
                 const tr = i + 1;
@@ -86,20 +87,6 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                 const tl = i;
                 var bl = i + grid_dimension;
                 bl += 0;
-                _ = qi;
-                // if (qi == 0) bl += grid_dimension;
-                // std.debug.print("qi: ({d}), qj: ({d}) i: ({d}) quad_dimensions: ({d})\n", .{
-                //     qi,
-                //     qj,
-                //     i,
-                //     quad_dimensions,
-                // });
-                // std.debug.print("tr: ({d}) br: ({d}) tl: ({d}) bl: ({d})\n", .{
-                //     tr,
-                //     br,
-                //     tl,
-                //     bl,
-                // });
 
                 const tr_coordinates = positions[tr];
                 const br_coordinates = positions[br];
@@ -123,93 +110,37 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             }
             sl += 1;
         }
-        // // Stich up the grid end to end
-        // for (0..quad_dimensions) |qdi| {
-        //     const qi = (qdi * grid_dimension) + quad_dimensions;
-        //     const tr = qi - quad_dimensions;
-        //     const br = qi + 1;
-        //     const tl = qi;
-        //     const bl = qi + grid_dimension;
-
-        //     const tr_coordinates = positions[tr];
-        //     const br_coordinates = positions[br];
-        //     const tl_coordinates = positions[tl];
-        //     const bl_coordinates = positions[bl];
-        //     attribute_data[tr] = .{ .position = tr_coordinates, .normals = math.vector.normalize(tr_coordinates) };
-        //     attribute_data[br] = .{ .position = br_coordinates, .normals = math.vector.normalize(br_coordinates) };
-        //     attribute_data[tl] = .{ .position = tl_coordinates, .normals = math.vector.normalize(tl_coordinates) };
-        //     attribute_data[bl] = .{ .position = bl_coordinates, .normals = math.vector.normalize(bl_coordinates) };
-        //     // Triangle 1
-        //     indices[ii] = @intCast(tl);
-        //     indices[ii + 1] = @intCast(bl);
-        //     indices[ii + 2] = @intCast(br);
-        //     // Triangle 2
-        //     indices[ii + 3] = @intCast(tr);
-        //     indices[ii + 4] = @intCast(tl);
-        //     indices[ii + 5] = @intCast(br);
-        //     ii += 6;
-        //     last = br;
-        // }
         std.debug.print("last vertex: ({d}) last index: ({d})\n", .{ last, ii });
     }
-    // std.debug.print("\nfirst three indexes: ({d}, {d}, {d})\n", .{
-    //     indices[0],
-    //     indices[1],
-    //     indices[2],
-    // });
-    // std.debug.print("\tp0: ({d}, {d}, {d})\n", .{
-    //     attribute_data[@intCast(indices[0])].position[0],
-    //     attribute_data[@intCast(indices[0])].position[1],
-    //     attribute_data[@intCast(indices[0])].position[2],
-    // });
-    // std.debug.print("\tp1: ({d}, {d}, {d})\n", .{
-    //     attribute_data[@intCast(indices[1])].position[0],
-    //     attribute_data[@intCast(indices[1])].position[1],
-    //     attribute_data[@intCast(indices[1])].position[2],
-    // });
-    // std.debug.print("\tp2: ({d}, {d}, {d})\n", .{
-    //     attribute_data[@intCast(indices[2])].position[0],
-    //     attribute_data[@intCast(indices[2])].position[1],
-    //     attribute_data[@intCast(indices[2])].position[2],
-    // });
-    // std.debug.print("next three indexes: ({d}, {d}, {d})\n", .{
-    //     indices[3],
-    //     indices[4],
-    //     indices[5],
-    // });
-    // std.debug.print("\tp0: ({d}, {d}, {d})\n", .{
-    //     attribute_data[@intCast(indices[3])].position[0],
-    //     attribute_data[@intCast(indices[3])].position[1],
-    //     attribute_data[@intCast(indices[3])].position[2],
-    // });
-    // std.debug.print("\tp1: ({d}, {d}, {d})\n", .{
-    //     attribute_data[@intCast(indices[4])].position[0],
-    //     attribute_data[@intCast(indices[4])].position[1],
-    //     attribute_data[@intCast(indices[4])].position[2],
-    // });
-    // std.debug.print("\tp2: ({d}, {d}, {d})\n", .{
-    //     attribute_data[@intCast(indices[5])].position[0],
-    //     attribute_data[@intCast(indices[5])].position[1],
-    //     attribute_data[@intCast(indices[5])].position[2],
-    // });
+
     return .{ .attribute_data = attribute_data, .indices = indices };
 }
 
-fn addVertexData(attribute_data: *[num_vertices]rhi.attributeData, new_coordinates: [3]f32, i: usize) void {
-    {
-        const p = math.vector.mul(
-            sphere_scale,
-            @as(math.vector.vec3, .{
-                new_coordinates[2],
-                new_coordinates[1],
-                new_coordinates[0],
-            }),
-        );
-        attribute_data[i] = .{
-            .position = p,
-            .normals = math.vector.normalize(p),
-        };
-    }
+fn addVertexData(
+    positions: [num_vertices]math.vector.vec3,
+    indices: [num_indices]u32,
+    attribute_data: *[num_vertices]rhi.attributeData,
+    tr: usize,
+    br: usize,
+    tl: usize,
+    bl: usize,
+    ii: usize,
+) void {
+    const tr_coordinates = positions[tr];
+    const br_coordinates = positions[br];
+    const tl_coordinates = positions[tl];
+    const bl_coordinates = positions[bl];
+    attribute_data[tr] = .{ .position = tr_coordinates, .normals = math.vector.normalize(tr_coordinates) };
+    attribute_data[br] = .{ .position = br_coordinates, .normals = math.vector.normalize(br_coordinates) };
+    attribute_data[tl] = .{ .position = tl_coordinates, .normals = math.vector.normalize(tl_coordinates) };
+    attribute_data[bl] = .{ .position = bl_coordinates, .normals = math.vector.normalize(bl_coordinates) };
+    // Triangle 1
+    indices[ii] = @intCast(tl);
+    indices[ii + 1] = @intCast(br);
+    indices[ii + 2] = @intCast(tr);
+    // Triangle 2
+    indices[ii + 3] = @intCast(tl);
+    indices[ii + 4] = @intCast(bl);
 }
 
 const std = @import("std");
