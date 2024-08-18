@@ -6,7 +6,7 @@ const grid_dimension: usize = @intFromFloat((2.0 * std.math.pi) / angle_delta);
 const num_vertices: usize = grid_dimension * grid_dimension;
 const quad_dimensions = grid_dimension - 1;
 const num_quads = quad_dimensions * quad_dimensions;
-const num_indices: usize = num_quads * 6;
+const num_indices: usize = num_quads * 6 + 3;
 const sphere_scale: f32 = 0.75;
 
 pub fn init(
@@ -95,6 +95,11 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                 fl += 1;
             }
             sl += 1;
+        }
+        {
+            indices[ii] = 0;
+            indices[ii + 1] = 91;
+            indices[ii + 2] = 1;
         }
         std.debug.print("last vertex: ({d}) last index: ({d})\n", .{ last, ii });
     }
