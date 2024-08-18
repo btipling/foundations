@@ -1,10 +1,10 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 6722;
-const num_indices: usize = 19919;
+const num_quads = 100;
+const num_vertices: usize = num_quads * 4;
+const num_indices: usize = num_quads * 6;
 const sphere_scale: f32 = 0.75;
-const angle_div: f32 = 80.0;
 
 pub fn init(
     program: u32,
@@ -37,132 +37,58 @@ pub fn init(
 fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
     var attribute_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
+    var x_axis_angle: f32 = 0;
+    var y_axis_angle: f32 = 0;
 
-    const angle_delta: f32 = 2 * std.math.pi / angle_div;
-    var y_axis_angle: f32 = angle_delta;
-    _ = &y_axis_angle;
+    var pi: usize = 0;
+    var ii: usize = 0;
 
-    var current_p_index: usize = 0;
-    var current_i_index: usize = 0;
-    var current_level: f32 = 1.0;
+    const x_angle_delta: f32 = std.math.pi * 0.2;
 
-    {
-        const start: [3]f32 = .{ sphere_scale, 0, 0 };
-        attribute_data[0] = .{
-            .position = start,
-            .normals = math.vector.normalize(@as(math.vector.vec3, start)),
-        };
-        indices[0] = 0;
-        current_p_index += 1;
-        current_i_index += 1;
-
-        var prev_bot_vertex_index: u32 = 0;
-        var i: usize = 0;
-        var x_angle: f32 = 0;
-        while (x_angle <= 2 * std.math.pi + std.math.pi * 0.002) : (x_angle += angle_delta) {
-            const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+    while (x_axis_angle < 2 * std.math.pi) : (x_axis_angle += x_angle_delta) {
+        const y_angle_delta: f32 = x_angle_delta;
+        while (y_axis_angle <= 2 * std.math.pi) : (y_axis_angle += y_angle_delta) {
+            const tr_coordinates: math.vector.vec3 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                 1.0,
                 y_axis_angle,
-                x_angle,
+                x_axis_angle,
             });
-
-            addVertexData(&attribute_data, new_coordinates, current_p_index);
-            if (i >= 2) {
-                indices[current_i_index] = 0;
-                current_i_index += 1;
-                indices[current_i_index] = prev_bot_vertex_index;
-                current_i_index += 1;
-            }
-            const bot_index: u32 = @intCast(current_p_index);
-            indices[current_i_index] = bot_index;
-            prev_bot_vertex_index = bot_index;
-            current_p_index += 1;
-            current_i_index += 1;
-            i += 1;
-        }
-    }
-
-    const first_ya = y_axis_angle;
-    while (y_axis_angle < 2 * std.math.pi + std.math.pi * 0.002) : (y_axis_angle += angle_delta) {
-        current_level += 1;
-        var current_top_vertex_index: u32 = 0;
-        var current_bot_vertex_index: u32 = 0;
-        var x_angle: f32 = 0;
-        {
-            const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+            const br_coordinates: math.vector.vec3 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                 1.0,
                 y_axis_angle,
-                x_angle,
+                x_axis_angle + x_angle_delta,
             });
-
-            addVertexData(&attribute_data, new_coordinates, current_p_index);
-            const top_index: u32 = @intCast(current_p_index);
-            indices[current_i_index] = top_index;
-            current_top_vertex_index = top_index;
-            current_p_index += 1;
-            current_i_index += 1;
-            if (y_axis_angle != first_ya) {
-                indices[current_i_index] = top_index;
-                current_i_index += 1;
-            }
-        }
-
-        {
-            const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+            const tl_coordinates: math.vector.vec3 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                 1.0,
-                y_axis_angle + angle_delta,
-                x_angle,
+                y_axis_angle + y_angle_delta,
+                x_axis_angle,
             });
-
-            addVertexData(&attribute_data, new_coordinates, current_p_index);
-            const bot_index: u32 = @intCast(current_p_index);
-            indices[current_i_index] = bot_index;
-            current_p_index += 1;
-            current_i_index += 1;
-        }
-
-        var i: usize = 0;
-        x_angle += angle_delta;
-        const stop_at = (2 * std.math.pi + std.math.pi * 0.002) + angle_delta;
-        while (x_angle <= stop_at) : (x_angle += angle_delta) {
-            if (@mod(i, 2) == 0) {
-                const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
-                    1.0,
-                    y_axis_angle + angle_delta - 0.2,
-                    x_angle,
-                });
-
-                addVertexData(&attribute_data, new_coordinates, current_p_index);
-                const bot_index: u32 = @intCast(current_p_index);
-                indices[current_i_index] = bot_index;
-                current_bot_vertex_index = bot_index;
-                current_p_index += 1;
-                current_i_index += 1;
-            } else {
-                const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
-                    1.0,
-                    y_axis_angle,
-                    x_angle,
-                });
-                addVertexData(&attribute_data, new_coordinates, current_p_index);
-                const top_index: u32 = @intCast(current_p_index);
-                indices[current_i_index] = top_index;
-                current_top_vertex_index = top_index;
-                current_p_index += 1;
-                current_i_index += 1;
-            }
-
-            {
-                indices[current_i_index] = current_top_vertex_index;
-                current_i_index += 1;
-                indices[current_i_index] = current_bot_vertex_index;
-                current_i_index += 1;
-            }
-
-            i += 1;
+            const bl_coordinates: math.vector.vec3 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
+                1.0,
+                y_axis_angle + y_angle_delta,
+                x_axis_angle + x_angle_delta,
+            });
+            const tr = pi;
+            const br = pi + 1;
+            const tl = pi + 2;
+            const bl = pi + 3;
+            attribute_data[tr] = .{ .position = tr_coordinates, .normals = math.vector.normalize(tr_coordinates) };
+            attribute_data[br] = .{ .position = br_coordinates, .normals = math.vector.normalize(br_coordinates) };
+            attribute_data[tl] = .{ .position = tl_coordinates, .normals = math.vector.normalize(tl_coordinates) };
+            attribute_data[bl] = .{ .position = bl_coordinates, .normals = math.vector.normalize(bl_coordinates) };
+            // Triangle 1
+            indices[ii] = @intCast(tl);
+            indices[ii + 1] = @intCast(bl);
+            indices[ii + 2] = @intCast(br);
+            // Triangle 2
+            indices[ii + 3] = @intCast(tr);
+            indices[ii + 4] = @intCast(tl);
+            indices[ii + 5] = @intCast(br);
+            pi += 4;
+            ii += 6;
         }
     }
-    std.debug.print("vertices: {d} indices: {d}\n", .{ current_p_index, current_i_index });
+    // std.debug.print("vertices: {d} indices: {d}\n", .{ current_p_index, current_i_index });
     return .{ .attribute_data = attribute_data, .indices = indices };
 }
 
