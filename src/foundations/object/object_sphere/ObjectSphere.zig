@@ -1,14 +1,15 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 6560;
-const num_indices: usize = 19433;
+const num_vertices: usize = 6561;
+const num_indices: usize = 19436;
 const sphere_scale: f32 = 0.75;
 const angle_div: f32 = 80.0;
 
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
+    wireframe: bool,
 ) Sphere {
     var d = data();
 
@@ -19,7 +20,7 @@ pub fn init(
             .program = program,
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
-            .wire_mesh = false,
+            .wire_mesh = wireframe,
             .instance_type = .{
                 .instanced = .{
                     .index_count = num_indices,
@@ -58,7 +59,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         var prev_bot_vertex_index: u32 = 0;
         var i: usize = 0;
         var x_angle: f32 = 0;
-        while (x_angle < 2 * std.math.pi) : (x_angle += angle_delta) {
+        while (x_angle <= 2 * std.math.pi + std.math.pi * 0.002) : (x_angle += angle_delta) {
             const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                 1.0,
                 y_axis_angle,

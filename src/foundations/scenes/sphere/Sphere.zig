@@ -37,6 +37,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
         .sphere = object.Sphere.init(
             program,
             i_datas[0..],
+            false,
         ),
     };
     p.* = .{
