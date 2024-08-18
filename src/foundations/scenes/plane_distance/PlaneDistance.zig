@@ -170,7 +170,7 @@ pub fn renderSphere(self: *PlaneDistance) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            true,
+            false,
         ),
     };
     self.view_camera.addProgram(prog, "f_mvp");

@@ -1,7 +1,7 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_quads = 100;
+const num_quads = 10000;
 const num_vertices: usize = num_quads * 4;
 const num_indices: usize = num_quads * 6;
 const sphere_scale: f32 = 0.75;
@@ -42,7 +42,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     var pi: usize = 0;
     var ii: usize = 0;
 
-    const x_angle_delta: f32 = std.math.pi * 0.2;
+    const x_angle_delta: f32 = std.math.pi * 0.02;
 
     while (x_axis_angle < 2 * std.math.pi) : (x_axis_angle += x_angle_delta) {
         var y_axis_angle: f32 = 0;
