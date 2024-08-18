@@ -27,7 +27,7 @@ pub const scenes = union(scene_type) {
     math_vector_arithmetic: *math_vector_arithmetic,
     linear_colorspace: *linear_colorspace,
     circle: *circle,
-    sphere: *sphere,
+    sphere: *Sphere,
     line: *line,
     unit_circle: *UnitCircle,
     barycentric_coordinates: *BarycentricCoordinates,
@@ -57,7 +57,7 @@ const math_vector_arithmetic = @import("../scenes/math_vector_arithmetic/math_ve
 const linear_colorspace = @import("../scenes/linear_colorspace/linear_colorspace.zig");
 const CubeAnimated = @import("../scenes/cubes_animated/CubeAnimated.zig");
 const circle = @import("../scenes/circle/circle.zig");
-const sphere = @import("../scenes/sphere/sphere.zig");
+const Sphere = @import("../scenes/sphere/Sphere.zig");
 const line = @import("../scenes/line/line.zig");
 const UnitCircle = @import("../scenes/unit_circle/UnitCircle.zig");
 const BarycentricCoordinates = @import("../scenes/barycentric_coordinates/BarycentricCoordinates.zig");

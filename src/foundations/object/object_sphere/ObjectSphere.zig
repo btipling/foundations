@@ -8,10 +8,11 @@ const angle_div: f32 = 80.0;
 
 pub fn init(
     program: u32,
+    instance_data: []rhi.instanceData,
 ) Sphere {
     const d = data();
 
-    const vao_buf = rhi.attachBuffer(d.attribute_data[0..]);
+    const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
@@ -20,8 +21,9 @@ pub fn init(
             .buffer = vao_buf.buffer,
             .wire_mesh = false,
             .instance_type = .{
-                .element = .{
-                    .count = num_indices,
+                .instanced = .{
+                    .index_count = num_indices,
+                    .instances_count = instance_data.len,
                     .ebo = ebo,
                     .primitive = c.GL_TRIANGLES,
                     .format = c.GL_UNSIGNED_INT,

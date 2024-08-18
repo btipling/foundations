@@ -4,6 +4,7 @@ grid: *scenery.Grid = undefined,
 pointer: *scenery.Pointer = undefined,
 plane_visualization: object.object = undefined,
 plane: math.geometry.Plane = undefined,
+sphere: object.object = undefined,
 view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.SmoothDeceleration)),
 
 const PlaneDistance = @This();
@@ -117,6 +118,32 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
 pub fn updateCamera(_: *PlaneDistance) void {}
 
 pub fn renderPlane(self: *PlaneDistance) void {
+    const prog = rhi.createProgram();
+    rhi.attachShaders(prog, grid_vertex_shader, grid_frag_shader);
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        const m = math.matrix.identity();
+        i_datas[0] = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 0, 0.1 },
+        };
+    }
+    const plane_vis: object.object = .{
+        .parallelepiped = object.Parallelepiped.init(
+            prog,
+            i_datas[0..],
+            true,
+        ),
+    };
+    self.updatePlaneTransform(prog);
+    self.view_camera.addProgram(prog, "f_mvp");
+    self.plane_visualization = plane_vis;
+}
+
+pub fn renderSphere(self: *PlaneDistance) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, grid_vertex_shader, grid_frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;

@@ -21,9 +21,21 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
 
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        const m = math.matrix.identity();
+        i_datas[0] = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 0, 0.1 },
+        };
+    }
     const sphere: object.object = .{
         .sphere = object.Sphere.init(
             program,
+            i_datas[0..],
         ),
     };
     p.* = .{
