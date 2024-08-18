@@ -1,8 +1,8 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 6561;
-const num_indices: usize = 19436;
+const num_vertices: usize = 6722;
+const num_indices: usize = 19919;
 const sphere_scale: f32 = 0.75;
 const angle_div: f32 = 80.0;
 
@@ -83,7 +83,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     }
 
     const first_ya = y_axis_angle;
-    while (y_axis_angle < 2 * std.math.pi) : (y_axis_angle += angle_delta) {
+    while (y_axis_angle < 2 * std.math.pi + std.math.pi * 0.002) : (y_axis_angle += angle_delta) {
         current_level += 1;
         var current_top_vertex_index: u32 = 0;
         var current_bot_vertex_index: u32 = 0;
@@ -123,12 +123,12 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
 
         var i: usize = 0;
         x_angle += angle_delta;
-        const stop_at = (2 * std.math.pi) + angle_delta;
+        const stop_at = (2 * std.math.pi + std.math.pi * 0.002) + angle_delta;
         while (x_angle <= stop_at) : (x_angle += angle_delta) {
             if (@mod(i, 2) == 0) {
                 const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                     1.0,
-                    y_axis_angle + angle_delta,
+                    y_axis_angle + angle_delta - 0.2,
                     x_angle,
                 });
 
