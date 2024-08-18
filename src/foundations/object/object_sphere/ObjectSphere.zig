@@ -98,10 +98,10 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         }
         {
             indices[ii] = 0;
-            indices[ii + 1] = 91;
+            indices[ii + 1] = grid_dimension * (grid_dimension - 1) + 1;
             indices[ii + 2] = 1;
         }
-        std.debug.print("last vertex: ({d}) last index: ({d})\n", .{ last, ii });
+        std.debug.print("last vertex: ({d}) last index: ({d}) last index triangle: ({d})\n", .{ last, ii, grid_dimension * (grid_dimension - 1) + 1 });
     }
 
     return .{ .attribute_data = attribute_data, .indices = indices };
