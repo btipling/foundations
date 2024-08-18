@@ -102,7 +102,7 @@ pub fn renderCube(self: *LookAt) void {
             .{ 1, 0, 1, 1 },
         ),
     };
-    var m = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(0.0, 10.5, 0.0));
+    var m = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(2.0, 0.0, 0.0));
     m = math.matrix.transformMatrix(
         m,
         math.matrix.translate(
@@ -114,7 +114,7 @@ pub fn renderCube(self: *LookAt) void {
     m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.cube_rot[0]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.cube_rot[1]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.cube_rot[2]));
-    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(1));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(0.5));
     rhi.setUniformMatrix(program, "f_transform", m);
     self.view_camera.addProgram(program, "f_mvp");
     self.cube = cube;

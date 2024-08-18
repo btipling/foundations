@@ -30,7 +30,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
         cfg,
         pd,
         integrator,
-        .{ 0, 200, -100 },
+        .{ 5, 30, -30 },
         std.math.pi * 0.75,
     );
     errdefer cam.deinit(allocator);
@@ -104,14 +104,13 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
     self.updatePlane(m);
     {
         var pm = m;
-        pm = math.matrix.transformMatrix(pm, math.matrix.translate(100, 0, 200));
+        pm = math.matrix.transformMatrix(pm, math.matrix.translate(10, 0, 20));
         pm = math.matrix.transformMatrix(pm, math.matrix.rotationZ(std.math.pi / 2.0));
-        pm = math.matrix.transformMatrix(pm, math.matrix.uniformScale(10.0));
         for (self.pointer.programs()) |p| {
             rhi.setUniformMatrix(p, scenery.Pointer.pointer_uniform_name, pm);
         }
     }
-    m = math.matrix.transformMatrix(m, math.matrix.scale(200.0, 0.01, 400.0));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(20.0, 0.01, 40.0));
     rhi.setUniformMatrix(prog, "f_plane_transform", m);
 }
 
