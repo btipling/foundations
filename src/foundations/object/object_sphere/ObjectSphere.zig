@@ -88,7 +88,6 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             ii += 6;
         }
     }
-    // std.debug.print("vertices: {d} indices: {d}\n", .{ current_p_index, current_i_index });
     return .{ .attribute_data = attribute_data, .indices = indices };
 }
 
