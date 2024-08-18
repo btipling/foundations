@@ -10,9 +10,9 @@ pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
 ) Sphere {
-    const d = data();
+    var d = data();
 
-    const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data);
+    const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
