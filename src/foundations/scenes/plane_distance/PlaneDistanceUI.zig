@@ -4,7 +4,7 @@ rotation: [3]f32 = .{
     std.math.pi,
     std.math.pi,
 },
-translate: [3]f32 = .{ 0, 0, -20 },
+translate: [3]f32 = .{ 0, -15, -20 },
 updated: bool = true,
 
 const PlaneDistanceUI = @This();

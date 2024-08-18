@@ -1,27 +1,30 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const num_vertices: usize = 6560;
-const num_indices: usize = 19433;
+const num_vertices: usize = 6722;
+const num_indices: usize = 19919;
 const sphere_scale: f32 = 0.75;
 const angle_div: f32 = 80.0;
 
 pub fn init(
     program: u32,
+    instance_data: []rhi.instanceData,
+    wireframe: bool,
 ) Sphere {
-    const d = data();
+    var d = data();
 
-    const vao_buf = rhi.attachBuffer(d.attribute_data[0..]);
+    const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
             .program = program,
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
-            .wire_mesh = false,
+            .wire_mesh = wireframe,
             .instance_type = .{
-                .element = .{
-                    .count = num_indices,
+                .instanced = .{
+                    .index_count = num_indices,
+                    .instances_count = instance_data.len,
                     .ebo = ebo,
                     .primitive = c.GL_TRIANGLES,
                     .format = c.GL_UNSIGNED_INT,
@@ -45,7 +48,10 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
 
     {
         const start: [3]f32 = .{ sphere_scale, 0, 0 };
-        attribute_data[0] = .{ .position = start };
+        attribute_data[0] = .{
+            .position = start,
+            .normals = math.vector.normalize(@as(math.vector.vec3, start)),
+        };
         indices[0] = 0;
         current_p_index += 1;
         current_i_index += 1;
@@ -53,7 +59,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         var prev_bot_vertex_index: u32 = 0;
         var i: usize = 0;
         var x_angle: f32 = 0;
-        while (x_angle < 2 * std.math.pi) : (x_angle += angle_delta) {
+        while (x_angle <= 2 * std.math.pi + std.math.pi * 0.002) : (x_angle += angle_delta) {
             const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                 1.0,
                 y_axis_angle,
@@ -77,7 +83,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     }
 
     const first_ya = y_axis_angle;
-    while (y_axis_angle < 2 * std.math.pi) : (y_axis_angle += angle_delta) {
+    while (y_axis_angle < 2 * std.math.pi + std.math.pi * 0.002) : (y_axis_angle += angle_delta) {
         current_level += 1;
         var current_top_vertex_index: u32 = 0;
         var current_bot_vertex_index: u32 = 0;
@@ -117,12 +123,12 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
 
         var i: usize = 0;
         x_angle += angle_delta;
-        const stop_at = (2 * std.math.pi) + angle_delta;
+        const stop_at = (2 * std.math.pi + std.math.pi * 0.002) + angle_delta;
         while (x_angle <= stop_at) : (x_angle += angle_delta) {
             if (@mod(i, 2) == 0) {
                 const new_coordinates: [3]f32 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                     1.0,
-                    y_axis_angle + angle_delta,
+                    y_axis_angle + angle_delta - 0.2,
                     x_angle,
                 });
 
