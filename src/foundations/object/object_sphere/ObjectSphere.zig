@@ -38,7 +38,6 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     var attribute_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
     var x_axis_angle: f32 = 0;
-    var y_axis_angle: f32 = 0;
 
     var pi: usize = 0;
     var ii: usize = 0;
@@ -46,6 +45,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     const x_angle_delta: f32 = std.math.pi * 0.2;
 
     while (x_axis_angle < 2 * std.math.pi) : (x_axis_angle += x_angle_delta) {
+        var y_axis_angle: f32 = 0;
         const y_angle_delta: f32 = x_angle_delta;
         while (y_axis_angle <= 2 * std.math.pi) : (y_axis_angle += y_angle_delta) {
             const tr_coordinates: math.vector.vec3 = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
