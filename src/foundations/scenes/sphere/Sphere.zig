@@ -18,6 +18,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
     const p = allocator.create(Sphere) catch @panic("OOM");
+    errdefer allocator.destroy(p);
 
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);

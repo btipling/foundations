@@ -12,8 +12,10 @@ const PlaneDistance = @This();
 const default_normal: math.vector.vec3 = .{ 0, -1, 0 }; // points out of the screen.
 const default_distance: f32 = 0.0; // always intersects with origin for now
 
-const grid_vertex_shader: []const u8 = @embedFile("plane_vertex.glsl");
-const grid_frag_shader: []const u8 = @embedFile("plane_frag.glsl");
+const plane_vertex_shader: []const u8 = @embedFile("plane_vertex.glsl");
+const plane_frag_shader: []const u8 = @embedFile("plane_frag.glsl");
+const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
+const sphere_frag_shader: []const u8 = @embedFile("sphere_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -50,6 +52,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
         .plane = math.geometry.Plane.init(default_normal, default_distance),
     };
     pd.renderPlane();
+    pd.renderSphere();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     {
         const progs = pointer.programs();
@@ -76,8 +79,14 @@ pub fn draw(self: *PlaneDistance, dt: f64) void {
     self.view_camera.update(dt);
     self.grid.draw(dt);
     self.pointer.draw(dt);
-    const objects: [1]object.object = .{self.plane_visualization};
-    rhi.drawObjects(objects[0..]);
+    {
+        const objects: [1]object.object = .{self.sphere};
+        rhi.drawObjects(objects[0..]);
+    }
+    {
+        const objects: [1]object.object = .{self.plane_visualization};
+        rhi.drawObjects(objects[0..]);
+    }
     self.ui_state.draw();
 }
 
@@ -119,7 +128,7 @@ pub fn updateCamera(_: *PlaneDistance) void {}
 
 pub fn renderPlane(self: *PlaneDistance) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, grid_vertex_shader, grid_frag_shader);
+    rhi.attachShaders(prog, plane_vertex_shader, plane_frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
@@ -145,7 +154,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
 
 pub fn renderSphere(self: *PlaneDistance) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, grid_vertex_shader, grid_frag_shader);
+    rhi.attachShaders(prog, sphere_vertex_shader, sphere_frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
@@ -157,16 +166,14 @@ pub fn renderSphere(self: *PlaneDistance) void {
             .color = .{ 1, 0, 0, 0.1 },
         };
     }
-    const plane_vis: object.object = .{
-        .parallelepiped = object.Parallelepiped.init(
+    const sphere: object.object = .{
+        .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            true,
         ),
     };
-    self.updatePlaneTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
-    self.plane_visualization = plane_vis;
+    self.sphere = sphere;
 }
 
 const std = @import("std");
