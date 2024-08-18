@@ -111,14 +111,17 @@ pub fn updatePlane(self: *PlaneDistance, m: math.matrix) void {
 
 pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
     var m = math.matrix.identity();
+    const scale_matrix = math.matrix.scale(20.0, 0.01, 40.0);
     m = math.matrix.transformMatrix(m, math.matrix.translate(
         self.ui_state.plane_translate[0],
         self.ui_state.plane_translate[1],
         self.ui_state.plane_translate[2],
     ));
+    m = math.matrix.transformMatrix(m, math.matrix.translate(10, 0, 20));
     m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.plane_rotation[0]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.plane_rotation[1]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.plane_rotation[2]));
+    m = math.matrix.transformMatrix(m, math.matrix.translate(-10, 0, -20));
     self.updatePlane(m);
     {
         var pm = m;
@@ -128,7 +131,7 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
             rhi.setUniformMatrix(p, scenery.Pointer.pointer_uniform_name, pm);
         }
     }
-    m = math.matrix.transformMatrix(m, math.matrix.scale(20.0, 0.01, 40.0));
+    m = math.matrix.transformMatrix(m, scale_matrix);
     rhi.setUniformMatrix(prog, "f_plane_transform", m);
 }
 
