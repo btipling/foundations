@@ -88,22 +88,8 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
                 var bl = i + grid_dimension;
                 bl += 0;
 
-                const tr_coordinates = positions[tr];
-                const br_coordinates = positions[br];
-                const tl_coordinates = positions[tl];
-                const bl_coordinates = positions[bl];
-                attribute_data[tr] = .{ .position = tr_coordinates, .normals = math.vector.normalize(tr_coordinates) };
-                attribute_data[br] = .{ .position = br_coordinates, .normals = math.vector.normalize(br_coordinates) };
-                attribute_data[tl] = .{ .position = tl_coordinates, .normals = math.vector.normalize(tl_coordinates) };
-                attribute_data[bl] = .{ .position = bl_coordinates, .normals = math.vector.normalize(bl_coordinates) };
-                // Triangle 1
-                indices[ii] = @intCast(tl);
-                indices[ii + 1] = @intCast(br);
-                indices[ii + 2] = @intCast(tr);
-                // Triangle 2
-                indices[ii + 3] = @intCast(tl);
-                indices[ii + 4] = @intCast(bl);
-                indices[ii + 5] = @intCast(br);
+                addVertexData(positions, indices[0..], attribute_data[0..], tr, br, tl, bl, ii);
+
                 ii += 6;
                 last = br;
                 fl += 1;
@@ -118,8 +104,8 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
 
 fn addVertexData(
     positions: [num_vertices]math.vector.vec3,
-    indices: [num_indices]u32,
-    attribute_data: *[num_vertices]rhi.attributeData,
+    indices: []u32,
+    attribute_data: []rhi.attributeData,
     tr: usize,
     br: usize,
     tl: usize,
@@ -141,6 +127,7 @@ fn addVertexData(
     // Triangle 2
     indices[ii + 3] = @intCast(tl);
     indices[ii + 4] = @intCast(bl);
+    indices[ii + 5] = @intCast(br);
 }
 
 const std = @import("std");
