@@ -1,11 +1,18 @@
 distance: usize = 0,
-rotation: [3]f32 = .{
+plane_rotation: [3]f32 = .{
     std.math.pi,
     std.math.pi,
     std.math.pi,
 },
-translate: [3]f32 = .{ 0, -15, -20 },
-updated: bool = true,
+plane_translate: [3]f32 = .{ 0, -15, -20 },
+plane_updated: bool = true,
+cube_rotation: [3]f32 = .{
+    std.math.pi,
+    std.math.pi + std.math.pi * 0.25,
+    std.math.pi - std.math.pi * 0.25,
+},
+cube_translate: [3]f32 = .{ 3, -2, 2 },
+cube_updated: bool = true,
 
 const PlaneDistanceUI = @This();
 
@@ -22,16 +29,28 @@ pub fn draw(self: *PlaneDistanceUI) void {
     _ = c.igBegin("Distance to Plane", null, 0);
     c.igText(@ptrCast(txt));
 
-    if (c.igTreeNode_Str("plane normal rotation")) {
-        if (c.igSliderFloat("x", &self.rotation[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
-        if (c.igSliderFloat("y", &self.rotation[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
-        if (c.igSliderFloat("z", &self.rotation[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
+    if (c.igTreeNode_Str("plane rotation")) {
+        if (c.igSliderFloat("x", &self.plane_rotation[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+        if (c.igSliderFloat("y", &self.plane_rotation[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+        if (c.igSliderFloat("z", &self.plane_rotation[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
         c.igTreePop();
     }
-    if (c.igTreeNode_Str("plane normal translate")) {
-        if (c.igSliderFloat("x", &self.translate[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
-        if (c.igSliderFloat("y", &self.translate[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
-        if (c.igSliderFloat("z", &self.translate[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.updated = true;
+    if (c.igTreeNode_Str("plane translate")) {
+        if (c.igSliderFloat("x", &self.plane_translate[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+        if (c.igSliderFloat("y", &self.plane_translate[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+        if (c.igSliderFloat("z", &self.plane_translate[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+        c.igTreePop();
+    }
+    if (c.igTreeNode_Str("cube rotation")) {
+        if (c.igSliderFloat("x", &self.cube_rotation[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+        if (c.igSliderFloat("y", &self.cube_rotation[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+        if (c.igSliderFloat("z", &self.cube_rotation[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+        c.igTreePop();
+    }
+    if (c.igTreeNode_Str("cube translate")) {
+        if (c.igSliderFloat("x", &self.cube_translate[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+        if (c.igSliderFloat("y", &self.cube_translate[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+        if (c.igSliderFloat("z", &self.cube_translate[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
         c.igTreePop();
     }
     c.igEnd();
