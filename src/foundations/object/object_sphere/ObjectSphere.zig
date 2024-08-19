@@ -24,7 +24,9 @@ pub fn init(
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
             .wire_mesh = wireframe,
-            .cull = false, // TODO: this code has a degenerate triangle, cull face bug at when i % grid_dimension == 0
+            // TODO: this code has a degenerate triangle, cull face bug at when i % grid_dimension == 0
+            // I have to do the math on paper to figure this out.
+            .cull = false,
             .instance_type = .{
                 .instanced = .{
                     .index_count = num_indices,
