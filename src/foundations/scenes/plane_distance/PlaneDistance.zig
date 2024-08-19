@@ -144,7 +144,7 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
         var sm = math.matrix.identity();
         const po = self.plane.closestPointToOrigin();
         self.ui_state.closest_point_to_origin = po;
-        self.ui_state.coplanar_check = self.plane.distanceToPoint(.{ 0, 0, 0 });
+        self.ui_state.origin_distance = self.plane.distanceToPoint(.{ 0, 0, 0 });
 
         sm = math.matrix.transformMatrix(sm, math.matrix.translate(po[0], po[1], po[2]));
         sm = math.matrix.transformMatrix(sm, math.matrix.uniformScale(0.5));
@@ -169,9 +169,10 @@ fn updateCubePlanePoint(self: *PlaneDistance) void {
         self.ui_state.cube_translate[2],
         1.0,
     };
-    const pp = math.vector.vec4ToVec3(self.plane.closestPointToPoint(
+    const pc = self.plane.closestPointToPoint(
         math.matrix.transformVector(math.matrix.translate(0.5, 0.5, 0.5), p),
-    ));
+    );
+    const pp = math.vector.vec4ToVec3(pc);
     var cm = math.matrix.identity();
     cm = math.matrix.transformMatrix(cm, math.matrix.translate(pp[0], pp[1], pp[2]));
     cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(0.5));
@@ -183,6 +184,21 @@ fn updateCubePlanePoint(self: *PlaneDistance) void {
         .color = .{ 1, 0, 1, 1 },
     };
     self.sphere.sphere.updateInstanceAt(plane_cube_point_sphere, i_data);
+    self.ui_state.cube_point = pc;
+    {
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(
+            self.ui_state.cube_translate[0],
+            self.ui_state.cube_translate[1],
+            self.ui_state.cube_translate[2],
+        ));
+        m = math.matrix.inverse(m);
+        self.ui_state.cube_distance = self.plane.distanceToPoint(
+            math.vector.vec4ToVec3(
+                math.matrix.transformVector(m, .{ 0, 0, 0, 1 }),
+            ),
+        );
+    }
 }
 
 pub fn updateCubeTransform(self: *PlaneDistance, prog: u32) void {
