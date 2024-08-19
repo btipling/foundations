@@ -1,12 +1,12 @@
 mesh: rhi.mesh,
 
 const Sphere = @This();
-const angle_delta: f32 = std.math.pi * 0.2;
+const angle_delta: f32 = std.math.pi * 0.02;
 const grid_dimension: usize = @intFromFloat((2.0 * std.math.pi) / angle_delta);
 const num_vertices: usize = grid_dimension * grid_dimension;
 const quad_dimensions = grid_dimension - 1;
 const num_quads = quad_dimensions * quad_dimensions;
-const num_indices: usize = num_quads * 6 + 3;
+const num_indices: usize = num_quads * 6;
 const sphere_scale: f32 = 0.75;
 
 pub fn init(
@@ -24,7 +24,7 @@ pub fn init(
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
             .wire_mesh = wireframe,
-            .cull = false,
+            .cull = false, // TODO: this code has a degenerate triangle, cull face bug at when i % grid_dimension == 0
             .instance_type = .{
                 .instanced = .{
                     .index_count = num_indices,
@@ -44,28 +44,16 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     var x_axis_angle: f32 = 0;
 
     const x_angle_delta: f32 = angle_delta;
-    std.debug.print("angle_delta: ({d}) grid_dim: ({d}) num_quads: ({d}) num_vertices: ({d}, num_indices: ({d}))\n", .{
-        angle_delta,
-        grid_dimension,
-        num_quads,
-        num_vertices,
-        num_indices,
-    });
 
     var positions: [num_vertices]math.vector.vec3 = undefined;
     {
         var pi: usize = 0;
         while (x_axis_angle < 2 * std.math.pi) : (x_axis_angle += x_angle_delta) {
-            var y_axis_angle: f32 = 0;
             const y_angle_delta: f32 = x_angle_delta;
+            var y_axis_angle: f32 = 0;
             while (y_axis_angle < 2 * std.math.pi) : (y_axis_angle += y_angle_delta) {
                 positions[pi] = math.rotation.sphericalCoordinatesToCartesian3D(math.vector.vec3, .{
                     1.0,
-                    y_axis_angle,
-                    x_axis_angle,
-                });
-                std.debug.print("pi ({d}) y_angle: ({d}) x_angle: ({d})\n", .{
-                    pi,
                     y_axis_angle,
                     x_axis_angle,
                 });
@@ -96,12 +84,6 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             }
             sl += 1;
         }
-        {
-            indices[ii] = 0;
-            indices[ii + 1] = grid_dimension * (grid_dimension - 1) + 1;
-            indices[ii + 2] = 1;
-        }
-        std.debug.print("last vertex: ({d}) last index: ({d}) last index triangle: ({d})\n", .{ last, ii, grid_dimension * (grid_dimension - 1) + 1 });
     }
 
     return .{ .attribute_data = attribute_data, .indices = indices };
