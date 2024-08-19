@@ -134,9 +134,10 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
         }
     }
     {
-        var sm = m;
-        sm = math.matrix.transformMatrix(sm, math.matrix.translate(10, 0, 20));
-        sm = math.matrix.transformMatrix(sm, math.matrix.rotationZ(std.math.pi / 2.0));
+        var sm = math.matrix.identity();
+        const po = self.plane.closestPointToOrigin();
+        self.ui_state.closest_point_to_origin = po;
+        sm = math.matrix.transformMatrix(sm, math.matrix.translate(po[0], po[1], po[2]));
         const i_data: rhi.instanceData = .{
             .t_column0 = sm.columns[0],
             .t_column1 = sm.columns[1],
