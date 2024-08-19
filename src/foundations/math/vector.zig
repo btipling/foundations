@@ -490,6 +490,10 @@ test decomposeProjection {
     try std.testing.expectEqual(b_v1, add(b_res.proj, b_res.perp));
 }
 
+pub inline fn tripleScalarProduct(u: vec3, v: vec3, w: vec3) f32 {
+    return dotProduct(u, crossProduct(v, w));
+}
+
 const std = @import("std");
 const float = @import("float.zig");
 const rotation = @import("rotation.zig");

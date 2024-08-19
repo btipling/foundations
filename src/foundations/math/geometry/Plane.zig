@@ -49,6 +49,12 @@ pub fn distanceToPoint(self: Plane, q: vector.vec3) f32 {
     return vector.dotProduct(q, self.normal) - self.offset;
 }
 
+pub fn closestPointToOrigin(self: Plane) vector.vec4 {
+    const v = vector.mul(-self.offset, self.normal);
+    const w = vector.lengthSquared(self.normal);
+    return .{ v[0], v[1], v[2], w };
+}
+
 pub fn debug(self: Plane) void {
     std.debug.print("plane: ({d}, {d}, {d}| {d})\n", .{
         self.parameterized[0],

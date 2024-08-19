@@ -1,6 +1,7 @@
 mesh: rhi.mesh,
 vertex_data_size: usize,
 instance_data_stride: usize,
+attribute_data: [num_vertices]rhi.attributeData,
 
 const Parallelepied = @This();
 
@@ -40,6 +41,7 @@ pub fn init(
         },
         .vertex_data_size = vao_buf.vertex_data_size,
         .instance_data_stride = vao_buf.instance_data_stride,
+        .attribute_data = d.data,
     };
 }
 pub fn updateInstanceAt(self: Parallelepied, index: usize, instance_data: rhi.instanceData) void {

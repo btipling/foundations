@@ -1,4 +1,6 @@
 mesh: rhi.mesh,
+vertex_data_size: usize,
+instance_data_stride: usize,
 
 const Sphere = @This();
 const angle_delta: f32 = std.math.pi * 0.02;
@@ -37,7 +39,13 @@ pub fn init(
                 },
             },
         },
+        .vertex_data_size = vao_buf.vertex_data_size,
+        .instance_data_stride = vao_buf.instance_data_stride,
     };
+}
+
+pub fn updateInstanceAt(self: Sphere, index: usize, instance_data: rhi.instanceData) void {
+    rhi.updateInstanceData(self.mesh.buffer, self.vertex_data_size, self.instance_data_stride, index, instance_data);
 }
 
 fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
