@@ -13,7 +13,8 @@ cube_rotation: [3]f32 = .{
 },
 cube_translate: [3]f32 = .{ 3, -2, 2 },
 cube_updated: bool = true,
-closest_point_to_origin: [3]f32 = .{ 0, 0, 0 },
+closest_point_to_origin: [4]f32 = .{ 0, 0, 0, 0 },
+coplanar_check: f32 = 0,
 
 const PlaneDistanceUI = @This();
 
@@ -26,16 +27,17 @@ pub fn draw(self: *PlaneDistanceUI) void {
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Distance to Plane", null, 0);
     {
-        const txt = std.fmt.bufPrintZ(&buf, "Distance to plane: {d}", .{
-            self.distance,
+        const txt = std.fmt.bufPrintZ(&buf, "Closest point to origin: ({d:.3}, {d:.3}, {d:.3}, {d:.3})", .{
+            self.closest_point_to_origin[0],
+            self.closest_point_to_origin[1],
+            self.closest_point_to_origin[2],
+            self.closest_point_to_origin[3],
         }) catch @panic("bufsize too small");
         c.igText(@ptrCast(txt));
     }
     {
-        const txt = std.fmt.bufPrintZ(&buf, "Closest point to origin: ({d:.3}, {d:.3}, {d:.3})", .{
-            self.closest_point_to_origin[0],
-            self.closest_point_to_origin[1],
-            self.closest_point_to_origin[2],
+        const txt = std.fmt.bufPrintZ(&buf, "Coplanar?: {d:.3}", .{
+            self.coplanar_check,
         }) catch @panic("bufsize too small");
         c.igText(@ptrCast(txt));
     }

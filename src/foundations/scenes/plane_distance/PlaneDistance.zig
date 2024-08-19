@@ -101,13 +101,19 @@ pub fn draw(self: *PlaneDistance, dt: f64) void {
 }
 
 pub fn updatePlane(self: *PlaneDistance, m: math.matrix) void {
-    const p = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(object.Parallelepiped.pp.v1)));
-    const q = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(object.Parallelepiped.pp.v0)));
-    const r = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(object.Parallelepiped.pp.v2)));
+    const p = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(
+        @as(math.vector.vec3, self.plane_visualization.parallelepiped.attribute_data[0].position),
+    )));
+    const q = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(
+        @as(math.vector.vec3, self.plane_visualization.parallelepiped.attribute_data[1].position),
+    )));
+    const r = math.vector.vec4ToVec3(math.matrix.transformVector(m, math.vector.vec3ToVec4Point(
+        @as(math.vector.vec3, self.plane_visualization.parallelepiped.attribute_data[3].position),
+    )));
     const u = math.vector.sub(q, p);
     const v = math.vector.sub(r, p);
     const n = math.vector.normalize(math.vector.crossProduct(u, v));
-    const d: f32 = math.vector.dotProduct(math.vector.negate(n), q);
+    const d: f32 = -(n[0] * p[0] + n[1] * p[1] + n[2] * p[2]);
     self.plane = math.geometry.Plane.init(n, d);
 }
 
@@ -137,6 +143,8 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
         var sm = math.matrix.identity();
         const po = self.plane.closestPointToOrigin();
         self.ui_state.closest_point_to_origin = po;
+        self.ui_state.coplanar_check = self.plane.distanceToPoint(.{ 0, 0, 0 });
+
         sm = math.matrix.transformMatrix(sm, math.matrix.translate(po[0], po[1], po[2]));
         const i_data: rhi.instanceData = .{
             .t_column0 = sm.columns[0],
@@ -189,9 +197,9 @@ pub fn renderPlane(self: *PlaneDistance) void {
             true,
         ),
     };
+    self.plane_visualization = plane_vis;
     self.updatePlaneTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
-    self.plane_visualization = plane_vis;
 }
 
 pub fn renderSphere(self: *PlaneDistance) void {
