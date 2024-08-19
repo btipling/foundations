@@ -10,8 +10,10 @@ view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.S
 
 const PlaneDistance = @This();
 
-const default_normal: math.vector.vec3 = .{ 0, -1, 0 }; // points out of the screen.
-const default_distance: f32 = 0.0; // always intersects with origin for now
+const default_normal: math.vector.vec3 = .{ 0, -1, 0 };
+const default_distance: f32 = 0.0;
+const origin_sphere: usize = 0;
+const plane_origin_point_sphere: usize = 1;
 
 const plane_vertex_shader: []const u8 = @embedFile("plane_vertex.glsl");
 const plane_frag_shader: []const u8 = @embedFile("plane_frag.glsl");
@@ -54,8 +56,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
         .pointer = pointer,
         .plane = math.geometry.Plane.init(default_normal, default_distance),
     };
-    pd.renderPlane();
     pd.renderSphere();
+    pd.renderPlane();
     pd.renderParallepiped();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     {
@@ -131,6 +133,19 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
             rhi.setUniformMatrix(p, scenery.Pointer.pointer_uniform_name, pm);
         }
     }
+    {
+        var sm = m;
+        sm = math.matrix.transformMatrix(sm, math.matrix.translate(10, 0, 20));
+        sm = math.matrix.transformMatrix(sm, math.matrix.rotationZ(std.math.pi / 2.0));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = sm.columns[0],
+            .t_column1 = sm.columns[1],
+            .t_column2 = sm.columns[2],
+            .t_column3 = sm.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        };
+        self.sphere.sphere.updateInstanceAt(plane_origin_point_sphere, i_data);
+    }
     m = math.matrix.transformMatrix(m, scale_matrix);
     rhi.setUniformMatrix(prog, "f_plane_transform", m);
 }
@@ -181,15 +196,26 @@ pub fn renderPlane(self: *PlaneDistance) void {
 pub fn renderSphere(self: *PlaneDistance) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, sphere_vertex_shader, sphere_frag_shader);
-    var i_datas: [1]rhi.instanceData = undefined;
+    var i_datas: [2]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
-        i_datas[0] = .{
+        i_datas[origin_sphere] = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
             .t_column2 = m.columns[2],
             .t_column3 = m.columns[3],
-            .color = .{ 1, 0, 0, 0.1 },
+            .color = .{ 1, 0, 1, 1 },
+        };
+    }
+    {
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(10, 10, 10));
+        i_datas[plane_origin_point_sphere] = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 1, 1 },
         };
     }
     const sphere: object.object = .{
