@@ -14,6 +14,7 @@ const default_normal: math.vector.vec3 = .{ 0, -1, 0 };
 const default_distance: f32 = 0.0;
 const origin_sphere: usize = 0;
 const plane_origin_point_sphere: usize = 1;
+const plane_cube_point_sphere: usize = 2;
 
 const plane_vertex_shader: []const u8 = @embedFile("plane_vertex.glsl");
 const plane_frag_shader: []const u8 = @embedFile("plane_frag.glsl");
@@ -57,8 +58,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
         .plane = math.geometry.Plane.init(default_normal, default_distance),
     };
     pd.renderSphere();
-    pd.renderPlane();
     pd.renderParallepiped();
+    pd.renderPlane();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     {
         const progs = pointer.programs();
@@ -146,6 +147,7 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
         self.ui_state.coplanar_check = self.plane.distanceToPoint(.{ 0, 0, 0 });
 
         sm = math.matrix.transformMatrix(sm, math.matrix.translate(po[0], po[1], po[2]));
+        sm = math.matrix.transformMatrix(sm, math.matrix.uniformScale(0.5));
         const i_data: rhi.instanceData = .{
             .t_column0 = sm.columns[0],
             .t_column1 = sm.columns[1],
@@ -157,6 +159,30 @@ pub fn updatePlaneTransform(self: *PlaneDistance, prog: u32) void {
     }
     m = math.matrix.transformMatrix(m, scale_matrix);
     rhi.setUniformMatrix(prog, "f_plane_transform", m);
+    self.updateCubePlanePoint();
+}
+
+fn updateCubePlanePoint(self: *PlaneDistance) void {
+    const p: math.vector.vec4 = .{
+        self.ui_state.cube_translate[0],
+        self.ui_state.cube_translate[1],
+        self.ui_state.cube_translate[2],
+        1.0,
+    };
+    const pp = math.vector.vec4ToVec3(self.plane.closestPointToPoint(
+        math.matrix.transformVector(math.matrix.translate(0.5, 0.5, 0.5), p),
+    ));
+    var cm = math.matrix.identity();
+    cm = math.matrix.transformMatrix(cm, math.matrix.translate(pp[0], pp[1], pp[2]));
+    cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(0.5));
+    const i_data: rhi.instanceData = .{
+        .t_column0 = cm.columns[0],
+        .t_column1 = cm.columns[1],
+        .t_column2 = cm.columns[2],
+        .t_column3 = cm.columns[3],
+        .color = .{ 1, 0, 1, 1 },
+    };
+    self.sphere.sphere.updateInstanceAt(plane_cube_point_sphere, i_data);
 }
 
 pub fn updateCubeTransform(self: *PlaneDistance, prog: u32) void {
@@ -172,6 +198,7 @@ pub fn updateCubeTransform(self: *PlaneDistance, prog: u32) void {
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.cube_rotation[2]));
     m = math.matrix.transformMatrix(m, math.matrix.translate(-0.5, -0.5, -0.5));
     rhi.setUniformMatrix(prog, "f_cube_transform", m);
+    self.updateCubePlanePoint();
 }
 
 pub fn updateCamera(_: *PlaneDistance) void {}
@@ -205,7 +232,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
 pub fn renderSphere(self: *PlaneDistance) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, sphere_vertex_shader, sphere_frag_shader);
-    var i_datas: [2]rhi.instanceData = undefined;
+    var i_datas: [3]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
         i_datas[origin_sphere] = .{
@@ -217,9 +244,19 @@ pub fn renderSphere(self: *PlaneDistance) void {
         };
     }
     {
+        const m = math.matrix.identity();
+        i_datas[plane_origin_point_sphere] = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        };
+    }
+    {
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.translate(10, 10, 10));
-        i_datas[plane_origin_point_sphere] = .{
+        i_datas[plane_cube_point_sphere] = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
             .t_column2 = m.columns[2],

@@ -55,6 +55,11 @@ pub fn closestPointToOrigin(self: Plane) vector.vec4 {
     return .{ v[0], v[1], v[2], w };
 }
 
+pub fn closestPointToPoint(self: Plane, p: vector.vec4) vector.vec4 {
+    const q = vector.mul(vector.dotProduct(self.parameterized, p), vector.vec3ToVec4Vector(self.normal));
+    return vector.sub(p, q);
+}
+
 pub fn debug(self: Plane) void {
     std.debug.print("plane: ({d}, {d}, {d}| {d})\n", .{
         self.parameterized[0],
