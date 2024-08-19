@@ -7,18 +7,25 @@ pub fn init(
     instance_data: []rhi.instanceData,
 ) Triangle {
     var attribute_data: [3]rhi.attributeData = undefined;
-    var i: usize = 0;
 
-    const positions: [3][3]f32 = .{
-        .{ 0, 0, 0 },
-        .{ 0, 0, 1 },
-        .{ 0.5, 0, 0.5 },
+    const p0: math.vector.vec3 = .{ 0, 0, 0 };
+    const p1: math.vector.vec3 = .{ 0, 0, 1 };
+    const p2: math.vector.vec3 = .{ 1, 0, 0 };
+
+    const triangle = math.geometry.Triangle.init(p0, p1, p2);
+    attribute_data[0] = .{
+        .position = triangle.p0,
+        .normals = triangle.normal,
     };
-    while (i < attribute_data.len) : (i += 1) {
-        attribute_data[i] = .{
-            .position = positions[i],
-        };
-    }
+    attribute_data[1] = .{
+        .position = triangle.p1,
+        .normals = triangle.normal,
+    };
+    attribute_data[2] = .{
+        .position = triangle.p2,
+        .normals = triangle.normal,
+    };
+
     const indices: [3]u32 = .{ 0, 1, 2 };
     const vao_buf = rhi.attachInstancedBuffer(attribute_data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao);
@@ -40,5 +47,6 @@ pub fn init(
     };
 }
 
-const rhi = @import("../../rhi/rhi.zig");
 const c = @import("../../c.zig").c;
+const rhi = @import("../../rhi/rhi.zig");
+const math = @import("../../math/math.zig");
