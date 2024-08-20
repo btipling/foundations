@@ -90,6 +90,7 @@ fn addVector(self: *MathVectorArithmetic) void {
             frag_shader,
             triangle_positions,
             triangle_colors,
+            object.Triangle.default_normals,
         ),
     };
     self.num_objects += 1;

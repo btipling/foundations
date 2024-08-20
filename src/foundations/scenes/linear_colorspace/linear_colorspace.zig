@@ -47,6 +47,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
             frag_shader,
             triangle_positions,
             triangle_colors,
+            object.Triangle.default_normals,
         ),
     };
     p.objects[0] = triangle1;
@@ -77,6 +78,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
             frag_shader,
             triangle_positions,
             triangle_colors,
+            object.Triangle.default_normals,
         ),
     };
     triangle2.triangle.mesh.linear_colorspace = false;
