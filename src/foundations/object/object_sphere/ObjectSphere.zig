@@ -9,7 +9,7 @@ const grid_dimension: usize = @intFromFloat((2.0 * std.math.pi) / angle_delta);
 const quad_dimensions = grid_dimension - 1;
 const num_quads = quad_dimensions * quad_dimensions;
 // const num_indices: usize = num_quads * 6;
-const num_triangles = 9;
+const num_triangles = quad_dimensions;
 const num_vertices: usize = num_triangles * 3 * 2;
 const num_indices: usize = (3 * (num_triangles + 1)) * 2;
 const sphere_scale: f32 = 0.75;
@@ -21,6 +21,7 @@ pub fn init(
 ) Sphere {
     var d = data();
 
+    std.debug.print("grid dims: {d} quad dims: {d} num quads: {d}", .{ grid_dimension, quad_dimensions, num_quads });
     const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
