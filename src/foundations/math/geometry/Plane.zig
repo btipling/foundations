@@ -62,7 +62,7 @@ pub fn closestPointToPoint(self: Plane, p: vector.vec4) vector.vec4 {
 
 pub fn reflectPointAcross(self: Plane, p: vector.vec4) vector.vec4 {
     const point_on_plane = vector.mul(
-        vector.dotProduct(self.parameterized, p) * 2.0,
+        vector.dotProduct(self.parameterized, p),
         vector.vec3ToVec4Vector(self.normal),
     );
     return vector.sub(p, vector.mul(2.0, point_on_plane));
