@@ -341,7 +341,7 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
     self.parallelepiped = parallelepiped;
 }
 
-fn triangleFromCubeSurfacePartial(self: *PlaneDistance) object.object {
+fn triangleFromCubeSurfacePartial(self: *PlaneDistance, index0: usize, index1: usize, index2: usize) object.object {
     var p0: math.vector.vec4 = undefined;
     var p1: math.vector.vec4 = undefined;
     var p2: math.vector.vec4 = undefined;
@@ -363,34 +363,34 @@ fn triangleFromCubeSurfacePartial(self: *PlaneDistance) object.object {
         m = math.matrix.transformMatrix(m, rm);
         m = math.matrix.transformMatrix(m, math.matrix.translate(-0.5, -0.5, -0.5));
 
-        p0 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[0].position);
+        p0 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[index0].position);
         p0 = math.matrix.transformVector(m, p0);
         p0 = self.plane.reflectPointAcross(p0);
 
-        p1 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[1].position);
+        p1 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[index1].position);
         p1 = math.matrix.transformVector(m, p1);
         p1 = self.plane.reflectPointAcross(p1);
 
-        p2 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[3].position);
+        p2 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[index2].position);
         p2 = math.matrix.transformVector(m, p2);
         p2 = self.plane.reflectPointAcross(p2);
 
         n0 = math.vector.vec4ToVec3(math.matrix.transformVector(
             rm,
             math.vector.vec3ToVec4Vector(
-                self.parallelepiped.parallelepiped.attribute_data[0].normals,
+                self.parallelepiped.parallelepiped.attribute_data[index0].normals,
             ),
         ));
         n1 = math.vector.vec4ToVec3(math.matrix.transformVector(
             rm,
             math.vector.vec3ToVec4Vector(
-                self.parallelepiped.parallelepiped.attribute_data[1].normals,
+                self.parallelepiped.parallelepiped.attribute_data[index1].normals,
             ),
         ));
         n2 = math.vector.vec4ToVec3(math.matrix.transformVector(
             rm,
             math.vector.vec3ToVec4Vector(
-                self.parallelepiped.parallelepiped.attribute_data[2].normals,
+                self.parallelepiped.parallelepiped.attribute_data[index2].normals,
             ),
         ));
     }
@@ -419,7 +419,7 @@ pub fn renderReflection(self: *PlaneDistance) void {
         .parallelepiped => {},
         else => return,
     }
-    const triangle0 = self.triangleFromCubeSurfacePartial();
+    const triangle0 = self.triangleFromCubeSurfacePartial(0, 1, 3);
     const prog = triangle0.triangle.mesh.program;
     self.view_camera.addProgram(prog, "f_mvp");
     rhi.setUniformMatrix(prog, "f_reflection_transform", math.matrix.identity());
