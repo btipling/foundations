@@ -84,12 +84,6 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     x_axis_angle += x_angle_delta;
     std.debug.print("y_axis_angle ({d})\n", .{y_axis_angle});
 
-    var adi: usize = 0;
-    while (adi < pi) : (adi += 1) {
-        attribute_data[adi].position = positions[adi];
-        attribute_data[adi].normals = math.vector.normalize(positions[adi]);
-    }
-
     var ii: usize = 0;
     var i: u32 = 0;
     var pii: u32 = 1;
@@ -103,34 +97,44 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     indices[ii] = 0;
     indices[ii + 1] = pii + 1;
     indices[ii + 2] = 2;
+    ii += 3;
+    pii += 2;
 
-    // y_axis_angle = y_angle_delta;
-    // x_axis_angle = std.math.pi * 2 - x_angle_delta;
-    // while (y_axis_angle <= std.math.pi * 2 + y_angle_delta) : (y_axis_angle += y_angle_delta) {
-    //     positions[pi] = .{
-    //         r * @cos(x_axis_angle),
-    //         r * @sin(x_axis_angle) * @sin(y_axis_angle),
-    //         r * @sin(x_axis_angle) * @cos(y_axis_angle),
-    //     };
-    //     std.debug.print("end position: ({d}, {d}, {d})\n", .{
-    //         positions[pi][0],
-    //         positions[pi][1],
-    //         positions[pi][2],
-    //     });
-    //     pi += 1;
-    // }
+    y_axis_angle = y_angle_delta;
+    x_axis_angle = std.math.pi + x_angle_delta;
+    while (y_axis_angle <= std.math.pi * 2 + y_angle_delta) : (y_axis_angle += y_angle_delta) {
+        positions[pi] = .{
+            r * @cos(x_axis_angle),
+            r * @sin(x_axis_angle) * @sin(y_axis_angle),
+            r * @sin(x_axis_angle) * @cos(y_axis_angle),
+        };
+        std.debug.print("pi: {d} end position: ({d}, {d}, {d})\n", .{
+            pi,
+            positions[pi][0],
+            positions[pi][1],
+            positions[pi][2],
+        });
+        pi += 1;
+    }
 
-    // var ii: usize = 0;
-    // var i: u32 = 0;
-    // while (i < num_triangles) : (i += 1) {
-    //     indices[ii] = 0;
-    //     indices[ii + 1] = i + 1;
-    //     indices[ii + 2] = i + 2;
-    //     ii += 3;
-    // }
-    // indices[ii] = 0;
-    // indices[ii + 1] = i + 1;
-    // indices[ii + 2] = 1;
+    i = 0;
+    const closer = pii;
+    while (i < num_triangles) : (i += 1) {
+        indices[ii] = 1;
+        indices[ii + 1] = pii + 0;
+        indices[ii + 2] = pii + 1;
+        ii += 3;
+        pii += 1;
+    }
+    indices[ii] = 1;
+    indices[ii + 1] = pii;
+    indices[ii + 2] = closer;
+    var adi: usize = 0;
+
+    while (adi < pi) : (adi += 1) {
+        attribute_data[adi].position = positions[adi];
+        attribute_data[adi].normals = math.vector.normalize(positions[adi]);
+    }
 
     return .{ .attribute_data = attribute_data, .indices = indices };
 }
