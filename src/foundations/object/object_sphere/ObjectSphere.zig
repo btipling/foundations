@@ -11,7 +11,7 @@ const num_quads = quad_dimensions * quad_dimensions;
 // const num_indices: usize = num_quads * 6;
 const num_triangles = quad_dimensions;
 const num_vertices: usize = num_triangles * 3 * 2;
-const num_indices: usize = (3 * (num_triangles + 2)) * 2;
+const num_indices: usize = (3 * (num_triangles * 2)) * 2 + 5;
 const sphere_scale: f32 = 0.75;
 
 pub fn init(
@@ -121,13 +121,19 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         const tr = iii + 1;
         const br = iii + grid_dimension + 1;
         const tl = iii;
-        // var bl = i + grid_dimension;
+        const bl = iii + grid_dimension;
 
+        // Triangle 1
         indices[ii] = @intCast(tl);
         indices[ii + 1] = @intCast(br);
         indices[ii + 2] = @intCast(tr);
 
-        ii += 3;
+        // Triangle 2
+        indices[ii + 3] = @intCast(tl);
+        indices[ii + 4] = @intCast(bl);
+        indices[ii + 5] = @intCast(br);
+
+        ii += 6;
     }
     pii += 2;
 
