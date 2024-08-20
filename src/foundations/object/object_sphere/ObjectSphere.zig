@@ -31,7 +31,6 @@ pub fn init(
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
             .wire_mesh = wireframe,
-            .cull = true,
             .instance_type = .{
                 .instanced = .{
                     .index_count = num_indices,
