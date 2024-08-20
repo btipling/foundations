@@ -3,20 +3,17 @@ vertex_data_size: usize,
 instance_data_stride: usize,
 
 const Sphere = @This();
-const angle_delta: f32 = std.math.pi * 0.2;
+const angle_delta: f32 = std.math.pi * 0.02;
+const x_angle_delta = angle_delta / 2.0;
+const x_grid_rows: f32 = std.math.pi * 2.0 - angle_delta * 1.5;
 const grid_dimension: usize = @intFromFloat((2.0 * std.math.pi) / angle_delta);
-// const num_vertices: usize = grid_dimension * grid_dimension;
 const quad_dimensions = grid_dimension - 1;
 const num_quads = quad_dimensions * quad_dimensions;
-// const num_indices: usize = num_quads * 6;
 const num_triangles = quad_dimensions;
 const num_triangles_in_end = quad_dimensions * 2;
+const num_quads_in_grid = ((x_grid_rows - x_angle_delta * 2) / x_angle_delta) * grid_dimension;
 const num_vertices: usize = (num_triangles_in_end * 2 + 1) + (3 * grid_dimension) * (3 * grid_dimension) + (num_triangles_in_end * 2 + 1);
-const num_indices: usize = (3 * num_triangles_in_end) + (3 * grid_dimension) * (3 * grid_dimension) + (3 * num_triangles_in_end);
-// const num_vertices: usize = (num_triangles_in_end * 2 + 1) + (3 * grid_dimension) + (num_triangles_in_end * 2 + 1);
-// const num_indices: usize = (3 * num_triangles_in_end) + (3 * grid_dimension) + (3 * num_triangles_in_end);
-// const num_vertices: usize = num_triangles * 3 * 2;
-// const num_indices: usize = (3 * (num_triangles * 2)) * 2 + 5;
+const num_indices: usize = (grid_dimension * 3) + 6 * num_quads_in_grid + (grid_dimension * 3);
 const sphere_scale: f32 = 0.75;
 
 pub fn init(
@@ -26,7 +23,6 @@ pub fn init(
 ) Sphere {
     var d = data();
 
-    std.debug.print("grid dims: {d} quad dims: {d} num quads: {d}\n", .{ grid_dimension, quad_dimensions, num_quads });
     const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
@@ -35,8 +31,6 @@ pub fn init(
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
             .wire_mesh = wireframe,
-            // TODO: this code has a degenerate triangle, cull face bug at when i % grid_dimension == 0
-            // I have to do the math on paper to figure this out.
             .cull = true,
             .instance_type = .{
                 .instanced = .{
@@ -60,7 +54,6 @@ pub fn updateInstanceAt(self: Sphere, index: usize, instance_data: rhi.instanceD
 fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
     var attribute_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
-    const x_angle_delta = angle_delta / 2.0;
     const y_angle_delta = angle_delta;
     var x_axis_angle: f32 = x_angle_delta;
     var y_axis_angle: f32 = y_angle_delta;
@@ -79,16 +72,10 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             r * @sin(x_axis_angle) * @sin(y_axis_angle),
             r * @sin(x_axis_angle) * @cos(y_axis_angle),
         };
-        std.debug.print("beg: position: ({d}, {d}, {d})\n", .{
-            positions[pi][0],
-            positions[pi][1],
-            positions[pi][2],
-        });
         pi += 1;
     }
     y_axis_angle += y_angle_delta;
     x_axis_angle += x_angle_delta;
-    std.debug.print("y_axis_angle ({d})\n", .{y_axis_angle});
 
     var ii: usize = 0;
     var i: u32 = 0;
@@ -107,10 +94,9 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     pii += 2;
 
     var iii: usize = 2;
-    for (0..grid_dimension) |_| {
+    while (x_axis_angle < x_grid_rows) : (x_axis_angle += x_angle_delta) {
         const start_iii = iii;
         y_axis_angle = y_angle_delta;
-        x_axis_angle += x_angle_delta;
         for (0..grid_dimension) |ri| {
             positions[pi] = .{
                 r * @cos(x_axis_angle),
@@ -160,12 +146,6 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             r * @sin(x_axis_angle) * @sin(y_axis_angle),
             r * @sin(x_axis_angle) * @cos(y_axis_angle),
         };
-        std.debug.print("pi: {d} end position: ({d}, {d}, {d})\n", .{
-            pi,
-            positions[pi][0],
-            positions[pi][1],
-            positions[pi][2],
-        });
         pi += 1;
     }
 
