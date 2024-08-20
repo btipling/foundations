@@ -4,9 +4,9 @@ grid: *scenery.Grid = undefined,
 pointer: *scenery.Pointer = undefined,
 plane_visualization: object.object = undefined,
 plane: math.geometry.Plane = undefined,
-sphere: object.object = undefined,
-reflection: object.object = undefined,
-parallelepiped: object.object = undefined,
+sphere: object.object = .{ .norender = .{} },
+reflection: ?object.object = null,
+parallelepiped: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.SmoothDeceleration)),
 
 const PlaneDistance = @This();
@@ -95,11 +95,14 @@ pub fn draw(self: *PlaneDistance, dt: f64) void {
     self.grid.draw(dt);
     self.pointer.draw(dt);
     {
-        const objects: [3]object.object = .{
+        const objects: [2]object.object = .{
             self.sphere,
             self.parallelepiped,
-            self.reflection,
         };
+        rhi.drawObjects(objects[0..]);
+    }
+    if (self.reflection) |r| {
+        const objects: [1]object.object = .{r};
         rhi.drawObjects(objects[0..]);
     }
     {
@@ -207,6 +210,7 @@ fn updateCubePlanePoint(self: *PlaneDistance) void {
             ),
         );
     }
+    self.updateReflection();
 }
 
 pub fn updateCubeTransform(self: *PlaneDistance, prog: u32) void {
@@ -225,17 +229,16 @@ pub fn updateCubeTransform(self: *PlaneDistance, prog: u32) void {
     self.updateCubePlanePoint();
 }
 
-pub fn updateReflectionTransform(self: *PlaneDistance, prog: u32) void {
-    var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translate(
-        10,
-        10,
-        0,
-    ));
-    m = math.matrix.transformMatrix(m, math.matrix.translate(0.5, 0.5, 0.5));
-    m = math.matrix.transformMatrix(m, math.matrix.translate(-0.5, -0.5, -0.5));
-    rhi.setUniformMatrix(prog, "f_reflection_transform", m);
-    self.updateCubePlanePoint();
+pub fn deleteReflection(self: *PlaneDistance) void {
+    if (self.reflection) |r| {
+        var objects: [1]object.object = .{r};
+        rhi.deleteObjects(objects[0..]);
+    }
+}
+
+pub fn updateReflection(self: *PlaneDistance) void {
+    self.deleteReflection();
+    self.renderReflection();
 }
 
 pub fn updateCamera(_: *PlaneDistance) void {}
@@ -339,28 +342,51 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
 }
 
 pub fn renderReflection(self: *PlaneDistance) void {
-    const prog = rhi.createProgram();
-    rhi.attachShaders(prog, reflection_vertex_shader, reflection_frag_shader);
-    var i_datas: [1]rhi.instanceData = undefined;
-    {
-        const m = math.matrix.identity();
-        i_datas[0] = .{
-            .t_column0 = m.columns[0],
-            .t_column1 = m.columns[1],
-            .t_column2 = m.columns[2],
-            .t_column3 = m.columns[3],
-            .color = .{ 1, 0, 0, 0.1 },
-        };
+    switch (self.parallelepiped) {
+        .parallelepiped => {},
+        else => return,
     }
-    const triangle: object.object = .{
-        .instanced_triangle = object.InstancedTriangle.init(
-            prog,
-            i_datas[0..],
+    var p0: math.vector.vec4 = undefined;
+    var p1: math.vector.vec4 = undefined;
+    var p2: math.vector.vec4 = undefined;
+    {
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(
+            self.ui_state.cube_translate[0],
+            self.ui_state.cube_translate[1],
+            self.ui_state.cube_translate[2],
+        ));
+        p0 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[0].position);
+        p0 = math.matrix.transformVector(m, p0);
+        p0 = self.plane.reflectPointAcross(p0);
+        p1 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[1].position);
+        p1 = math.matrix.transformVector(m, p1);
+        p1 = self.plane.reflectPointAcross(p1);
+        p2 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[3].position);
+        p2 = math.matrix.transformVector(m, p2);
+        p2 = self.plane.reflectPointAcross(p2);
+    }
+
+    var triangle_positions: [3][3]f32 = undefined;
+    triangle_positions[0] = math.vector.vec4ToVec3(p0);
+    triangle_positions[1] = math.vector.vec4ToVec3(p1);
+    triangle_positions[2] = math.vector.vec4ToVec3(p2);
+    const triangle0: object.object = .{
+        .triangle = object.Triangle.init(
+            reflection_vertex_shader,
+            reflection_frag_shader,
+            triangle_positions,
+            .{
+                .{ 1, 0, 1, 1 },
+                .{ 1, 0, 1, 1 },
+                .{ 1, 0, 1, 1 },
+            },
         ),
     };
-    self.updateReflectionTransform(prog);
+    const prog = triangle0.triangle.mesh.program;
     self.view_camera.addProgram(prog, "f_mvp");
-    self.reflection = triangle;
+    rhi.setUniformMatrix(prog, "f_reflection_transform", math.matrix.identity());
+    self.reflection = triangle0;
 }
 
 const std = @import("std");

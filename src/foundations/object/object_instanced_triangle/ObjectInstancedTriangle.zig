@@ -1,11 +1,14 @@
 mesh: rhi.mesh,
+vertex_data_size: usize,
+instance_data_stride: usize,
+attribute_data: [3]rhi.attributeData,
 
-const Triangle = @This();
+const InstancedTriangle = @This();
 
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
-) Triangle {
+) InstancedTriangle {
     var attribute_data: [3]rhi.attributeData = undefined;
 
     const p0: math.vector.vec3 = .{ 0, 0, 0 };
@@ -44,7 +47,14 @@ pub fn init(
                 },
             },
         },
+        .vertex_data_size = vao_buf.vertex_data_size,
+        .instance_data_stride = vao_buf.instance_data_stride,
+        .attribute_data = attribute_data,
     };
+}
+
+pub fn updateInstanceAt(self: InstancedTriangle, index: usize, instance_data: rhi.instanceData) void {
+    rhi.updateInstanceData(self.mesh.buffer, self.vertex_data_size, self.instance_data_stride, index, instance_data);
 }
 
 const c = @import("../../c.zig").c;

@@ -60,6 +60,14 @@ pub fn closestPointToPoint(self: Plane, p: vector.vec4) vector.vec4 {
     return vector.sub(p, q);
 }
 
+pub fn reflectPointAcross(self: Plane, p: vector.vec4) vector.vec4 {
+    const point_on_plane = vector.mul(
+        vector.dotProduct(self.parameterized, p) * 2.0,
+        vector.vec3ToVec4Vector(self.normal),
+    );
+    return vector.sub(p, vector.mul(2.0, point_on_plane));
+}
+
 pub fn debug(self: Plane) void {
     std.debug.print("plane: ({d}, {d}, {d}| {d})\n", .{
         self.parameterized[0],

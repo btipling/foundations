@@ -1,4 +1,5 @@
 pub const object_type = enum {
+    norender,
     triangle,
     quad,
     cube,
@@ -12,6 +13,7 @@ pub const object_type = enum {
 };
 
 pub const object = union(object_type) {
+    norender: NoRender,
     triangle: Triangle,
     quad: Quad,
     cube: Cube,
@@ -24,6 +26,7 @@ pub const object = union(object_type) {
     instanced_triangle: InstancedTriangle,
 };
 
+pub const NoRender = @import("object_no_render/ObjectNoRender.zig");
 pub const Triangle = @import("object_triangle/ObjectTriangle.zig");
 pub const Quad = @import("object_quad/ObjectQuad.zig");
 pub const Cube = @import("object_cube/ObjectCube.zig");

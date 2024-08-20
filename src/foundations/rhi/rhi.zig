@@ -338,6 +338,7 @@ pub fn drawMesh(m: mesh) void {
         .array => |a| drawArrays(m.program, m.vao, a.count),
         .element => |e| drawElements(m, e),
         .instanced => |i| drawInstances(m, i),
+        .norender => {},
     }
     if (!m.cull) {
         c.glEnable(c.GL_CULL_FACE);
