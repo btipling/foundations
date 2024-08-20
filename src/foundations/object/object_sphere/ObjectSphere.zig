@@ -10,7 +10,7 @@ const quad_dimensions = grid_dimension - 1;
 const num_quads = quad_dimensions * quad_dimensions;
 // const num_indices: usize = num_quads * 6;
 const num_triangles = quad_dimensions;
-const num_triangles_in_grid = 1;
+const num_triangles_in_grid = 2;
 const num_triangles_in_end = quad_dimensions * 2;
 const num_vertices: usize = (num_triangles_in_end * 2 + 1) + (3 * num_triangles_in_grid) + (num_triangles_in_end * 2 + 1);
 const num_indices: usize = (3 * num_triangles_in_end) + (3 * num_triangles_in_grid) + (3 * num_triangles_in_end);
@@ -105,9 +105,10 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     ii += 3;
     pii += 2;
 
+    var iii: usize = 2;
+    y_axis_angle = y_angle_delta;
+    x_axis_angle += x_angle_delta;
     for (0..num_triangles_in_grid) |_| {
-        y_axis_angle = y_angle_delta;
-        x_axis_angle += x_angle_delta;
         positions[pi] = .{
             r * @cos(x_axis_angle),
             r * @sin(x_axis_angle) * @sin(y_axis_angle),
@@ -122,7 +123,6 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         };
         pi += 1;
         {
-            const iii = 2;
             const tr = iii + 1;
             const br = iii + grid_dimension + 1;
             const tl = iii;
@@ -139,7 +139,9 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             indices[ii + 5] = @intCast(br);
 
             ii += 6;
+            iii += 1;
         }
+        y_axis_angle += y_angle_delta;
         pii += 2;
     }
 
