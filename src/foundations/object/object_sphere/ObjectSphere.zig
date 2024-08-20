@@ -108,6 +108,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     y_axis_angle = y_angle_delta;
     x_axis_angle += x_angle_delta;
     for (0..grid_dimension) |ri| {
+        const start_iii = iii;
         positions[pi] = .{
             r * @cos(x_axis_angle),
             r * @sin(x_axis_angle) * @sin(y_axis_angle),
@@ -124,7 +125,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         {
             var tr = iii + 1;
             if (ri == grid_dimension - 1) {
-                tr = 2;
+                tr = start_iii;
             }
             const br = iii + grid_dimension + 1;
             const tl = iii;
