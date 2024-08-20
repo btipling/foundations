@@ -422,12 +422,17 @@ pub fn renderReflection(self: *PlaneDistance) void {
         .parallelepiped => {},
         else => return,
     }
+    var reflection: [num_reflection_triangles]object.object = undefined;
     const indices = self.parallelepiped.parallelepiped.indices;
-    const triangle0 = self.triangleFromCubeSurfacePartial(indices[0], indices[1], indices[2]);
-    const prog = triangle0.triangle.mesh.program;
-    self.view_camera.addProgram(prog, "f_mvp");
-    rhi.setUniformMatrix(prog, "f_reflection_transform", math.matrix.identity());
-    self.reflection = .{triangle0};
+    for (0..num_reflection_triangles) |i| {
+        const ii = i * 3;
+        const triangle = self.triangleFromCubeSurfacePartial(indices[ii], indices[ii + 1], indices[ii + 2]);
+        const prog = triangle.triangle.mesh.program;
+        self.view_camera.addProgram(prog, "f_mvp");
+        rhi.setUniformMatrix(prog, "f_reflection_transform", math.matrix.identity());
+        reflection[i] = triangle;
+    }
+    self.reflection = reflection;
 }
 
 const std = @import("std");
