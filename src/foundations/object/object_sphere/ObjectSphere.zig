@@ -6,12 +6,12 @@ const Sphere = @This();
 const angle_delta: f32 = std.math.pi * 0.2;
 const grid_dimension: usize = @intFromFloat((2.0 * std.math.pi) / angle_delta);
 // const num_vertices: usize = grid_dimension * grid_dimension;
-const num_vertices: usize = grid_dimension * 2;
 const quad_dimensions = grid_dimension - 1;
 const num_quads = quad_dimensions * quad_dimensions;
 // const num_indices: usize = num_quads * 6;
 const num_triangles = 9;
-const num_indices: usize = 3 * (num_triangles + 1);
+const num_vertices: usize = num_triangles * 3 * 2;
+const num_indices: usize = (3 * (num_triangles + 1)) * 2;
 const sphere_scale: f32 = 0.75;
 
 pub fn init(
@@ -63,15 +63,17 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     const r: f32 = 1.0;
 
     const start: math.vector.vec3 = .{ 1, 0, 0 };
+    const end: math.vector.vec3 = .{ -1, 0, 0 };
     positions[0] = start;
-    var pi: usize = 1;
+    positions[1] = end;
+    var pi: usize = 2;
     while (y_axis_angle <= std.math.pi * 2 + y_angle_delta) : (y_axis_angle += y_angle_delta) {
         positions[pi] = .{
             r * @cos(x_axis_angle),
             r * @sin(x_axis_angle) * @sin(y_axis_angle),
             r * @sin(x_axis_angle) * @cos(y_axis_angle),
         };
-        std.debug.print("position: ({d}, {d}, {d})\n", .{
+        std.debug.print("beg: position: ({d}, {d}, {d})\n", .{
             positions[pi][0],
             positions[pi][1],
             positions[pi][2],
@@ -82,8 +84,6 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     x_axis_angle += x_angle_delta;
     std.debug.print("y_axis_angle ({d})\n", .{y_axis_angle});
 
-    // const end: math.vector.vec3 = .{ -1, 0, 0 };
-
     var adi: usize = 0;
     while (adi < pi) : (adi += 1) {
         attribute_data[adi].position = positions[adi];
@@ -92,15 +92,45 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
 
     var ii: usize = 0;
     var i: u32 = 0;
+    var pii: u32 = 1;
     while (i < num_triangles) : (i += 1) {
         indices[ii] = 0;
-        indices[ii + 1] = i + 1;
-        indices[ii + 2] = i + 2;
+        indices[ii + 1] = pii + 1;
+        indices[ii + 2] = pii + 2;
         ii += 3;
+        pii += 1;
     }
     indices[ii] = 0;
-    indices[ii + 1] = i + 1;
-    indices[ii + 2] = 1;
+    indices[ii + 1] = pii + 1;
+    indices[ii + 2] = 2;
+
+    // y_axis_angle = y_angle_delta;
+    // x_axis_angle = std.math.pi * 2 - x_angle_delta;
+    // while (y_axis_angle <= std.math.pi * 2 + y_angle_delta) : (y_axis_angle += y_angle_delta) {
+    //     positions[pi] = .{
+    //         r * @cos(x_axis_angle),
+    //         r * @sin(x_axis_angle) * @sin(y_axis_angle),
+    //         r * @sin(x_axis_angle) * @cos(y_axis_angle),
+    //     };
+    //     std.debug.print("end position: ({d}, {d}, {d})\n", .{
+    //         positions[pi][0],
+    //         positions[pi][1],
+    //         positions[pi][2],
+    //     });
+    //     pi += 1;
+    // }
+
+    // var ii: usize = 0;
+    // var i: u32 = 0;
+    // while (i < num_triangles) : (i += 1) {
+    //     indices[ii] = 0;
+    //     indices[ii + 1] = i + 1;
+    //     indices[ii + 2] = i + 2;
+    //     ii += 3;
+    // }
+    // indices[ii] = 0;
+    // indices[ii + 1] = i + 1;
+    // indices[ii + 2] = 1;
 
     return .{ .attribute_data = attribute_data, .indices = indices };
 }
