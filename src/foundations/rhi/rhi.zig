@@ -354,7 +354,7 @@ pub fn drawMesh(m: mesh) void {
     }
 }
 
-pub fn deleteObjects(objects: []object.object) void {
+pub fn deleteObjects(objects: []const object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {

@@ -5,11 +5,13 @@ pointer: *scenery.Pointer = undefined,
 plane_visualization: object.object = undefined,
 plane: math.geometry.Plane = undefined,
 sphere: object.object = .{ .norender = .{} },
-reflection: ?object.object = null,
+reflection: ?[num_reflection_triangles]object.object = null,
 parallelepiped: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.SmoothDeceleration)),
 
 const PlaneDistance = @This();
+
+const num_reflection_triangles: usize = 1;
 
 const default_normal: math.vector.vec3 = .{ 0, -1, 0 };
 const default_distance: f32 = 0.0;
@@ -102,8 +104,7 @@ pub fn draw(self: *PlaneDistance, dt: f64) void {
         rhi.drawObjects(objects[0..]);
     }
     if (self.reflection) |r| {
-        const objects: [1]object.object = .{r};
-        rhi.drawObjects(objects[0..]);
+        rhi.drawObjects(r[0..]);
     }
     {
         const objects: [1]object.object = .{self.plane_visualization};
@@ -231,8 +232,7 @@ pub fn updateCubeTransform(self: *PlaneDistance, prog: u32) void {
 
 pub fn deleteReflection(self: *PlaneDistance) void {
     if (self.reflection) |r| {
-        var objects: [1]object.object = .{r};
-        rhi.deleteObjects(objects[0..]);
+        rhi.deleteObjects(r[0..]);
     }
 }
 
@@ -419,7 +419,7 @@ pub fn renderReflection(self: *PlaneDistance) void {
     const prog = triangle0.triangle.mesh.program;
     self.view_camera.addProgram(prog, "f_mvp");
     rhi.setUniformMatrix(prog, "f_reflection_transform", math.matrix.identity());
-    self.reflection = triangle0;
+    self.reflection = .{triangle0};
 }
 
 const std = @import("std");
