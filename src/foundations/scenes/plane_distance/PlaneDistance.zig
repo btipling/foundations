@@ -353,6 +353,10 @@ pub fn renderReflection(self: *PlaneDistance) void {
     var n1: math.vector.vec3 = undefined;
     var n2: math.vector.vec3 = undefined;
     {
+        var rm = math.matrix.identity();
+        rm = math.matrix.transformMatrix(rm, math.matrix.rotationX(self.ui_state.cube_rotation[0]));
+        rm = math.matrix.transformMatrix(rm, math.matrix.rotationY(self.ui_state.cube_rotation[1]));
+        rm = math.matrix.transformMatrix(rm, math.matrix.rotationZ(self.ui_state.cube_rotation[2]));
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.translate(
             self.ui_state.cube_translate[0],
@@ -360,9 +364,7 @@ pub fn renderReflection(self: *PlaneDistance) void {
             self.ui_state.cube_translate[2],
         ));
         m = math.matrix.transformMatrix(m, math.matrix.translate(0.5, 0.5, 0.5));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.cube_rotation[0]));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.cube_rotation[1]));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.cube_rotation[2]));
+        m = math.matrix.transformMatrix(m, rm);
         m = math.matrix.transformMatrix(m, math.matrix.translate(-0.5, -0.5, -0.5));
 
         p0 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[0].position);
@@ -377,9 +379,24 @@ pub fn renderReflection(self: *PlaneDistance) void {
         p2 = math.matrix.transformVector(m, p2);
         p2 = self.plane.reflectPointAcross(p2);
 
-        n0 = self.parallelepiped.parallelepiped.attribute_data[0].normals;
-        n1 = self.parallelepiped.parallelepiped.attribute_data[1].normals;
-        n2 = self.parallelepiped.parallelepiped.attribute_data[2].normals;
+        n0 = math.vector.vec4ToVec3(math.matrix.transformVector(
+            rm,
+            math.vector.vec3ToVec4Vector(
+                self.parallelepiped.parallelepiped.attribute_data[0].normals,
+            ),
+        ));
+        n1 = math.vector.vec4ToVec3(math.matrix.transformVector(
+            rm,
+            math.vector.vec3ToVec4Vector(
+                self.parallelepiped.parallelepiped.attribute_data[1].normals,
+            ),
+        ));
+        n2 = math.vector.vec4ToVec3(math.matrix.transformVector(
+            rm,
+            math.vector.vec3ToVec4Vector(
+                self.parallelepiped.parallelepiped.attribute_data[2].normals,
+            ),
+        ));
     }
 
     var triangle_positions: [3][3]f32 = undefined;
