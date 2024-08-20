@@ -108,7 +108,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     var iii: usize = 2;
     y_axis_angle = y_angle_delta;
     x_axis_angle += x_angle_delta;
-    for (0..num_triangles_in_grid) |_| {
+    for (0..num_triangles_in_grid) |ri| {
         positions[pi] = .{
             r * @cos(x_axis_angle),
             r * @sin(x_axis_angle) * @sin(y_axis_angle),
@@ -123,20 +123,23 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         };
         pi += 1;
         {
-            const tr = iii + 1;
+            var tr = iii + 1;
+            if (ri == num_triangles_in_grid - 1) {
+                tr = 2;
+            }
             const br = iii + grid_dimension + 1;
             const tl = iii;
             const bl = iii + grid_dimension;
 
             // Triangle 1
             indices[ii] = @intCast(tl);
-            indices[ii + 1] = @intCast(br);
-            indices[ii + 2] = @intCast(tr);
+            indices[ii + 1] = @intCast(bl);
+            indices[ii + 2] = @intCast(br);
 
             // Triangle 2
             indices[ii + 3] = @intCast(tl);
-            indices[ii + 4] = @intCast(bl);
-            indices[ii + 5] = @intCast(br);
+            indices[ii + 4] = @intCast(br);
+            indices[ii + 5] = @intCast(tr);
 
             ii += 6;
             iii += 1;
