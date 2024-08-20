@@ -371,6 +371,7 @@ pub fn deleteObjects(objects: []const object.object) void {
         }
     }
 }
+
 pub fn deleteObjectVaos(objects: []const object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
