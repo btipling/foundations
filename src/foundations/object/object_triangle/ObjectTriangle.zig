@@ -14,11 +14,18 @@ pub const default_colors: [3][4]f32 = .{
     .{ 1, 0, 0, 1 },
 };
 
+pub const default_normals: [3][3]f32 = .{
+    .{ 0, -1, 0 },
+    .{ 0, -1, 0 },
+    .{ 0, -1, 0 },
+};
+
 pub fn init(
     vertex_shader: []const u8,
     frag_shader: []const u8,
     positions: [3][3]f32,
     colors: [3][4]f32,
+    normals: [3][3]f32,
 ) Triangle {
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -29,6 +36,7 @@ pub fn init(
         data[i] = .{
             .position = positions[i],
             .color = colors[i],
+            .normals = normals[i],
         };
     }
     const vao_buf = rhi.attachBuffer(data[0..]);

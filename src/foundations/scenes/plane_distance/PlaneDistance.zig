@@ -349,6 +349,9 @@ pub fn renderReflection(self: *PlaneDistance) void {
     var p0: math.vector.vec4 = undefined;
     var p1: math.vector.vec4 = undefined;
     var p2: math.vector.vec4 = undefined;
+    var n0: math.vector.vec3 = undefined;
+    var n1: math.vector.vec3 = undefined;
+    var n2: math.vector.vec3 = undefined;
     {
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.translate(
@@ -365,6 +368,10 @@ pub fn renderReflection(self: *PlaneDistance) void {
         p2 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[3].position);
         p2 = math.matrix.transformVector(m, p2);
         p2 = self.plane.reflectPointAcross(p2);
+
+        n0 = self.parallelepiped.parallelepiped.attribute_data[0].normals;
+        n1 = self.parallelepiped.parallelepiped.attribute_data[1].normals;
+        n2 = self.parallelepiped.parallelepiped.attribute_data[2].normals;
     }
 
     var triangle_positions: [3][3]f32 = undefined;
@@ -381,6 +388,7 @@ pub fn renderReflection(self: *PlaneDistance) void {
                 .{ 1, 0, 1, 1 },
                 .{ 1, 0, 1, 1 },
             },
+            .{ n0, n1, n2 },
         ),
     };
     const prog = triangle0.triangle.mesh.program;
