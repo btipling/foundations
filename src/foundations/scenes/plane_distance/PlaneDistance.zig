@@ -359,12 +359,20 @@ pub fn renderReflection(self: *PlaneDistance) void {
             self.ui_state.cube_translate[1],
             self.ui_state.cube_translate[2],
         ));
+        m = math.matrix.transformMatrix(m, math.matrix.translate(0.5, 0.5, 0.5));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.cube_rotation[0]));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.cube_rotation[1]));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.cube_rotation[2]));
+        m = math.matrix.transformMatrix(m, math.matrix.translate(-0.5, -0.5, -0.5));
+
         p0 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[0].position);
         p0 = math.matrix.transformVector(m, p0);
         p0 = self.plane.reflectPointAcross(p0);
+
         p1 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[1].position);
         p1 = math.matrix.transformVector(m, p1);
         p1 = self.plane.reflectPointAcross(p1);
+
         p2 = math.vector.vec3ToVec4Point(self.parallelepiped.parallelepiped.attribute_data[3].position);
         p2 = math.matrix.transformVector(m, p2);
         p2 = self.plane.reflectPointAcross(p2);
