@@ -11,7 +11,7 @@ const num_quads = quad_dimensions * quad_dimensions;
 // const num_indices: usize = num_quads * 6;
 const num_triangles = quad_dimensions;
 const num_vertices: usize = num_triangles * 3 * 2;
-const num_indices: usize = (3 * (num_triangles + 1)) * 2;
+const num_indices: usize = (3 * (num_triangles + 2)) * 2;
 const sphere_scale: f32 = 0.75;
 
 pub fn init(
@@ -99,6 +99,36 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     indices[ii + 1] = pii + 1;
     indices[ii + 2] = 2;
     ii += 3;
+    pii += 2;
+
+    y_axis_angle = y_angle_delta;
+    x_axis_angle += x_angle_delta;
+    positions[pi] = .{
+        r * @cos(x_axis_angle),
+        r * @sin(x_axis_angle) * @sin(y_axis_angle),
+        r * @sin(x_axis_angle) * @cos(y_axis_angle),
+    };
+    pi += 1;
+    y_axis_angle += y_angle_delta;
+    positions[pi] = .{
+        r * @cos(x_axis_angle),
+        r * @sin(x_axis_angle) * @sin(y_axis_angle),
+        r * @sin(x_axis_angle) * @cos(y_axis_angle),
+    };
+    pi += 1;
+    {
+        const iii = 2;
+        const tr = iii + 1;
+        const br = iii + grid_dimension + 1;
+        const tl = iii;
+        // var bl = i + grid_dimension;
+
+        indices[ii] = @intCast(tl);
+        indices[ii + 1] = @intCast(br);
+        indices[ii + 2] = @intCast(tr);
+
+        ii += 3;
+    }
     pii += 2;
 
     y_axis_angle = y_angle_delta;
