@@ -36,7 +36,7 @@ pub fn init(
             .wire_mesh = wireframe,
             // TODO: this code has a degenerate triangle, cull face bug at when i % grid_dimension == 0
             // I have to do the math on paper to figure this out.
-            .cull = false,
+            .cull = true,
             .instance_type = .{
                 .instanced = .{
                     .index_count = num_indices,
@@ -168,15 +168,15 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     i = 0;
     const closer = pii;
     while (i < num_triangles) : (i += 1) {
-        indices[ii] = 1;
+        indices[ii + 2] = 1;
         indices[ii + 1] = pii + 0;
-        indices[ii + 2] = pii + 1;
+        indices[ii] = pii + 1;
         ii += 3;
         pii += 1;
     }
-    indices[ii] = 1;
+    indices[ii + 2] = 1;
     indices[ii + 1] = pii;
-    indices[ii + 2] = closer;
+    indices[ii] = closer;
     var adi: usize = 0;
 
     while (adi < pi) : (adi += 1) {
