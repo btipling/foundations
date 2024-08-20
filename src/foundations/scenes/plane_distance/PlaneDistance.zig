@@ -341,7 +341,10 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
     self.parallelepiped = parallelepiped;
 }
 
-fn triangleFromCubeSurfacePartial(self: *PlaneDistance, index0: usize, index1: usize, index2: usize) object.object {
+fn triangleFromCubeSurfacePartial(self: *PlaneDistance, vindex0: u32, vindex1: u32, vindex2: u32) object.object {
+    const index0: usize = @intCast(vindex0);
+    const index1: usize = @intCast(vindex1);
+    const index2: usize = @intCast(vindex2);
     var p0: math.vector.vec4 = undefined;
     var p1: math.vector.vec4 = undefined;
     var p2: math.vector.vec4 = undefined;
@@ -419,7 +422,8 @@ pub fn renderReflection(self: *PlaneDistance) void {
         .parallelepiped => {},
         else => return,
     }
-    const triangle0 = self.triangleFromCubeSurfacePartial(0, 1, 3);
+    const indices = self.parallelepiped.parallelepiped.indices;
+    const triangle0 = self.triangleFromCubeSurfacePartial(indices[0], indices[1], indices[2]);
     const prog = triangle0.triangle.mesh.program;
     self.view_camera.addProgram(prog, "f_mvp");
     rhi.setUniformMatrix(prog, "f_reflection_transform", math.matrix.identity());
