@@ -8,10 +8,11 @@ sphere: object.object = .{ .norender = .{} },
 reflection: ?[num_reflection_triangles]object.object = null,
 parallelepiped: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.SmoothDeceleration)),
+reflection_program: u32 = 0,
 
 const PlaneDistance = @This();
 
-const num_reflection_triangles: usize = 1;
+const num_reflection_triangles: usize = 12;
 
 const default_normal: math.vector.vec3 = .{ 0, -1, 0 };
 const default_distance: f32 = 0.0;
@@ -54,6 +55,9 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
     errdefer pointer.deinit();
     const ui_state: PlaneDistanceUI = .{};
 
+    const reflection_program = rhi.createProgram();
+    rhi.attachShaders(reflection_program, reflection_vertex_shader, reflection_frag_shader);
+
     pd.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
@@ -61,10 +65,15 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
         .grid = grid,
         .pointer = pointer,
         .plane = math.geometry.Plane.init(default_normal, default_distance),
+        .reflection_program = reflection_program,
     };
     pd.renderSphere();
     pd.renderParallepiped();
-    pd.renderReflection();
+    {
+        pd.renderReflection();
+        cam.addProgram(reflection_program, "f_mvp");
+        rhi.setUniformMatrix(reflection_program, "f_reflection_transform", math.matrix.identity());
+    }
     pd.renderPlane();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     {
@@ -232,7 +241,8 @@ pub fn updateCubeTransform(self: *PlaneDistance, prog: u32) void {
 
 pub fn deleteReflection(self: *PlaneDistance) void {
     if (self.reflection) |r| {
-        rhi.deleteObjects(r[0..]);
+        var objects: [1]object.object = .{r[0]};
+        rhi.deleteObjectVaos(objects[0..]);
     }
 }
 
@@ -341,7 +351,7 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
     self.parallelepiped = parallelepiped;
 }
 
-fn triangleFromCubeSurfacePartial(self: *PlaneDistance, vindex0: u32, vindex1: u32, vindex2: u32) object.object {
+fn triangleFromCubeSurfacePartial(self: *PlaneDistance, program: u32, vindex0: u32, vindex1: u32, vindex2: u32) object.object {
     const index0: usize = @intCast(vindex0);
     const index1: usize = @intCast(vindex1);
     const index2: usize = @intCast(vindex2);
@@ -378,24 +388,25 @@ fn triangleFromCubeSurfacePartial(self: *PlaneDistance, vindex0: u32, vindex1: u
         p2 = math.matrix.transformVector(m, p2);
         p2 = self.plane.reflectPointAcross(p2);
 
-        n0 = math.vector.vec4ToVec3(math.matrix.transformVector(
-            rm,
+        const rmi = math.matrix.transpose(math.matrix.inverse(rm));
+        n0 = math.vector.normalize(math.vector.vec4ToVec3(math.matrix.transformVector(
+            rmi,
             math.vector.vec3ToVec4Vector(
                 self.parallelepiped.parallelepiped.attribute_data[index0].normals,
             ),
-        ));
-        n1 = math.vector.vec4ToVec3(math.matrix.transformVector(
-            rm,
+        )));
+        n1 = math.vector.normalize(math.vector.vec4ToVec3(math.matrix.transformVector(
+            rmi,
             math.vector.vec3ToVec4Vector(
                 self.parallelepiped.parallelepiped.attribute_data[index1].normals,
             ),
-        ));
-        n2 = math.vector.vec4ToVec3(math.matrix.transformVector(
-            rm,
+        )));
+        n2 = math.vector.normalize(math.vector.vec4ToVec3(math.matrix.transformVector(
+            rmi,
             math.vector.vec3ToVec4Vector(
                 self.parallelepiped.parallelepiped.attribute_data[index2].normals,
             ),
-        ));
+        )));
     }
 
     var triangle_positions: [3][3]f32 = undefined;
@@ -403,9 +414,8 @@ fn triangleFromCubeSurfacePartial(self: *PlaneDistance, vindex0: u32, vindex1: u
     triangle_positions[1] = math.vector.vec4ToVec3(p1);
     triangle_positions[2] = math.vector.vec4ToVec3(p2);
     return .{
-        .triangle = object.Triangle.init(
-            reflection_vertex_shader,
-            reflection_frag_shader,
+        .triangle = object.Triangle.initWithProgram(
+            program,
             triangle_positions,
             .{
                 .{ 1, 0, 1, 1 },
@@ -426,10 +436,7 @@ pub fn renderReflection(self: *PlaneDistance) void {
     const indices = self.parallelepiped.parallelepiped.indices;
     for (0..num_reflection_triangles) |i| {
         const ii = i * 3;
-        const triangle = self.triangleFromCubeSurfacePartial(indices[ii], indices[ii + 1], indices[ii + 2]);
-        const prog = triangle.triangle.mesh.program;
-        self.view_camera.addProgram(prog, "f_mvp");
-        rhi.setUniformMatrix(prog, "f_reflection_transform", math.matrix.identity());
+        const triangle = self.triangleFromCubeSurfacePartial(self.reflection_program, indices[ii], indices[ii + 1], indices[ii + 2]);
         reflection[i] = triangle;
     }
     self.reflection = reflection;

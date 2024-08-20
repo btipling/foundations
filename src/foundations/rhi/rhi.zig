@@ -311,6 +311,15 @@ pub fn deleteMesh(m: mesh) void {
     if (m.buffer != 0) c.glDeleteBuffers(1, @ptrCast(&m.buffer));
 }
 
+pub fn deleteMeshVao(m: mesh) void {
+    c.glDeleteVertexArrays(1, @ptrCast(&m.vao));
+    switch (m.instance_type) {
+        .element => |e| c.glDeleteBuffers(1, e.ebo),
+        else => {},
+    }
+    if (m.buffer != 0) c.glDeleteBuffers(1, @ptrCast(&m.buffer));
+}
+
 pub fn drawObjects(objects: []const object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
@@ -359,6 +368,14 @@ pub fn deleteObjects(objects: []const object.object) void {
     while (i < objects.len) : (i += 1) {
         switch (objects[i]) {
             inline else => |o| deleteMesh(o.mesh),
+        }
+    }
+}
+pub fn deleteObjectVaos(objects: []const object.object) void {
+    var i: usize = 0;
+    while (i < objects.len) : (i += 1) {
+        switch (objects[i]) {
+            inline else => |o| deleteMeshVao(o.mesh),
         }
     }
 }
