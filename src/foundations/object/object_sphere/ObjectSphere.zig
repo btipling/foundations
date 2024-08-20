@@ -11,8 +11,10 @@ const num_quads = quad_dimensions * quad_dimensions;
 // const num_indices: usize = num_quads * 6;
 const num_triangles = quad_dimensions;
 const num_triangles_in_end = quad_dimensions * 2;
-const num_vertices: usize = (num_triangles_in_end * 2 + 1) + (3 * grid_dimension) + (num_triangles_in_end * 2 + 1);
-const num_indices: usize = (3 * num_triangles_in_end) + (3 * grid_dimension) + (3 * num_triangles_in_end);
+const num_vertices: usize = (num_triangles_in_end * 2 + 1) + (3 * grid_dimension) * (3 * grid_dimension) + (num_triangles_in_end * 2 + 1);
+const num_indices: usize = (3 * num_triangles_in_end) + (3 * grid_dimension) * (3 * grid_dimension) + (3 * num_triangles_in_end);
+// const num_vertices: usize = (num_triangles_in_end * 2 + 1) + (3 * grid_dimension) + (num_triangles_in_end * 2 + 1);
+// const num_indices: usize = (3 * num_triangles_in_end) + (3 * grid_dimension) + (3 * num_triangles_in_end);
 // const num_vertices: usize = num_triangles * 3 * 2;
 // const num_indices: usize = (3 * (num_triangles * 2)) * 2 + 5;
 const sphere_scale: f32 = 0.75;
@@ -105,47 +107,49 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
     pii += 2;
 
     var iii: usize = 2;
-    y_axis_angle = y_angle_delta;
-    x_axis_angle += x_angle_delta;
-    for (0..grid_dimension) |ri| {
+    for (0..grid_dimension) |_| {
         const start_iii = iii;
-        positions[pi] = .{
-            r * @cos(x_axis_angle),
-            r * @sin(x_axis_angle) * @sin(y_axis_angle),
-            r * @sin(x_axis_angle) * @cos(y_axis_angle),
-        };
-        pi += 1;
-        y_axis_angle += y_angle_delta;
-        positions[pi] = .{
-            r * @cos(x_axis_angle),
-            r * @sin(x_axis_angle) * @sin(y_axis_angle),
-            r * @sin(x_axis_angle) * @cos(y_axis_angle),
-        };
-        pi += 1;
-        {
-            var tr = iii + 1;
-            if (ri == grid_dimension - 1) {
-                tr = start_iii;
+        y_axis_angle = y_angle_delta;
+        x_axis_angle += x_angle_delta;
+        for (0..grid_dimension) |ri| {
+            positions[pi] = .{
+                r * @cos(x_axis_angle),
+                r * @sin(x_axis_angle) * @sin(y_axis_angle),
+                r * @sin(x_axis_angle) * @cos(y_axis_angle),
+            };
+            pi += 1;
+            y_axis_angle += y_angle_delta;
+            positions[pi] = .{
+                r * @cos(x_axis_angle),
+                r * @sin(x_axis_angle) * @sin(y_axis_angle),
+                r * @sin(x_axis_angle) * @cos(y_axis_angle),
+            };
+            pi += 1;
+            {
+                var tr = iii + 1;
+                if (ri == grid_dimension - 1) {
+                    tr = start_iii;
+                }
+                const br = iii + grid_dimension + 1;
+                const tl = iii;
+                const bl = iii + grid_dimension;
+
+                // Triangle 1
+                indices[ii] = @intCast(tl);
+                indices[ii + 1] = @intCast(bl);
+                indices[ii + 2] = @intCast(br);
+
+                // Triangle 2
+                indices[ii + 3] = @intCast(tl);
+                indices[ii + 4] = @intCast(br);
+                indices[ii + 5] = @intCast(tr);
+
+                ii += 6;
+                iii += 1;
             }
-            const br = iii + grid_dimension + 1;
-            const tl = iii;
-            const bl = iii + grid_dimension;
-
-            // Triangle 1
-            indices[ii] = @intCast(tl);
-            indices[ii + 1] = @intCast(bl);
-            indices[ii + 2] = @intCast(br);
-
-            // Triangle 2
-            indices[ii + 3] = @intCast(tl);
-            indices[ii + 4] = @intCast(br);
-            indices[ii + 5] = @intCast(tr);
-
-            ii += 6;
-            iii += 1;
+            y_axis_angle += y_angle_delta;
+            pii += 2;
         }
-        y_axis_angle += y_angle_delta;
-        pii += 2;
     }
 
     y_axis_angle = y_angle_delta;
