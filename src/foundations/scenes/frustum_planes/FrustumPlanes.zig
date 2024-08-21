@@ -95,6 +95,12 @@ pub fn renderSphere(self: *FrustumPlanes) void {
     self.sphere = sphere;
 }
 
+pub fn updateParallepipedTransform(_: *FrustumPlanes, prog: u32) void {
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.translate(10, 10, 10));
+    rhi.setUniformMatrix(prog, "f_cube_transform", m);
+}
+
 pub fn renderParallepiped(self: *FrustumPlanes) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, voxel_vertex_shader, voxel_frag_shader);
@@ -116,6 +122,7 @@ pub fn renderParallepiped(self: *FrustumPlanes) void {
             false,
         ),
     };
+    self.updateParallepipedTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
     self.parallelepiped = parallelepiped;
 }
