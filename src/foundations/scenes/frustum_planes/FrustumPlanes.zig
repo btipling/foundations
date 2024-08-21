@@ -45,6 +45,14 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *FrustumPlanes {
     pd.renderSphere();
     pd.renderParallepiped();
     cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
+    // float stb_perlin_ridge_noise3(float x, float y, float z,
+    //                               float lacunarity, float gain, float offset, int octaves)
+    //     octaves    =   6     -- number of "octaves" of noise3() to sum
+    //     lacunarity = ~ 2.0   -- spacing between successive octaves (use exactly 2.0 for wrapping output)
+    //     gain       =   0.5   -- relative weighting applied to each successive octave
+    //     offset     =   1.0?  -- used to invert the ridges, may need to be larger, not sure
+    const result = c.stb_perlin_ridge_noise3(10, 10, 10, 2.0, 0.5, 1, 6);
+    std.debug.print("noise result {d}\n", .{result});
     return pd;
 }
 
