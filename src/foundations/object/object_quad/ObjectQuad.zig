@@ -6,13 +6,13 @@ instanced: bool = false,
 const Quad = @This();
 
 pub const default_deprecated_positions: [6][3]f32 = .{
+    .{ 1, -1, 0 },
+    .{ -1, 1, 0 },
     .{ -1, -1, 0 },
-    .{ -1, 1, 0 },
-    .{ 1, -1, 0 },
 
-    .{ -1, 1, 0 },
-    .{ 1, 1, 0 },
     .{ 1, -1, 0 },
+    .{ 1, 1, 0 },
+    .{ -1, 1, 0 },
 };
 
 pub const default_correct_positions: [4][3]f32 = .{
