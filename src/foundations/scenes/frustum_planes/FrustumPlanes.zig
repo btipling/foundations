@@ -16,7 +16,7 @@ num_spheres: usize = 0,
 
 const voxel_dimension: usize = 30;
 const voxel_max = voxel_dimension * voxel_dimension * voxel_dimension;
-const invisible = math.matrix.translate(-100, -100, -100);
+const invisible = math.matrix.translate(-500, -500, -500);
 
 const FrustumPlanes = @This();
 
@@ -106,13 +106,31 @@ pub fn updateCamera(self: *FrustumPlanes) void {
     const cam = self.view_camera_0;
     const ct = math.matrix.inverse(math.matrix.translate(cam.camera_pos[0], cam.camera_pos[1], cam.camera_pos[2]));
     const p = math.matrix.transformMatrix(math.matrix.leftHandedXUpToNDC(), cam.persp_only);
-    const pl = math.vector.add(p.columns[3], p.columns[0]);
+    const pl = math.vector.normalize(math.vector.add(p.columns[3], p.columns[0]));
+
     const left = math.vector.normalize(math.matrix.transformVector(
         self.view_camera_0.cam_m,
         pl,
     ));
     const nl: math.vector.vec3 = .{ left[0], left[1], left[2] };
     const left_plane = math.geometry.Plane.init(nl, left[3]);
+
+    const pt = math.vector.add(p.columns[3], p.columns[1]);
+    const top = math.vector.normalize(math.matrix.transformVector(
+        math.matrix.transformMatrix(self.view_camera_0.cam_m, math.matrix.rotationX(-std.math.pi / 3.5)),
+        pt,
+    ));
+    const nt: math.vector.vec3 = .{ top[0], top[1], top[2] };
+    const top_plane = math.geometry.Plane.init(nt, top[3]);
+
+    const pb = math.vector.sub(p.columns[3], p.columns[1]);
+    const bot = math.vector.normalize(math.matrix.transformVector(
+        math.matrix.transformMatrix(self.view_camera_0.cam_m, math.matrix.rotationX(std.math.pi / 3.5)),
+        pb,
+    ));
+    const nb: math.vector.vec3 = .{ bot[0], bot[1], bot[2] };
+    const bot_plane = math.geometry.Plane.init(nb, bot[3]);
+
     for (0..self.num_voxels) |i| {
         const vox = math.vector.vec4ToVec3(
             math.matrix.transformVector(
@@ -120,8 +138,9 @@ pub fn updateCamera(self: *FrustumPlanes) void {
                 math.vector.vec3ToVec4Point(self.voxel_map[i]),
             ),
         );
-        const visible = left_plane.distanceToPoint(vox) >= 0;
-        // if (visible) visible =
+        var visible = left_plane.distanceToPoint(vox) >= 0;
+        if (visible) visible = top_plane.distanceToPoint(vox) >= 0;
+        if (visible) visible = bot_plane.distanceToPoint(vox) >= 0;
         if (!visible) {
             // if (self.voxel_visible[i] > 0) {
             const m = invisible;
@@ -157,8 +176,9 @@ pub fn updateCamera(self: *FrustumPlanes) void {
                 math.vector.vec3ToVec4Point(self.sphere_map[i]),
             ),
         );
-        const visible = left_plane.distanceToPoint(sp) >= 0;
-        // if (visible) visible =
+        var visible = left_plane.distanceToPoint(sp) >= 0;
+        if (visible) visible = top_plane.distanceToPoint(sp) >= 0;
+        if (visible) visible = bot_plane.distanceToPoint(sp) >= 0;
         if (!visible) {
             // if (self.sphere_visible[i] > 0) {
             const m = invisible;
