@@ -3,7 +3,8 @@ allocator: std.mem.Allocator,
 grid: *scenery.Grid = undefined,
 sphere: object.object = .{ .norender = .{} },
 parallelepiped: object.object = .{ .norender = .{} },
-view_camera: *physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)),
+view_camera_0: *physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)),
+view_camera_1: *physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)),
 
 const voxel_dimension: usize = 30;
 
@@ -25,15 +26,25 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *FrustumPlanes {
     const pd = allocator.create(FrustumPlanes) catch @panic("OOM");
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
-    const cam = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).init(
+    const cam1 = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         cfg,
         pd,
         integrator,
-        .{ 5, 30, -30 },
+        .{ 15, 30, -30 },
         std.math.pi * 0.75,
     );
-    errdefer cam.deinit(allocator);
+    var cam2 = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).init(
+        allocator,
+        cfg,
+        pd,
+        integrator,
+        .{ 15, -30, 30 },
+        std.math.pi * -0.25,
+    );
+    cam2.emit_matrix = false;
+    cam2.input_inactive = true;
+    errdefer cam1.deinit(allocator);
     const grid = scenery.Grid.init(allocator);
     errdefer grid.deinit();
     const ui_state: FrustumPlanesUI = .{};
@@ -41,24 +52,33 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *FrustumPlanes {
     pd.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
-        .view_camera = cam,
+        .view_camera_0 = cam1,
+        .view_camera_1 = cam2,
         .grid = grid,
     };
     pd.renderSphere();
     pd.renderParallepiped();
-    cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
+    cam1.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
+    cam2.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     return pd;
 }
 
 pub fn deinit(self: *FrustumPlanes, allocator: std.mem.Allocator) void {
     self.grid.deinit();
-    self.view_camera.deinit(allocator);
-    self.view_camera = undefined;
+    self.view_camera_0.deinit(allocator);
+    self.view_camera_0 = undefined;
+    self.view_camera_1.deinit(allocator);
+    self.view_camera_1 = undefined;
     allocator.destroy(self);
 }
 
 pub fn draw(self: *FrustumPlanes, dt: f64) void {
-    self.view_camera.update(dt);
+    self.view_camera_0.setViewActivation(self.ui_state.active_view_camera == 0);
+    self.view_camera_1.setViewActivation(self.ui_state.active_view_camera == 1);
+    self.view_camera_0.setInputActivation(self.ui_state.active_input_camera == 0);
+    self.view_camera_1.setInputActivation(self.ui_state.active_input_camera == 1);
+    self.view_camera_0.update(dt);
+    self.view_camera_1.update(dt);
     self.grid.draw(dt);
     {
         const objects: [2]object.object = .{
@@ -125,7 +145,8 @@ pub fn renderSphere(self: *FrustumPlanes) void {
             false,
         ),
     };
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera_0.addProgram(prog, "f_mvp");
+    self.view_camera_1.addProgram(prog, "f_mvp");
     self.sphere = sphere;
 }
 
@@ -147,7 +168,8 @@ pub fn renderParallepiped(self: *FrustumPlanes) void {
         ),
     };
     self.updateParallepipedTransform(prog);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera_0.addProgram(prog, "f_mvp");
+    self.view_camera_1.addProgram(prog, "f_mvp");
     self.parallelepiped = parallelepiped;
 }
 

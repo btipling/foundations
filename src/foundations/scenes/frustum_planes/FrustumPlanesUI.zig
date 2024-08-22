@@ -1,4 +1,5 @@
-active_camera: usize = 0,
+active_view_camera: c_int = 0,
+active_input_camera: c_int = 0,
 
 const FrustumPlanesUI = @This();
 
@@ -12,11 +13,26 @@ pub fn draw(self: *FrustumPlanesUI) void {
     _ = c.igBegin("Frustum Plane Extraction", null, 0);
 
     {
-        const txt = std.fmt.bufPrintZ(&buf, "Active camera {d:.3}", .{
-            self.active_camera,
+        const txt = std.fmt.bufPrintZ(&buf, "Active view camera {d:.3}", .{
+            self.active_view_camera + 1,
         }) catch @panic("bufsize too small");
         c.igText(@ptrCast(txt));
     }
+    {
+        const txt = std.fmt.bufPrintZ(&buf, "Active input camera {d:.3}", .{
+            self.active_input_camera + 1,
+        }) catch @panic("bufsize too small");
+        c.igText(@ptrCast(txt));
+    }
+
+    c.igText("Active view camera");
+    _ = c.igRadioButton_IntPtr("view camera 1", &self.active_view_camera, 0);
+    c.igSameLine(0, 1);
+    _ = c.igRadioButton_IntPtr("view camera 2", &self.active_view_camera, 1);
+    c.igText("Active input camera");
+    _ = c.igRadioButton_IntPtr("input camera 1", &self.active_input_camera, 0);
+    c.igSameLine(0, 1);
+    _ = c.igRadioButton_IntPtr("input camera 2", &self.active_input_camera, 1);
 
     c.igEnd();
 }

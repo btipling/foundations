@@ -24,6 +24,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         programs: std.ArrayListUnmanaged(program) = .{},
         scene: T,
         integrator: IntegratorT,
+        emit_matrix: bool = true,
+        input_inactive: bool = false,
 
         const Self = @This();
 
@@ -91,6 +93,16 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             self.handleInput(dt);
         }
 
+        pub fn setViewActivation(self: *Self, enabled: bool) void {
+            if (self.emit_matrix == enabled) return;
+            self.emit_matrix = enabled;
+            if (enabled) self.updateMVP();
+        }
+
+        pub fn setInputActivation(self: *Self, active: bool) void {
+            self.input_inactive = !active;
+        }
+
         fn integrate(self: *Self, t: f64) void {
             self.movement.step = self.integrator.timestep(self.movement.step, t);
             switch (self.movement.direction) {
@@ -105,6 +117,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         fn handleInput(self: *Self, t: f64) void {
+            if (self.input_inactive) return;
             const input = ui.input.getReadOnly() orelse return;
             var new_cursor_coords: ?math.vector.vec3 = null;
             cursor: {
@@ -383,6 +396,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         pub fn updatePrograms(self: *Self) void {
+            if (!self.emit_matrix) return;
             for (self.programs.items) |prog| {
                 rhi.setUniformMatrix(prog.program, prog.uniform, self.mvp);
             }
