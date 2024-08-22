@@ -20,6 +20,7 @@ pub fn build(b: *std.Build) void {
     exe.addIncludePath(b.path("libs/cimgui/generator/output"));
     exe.addIncludePath(b.path("libs/cimgui/imgui"));
     exe.addIncludePath(b.path("libs/cimgui/imgui/backends"));
+    exe.addIncludePath(b.path("libs/stb/include"));
     exe.linkLibC();
     exe.linkLibCpp();
     switch (target.result.os.tag) {
@@ -77,6 +78,12 @@ pub fn build(b: *std.Build) void {
                     "libs/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
                 },
                 .flags = &(cflags.* ++ .{"-DIMGUI_IMPL_API=extern \"C\" __declspec(dllexport)"}),
+            });
+            exe.addCSourceFiles(.{
+                .files = &.{
+                    "libs/stb/src/stb_perlin.c",
+                },
+                .flags = cflags,
             });
         },
         else => @panic("this project only builds on windows"),

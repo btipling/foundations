@@ -18,12 +18,16 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         use_camera: bool = true,
         can_toggle_view: bool = false,
         fly_mode: bool = false,
+        persp_only: math.matrix,
         persp_m: math.matrix,
         mvp: math.matrix,
+        cam_m: math.matrix,
         movement: physics.movement,
         programs: std.ArrayListUnmanaged(program) = .{},
         scene: T,
         integrator: IntegratorT,
+        emit_matrix: bool = true,
+        input_inactive: bool = false,
 
         const Self = @This();
 
@@ -46,10 +50,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         ) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");
             const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
-            const mvp = math.matrix.transformMatrix(
-                math.matrix.perspectiveProjection(cfg.fovy, s, 0.01, 750),
-                math.matrix.leftHandedXUpToNDC(),
-            );
+            const P = math.matrix.perspectiveProjection(cfg.fovy, s, 0.01, 750);
+            const mvp = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
 
             var camera_heading: math.rotation.Quat = .{ 1, 0, 0, 0 };
             if (heading) |h| {
@@ -68,8 +70,10 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .allocator = allocator,
                 .camera_pos = pos,
                 .cfg = cfg,
+                .persp_only = P,
                 .persp_m = mvp,
                 .mvp = mvp,
+                .cam_m = math.matrix.identity(),
                 .movement = undefined,
                 .scene = scene,
                 .integrator = integrator,
@@ -91,6 +95,16 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             self.handleInput(dt);
         }
 
+        pub fn setViewActivation(self: *Self, enabled: bool) void {
+            if (self.emit_matrix == enabled) return;
+            self.emit_matrix = enabled;
+            if (enabled) self.updateMVP();
+        }
+
+        pub fn setInputActivation(self: *Self, active: bool) void {
+            self.input_inactive = !active;
+        }
+
         fn integrate(self: *Self, t: f64) void {
             self.movement.step = self.integrator.timestep(self.movement.step, t);
             switch (self.movement.direction) {
@@ -105,6 +119,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         fn handleInput(self: *Self, t: f64) void {
+            if (self.input_inactive) return;
             const input = ui.input.getReadOnly() orelse return;
             var new_cursor_coords: ?math.vector.vec3 = null;
             cursor: {
@@ -376,6 +391,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             if (self.use_camera) {
                 var m = math.matrix.translate(self.camera_pos[0], self.camera_pos[1], self.camera_pos[2]);
                 m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(self.camera_orientation));
+                self.cam_m = m;
                 m = math.matrix.inverse(m);
                 self.mvp = math.matrix.transformMatrix(self.persp_m, m);
             } else self.mvp = self.persp_m;
@@ -383,6 +399,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         pub fn updatePrograms(self: *Self) void {
+            if (!self.emit_matrix) return;
             for (self.programs.items) |prog| {
                 rhi.setUniformMatrix(prog.program, prog.uniform, self.mvp);
             }
