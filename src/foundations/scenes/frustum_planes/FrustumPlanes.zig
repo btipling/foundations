@@ -5,8 +5,18 @@ sphere: object.object = .{ .norender = .{} },
 parallelepiped: object.object = .{ .norender = .{} },
 view_camera_0: *physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)),
 view_camera_1: *physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)),
+voxel_map: [voxel_max]math.vector.vec3 = undefined,
+voxel_transforms: [voxel_max]math.matrix = undefined,
+voxel_visible: [voxel_max]u8 = undefined,
+num_voxels: usize = 0,
+sphere_map: [voxel_max]math.vector.vec3 = undefined,
+sphere_visible: [voxel_max]u8 = undefined,
+sphere_transforms: [voxel_max]math.matrix = undefined,
+num_spheres: usize = 0,
 
 const voxel_dimension: usize = 30;
+const voxel_max = voxel_dimension * voxel_dimension * voxel_dimension;
+const invisible = math.matrix.translate(-100, -100, -100);
 
 const FrustumPlanes = @This();
 
@@ -55,6 +65,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *FrustumPlanes {
         .view_camera_0 = cam1,
         .view_camera_1 = cam2,
         .grid = grid,
+        .voxel_visible = std.mem.zeroes([voxel_max]u8),
+        .sphere_visible = std.mem.zeroes([voxel_max]u8),
     };
     pd.renderSphere();
     pd.renderParallepiped();
@@ -90,11 +102,97 @@ pub fn draw(self: *FrustumPlanes, dt: f64) void {
     self.ui_state.draw();
 }
 
-pub fn updateCamera(_: *FrustumPlanes) void {}
+pub fn updateCamera(self: *FrustumPlanes) void {
+    const cam = self.view_camera_0;
+    const ct = math.matrix.inverse(math.matrix.translate(cam.camera_pos[0], cam.camera_pos[1], cam.camera_pos[2]));
+    const p = math.matrix.transformMatrix(math.matrix.leftHandedXUpToNDC(), cam.persp_only);
+    const pl = math.vector.add(p.columns[3], p.columns[0]);
+    const left = math.vector.normalize(math.matrix.transformVector(
+        self.view_camera_0.cam_m,
+        pl,
+    ));
+    const nl: math.vector.vec3 = .{ left[0], left[1], left[2] };
+    const left_plane = math.geometry.Plane.init(nl, left[3]);
+    for (0..self.num_voxels) |i| {
+        const vox = math.vector.vec4ToVec3(
+            math.matrix.transformVector(
+                ct,
+                math.vector.vec3ToVec4Point(self.voxel_map[i]),
+            ),
+        );
+        const visible = left_plane.distanceToPoint(vox) >= 0;
+        // if (visible) visible =
+        if (!visible) {
+            // if (self.voxel_visible[i] > 0) {
+            const m = invisible;
+            const i_data: rhi.instanceData = .{
+                .t_column0 = m.columns[0],
+                .t_column1 = m.columns[1],
+                .t_column2 = m.columns[2],
+                .t_column3 = m.columns[3],
+                .color = .{ 1, 0, 1, 1 },
+            };
+            self.parallelepiped.parallelepiped.updateInstanceAt(i, i_data);
+            self.voxel_visible[i] = 0;
+            // }
+        } else {
+            // if (self.voxel_visible[i] == 0) {
+            const m = self.voxel_transforms[i];
+            const i_data: rhi.instanceData = .{
+                .t_column0 = m.columns[0],
+                .t_column1 = m.columns[1],
+                .t_column2 = m.columns[2],
+                .t_column3 = m.columns[3],
+                .color = .{ 1, 0, 1, 1 },
+            };
+            self.parallelepiped.parallelepiped.updateInstanceAt(i, i_data);
+            self.voxel_visible[i] = 1;
+            // }
+        }
+    }
+    for (0..self.num_spheres) |i| {
+        const sp = math.vector.vec4ToVec3(
+            math.matrix.transformVector(
+                ct,
+                math.vector.vec3ToVec4Point(self.sphere_map[i]),
+            ),
+        );
+        const visible = left_plane.distanceToPoint(sp) >= 0;
+        // if (visible) visible =
+        if (!visible) {
+            // if (self.sphere_visible[i] > 0) {
+            const m = invisible;
+            const i_data: rhi.instanceData = .{
+                .t_column0 = m.columns[0],
+                .t_column1 = m.columns[1],
+                .t_column2 = m.columns[2],
+                .t_column3 = m.columns[3],
+                .color = .{ 1, 0, 1, 1 },
+            };
+            self.sphere.sphere.updateInstanceAt(i, i_data);
+            self.sphere_visible[i] = 0;
+            // }
+        } else {
+            // if (self.sphere_visible[i] == 0) {
+            const m = self.sphere_transforms[i];
+            const i_data: rhi.instanceData = .{
+                .t_column0 = m.columns[0],
+                .t_column1 = m.columns[1],
+                .t_column2 = m.columns[2],
+                .t_column3 = m.columns[3],
+                .color = .{ 1, 0, 1, 1 },
+            };
+            self.sphere.sphere.updateInstanceAt(i, i_data);
+            self.sphere_visible[i] = 1;
+            // }
+        }
+    }
+}
 
 fn genObject(
-    _: FrustumPlanes,
-    i_datas: *[voxel_dimension * voxel_dimension * voxel_dimension]rhi.instanceData,
+    map: *[voxel_max]math.vector.vec3,
+    transforms: *[voxel_max]math.matrix,
+    i_datas: *[voxel_max]rhi.instanceData,
     offset_horizontal: f32,
     offset_vertical: f32,
     acunarity: f32,
@@ -125,6 +223,8 @@ fn genObject(
                     .t_column3 = m.columns[3],
                     .color = .{ 1, 0, 1, 1 },
                 };
+                map[i] = math.vector.vec4ToVec3(math.matrix.transformVector(m, .{ 0, 0, 0, 1 }));
+                transforms[i] = m;
                 i += 1;
                 if (i == i_datas.len) return i;
             }
@@ -136,8 +236,8 @@ fn genObject(
 pub fn renderSphere(self: *FrustumPlanes) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, sphere_vertex_shader, sphere_frag_shader);
-    var i_datas: [voxel_dimension * voxel_dimension * voxel_dimension]rhi.instanceData = undefined;
-    const i = self.genObject(&i_datas, 3.0, 1.5, 2.0, 0.5, 1, 6);
+    var i_datas: [voxel_max]rhi.instanceData = undefined;
+    const i = genObject(&self.sphere_map, &self.sphere_transforms, &i_datas, 3.0, 1.5, 2.0, 0.5, 1, 6);
     const sphere: object.object = .{
         .sphere = object.Sphere.init(
             prog,
@@ -147,6 +247,7 @@ pub fn renderSphere(self: *FrustumPlanes) void {
     };
     self.view_camera_0.addProgram(prog, "f_mvp");
     self.view_camera_1.addProgram(prog, "f_mvp");
+    self.num_spheres = i;
     self.sphere = sphere;
 }
 
@@ -158,8 +259,8 @@ pub fn updateParallepipedTransform(_: *FrustumPlanes, prog: u32) void {
 pub fn renderParallepiped(self: *FrustumPlanes) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, voxel_vertex_shader, voxel_frag_shader);
-    var i_datas: [voxel_dimension * voxel_dimension * voxel_dimension]rhi.instanceData = undefined;
-    const i = self.genObject(&i_datas, 2.0, 2.0, 2.0, 0.45, 1, 4);
+    var i_datas: [voxel_max]rhi.instanceData = undefined;
+    const i = genObject(&self.voxel_map, &self.voxel_transforms, &i_datas, 2.0, 2.0, 2.0, 0.45, 1, 4);
     const parallelepiped: object.object = .{
         .parallelepiped = object.Parallelepiped.init(
             prog,
@@ -170,6 +271,7 @@ pub fn renderParallepiped(self: *FrustumPlanes) void {
     self.updateParallepipedTransform(prog);
     self.view_camera_0.addProgram(prog, "f_mvp");
     self.view_camera_1.addProgram(prog, "f_mvp");
+    self.num_voxels = i;
     self.parallelepiped = parallelepiped;
 }
 
