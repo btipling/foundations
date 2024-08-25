@@ -21,13 +21,14 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         persp_only: math.matrix,
         persp_m: math.matrix,
         mvp: math.matrix,
-        cam_m: math.matrix,
         movement: physics.movement,
         programs: std.ArrayListUnmanaged(program) = .{},
         scene: T,
         integrator: IntegratorT,
         emit_matrix: bool = true,
         input_inactive: bool = false,
+        perspective_g: f32 = 0,
+        perspective_s: f32 = 0,
 
         const Self = @This();
 
@@ -50,7 +51,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         ) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");
             const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
-            const P = math.matrix.perspectiveProjection(cfg.fovy, s, 0.01, 750);
+            const g: f32 = 1.0 / @tan(cfg.fovy * 0.5);
+            const P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
             const mvp = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
 
             var camera_heading: math.rotation.Quat = .{ 1, 0, 0, 0 };
@@ -73,12 +75,14 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .persp_only = P,
                 .persp_m = mvp,
                 .mvp = mvp,
-                .cam_m = math.matrix.identity(),
+                .camera_matrix = math.matrix.identity(),
                 .movement = undefined,
                 .scene = scene,
                 .integrator = integrator,
                 .camera_orientation = camera_heading,
                 .camera_orientation_heading = camera_heading,
+                .perspective_g = g,
+                .perspective_s = s,
             };
             cam.movement = physics.movement.init(cam.camera_pos, 0, .none);
             cam.updateCameraMatrix();
@@ -383,16 +387,12 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 self.camera_pos[2],
             ));
             m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(self.camera_orientation));
-            m = math.matrix.transformMatrix(m, math.matrix.uniformScale(0.1));
             self.camera_matrix = m;
         }
 
         pub fn updateMVP(self: *Self) void {
             if (self.use_camera) {
-                var m = math.matrix.translate(self.camera_pos[0], self.camera_pos[1], self.camera_pos[2]);
-                m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(self.camera_orientation));
-                self.cam_m = m;
-                m = math.matrix.inverse(m);
+                const m = math.matrix.inverse(self.camera_matrix);
                 self.mvp = math.matrix.transformMatrix(self.persp_m, m);
             } else self.mvp = self.persp_m;
             self.updatePrograms();

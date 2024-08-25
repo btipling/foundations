@@ -53,7 +53,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *FrustumPlanes {
         std.math.pi * -0.25,
     );
     cam2.emit_matrix = false;
-    cam2.input_inactive = true;
+    cam2.input_inactive = false;
     errdefer cam1.deinit(allocator);
     const grid = scenery.Grid.init(allocator);
     errdefer grid.deinit();
@@ -102,47 +102,56 @@ pub fn draw(self: *FrustumPlanes, dt: f64) void {
     self.ui_state.draw();
 }
 
+fn pointVisible(
+    p: math.vector.vec3,
+    left_plane: math.geometry.Plane,
+    right_plane: math.geometry.Plane,
+    bot_plane: math.geometry.Plane,
+    top_plane: math.geometry.Plane,
+) bool {
+    if (left_plane.distanceToPoint(p) < 0) return false;
+    if (right_plane.distanceToPoint(p) < 0) return false;
+    if (bot_plane.distanceToPoint(p) < 0) return false;
+    if (top_plane.distanceToPoint(p) < 0) return false;
+    return true;
+}
+
 pub fn updateCamera(self: *FrustumPlanes) void {
     const cam = self.view_camera_0;
-    const ct = math.matrix.inverse(math.matrix.translate(cam.camera_pos[0], cam.camera_pos[1], cam.camera_pos[2]));
-    const p = math.matrix.transformMatrix(math.matrix.leftHandedXUpToNDC(), cam.persp_only);
-    const pl = math.vector.normalize(math.vector.add(p.columns[3], p.columns[0]));
+    const cm = cam.camera_matrix;
 
-    const left = math.vector.normalize(math.matrix.transformVector(
-        self.view_camera_0.cam_m,
-        pl,
-    ));
-    const nl: math.vector.vec3 = .{ left[0], left[1], left[2] };
-    const left_plane = math.geometry.Plane.init(nl, left[3]);
+    const nl: math.vector.vec3 = math.vector.add(
+        math.vector.mul(cam.perspective_s, math.vector.vec4ToVec3(cm.columns[1])),
+        math.vector.mul(cam.perspective_g, math.vector.vec4ToVec3(cm.columns[2])),
+    );
+    const dl = math.vector.dotProduct(nl, math.vector.vec4ToVec3(cm.columns[3]));
+    const left_plane = math.geometry.Plane.init(nl, dl);
 
-    const pt = math.vector.add(p.columns[3], p.columns[1]);
-    const top = math.vector.normalize(math.matrix.transformVector(
-        math.matrix.transformMatrix(self.view_camera_0.cam_m, math.matrix.rotationX(-std.math.pi / 3.5)),
-        pt,
-    ));
-    const nt: math.vector.vec3 = .{ top[0], top[1], top[2] };
-    const top_plane = math.geometry.Plane.init(nt, top[3]);
+    const nr: math.vector.vec3 = math.vector.add(
+        math.vector.mul(cam.perspective_s, math.vector.vec4ToVec3(cm.columns[1])),
+        math.vector.mul(-cam.perspective_g, math.vector.vec4ToVec3(cm.columns[2])),
+    );
+    const dr = math.vector.dotProduct(nr, math.vector.vec4ToVec3(cm.columns[3]));
+    const right_plane = math.geometry.Plane.init(nr, dr);
 
-    const pb = math.vector.sub(p.columns[3], p.columns[1]);
-    const bot = math.vector.normalize(math.matrix.transformVector(
-        math.matrix.transformMatrix(self.view_camera_0.cam_m, math.matrix.rotationX(std.math.pi / 3.5)),
-        pb,
-    ));
-    const nb: math.vector.vec3 = .{ bot[0], bot[1], bot[2] };
-    const bot_plane = math.geometry.Plane.init(nb, bot[3]);
+    const nb: math.vector.vec3 = math.vector.add(
+        math.vector.mul(-cam.perspective_g, math.vector.vec4ToVec3(cm.columns[0])),
+        math.vector.vec4ToVec3(cm.columns[1]),
+    );
+    const db = math.vector.dotProduct(nb, math.vector.vec4ToVec3(cm.columns[3]));
+    const bot_plane = math.geometry.Plane.init(nb, db);
+
+    const nt: math.vector.vec3 = math.vector.add(
+        math.vector.mul(cam.perspective_g, math.vector.vec4ToVec3(cm.columns[0])),
+        math.vector.vec4ToVec3(cm.columns[1]),
+    );
+    const dt = math.vector.dotProduct(nt, math.vector.vec4ToVec3(cm.columns[3]));
+    const top_plane = math.geometry.Plane.init(nt, dt);
 
     for (0..self.num_voxels) |i| {
-        const vox = math.vector.vec4ToVec3(
-            math.matrix.transformVector(
-                ct,
-                math.vector.vec3ToVec4Point(self.voxel_map[i]),
-            ),
-        );
-        var visible = left_plane.distanceToPoint(vox) >= 0;
-        if (visible) visible = top_plane.distanceToPoint(vox) >= 0;
-        if (visible) visible = bot_plane.distanceToPoint(vox) >= 0;
+        const vox = self.voxel_map[i];
+        const visible = pointVisible(vox, left_plane, right_plane, bot_plane, top_plane);
         if (!visible) {
-            // if (self.voxel_visible[i] > 0) {
             const m = invisible;
             const i_data: rhi.instanceData = .{
                 .t_column0 = m.columns[0],
@@ -153,9 +162,7 @@ pub fn updateCamera(self: *FrustumPlanes) void {
             };
             self.parallelepiped.parallelepiped.updateInstanceAt(i, i_data);
             self.voxel_visible[i] = 0;
-            // }
         } else {
-            // if (self.voxel_visible[i] == 0) {
             const m = self.voxel_transforms[i];
             const i_data: rhi.instanceData = .{
                 .t_column0 = m.columns[0],
@@ -166,21 +173,12 @@ pub fn updateCamera(self: *FrustumPlanes) void {
             };
             self.parallelepiped.parallelepiped.updateInstanceAt(i, i_data);
             self.voxel_visible[i] = 1;
-            // }
         }
     }
     for (0..self.num_spheres) |i| {
-        const sp = math.vector.vec4ToVec3(
-            math.matrix.transformVector(
-                ct,
-                math.vector.vec3ToVec4Point(self.sphere_map[i]),
-            ),
-        );
-        var visible = left_plane.distanceToPoint(sp) >= 0;
-        if (visible) visible = top_plane.distanceToPoint(sp) >= 0;
-        if (visible) visible = bot_plane.distanceToPoint(sp) >= 0;
+        const sp = self.sphere_map[i];
+        const visible = pointVisible(sp, left_plane, right_plane, bot_plane, top_plane);
         if (!visible) {
-            // if (self.sphere_visible[i] > 0) {
             const m = invisible;
             const i_data: rhi.instanceData = .{
                 .t_column0 = m.columns[0],
@@ -191,9 +189,7 @@ pub fn updateCamera(self: *FrustumPlanes) void {
             };
             self.sphere.sphere.updateInstanceAt(i, i_data);
             self.sphere_visible[i] = 0;
-            // }
         } else {
-            // if (self.sphere_visible[i] == 0) {
             const m = self.sphere_transforms[i];
             const i_data: rhi.instanceData = .{
                 .t_column0 = m.columns[0],
@@ -204,7 +200,6 @@ pub fn updateCamera(self: *FrustumPlanes) void {
             };
             self.sphere.sphere.updateInstanceAt(i, i_data);
             self.sphere_visible[i] = 1;
-            // }
         }
     }
 }
