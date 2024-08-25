@@ -73,8 +73,8 @@ pub inline fn scale(x: f32, y: f32, z: f32) matrix {
     // zig fmt: on
 }
 
-pub inline fn perspectiveProjection(fovy: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
-    const perspective_plane_distance_g: f32 = 1.0 / @tan(fovy * 0.5);
+pub inline fn perspectiveProjection(field_of_view_y_angle: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
+    const perspective_plane_distance_g: f32 = 1.0 / @tan(field_of_view_y_angle * 0.5);
     return perspectiveProjectionCamera(perspective_plane_distance_g, aspect_ratio_s, near, far);
 }
 
