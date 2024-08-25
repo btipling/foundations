@@ -27,8 +27,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         integrator: IntegratorT,
         emit_matrix: bool = true,
         input_inactive: bool = false,
-        perspective_g: f32 = 0,
-        perspective_s: f32 = 0,
+        perspective_plane_distance_g: f32 = 0,
+        aspect_ratio_s: f32 = 0,
 
         const Self = @This();
 
@@ -81,8 +81,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .integrator = integrator,
                 .camera_orientation = camera_heading,
                 .camera_orientation_heading = camera_heading,
-                .perspective_g = g,
-                .perspective_s = s,
+                .perspective_plane_distance_g = g,
+                .aspect_ratio_s = s,
             };
             cam.movement = physics.movement.init(cam.camera_pos, 0, .none);
             cam.updateCameraMatrix();
