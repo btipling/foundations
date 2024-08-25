@@ -53,7 +53,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *FrustumPlanes {
         std.math.pi * -0.25,
     );
     cam2.emit_matrix = false;
-    cam2.input_inactive = false;
+    cam2.input_inactive = true;
     errdefer cam1.deinit(allocator);
     const grid = scenery.Grid.init(allocator);
     errdefer grid.deinit();
@@ -121,28 +121,28 @@ pub fn updateCamera(self: *FrustumPlanes) void {
     const cm = cam.camera_matrix;
 
     const nl: math.vector.vec3 = math.vector.add(
-        math.vector.mul(cam.perspective_s, math.vector.vec4ToVec3(cm.columns[1])),
-        math.vector.mul(cam.perspective_g, math.vector.vec4ToVec3(cm.columns[2])),
+        math.vector.mul(cam.aspect_ratio_s, math.vector.vec4ToVec3(cm.columns[1])),
+        math.vector.mul(cam.perspective_plane_distance_g, math.vector.vec4ToVec3(cm.columns[2])),
     );
     const dl = math.vector.dotProduct(nl, math.vector.vec4ToVec3(cm.columns[3]));
     const left_plane = math.geometry.Plane.init(nl, dl);
 
     const nr: math.vector.vec3 = math.vector.add(
-        math.vector.mul(cam.perspective_s, math.vector.vec4ToVec3(cm.columns[1])),
-        math.vector.mul(-cam.perspective_g, math.vector.vec4ToVec3(cm.columns[2])),
+        math.vector.mul(cam.aspect_ratio_s, math.vector.vec4ToVec3(cm.columns[1])),
+        math.vector.mul(-cam.perspective_plane_distance_g, math.vector.vec4ToVec3(cm.columns[2])),
     );
     const dr = math.vector.dotProduct(nr, math.vector.vec4ToVec3(cm.columns[3]));
     const right_plane = math.geometry.Plane.init(nr, dr);
 
     const nb: math.vector.vec3 = math.vector.add(
-        math.vector.mul(-cam.perspective_g, math.vector.vec4ToVec3(cm.columns[0])),
+        math.vector.mul(-cam.perspective_plane_distance_g, math.vector.vec4ToVec3(cm.columns[0])),
         math.vector.vec4ToVec3(cm.columns[1]),
     );
     const db = math.vector.dotProduct(nb, math.vector.vec4ToVec3(cm.columns[3]));
     const bot_plane = math.geometry.Plane.init(nb, db);
 
     const nt: math.vector.vec3 = math.vector.add(
-        math.vector.mul(cam.perspective_g, math.vector.vec4ToVec3(cm.columns[0])),
+        math.vector.mul(cam.perspective_plane_distance_g, math.vector.vec4ToVec3(cm.columns[0])),
         math.vector.vec4ToVec3(cm.columns[1]),
     );
     const dt = math.vector.dotProduct(nt, math.vector.vec4ToVec3(cm.columns[3]));

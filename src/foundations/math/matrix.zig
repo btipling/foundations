@@ -73,30 +73,20 @@ pub inline fn scale(x: f32, y: f32, z: f32) matrix {
     // zig fmt: on
 }
 
-pub inline fn perspectiveProjection(fovy: f32, s: f32, n: f32, f: f32) matrix {
-    const g: f32 = 1.0 / @tan(fovy * 0.5);
-    const k = f / (f - n);
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{  g/s,  0,  0,              0 },
-            .{    0,  g,  0,              0 },
-            .{    0,  0,  k,              1 },
-            .{    0,  0,  -n * k,  0 },
-        },
-    };
-    // zig fmt: on
+pub inline fn perspectiveProjection(fovy: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
+    const perspective_plane_distance_g: f32 = 1.0 / @tan(fovy * 0.5);
+    return perspectiveProjectionCamera(perspective_plane_distance_g, aspect_ratio_s, near, far);
 }
 
-pub inline fn perspectiveProjectionCamera(g: f32, s: f32, n: f32, f: f32) matrix {
-    const k = f / (f - n);
+pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
+    const depth_scale = far / (far - near);
     // zig fmt: off
     return .{
         .columns = .{
-            .{  g/s,  0,  0,              0 },
-            .{    0,  g,  0,              0 },
-            .{    0,  0,  k,              1 },
-            .{    0,  0,  -n * k,  0 },
+            .{  perspective_plane_distance_g / aspect_ratio_s,                             0,                     0,  0 },
+            .{                                              0,  perspective_plane_distance_g,                     0,  0 },
+            .{                                              0,                              0,          depth_scale,  1 },
+            .{                                              0,                              0,  -near * depth_scale,  0 },
         },
     };
     // zig fmt: on
