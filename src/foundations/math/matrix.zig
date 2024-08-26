@@ -78,6 +78,77 @@ pub inline fn perspectiveProjection(field_of_view_y_angle: f32, aspect_ratio_s: 
     return perspectiveProjectionCamera(perspective_plane_distance_g, aspect_ratio_s, near, far);
 }
 
+test perspectiveProjection {
+    const fovy: f32 = rotation.degreesToRadians(70);
+    const width: f32 = 3840;
+    const height: f32 = 2400;
+    const s = width / height;
+    const near: f32 = 0.1;
+    const far: f32 = 500;
+    const g: f32 = 1.0 / @tan(fovy * 0.5);
+    const p = perspectiveProjectionCamera(g, s, near, far);
+    const plane_extracted_left = vector.normalize(vector.add(p.columns[3], p.columns[0]));
+    const clip_space_left: vector.vec4 = .{ 1, 0, 0, 1 };
+    const perspective_transformed_left = vector.normalize(transformVector(p, clip_space_left));
+
+    var cam = identity();
+    cam = transformMatrix(cam, translate(10, -3, 9));
+    cam = transformMatrix(cam, rotationX(std.math.pi * 0.2));
+    const nl: vector.vec4 = vector.normalize(vector.add(
+        vector.mul(g, cam.columns[0]),
+        vector.mul(s, cam.columns[2]),
+    ));
+    const dl = vector.dotProduct(vector.negate(nl), cam.columns[3]);
+    const left_plane = geometry.Plane.init(vector.vec4ToVec3(nl), dl);
+
+    const camera_space_left: vector.vec4 = .{ g, 0, s, 0 };
+    const f_camera = vector.mul(1.0 / @sqrt(g * g + s * s), camera_space_left);
+    const f_world = transformVector(transpose(inverse(cam)), f_camera);
+    const ptl_cam = transformVector(transpose(inverse(cam)), perspective_transformed_left);
+
+    std.debug.print("\n\ntest result\n\n", .{});
+    std.debug.print("f_camera: ({d}, {d}, {d}, {d})\n", .{
+        f_camera[0],
+        f_camera[1],
+        f_camera[2],
+        f_camera[3],
+    });
+    std.debug.print("f_world: ({d}, {d}, {d}, {d})\n", .{
+        f_world[0],
+        f_world[1],
+        f_world[2],
+        f_world[3],
+    });
+    std.debug.print("camera extracted left_plane: ({d}, {d}, {d}, {d})\n", .{
+        left_plane.parameterized[0],
+        left_plane.parameterized[1],
+        left_plane.parameterized[2],
+        left_plane.parameterized[3],
+    });
+
+    std.debug.print("plane_extracted_left: ({d}, {d}, {d}, {d})\n", .{
+        plane_extracted_left[0],
+        plane_extracted_left[1],
+        plane_extracted_left[2],
+        plane_extracted_left[3],
+    });
+    std.debug.print("perspective_transformed_left: ({d}, {d}, {d}, {d})\n", .{
+        perspective_transformed_left[0],
+        perspective_transformed_left[1],
+        perspective_transformed_left[2],
+        perspective_transformed_left[3],
+    });
+    std.debug.print("ptl_cam: ({d}, {d}, {d}, {d})\n", .{
+        ptl_cam[0],
+        ptl_cam[1],
+        ptl_cam[2],
+        ptl_cam[3],
+    });
+
+    try std.testing.expect(float.equal(plane_extracted_left[0], perspective_transformed_left[0], 0.000001));
+    try std.testing.expect(float.equal(left_plane.parameterized[0], f_world[0], 0.000001));
+}
+
 pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
     const depth_scale = far / (far - near);
     // zig fmt: off
@@ -986,4 +1057,6 @@ test toReducedRowEchelonForm {
 const std = @import("std");
 const vector = @import("vector.zig");
 const float = @import("float.zig");
-const Quat = @import("rotation.zig").Quat;
+const rotation = @import("rotation.zig");
+const geometry = @import("geometry/geometry.zig");
+const Quat = rotation.Quat;
