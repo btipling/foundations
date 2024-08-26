@@ -116,37 +116,23 @@ fn pointVisible(
     return true;
 }
 
+pub fn cameraPlaneExtraction(a: f32, b: f32, v1: math.vector.vec4, v2: math.vector.vec4, cam: math.matrix) math.geometry.Plane {
+    const n: math.vector.vec4 = math.vector.normalize(math.vector.add(
+        math.vector.mul(a, v1),
+        math.vector.mul(b, v2),
+    ));
+    const d = math.vector.dotProduct(n, cam.columns[3]);
+    return math.geometry.Plane.init(math.vector.normalize(math.vector.vec4ToVec3(n)), d);
+}
+
 pub fn updateCamera(self: *FrustumPlanes) void {
     const cam = self.view_camera_0;
     const cm = cam.camera_matrix;
 
-    const nl: math.vector.vec3 = math.vector.add(
-        math.vector.mul(cam.aspect_ratio_s, math.vector.vec4ToVec3(cm.columns[1])),
-        math.vector.mul(cam.perspective_plane_distance_g, math.vector.vec4ToVec3(cm.columns[2])),
-    );
-    const dl = math.vector.dotProduct(nl, math.vector.vec4ToVec3(cm.columns[3]));
-    const left_plane = math.geometry.Plane.init(nl, dl);
-
-    const nr: math.vector.vec3 = math.vector.add(
-        math.vector.mul(cam.aspect_ratio_s, math.vector.vec4ToVec3(cm.columns[1])),
-        math.vector.mul(-cam.perspective_plane_distance_g, math.vector.vec4ToVec3(cm.columns[2])),
-    );
-    const dr = math.vector.dotProduct(nr, math.vector.vec4ToVec3(cm.columns[3]));
-    const right_plane = math.geometry.Plane.init(nr, dr);
-
-    const nb: math.vector.vec3 = math.vector.add(
-        math.vector.mul(-cam.perspective_plane_distance_g, math.vector.vec4ToVec3(cm.columns[0])),
-        math.vector.vec4ToVec3(cm.columns[1]),
-    );
-    const db = math.vector.dotProduct(nb, math.vector.vec4ToVec3(cm.columns[3]));
-    const bot_plane = math.geometry.Plane.init(nb, db);
-
-    const nt: math.vector.vec3 = math.vector.add(
-        math.vector.mul(cam.perspective_plane_distance_g, math.vector.vec4ToVec3(cm.columns[0])),
-        math.vector.vec4ToVec3(cm.columns[1]),
-    );
-    const dt = math.vector.dotProduct(nt, math.vector.vec4ToVec3(cm.columns[3]));
-    const top_plane = math.geometry.Plane.init(nt, dt);
+    const left_plane = cameraPlaneExtraction(cam.aspect_ratio_s, cam.perspective_plane_distance_g, cm.columns[1], cm.columns[2], cm);
+    const right_plane = cameraPlaneExtraction(cam.aspect_ratio_s, -cam.perspective_plane_distance_g, cm.columns[1], cm.columns[2], cm);
+    const bot_plane = cameraPlaneExtraction(-cam.perspective_plane_distance_g, 1.0, cm.columns[0], cm.columns[1], cm);
+    const top_plane = cameraPlaneExtraction(cam.perspective_plane_distance_g, 1.0, cm.columns[0], cm.columns[1], cm);
 
     for (0..self.num_voxels) |i| {
         const vox = self.voxel_map[i];

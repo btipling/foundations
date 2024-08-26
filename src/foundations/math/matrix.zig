@@ -78,6 +78,37 @@ pub inline fn perspectiveProjection(field_of_view_y_angle: f32, aspect_ratio_s: 
     return perspectiveProjectionCamera(perspective_plane_distance_g, aspect_ratio_s, near, far);
 }
 
+test perspectiveProjection {
+    const fovy: f32 = rotation.degreesToRadians(70);
+    const width: f32 = 3840;
+    const height: f32 = 2400;
+    const s = width / height;
+    const near: f32 = 0.1;
+    const far: f32 = 500;
+    const g: f32 = 1.0 / @tan(fovy * 0.5);
+    const p = perspectiveProjectionCamera(g, s, near, far);
+    const plane_extracted_left = vector.normalize(vector.add(p.columns[3], p.columns[0]));
+    const clip_space_left: vector.vec4 = .{ 1, 0, 0, 1 };
+    const perspective_transformed_left = vector.normalize(transformVector(p, clip_space_left));
+
+    var cam = identity();
+    cam = transformMatrix(cam, translate(10, -3, 9));
+    cam = transformMatrix(cam, rotationX(std.math.pi * 0.2));
+    const nl: vector.vec4 = vector.normalize(vector.add(
+        vector.mul(g, cam.columns[0]),
+        vector.mul(s, cam.columns[2]),
+    ));
+    const dl = vector.dotProduct(vector.negate(nl), cam.columns[3]);
+    const left_plane = geometry.Plane.init(vector.vec4ToVec3(nl), dl);
+
+    const camera_space_left: vector.vec4 = .{ g, 0, s, 0 };
+    const f_camera = vector.mul(1.0 / @sqrt(g * g + s * s), camera_space_left);
+    const f_world = transformVector(transpose(inverse(cam)), f_camera);
+
+    try std.testing.expect(float.equal(plane_extracted_left[0], perspective_transformed_left[0], 0.000001));
+    try std.testing.expect(float.equal(left_plane.parameterized[0], f_world[0], 0.000001));
+}
+
 pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
     const depth_scale = far / (far - near);
     // zig fmt: off
@@ -986,4 +1017,6 @@ test toReducedRowEchelonForm {
 const std = @import("std");
 const vector = @import("vector.zig");
 const float = @import("float.zig");
-const Quat = @import("rotation.zig").Quat;
+const rotation = @import("rotation.zig");
+const geometry = @import("geometry/geometry.zig");
+const Quat = rotation.Quat;
