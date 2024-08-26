@@ -86,26 +86,20 @@ test perspectiveProjection {
     const near: f32 = 0.1;
     const far: f32 = 500;
     const g: f32 = 1.0 / @tan(fovy * 0.5);
-
     const p = perspectiveProjectionCamera(g, s, near, far);
+    const plane_extracted_left = vector.normalize(vector.add(p.columns[3], p.columns[0]));
+    const clip_space_left: vector.vec4 = .{ 1, 0, 0, 1 };
+    const perspective_transformed_left = vector.normalize(transformVector(p, clip_space_left));
 
+    try std.testing.expect(float.equal(plane_extracted_left[0], perspective_transformed_left[0], 0.000001));
+    try std.testing.expect(float.equal(plane_extracted_left[1], perspective_transformed_left[1], 0.000001));
+    try std.testing.expect(float.equal(plane_extracted_left[2], perspective_transformed_left[2], 0.000001));
+    try std.testing.expect(float.equal(plane_extracted_left[3], perspective_transformed_left[3], 0.000001));
+
+    // This doesn't really test the perspective function, it's testing camera math using perspective values.
     var cam = identity();
     cam = transformMatrix(cam, translate(10, -3, 9));
     cam = transformMatrix(cam, rotationX(std.math.pi * 0.2));
-
-    var ep = identity();
-    ep = transformMatrix(p, cam);
-
-    const plane_extracted_left = vector.normalize(vector.add(ep.columns[3], ep.columns[0]));
-    // const clip_space_left: vector.vec4 = .{ 1, 0, 0, 1 };
-    // const perspective_transformed_left = vector.normalize(transformVector(p, clip_space_left));
-
-    // try std.testing.expect(float.equal(plane_extracted_left[0], perspective_transformed_left[0], 0.000001));
-    // try std.testing.expect(float.equal(plane_extracted_left[1], perspective_transformed_left[1], 0.000001));
-    // try std.testing.expect(float.equal(plane_extracted_left[2], perspective_transformed_left[2], 0.000001));
-    // try std.testing.expect(float.equal(plane_extracted_left[3], perspective_transformed_left[3], 0.000001));
-
-    // This doesn't really test the perspective function, it's testing camera math using perspective
     const nl: vector.vec4 = vector.normalize(vector.add(
         vector.mul(g, cam.columns[0]),
         vector.mul(s, cam.columns[2]),
@@ -116,20 +110,6 @@ test perspectiveProjection {
     const camera_space_left: vector.vec4 = .{ g, 0, s, 0 };
     const f_camera = vector.mul(1.0 / @sqrt(g * g + s * s), camera_space_left);
     const f_world = transformVector(transpose(inverse(cam)), f_camera);
-    const depth_scale = far / (far - near);
-    std.debug.print("\n\ntest result near: ({d}) far:({d}) depth scale: ({d})\n\n", .{ near, far, depth_scale });
-    std.debug.print("f_world: ({d}, {d}, {d}, {d})\n", .{
-        f_world[0],
-        f_world[1],
-        f_world[2],
-        f_world[3],
-    });
-    std.debug.print("plane_extracted_left: ({d}, {d}, {d}, {d})\n", .{
-        plane_extracted_left[0],
-        plane_extracted_left[1],
-        plane_extracted_left[2],
-        plane_extracted_left[3],
-    });
 
     try std.testing.expect(float.equal(left_plane.parameterized[0], f_world[0], 0.000001));
     try std.testing.expect(float.equal(left_plane.parameterized[1], f_world[1], 0.000001));
