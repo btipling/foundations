@@ -125,14 +125,32 @@ pub fn cameraPlaneExtraction(a: f32, b: f32, v1: math.vector.vec4, v2: math.vect
     return math.geometry.Plane.init(math.vector.normalize(math.vector.vec4ToVec3(n)), d);
 }
 
+pub fn clipPlaneExtraction(clip_plane: math.vector.vec4) math.geometry.Plane {
+    const ptl_cam = math.vector.normalize(clip_plane);
+    return math.geometry.Plane.init(math.vector.vec4ToVec3(ptl_cam), -ptl_cam[3]);
+}
+
 pub fn updateCamera(self: *FrustumPlanes) void {
     const cam = self.view_camera_0;
     const cm = cam.camera_matrix;
 
-    const left_plane = cameraPlaneExtraction(cam.aspect_ratio_s, cam.perspective_plane_distance_g, cm.columns[1], cm.columns[2], cm);
-    const right_plane = cameraPlaneExtraction(cam.aspect_ratio_s, -cam.perspective_plane_distance_g, cm.columns[1], cm.columns[2], cm);
-    const bot_plane = cameraPlaneExtraction(-cam.perspective_plane_distance_g, 1.0, cm.columns[0], cm.columns[1], cm);
-    const top_plane = cameraPlaneExtraction(cam.perspective_plane_distance_g, 1.0, cm.columns[0], cm.columns[1], cm);
+    var left_plane: math.geometry.Plane = undefined;
+    var right_plane: math.geometry.Plane = undefined;
+    var top_plane: math.geometry.Plane = undefined;
+    var bot_plane: math.geometry.Plane = undefined;
+
+    if (self.ui_state.use_clip_plane_extraction == 0) {
+        left_plane = cameraPlaneExtraction(cam.aspect_ratio_s, cam.perspective_plane_distance_g, cm.columns[1], cm.columns[2], cm);
+        right_plane = cameraPlaneExtraction(cam.aspect_ratio_s, -cam.perspective_plane_distance_g, cm.columns[1], cm.columns[2], cm);
+        bot_plane = cameraPlaneExtraction(-cam.perspective_plane_distance_g, 1.0, cm.columns[0], cm.columns[1], cm);
+        top_plane = cameraPlaneExtraction(cam.perspective_plane_distance_g, 1.0, cm.columns[0], cm.columns[1], cm);
+    } else {
+        const p = math.matrix.transpose(cam.mvp);
+        left_plane = clipPlaneExtraction(math.vector.add(p.columns[3], p.columns[0]));
+        right_plane = clipPlaneExtraction(math.vector.sub(p.columns[3], p.columns[0]));
+        top_plane = clipPlaneExtraction(math.vector.add(p.columns[3], p.columns[1]));
+        bot_plane = clipPlaneExtraction(math.vector.sub(p.columns[3], p.columns[1]));
+    }
 
     for (0..self.num_voxels) |i| {
         const vox = self.voxel_map[i];
