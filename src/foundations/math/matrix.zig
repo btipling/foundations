@@ -104,46 +104,6 @@ test perspectiveProjection {
     const camera_space_left: vector.vec4 = .{ g, 0, s, 0 };
     const f_camera = vector.mul(1.0 / @sqrt(g * g + s * s), camera_space_left);
     const f_world = transformVector(transpose(inverse(cam)), f_camera);
-    const ptl_cam = transformVector(transpose(inverse(cam)), perspective_transformed_left);
-
-    std.debug.print("\n\ntest result\n\n", .{});
-    std.debug.print("f_camera: ({d}, {d}, {d}, {d})\n", .{
-        f_camera[0],
-        f_camera[1],
-        f_camera[2],
-        f_camera[3],
-    });
-    std.debug.print("f_world: ({d}, {d}, {d}, {d})\n", .{
-        f_world[0],
-        f_world[1],
-        f_world[2],
-        f_world[3],
-    });
-    std.debug.print("camera extracted left_plane: ({d}, {d}, {d}, {d})\n", .{
-        left_plane.parameterized[0],
-        left_plane.parameterized[1],
-        left_plane.parameterized[2],
-        left_plane.parameterized[3],
-    });
-
-    std.debug.print("plane_extracted_left: ({d}, {d}, {d}, {d})\n", .{
-        plane_extracted_left[0],
-        plane_extracted_left[1],
-        plane_extracted_left[2],
-        plane_extracted_left[3],
-    });
-    std.debug.print("perspective_transformed_left: ({d}, {d}, {d}, {d})\n", .{
-        perspective_transformed_left[0],
-        perspective_transformed_left[1],
-        perspective_transformed_left[2],
-        perspective_transformed_left[3],
-    });
-    std.debug.print("ptl_cam: ({d}, {d}, {d}, {d})\n", .{
-        ptl_cam[0],
-        ptl_cam[1],
-        ptl_cam[2],
-        ptl_cam[3],
-    });
 
     try std.testing.expect(float.equal(plane_extracted_left[0], perspective_transformed_left[0], 0.000001));
     try std.testing.expect(float.equal(left_plane.parameterized[0], f_world[0], 0.000001));

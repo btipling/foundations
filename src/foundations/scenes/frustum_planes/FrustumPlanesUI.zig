@@ -1,6 +1,5 @@
 active_view_camera: c_int = 0,
 active_input_camera: c_int = 0,
-use_clip_plane_extraction: c_int = 0,
 
 const FrustumPlanesUI = @This();
 
@@ -34,10 +33,6 @@ pub fn draw(self: *FrustumPlanesUI) void {
     _ = c.igRadioButton_IntPtr("input camera 1", &self.active_input_camera, 0);
     c.igSameLine(0, 1);
     _ = c.igRadioButton_IntPtr("input camera 2", &self.active_input_camera, 1);
-    c.igText("Use clip plane extraction");
-    _ = c.igRadioButton_IntPtr("use camera plane extraction", &self.use_clip_plane_extraction, 0);
-    c.igSameLine(0, 1);
-    _ = c.igRadioButton_IntPtr("use clip plane extraction", &self.use_clip_plane_extraction, 1);
 
     c.igEnd();
 }
