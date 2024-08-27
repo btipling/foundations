@@ -95,26 +95,6 @@ test perspectiveProjection {
     try std.testing.expect(float.equal(plane_extracted_left[1], perspective_transformed_left[1], 0.000001));
     try std.testing.expect(float.equal(plane_extracted_left[2], perspective_transformed_left[2], 0.000001));
     try std.testing.expect(float.equal(plane_extracted_left[3], perspective_transformed_left[3], 0.000001));
-
-    // This doesn't really test the perspective function, it's testing camera math using perspective values.
-    var cam = identity();
-    cam = transformMatrix(cam, translate(10, -3, 9));
-    cam = transformMatrix(cam, rotationX(std.math.pi * 0.2));
-    const nl: vector.vec4 = vector.normalize(vector.add(
-        vector.mul(g, cam.columns[0]),
-        vector.mul(s, cam.columns[2]),
-    ));
-    const dl = vector.dotProduct(vector.negate(nl), cam.columns[3]);
-    const left_plane = geometry.Plane.init(vector.vec4ToVec3(nl), dl);
-
-    const camera_space_left: vector.vec4 = .{ g, 0, s, 0 };
-    const f_camera = vector.mul(1.0 / @sqrt(g * g + s * s), camera_space_left);
-    const f_world = transformVector(transpose(inverse(cam)), f_camera);
-
-    try std.testing.expect(float.equal(left_plane.parameterized[0], f_world[0], 0.000001));
-    try std.testing.expect(float.equal(left_plane.parameterized[1], f_world[1], 0.000001));
-    try std.testing.expect(float.equal(left_plane.parameterized[2], f_world[2], 0.000001));
-    try std.testing.expect(float.equal(left_plane.parameterized[3], f_world[3], 0.000001));
 }
 
 pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {

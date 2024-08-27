@@ -3,6 +3,8 @@ pub fn main() !void {
     _ = math.rotation;
     _ = math.float;
     _ = math.matrix;
+    _ = math.geometry;
+    _ = math.geometry.Plane;
     _ = math.interpolation;
     _ = config.parser;
 }
