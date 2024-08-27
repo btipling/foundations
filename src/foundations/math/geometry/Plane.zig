@@ -68,6 +68,39 @@ pub fn reflectPointAcross(self: Plane, p: vector.vec4) vector.vec4 {
     return vector.sub(p, vector.mul(2.0, point_on_plane));
 }
 
+pub fn transform(self: Plane, m: matrix) Plane {
+    const res: vector.vec4 = matrix.transformVector(matrix.transpose(matrix.inverse(m)), self.parameterized);
+    return init(.{ res[0], res[1], res[2] }, res[3]);
+}
+
+test transform {
+    const fovy: f32 = rotation.degreesToRadians(70);
+    const width: f32 = 3840;
+    const height: f32 = 2400;
+    const s = width / height;
+    const g: f32 = 1.0 / @tan(fovy * 0.5);
+
+    var cam = matrix.identity();
+    cam = matrix.transformMatrix(cam, matrix.translate(10, -3, 9));
+    cam = matrix.transformMatrix(cam, matrix.rotationX(std.math.pi * 0.2));
+    const nl: vector.vec4 = vector.normalize(vector.add(
+        vector.mul(g, cam.columns[0]),
+        vector.mul(s, cam.columns[2]),
+    ));
+    const dl = vector.dotProduct(vector.negate(nl), cam.columns[3]);
+    const left_plane = Plane.init(vector.vec4ToVec3(nl), dl);
+
+    const camera_space_left: vector.vec4 = .{ g, 0, s, 0 };
+    const f_c = vector.normalize(vector.mul(1.0 / @sqrt(g * g + s * s), camera_space_left));
+    const f_camera = Plane.init(.{ f_c[0], f_c[1], f_c[2] }, f_c[3]);
+    const f_world = f_camera.transform(cam);
+
+    try std.testing.expect(float.equal(left_plane.parameterized[0], f_world.parameterized[0], 0.000001));
+    try std.testing.expect(float.equal(left_plane.parameterized[1], f_world.parameterized[1], 0.000001));
+    try std.testing.expect(float.equal(left_plane.parameterized[2], f_world.parameterized[2], 0.000001));
+    try std.testing.expect(float.equal(left_plane.parameterized[3], f_world.parameterized[3], 0.000001));
+}
+
 pub fn debug(self: Plane) void {
     std.debug.print("plane: ({d}, {d}, {d}| {d})\n", .{
         self.parameterized[0],
@@ -80,3 +113,5 @@ pub fn debug(self: Plane) void {
 const std = @import("std");
 const vector = @import("../vector.zig");
 const float = @import("../float.zig");
+const matrix = @import("../matrix.zig");
+const rotation = @import("../rotation.zig");
