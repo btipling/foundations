@@ -70,8 +70,7 @@ pub fn reflectPointAcross(self: Plane, p: vector.vec4) vector.vec4 {
 
 pub fn transform(self: Plane, m: matrix) Plane {
     const res: vector.vec4 = matrix.transformVector(matrix.transpose(matrix.inverse(m)), self.parameterized);
-    const n = vector.normalize(@as(vector.vec3, .{ res[0], res[1], res[2] }));
-    return init(n, res[3]);
+    return init(.{ res[0], res[1], res[2] }, res[3]);
 }
 
 test transform {
