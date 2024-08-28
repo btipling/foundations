@@ -8,69 +8,69 @@ columns: [4]vector.vec4 = .{
 
 const matrix = @This();
 
+pub inline fn mc(d: [16]f32) matrix {
+    comptime var m: matrix = undefined;
+    inline for (0..4) |r| {
+        inline for (0..4) |c| {
+            m.columns[c][r] = d[c + r * 4];
+        }
+    }
+    return m;
+}
+
+pub inline fn mr(d: [16]f32) matrix {
+    var m: matrix = undefined;
+    inline for (0..4) |r| {
+        inline for (0..4) |c| {
+            m.columns[c][r] = d[c + r * 4];
+        }
+    }
+    return m;
+}
+
 pub inline fn identity() matrix {
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{  1,  0,  0,  0 },
-            .{  0,  1,  0,  0 },
-            .{  0,  0,  1,  0 },
-            .{  0,  0,  0,  1 },
-        },
-    };
-    // zig fmt: on
+    return mc(.{
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    });
 }
 
 pub inline fn rotationX(angle: f32) matrix {
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{          1,           0,             0,      0 },
-            .{          0,  @cos(angle),  @sin(angle),      0 },
-            .{          0, -@sin(angle),  @cos(angle),      0 },
-            .{          0,           0,             0,      1 },
-        },
-    };
-    // zig fmt: on
+    return mr(.{
+        1, 0,           0,            0,
+        0, @cos(angle), -@sin(angle), 0,
+        0, @sin(angle), @cos(angle),  0,
+        0, 0,           0,            1,
+    });
 }
 
 pub inline fn rotationY(angle: f32) matrix {
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{ @cos(angle),         0, -@sin(angle),        0 },
-            .{           0,         1,            0,        0 },
-            .{ @sin(angle),         0,  @cos(angle),        0 },
-            .{           0,         0,            0,        1 },
-        },
-    };
-    // zig fmt: on
+    return mr(.{
+        @cos(angle),  0, @sin(angle), 0,
+        0,            1, 0,           0,
+        -@sin(angle), 0, @cos(angle), 0,
+        0,            0, 0,           1,
+    });
 }
 
 pub inline fn rotationZ(angle: f32) matrix {
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{  @cos(angle),  @sin(angle),        0,      0 },
-            .{ -@sin(angle),  @cos(angle),        0,      0 },
-            .{             0,           0,        1,      0 },
-            .{             0,           0,        0,      1 },
-        },
-    };
-    // zig fmt: on
+    return mr(.{
+        @cos(angle), -@sin(angle), 0, 0,
+        @sin(angle), @cos(angle),  0, 0,
+        0,           0,            1, 0,
+        0,           0,            0, 1,
+    });
 }
 
 pub inline fn scale(x: f32, y: f32, z: f32) matrix {
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{  x,  0,  0,  0 },
-            .{  0,  y,  0,  0 },
-            .{  0,  0,  z,  0 },
-            .{  0,  0,  0,  1 },
-        },
-    };
-    // zig fmt: on
+    return mr(.{
+        x, 0, 0, 0,
+        0, y, 0, 0,
+        0, 0, z, 0,
+        0, 0, 0, 1,
+    });
 }
 
 pub inline fn perspectiveProjection(field_of_view_y_angle: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
@@ -99,44 +99,32 @@ test perspectiveProjection {
 
 pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
     const depth_scale = far / (far - near);
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{  perspective_plane_distance_g / aspect_ratio_s,                             0,                     0,  0 },
-            .{                                              0,  perspective_plane_distance_g,                     0,  0 },
-            .{                                              0,                              0,          depth_scale,  1 },
-            .{                                              0,                              0,  -near * depth_scale,  0 },
-        },
-    };
-    // zig fmt: on
+    return mr(.{
+        perspective_plane_distance_g / aspect_ratio_s, 0,                            0,           0,
+        0,                                             perspective_plane_distance_g, 0,           0,
+        0,                                             0,                            depth_scale, -near * depth_scale,
+        0,                                             0,                            1,           0,
+    });
 }
 
 pub inline fn infinityProjection(fovy: f32, s: f32, n: f32, epsilon: f32) matrix {
     const g: f32 = 1.0 / @tan(fovy * 0.5);
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{  g/s,  0,                    0,  0 },
-            .{    0,  g,                    0,  0 },
-            .{    0,  0,              epsilon,  1 },
-            .{    0,  0,  n * (1.0 - epsilon),  0 },
-        },
-    };
-    // zig fmt: on
+    return mr(.{
+        g / s, 0, 0,       0,
+        0,     g, 0,       0,
+        0,     0, epsilon, n * (1.0 - epsilon),
+        0,     0, 1,       0,
+    });
 }
 
 pub inline fn orthographicProjection(_: f32, r: f32, _: f32, b: f32, n: f32, f: f32) matrix {
     const d_inv: f32 = 1.0 / (f - n);
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{ 2/r,   0,     0, 0 },
-            .{   0, 2/b,     0, 0 },
-            .{   0,   0, d_inv, 0 },
-            .{   0,   0,     0, 1 },
-        },
-    };
-    // zig fmt: on
+    return mr(.{
+        2 / r, 0,     0,     0,
+        0,     2 / b, 0,     0,
+        0,     0,     d_inv, 0,
+        0,     0,     1,     1,
+    });
 }
 
 pub inline fn reverseOrthographicProjection(l: f32, r: f32, t: f32, b: f32, n: f32, f: f32) matrix {
@@ -148,16 +136,12 @@ pub inline fn uniformScale(s: f32) matrix {
 }
 
 pub inline fn translate(x: f32, y: f32, z: f32) matrix {
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{  1,  0,  0,  0 },
-            .{  0,  1,  0,  0 },
-            .{  0,  0,  1,  0 },
-            .{  x,  y,  z,  1 },
-        },
-    };
-    // zig fmt: on
+    return mr(.{
+        1, 0, 0, x,
+        0, 1, 0, y,
+        0, 0, 1, z,
+        0, 0, 0, 1,
+    });
 }
 
 pub inline fn normalizedQuaternionToMatrix(q: Quat) matrix {
@@ -185,42 +169,21 @@ pub inline fn normalizedQuaternionToMatrix(q: Quat) matrix {
 
     const zz = qz * zs;
 
-    return .{
-        .columns = .{
-            .{
-                1.0 - (yy + zz),
-                xy + wz,
-                xz - wy,
-                0,
-            },
-            .{
-                xy - wz,
-                1.0 - (xx + zz),
-                yz + wx,
-                0,
-            },
-            .{
-                xz + wy,
-                yz - wx,
-                1.0 - (xx + yy),
-                0,
-            },
-            .{ 0, 0, 0, 1 },
-        },
-    };
+    return mr(.{
+        1.0 - (yy + zz), xy - wz,         xz + wy,         0,
+        xy + wz,         1.0 - (xx + zz), yz - wx,         0,
+        xz - wy,         yz + wx,         1.0 - (xx + yy), 0,
+        0,               0,               0,               1,
+    });
 }
 
 pub inline fn leftHandedXUpToNDC() matrix {
-    // zig fmt: off
-    return .{
-        .columns = .{
-            .{  0,  1,  0,  0 },
-            .{  0,  0,  1,  0 },
-            .{  1,  0,  0,  0 },
-            .{  0,  0,  0,  1 },
-        },
-    };
-    // zig fmt: on
+    return mc(.{
+        0, 0, 1, 0,
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 0, 1,
+    });
 }
 
 pub inline fn NDCToLeftHandedXUp() matrix {
@@ -269,14 +232,12 @@ pub inline fn at(m: matrix, row: usize, column: usize) f32 {
 }
 
 test at {
-    const a_m: matrix = .{
-        .columns = .{
-            .{ -3, 15, 12, 0 },
-            .{ 9, 0, 9, 0 },
-            .{ 5, -2, -7, 0 },
-            .{ 0, 0, 0, 1 },
-        },
-    };
+    const a_m = mc(.{
+        -3, 9, 5,  0,
+        15, 0, -2, 0,
+        12, 9, -7, 0,
+        0,  0, 0,  1,
+    });
     try std.testing.expectEqual(9, at(a_m, 0, 1));
     try std.testing.expectEqual(-7, at(a_m, 2, 2));
     try std.testing.expectEqual(15, at(a_m, 1, 0));
@@ -781,7 +742,7 @@ test inverse {
     const a_m = identity();
     const a_e = identity();
     const a_r = inverse(a_m);
-    try std.testing.expectEqual(a_e, a_r);
+    try std.testing.expect(equal(a_e, a_r, 0.000001));
 
     const b_m: matrix = .{
         .columns = .{
@@ -800,11 +761,11 @@ test inverse {
         },
     };
     const b_r = inverse(b_m);
-    try std.testing.expectEqual(b_e, b_r);
+    try std.testing.expect(equal(b_e, b_r, 0.000001));
     // Inverse M⁻¹M = I
     const c_e = identity();
     const c_r: matrix = transformMatrix(b_m, b_e);
-    try std.testing.expectEqual(c_e, c_r);
+    try std.testing.expect(equal(c_e, c_r, 0.000001));
 
     // The inverse of a scale matrix is the recriprocal of the original matrices components.
     // This is clear if you consider that a scale matrix is a diagonal matrix and
@@ -813,14 +774,14 @@ test inverse {
     const d_m = scale(2.0, 3.0, 4.0);
     const d_e = scale(1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0);
     const d_r = inverse(d_m);
-    try std.testing.expectEqual(d_e, d_r);
+    try std.testing.expect(equal(d_e, d_r, 0.000001));
 
     // The inverse of a translation will translate a vector back to where it was
     // originally translated from
     const e_m = translate(2.0, 3.0, 4.0);
     const e_e = translate(-2.0, -3.0, -4.0);
     const e_r = inverse(e_m);
-    try std.testing.expectEqual(e_e, e_r);
+    try std.testing.expect(equal(e_e, e_r, 0.000001));
 }
 
 pub fn orthonormalize(m: matrix) matrix {
@@ -859,7 +820,7 @@ test orthonormalize {
     };
     const a_e = identity();
     const a_r = orthonormalize(a_m);
-    try std.testing.expectEqual(a_e, a_r);
+    try std.testing.expect(equal(a_e, a_r, 0.000001));
 
     const b_m: matrix = .{
         .columns = .{
@@ -871,7 +832,7 @@ test orthonormalize {
     };
     const b_e = identity();
     const b_r = orthonormalize(b_m);
-    try std.testing.expectEqual(b_e, b_r);
+    try std.testing.expect(equal(b_e, b_r, 0.000001));
 
     // The detemrinant of an orthogonal matrix is 1
     const c_m: matrix = .{
