@@ -9,16 +9,6 @@ columns: [4]vector.vec4 = .{
 const matrix = @This();
 
 pub inline fn mc(d: [16]f32) matrix {
-    comptime var m: matrix = undefined;
-    inline for (0..4) |r| {
-        inline for (0..4) |c| {
-            m.columns[c][r] = d[c + r * 4];
-        }
-    }
-    return m;
-}
-
-pub inline fn mr(d: [16]f32) matrix {
     var m: matrix = undefined;
     inline for (0..4) |r| {
         inline for (0..4) |c| {
@@ -38,7 +28,7 @@ pub inline fn identity() matrix {
 }
 
 pub inline fn rotationX(angle: f32) matrix {
-    return mr(.{
+    return mc(.{
         1, 0,           0,            0,
         0, @cos(angle), -@sin(angle), 0,
         0, @sin(angle), @cos(angle),  0,
@@ -47,7 +37,7 @@ pub inline fn rotationX(angle: f32) matrix {
 }
 
 pub inline fn rotationY(angle: f32) matrix {
-    return mr(.{
+    return mc(.{
         @cos(angle),  0, @sin(angle), 0,
         0,            1, 0,           0,
         -@sin(angle), 0, @cos(angle), 0,
@@ -56,7 +46,7 @@ pub inline fn rotationY(angle: f32) matrix {
 }
 
 pub inline fn rotationZ(angle: f32) matrix {
-    return mr(.{
+    return mc(.{
         @cos(angle), -@sin(angle), 0, 0,
         @sin(angle), @cos(angle),  0, 0,
         0,           0,            1, 0,
@@ -65,7 +55,7 @@ pub inline fn rotationZ(angle: f32) matrix {
 }
 
 pub inline fn scale(x: f32, y: f32, z: f32) matrix {
-    return mr(.{
+    return mc(.{
         x, 0, 0, 0,
         0, y, 0, 0,
         0, 0, z, 0,
@@ -99,7 +89,7 @@ test perspectiveProjection {
 
 pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
     const depth_scale = far / (far - near);
-    return mr(.{
+    return mc(.{
         perspective_plane_distance_g / aspect_ratio_s, 0,                            0,           0,
         0,                                             perspective_plane_distance_g, 0,           0,
         0,                                             0,                            depth_scale, -near * depth_scale,
@@ -109,7 +99,7 @@ pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, asp
 
 pub inline fn infinityProjection(fovy: f32, s: f32, n: f32, epsilon: f32) matrix {
     const g: f32 = 1.0 / @tan(fovy * 0.5);
-    return mr(.{
+    return mc(.{
         g / s, 0, 0,       0,
         0,     g, 0,       0,
         0,     0, epsilon, n * (1.0 - epsilon),
@@ -119,7 +109,7 @@ pub inline fn infinityProjection(fovy: f32, s: f32, n: f32, epsilon: f32) matrix
 
 pub inline fn orthographicProjection(_: f32, r: f32, _: f32, b: f32, n: f32, f: f32) matrix {
     const d_inv: f32 = 1.0 / (f - n);
-    return mr(.{
+    return mc(.{
         2 / r, 0,     0,     0,
         0,     2 / b, 0,     0,
         0,     0,     d_inv, 0,
@@ -136,7 +126,7 @@ pub inline fn uniformScale(s: f32) matrix {
 }
 
 pub inline fn translate(x: f32, y: f32, z: f32) matrix {
-    return mr(.{
+    return mc(.{
         1, 0, 0, x,
         0, 1, 0, y,
         0, 0, 1, z,
@@ -169,7 +159,7 @@ pub inline fn normalizedQuaternionToMatrix(q: Quat) matrix {
 
     const zz = qz * zs;
 
-    return mr(.{
+    return mc(.{
         1.0 - (yy + zz), xy - wz,         xz + wy,         0,
         xy + wz,         1.0 - (xx + zz), yz - wx,         0,
         xz - wy,         yz + wx,         1.0 - (xx + yy), 0,
