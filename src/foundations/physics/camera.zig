@@ -392,7 +392,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
         pub fn updateMVP(self: *Self) void {
             if (self.use_camera) {
-                const m = math.matrix.inverse(self.camera_matrix);
+                const m = math.matrix.cameraInverse(self.camera_matrix);
                 self.mvp = math.matrix.transformMatrix(self.persp_m, m);
             } else self.mvp = self.persp_m;
             self.updatePrograms();

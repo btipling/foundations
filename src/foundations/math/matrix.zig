@@ -626,6 +626,36 @@ test transpose {
     try std.testing.expectEqual(a_e, a_r);
 }
 
+pub inline fn cameraInverse(m: matrix) matrix {
+    var r: matrix = .{
+        .columns = .{
+            .{
+                at(m, 0, 0),
+                at(m, 0, 1),
+                at(m, 0, 2),
+                0,
+            },
+            .{
+                at(m, 1, 0),
+                at(m, 1, 1),
+                at(m, 1, 2),
+                0,
+            },
+            .{
+                at(m, 2, 0),
+                at(m, 2, 1),
+                at(m, 2, 2),
+                0,
+            },
+            .{ 0, 0, 0, 0 },
+        },
+    };
+    var vPos: vector.vec4 = vector.negate(transformVector(r, m.columns[3]));
+    vPos[3] = 1;
+    r.columns[3] = vPos;
+    return r;
+}
+
 pub fn determinant(m: matrix) f32 {
     // det (M) = (n-1 ∑ j=0) Mₖⱼ (-1)ᵏ⁺ʲ|M(not(ₖⱼ))|
     // k = 0
