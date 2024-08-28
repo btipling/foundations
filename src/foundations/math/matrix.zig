@@ -656,6 +656,24 @@ pub inline fn cameraInverse(m: matrix) matrix {
     return r;
 }
 
+test cameraInverse {
+    const a: rotation.AxisAngle = .{
+        .angle = std.math.pi * 0.2,
+        .axis = .{ 1, 0, 0 },
+    };
+    const camera_orientation: rotation.Quat = rotation.axisAngleToQuat(a);
+    var m = identity();
+    m = transformMatrix(m, translate(
+        10,
+        3,
+        -0.5,
+    ));
+    m = transformMatrix(m, normalizedQuaternionToMatrix(camera_orientation));
+    const m_i = inverse(m);
+    const c_i = cameraInverse(m);
+    try std.testing.expect(equal(m_i, c_i, 0.000001));
+}
+
 pub fn determinant(m: matrix) f32 {
     // det (M) = (n-1 ∑ j=0) Mₖⱼ (-1)ᵏ⁺ʲ|M(not(ₖⱼ))|
     // k = 0
@@ -1030,6 +1048,15 @@ test toReducedRowEchelonForm {
     const e_res = toReducedRowEchelonForm(e_m, I);
     try std.testing.expectEqual(0, determinant(e_m));
     try std.testing.expect(e_res == null);
+}
+
+fn equal(m1: matrix, m2: matrix, epsilon: f32) bool {
+    inline for (0..4) |r| {
+        inline for (0..4) |c| {
+            if (!float.equal(at(m1, r, c), at(m2, r, c), epsilon)) return false;
+        }
+    }
+    return true;
 }
 
 const std = @import("std");
