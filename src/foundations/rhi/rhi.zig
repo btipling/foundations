@@ -168,8 +168,8 @@ fn defineStructData(comptime T: type, vao: u32, bind_index: usize, offset: usize
     inline for (0..fields.len) |i| c.glEnableVertexArrayAttrib(vao, @intCast(offset + i));
     inline for (fields, 0..) |field, i| {
         const len: usize = switch (@typeInfo(field.type)) {
-            .Vector => |v| v.len,
-            .Array => |a| a.len,
+            .vector => |v| v.len,
+            .array => |a| a.len,
             else => 1,
         };
         c.glVertexArrayAttribFormat(vao, @intCast(offset + i), @intCast(len), c.GL_FLOAT, c.GL_FALSE, @intCast(@offsetOf(T, field.name)));

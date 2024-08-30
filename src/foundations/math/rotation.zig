@@ -171,13 +171,13 @@ test rotateVectorWithNormalizedQuat {
 pub fn radiansToDegrees(r: anytype) f32 {
     const T = @TypeOf(r);
     switch (@typeInfo(T)) {
-        .Float => return @floatCast(r * (180.0 / std.math.pi)),
-        .ComptimeFloat => return @floatCast(r * (180.0 / std.math.pi)),
-        .Int => {
+        .float => return @floatCast(r * (180.0 / std.math.pi)),
+        .comptime_float => return @floatCast(r * (180.0 / std.math.pi)),
+        .int => {
             const rv: f32 = @floatFromInt(r);
             return rv * (180.0 / std.math.pi);
         },
-        .ComptimeInt => {
+        .comptime_int => {
             const rv: f32 = @floatFromInt(r);
             return rv * (180.0 / std.math.pi);
         },
@@ -193,13 +193,13 @@ test radiansToDegrees {
 pub fn degreesToRadians(d: anytype) f32 {
     const T = @TypeOf(d);
     switch (@typeInfo(T)) {
-        .Float => return @floatCast(d * (std.math.pi / 180.0)),
-        .ComptimeFloat => return @floatCast(d * (std.math.pi / 180.0)),
-        .Int => {
+        .float => return @floatCast(d * (std.math.pi / 180.0)),
+        .comptime_float => return @floatCast(d * (std.math.pi / 180.0)),
+        .int => {
             const rv: f32 = @floatFromInt(d);
             return rv * (std.math.pi / 180.0);
         },
-        .ComptimeInt => {
+        .comptime_int => {
             const rv: f32 = @floatFromInt(d);
             return rv * (std.math.pi / 180.0);
         },
@@ -215,17 +215,17 @@ test degreesToRadians {
 pub fn cartesian2DToPolarCoordinates(v: anytype) [2]f32 {
     const T = @TypeOf(v);
     const ti = @typeInfo(T);
-    if (ti != .Vector) @compileError("input must be a vector");
-    if (ti.Vector.len < 2) @compileError("input must be at least 2 dimensions");
-    const child_type = @typeInfo(T).Vector.child;
-    if (@typeInfo(child_type) == .Float or @typeInfo(child_type) == .ComptimeFloat) {
+    if (ti != .vector) @compileError("input must be a vector");
+    if (ti.vector.len < 2) @compileError("input must be at least 2 dimensions");
+    const child_type = @typeInfo(T).vector.child;
+    if (@typeInfo(child_type) == .float or @typeInfo(child_type) == .comptime_float) {
         const x: f32 = @floatCast(v[0]);
         const y: f32 = @floatCast(v[1]);
         const angle: f32 = std.math.atan2(y, x);
         const r: f32 = @sqrt(x * x + y * y);
         return .{ r, angle };
     }
-    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .ComptimeInt) {
+    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .comptime_int) {
         const x: f32 = @floatFromInt(v[0]);
         const y: f32 = @floatFromInt(v[1]);
         const angle: f32 = std.math.atan2(y, x);
@@ -245,10 +245,10 @@ test cartesian2DToPolarCoordinates {
 
 pub fn polarCoordinatesToCartesian2D(comptime T: type, coords: [2]f32) T {
     const ti = @typeInfo(T);
-    if (ti != .Vector) @compileError("return type must be a vector");
-    if (ti.Vector.len < 2) @compileError("return type must be at least 2 dimensions");
-    const child_type = @typeInfo(T).Vector.child;
-    if (@typeInfo(child_type) == .Float or @typeInfo(child_type) == .ComptimeFloat) {
+    if (ti != .vector) @compileError("return type must be a vector");
+    if (ti.vector.len < 2) @compileError("return type must be at least 2 dimensions");
+    const child_type = @typeInfo(T).vector.child;
+    if (@typeInfo(child_type) == .float or @typeInfo(child_type) == .comptime_float) {
         const r: f32 = coords[0];
         const angle: f32 = coords[1];
         const x: f32 = r * @cos(angle);
@@ -258,7 +258,7 @@ pub fn polarCoordinatesToCartesian2D(comptime T: type, coords: [2]f32) T {
         res[1] = y;
         return res;
     }
-    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .ComptimeInt) {
+    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .comptime_int) {
         const r: f32 = coords[0];
         const angle: f32 = coords[1];
         const x: f32 = r * @cos(angle);
@@ -283,10 +283,10 @@ test polarCoordinatesToCartesian2D {
 pub fn cartesian3DToSphericalCoordinates(v: anytype) [3]f32 {
     const T = @TypeOf(v);
     const ti = @typeInfo(T);
-    if (ti != .Vector) @compileError("input must be a vector");
-    if (ti.Vector.len < 3) @compileError("input must be at least 3 dimensions");
-    const child_type = @typeInfo(T).Vector.child;
-    if (@typeInfo(child_type) == .Float or @typeInfo(child_type) == .ComptimeFloat) {
+    if (ti != .vector) @compileError("input must be a vector");
+    if (ti.vector.len < 3) @compileError("input must be at least 3 dimensions");
+    const child_type = @typeInfo(T).vector.child;
+    if (@typeInfo(child_type) == .float or @typeInfo(child_type) == .comptime_float) {
         const x: f32 = @floatCast(v[0]);
         const y: f32 = @floatCast(v[1]);
         const z: f32 = @floatCast(v[2]);
@@ -296,7 +296,7 @@ pub fn cartesian3DToSphericalCoordinates(v: anytype) [3]f32 {
         const angle: f32 = std.math.atan2(y, x);
         return .{ p, z_angle, angle };
     }
-    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .ComptimeInt) {
+    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .comptime_int) {
         const x: f32 = @floatFromInt(v[0]);
         const y: f32 = @floatFromInt(v[1]);
         const z: f32 = @floatFromInt(v[2]);
@@ -321,10 +321,10 @@ test cartesian3DToSphericalCoordinates {
 
 pub fn sphericalCoordinatesToCartesian3D(comptime T: type, coords: [3]f32) T {
     const ti = @typeInfo(T);
-    if (ti != .Vector) @compileError("return type must be a vector");
-    if (ti.Vector.len < 3) @compileError("return type must be at least 3 dimensions");
-    const child_type = @typeInfo(T).Vector.child;
-    if (@typeInfo(child_type) == .Float or @typeInfo(child_type) == .ComptimeFloat) {
+    if (ti != .vector) @compileError("return type must be a vector");
+    if (ti.vector.len < 3) @compileError("return type must be at least 3 dimensions");
+    const child_type = @typeInfo(T).vector.child;
+    if (@typeInfo(child_type) == .float or @typeInfo(child_type) == .comptime_float) {
         const p: f32 = coords[0];
         const angle_z: f32 = coords[1];
         const angle: f32 = coords[2];
@@ -338,7 +338,7 @@ pub fn sphericalCoordinatesToCartesian3D(comptime T: type, coords: [3]f32) T {
         res[2] = z;
         return res;
     }
-    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .ComptimeInt) {
+    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .comptime_int) {
         const p: f32 = coords[0];
         const angle_z: f32 = coords[1];
         const angle: f32 = coords[2];

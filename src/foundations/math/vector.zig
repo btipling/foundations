@@ -28,10 +28,10 @@ pub inline fn mul(m: anytype, v: anytype) @TypeOf(v) {
     const T = @TypeOf(v);
     const K = @TypeOf(m);
     switch (@typeInfo(T)) {
-        .Vector => |VT| switch (@typeInfo(K)) {
-            .Float, .Int, .ComptimeFloat, .ComptimeInt => return v * @as(T, @splat(m)),
+        .vector => |VT| switch (@typeInfo(K)) {
+            .float, .int, .comptime_float, .comptime_int => return v * @as(T, @splat(m)),
             // This isn't mathmatically correct for vector math, correct vector multiplication is the dot product or the cross product
-            .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector length") else return v * m,
+            .vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector length") else return v * m,
             else => @compileError("first input must be a vector or scalar"),
         },
         else => {},
@@ -63,10 +63,10 @@ pub inline fn div(v: anytype, d: anytype) @TypeOf(v) {
     const T = @TypeOf(v);
     const K = @TypeOf(d);
     switch (@typeInfo(T)) {
-        .Vector => |VT| switch (@typeInfo(K)) {
-            .Float, .Int, .ComptimeFloat, .ComptimeInt => return v / @as(T, @splat(d)),
+        .vector => |VT| switch (@typeInfo(K)) {
+            .float, .int, .comptime_float, .comptime_int => return v / @as(T, @splat(d)),
             // This isn't mathmatically correct for vector math, vectors can't be divided by other vectors
-            .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v / d,
+            .vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v / d,
             else => @compileError("second input must be a vector or scalar"),
         },
         else => {},
@@ -87,10 +87,10 @@ pub inline fn add(v1: anytype, v2: anytype) @TypeOf(v1) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
     switch (@typeInfo(T)) {
-        .Vector => |VT| switch (@typeInfo(K)) {
+        .vector => |VT| switch (@typeInfo(K)) {
             // This isn't mathmatically correct for vector math, vectors and scalars cannot be added together
-            .Float, .Int, .ComptimeFloat, .ComptimeInt => return v1 + @as(T, @splat(v2)),
-            .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v1 + v2,
+            .float, .int, .comptime_float, .comptime_int => return v1 + @as(T, @splat(v2)),
+            .vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v1 + v2,
             else => @compileError("second input must be a vector or scalar"),
         },
         else => {},
@@ -111,10 +111,10 @@ pub inline fn sub(v1: anytype, v2: anytype) @TypeOf(v1) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
     switch (@typeInfo(T)) {
-        .Vector => |VT| switch (@typeInfo(K)) {
+        .vector => |VT| switch (@typeInfo(K)) {
             // This isn't mathmatically correct for vector math, vectors and scalars cannot be subtracted
-            .Float, .Int, .ComptimeFloat, .ComptimeInt => return v1 - @as(T, @splat(v2)),
-            .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v1 - v2,
+            .float, .int, .comptime_float, .comptime_int => return v1 - @as(T, @splat(v2)),
+            .vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v1 - v2,
             else => @compileError("second input must be a vector or scalar"),
         },
         else => {},
@@ -136,8 +136,8 @@ pub inline fn vecFromPointAToPointB(v1: anytype, v2: anytype) @TypeOf(v1) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
     switch (@typeInfo(T)) {
-        .Vector => |VT| switch (@typeInfo(K)) {
-            .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v2 - v1,
+        .vector => |VT| switch (@typeInfo(K)) {
+            .vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return v2 - v1,
             else => @compileError("second input must be a vector"),
         },
         else => {},
@@ -153,7 +153,7 @@ test vecFromPointAToPointB {
 
 pub inline fn magnitude(v: anytype) @TypeOf(v[0]) {
     switch (@typeInfo(@TypeOf(v))) {
-        .Vector => {
+        .vector => {
             return @sqrt(@reduce(.Add, v * v));
         },
         else => {},
@@ -170,7 +170,7 @@ test magnitude {
 // To avoid a costly square root calculation when we can
 pub inline fn lengthSquared(v: anytype) @TypeOf(v[0]) {
     switch (@typeInfo(@TypeOf(v))) {
-        .Vector => {
+        .vector => {
             return @reduce(.Add, v * v);
         },
         else => {},
@@ -185,7 +185,7 @@ test lengthSquared {
 }
 
 pub inline fn normalize(v: anytype) @TypeOf(v) {
-    if (@typeInfo(@TypeOf(v)) != .Vector) @compileError("input must be a vector");
+    if (@typeInfo(@TypeOf(v)) != .vector) @compileError("input must be a vector");
     return div(v, magnitude(v));
 }
 
@@ -217,8 +217,8 @@ pub inline fn dotProduct(v1: anytype, v2: anytype) @TypeOf(v1[0]) {
     const T = @TypeOf(v1);
     const K = @TypeOf(v2);
     switch (@typeInfo(T)) {
-        .Vector => |VT| switch (@typeInfo(K)) {
-            .Vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return @reduce(.Add, v1 * v2),
+        .vector => |VT| switch (@typeInfo(K)) {
+            .vector => |VM| if (VT.len != VM.len) @compileError("mismatched vector dimension") else return @reduce(.Add, v1 * v2),
             else => @compileError("second input must be a vector"),
         },
         else => {},
@@ -329,14 +329,14 @@ pub inline fn angleBetweenVectors(a: anytype, b: anytype) f32 {
     const T = @TypeOf(a);
     const K = @TypeOf(b);
     if (T != K) @compileError("a and b must be the same type");
-    if (@typeInfo(T) != .Vector) @compileError("inputs must be vectors");
-    const child_type = @typeInfo(T).Vector.child;
-    if (@typeInfo(child_type) == .Float or @typeInfo(child_type) == .ComptimeFloat) {
+    if (@typeInfo(T) != .vector) @compileError("inputs must be vectors");
+    const child_type = @typeInfo(T).vector.child;
+    if (@typeInfo(child_type) == .float or @typeInfo(child_type) == .comptime_float) {
         const dp = dotProduct(a, b);
         const divisor = magnitude(a) * magnitude(b);
         return @floatCast(std.math.acos(@min(1.0, @max(-1.0, dp / divisor))));
     }
-    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .ComptimeInt) {
+    if (@typeInfo(child_type) == .It or @typeInfo(child_type) == .comptime_int) {
         const dp = dotProduct(a, b);
         const divisor = magnitude(a) * magnitude(b);
         return @floatFromInt(std.math.acos(@min(1.0, @max(-1.0, dp / divisor))));
@@ -353,9 +353,9 @@ test angleBetweenVectors {
 
 pub inline fn isZeroVector(v: anytype) bool {
     const ti = @typeInfo(@TypeOf(v));
-    if (ti != .Vector) @compileError("input must be a vector");
+    if (ti != .vector) @compileError("input must be a vector");
     var i: usize = 0;
-    while (i < ti.Vector.len) : (i += 1) if (!float.equal(v[i], 0.0, 0.00001)) return false;
+    while (i < ti.vector.len) : (i += 1) if (!float.equal(v[i], 0.0, 0.00001)) return false;
     return true;
 }
 
@@ -372,8 +372,8 @@ pub inline fn crossProduct(p: anytype, q: anytype) @TypeOf(p) {
     const T = @TypeOf(p);
     const K = @TypeOf(q);
     switch (@typeInfo(T)) {
-        .Vector => |VT| switch (@typeInfo(K)) {
-            .Vector => |VM| {
+        .vector => |VT| switch (@typeInfo(K)) {
+            .vector => |VM| {
                 if (VT.len != VM.len and VT.len < 3) @compileError("cross product must be for 3D vector");
                 var result: T = std.mem.zeroes(T);
                 result[0] = p[1] * q[2] - p[2] * q[1];
@@ -458,8 +458,8 @@ pub inline fn decomposeProjection(p: anytype, q: anytype) struct { proj: @TypeOf
     const T = @TypeOf(p);
     const K = @TypeOf(q);
     switch (@typeInfo(T)) {
-        .Vector => |VT| switch (@typeInfo(K)) {
-            .Vector => |VM| {
+        .vector => |VT| switch (@typeInfo(K)) {
+            .vector => |VM| {
                 if (VT.len != VM.len) @compileError("vectors must be of the same length");
                 const ql = lengthSquared(q);
                 const proj = mul(dotProduct(p, q) / ql, q);
