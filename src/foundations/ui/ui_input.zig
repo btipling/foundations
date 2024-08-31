@@ -49,12 +49,12 @@ fn cursorPosCallback(_: ?*c.GLFWwindow, x: f64, y: f64) callconv(.C) void {
     inp.coord_x = inp.mouse_y;
     inp.coord_z = inp.mouse_x;
 }
-var num_keys: usize = 0;
+var input_num_keys: usize = 0;
 
 pub fn keyPressed(key: c_int) bool {
     const inp = input orelse return false;
-    if (num_keys != inp.num_keys) {
-        num_keys = inp.num_keys;
+    if (input_num_keys != inp.num_keys) {
+        input_num_keys = inp.num_keys;
     }
     if (inp.num_keys == 0) return false;
     for (0..inp.num_keys) |i| if (inp.keys[i] == key) return true;

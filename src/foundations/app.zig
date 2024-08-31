@@ -1,7 +1,7 @@
-scenes: *scenes,
+app_scenes: *scenes,
 nav: ui.nav,
 allocator: std.mem.Allocator,
-config: *config,
+app_config: *config,
 
 const App = @This();
 
@@ -19,24 +19,24 @@ pub fn init(allocator: std.mem.Allocator) *App {
     errdefer ui.deinit();
     rhi.init(allocator);
     errdefer rhi.deinit();
-    const d = scenes.init(allocator, cfg);
-    errdefer d.deinit();
+    const app_scenes = scenes.init(allocator, cfg);
+    errdefer app_scenes.deinit();
 
     app = allocator.create(App) catch @panic("OOM");
     app.* = .{
-        .scenes = d,
+        .app_scenes = app_scenes,
         .allocator = allocator,
-        .nav = ui.nav.init(d),
-        .config = cfg,
+        .nav = ui.nav.init(app_scenes),
+        .app_config = cfg,
     };
     return app;
 }
 
 pub fn deinit(self: *App) void {
-    self.scenes.deinit();
+    self.app_scenes.deinit();
     rhi.deinit();
     ui.deinit();
-    self.config.deinit();
+    self.app_config.deinit();
     self.allocator.destroy(self);
 }
 
@@ -44,8 +44,8 @@ pub fn run(self: *App) void {
     while (!ui.shouldClose()) {
         rhi.beginFrame();
         ui.beginFrame();
-        self.scenes.updateScene(ui.glfw.getTime());
-        self.scenes.drawScene(ui.glfw.getTime());
+        self.app_scenes.updateScene(ui.glfw.getTime());
+        self.app_scenes.drawScene(ui.glfw.getTime());
         self.nav.draw();
         ui.endFrame();
     }

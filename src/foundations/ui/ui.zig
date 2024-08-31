@@ -92,11 +92,11 @@ pub fn beginFrame() void {
     c.igNewFrame();
 }
 
-pub fn helpers() ui_helpers {
+pub fn get_helpers() ui_helpers {
     return ui.helpers;
 }
 
-pub fn state() *ui_state {
+pub fn get_state() *ui_state {
     return ui.state;
 }
 

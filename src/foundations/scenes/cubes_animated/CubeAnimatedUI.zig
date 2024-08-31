@@ -16,7 +16,7 @@ pub fn init() ca_ui {
 }
 
 pub fn draw(self: *ca_ui) void {
-    const btn_dims = ui.helpers().buttonSize();
+    const btn_dims = ui.get_helpers().buttonSize();
     _ = btn_dims;
     const vp: *c.ImGuiViewport = c.igGetMainViewport();
     const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);

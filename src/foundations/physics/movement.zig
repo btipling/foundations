@@ -1,6 +1,6 @@
 start: math.vector.vec3,
 step: physics.step,
-direction: direction,
+movement_direction: direction,
 
 const movement = @This();
 
@@ -25,7 +25,7 @@ pub fn init(start: math.vector.vec3, t: f64, dir: direction) movement {
             .current_time = t,
         },
         .start = start,
-        .direction = dir,
+        .movement_direction = dir,
     };
 }
 

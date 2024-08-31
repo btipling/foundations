@@ -111,7 +111,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
         fn integrate(self: *Self, t: f64) void {
             self.movement.step = self.integrator.timestep(self.movement.step, t);
-            switch (self.movement.direction) {
+            switch (self.movement.movement_direction) {
                 .forward => self.moveCameraForward(),
                 .backward => self.moveCameraBackward(),
                 .left => self.moveCameraLeft(),

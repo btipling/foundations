@@ -23,7 +23,7 @@ pub fn init() vma_ui {
 }
 
 pub fn draw(self: *vma_ui) void {
-    const btn_dims = ui.helpers().buttonSize();
+    const btn_dims = ui.get_helpers().buttonSize();
     const vp: *c.ImGuiViewport = c.igGetMainViewport();
     const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
@@ -43,7 +43,7 @@ pub fn draw(self: *vma_ui) void {
 }
 
 fn drawPoints(self: *vma_ui) void {
-    const scale = ui.helpers().scale;
+    const scale = ui.get_helpers().scale;
     const selectable_dims = c.ImVec2_ImVec2_Float(100 * scale, 20 * scale).*;
     const flags = c.ImGuiSelectableFlags_SpanAvailWidth | c.ImGuiSelectableFlags_AllowDoubleClick;
     c.igSetNextItemOpen(true, c.ImGuiCond_Once);
@@ -73,7 +73,7 @@ fn drawPoints(self: *vma_ui) void {
 }
 
 fn drawVectors(self: *vma_ui) void {
-    const scale = ui.helpers().scale;
+    const scale = ui.get_helpers().scale;
     const selectable_dims = c.ImVec2_ImVec2_Float(100 * scale, 20 * scale).*;
     const flags = c.ImGuiSelectableFlags_SpanAvailWidth | c.ImGuiSelectableFlags_AllowDoubleClick;
     if (c.igTreeNode_Str("vectors")) {
