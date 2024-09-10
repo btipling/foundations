@@ -178,7 +178,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                         new_cursor_coords[2],
                         self.cursor_pos[2],
                         cursor_horizontal_sensitivity,
-                        true,
                     );
                 }
                 {
@@ -188,7 +187,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                         self.cursor_pos[0],
                         new_cursor_coords[0],
                         cursor_vertical_sensitivity,
-                        false,
                     );
                 }
             } else {
@@ -199,7 +197,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                         new_cursor_coords[2],
                         self.cursor_pos[2],
                         cursor_horizontal_sensitivity,
-                        true,
                     );
                 }
                 {
@@ -209,7 +206,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                         self.cursor_pos[0],
                         new_cursor_coords[0],
                         cursor_vertical_sensitivity,
-                        false,
                     );
                 }
                 self.camera_orientation = math.rotation.multiplyQuaternions(
@@ -229,7 +225,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 0,
                 0.01,
                 pitch_sensitivity,
-                false,
             );
         }
 
@@ -240,7 +235,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 0.01,
                 0,
                 pitch_sensitivity,
-                false,
             );
         }
 
@@ -251,7 +245,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 0,
                 0.01,
                 turn_sensitivity,
-                true,
             );
         }
 
@@ -262,7 +255,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 0.01,
                 0,
                 turn_sensitivity,
-                true,
             );
         }
 
@@ -273,7 +265,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 0,
                 0.01,
                 roll_sensitivity,
-                false,
             );
         }
 
@@ -284,22 +275,17 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 0.01,
                 0,
                 roll_sensitivity,
-                false,
             );
         }
 
         fn updateOrientation(
             orientation: math.rotation.Quat,
             axis: math.vector.vec3,
-            new_pos: f32,
-            current_pos: f32,
+            a_pos: f32,
+            b_pos: f32,
             sensitivity: f32,
-            debug: bool,
         ) math.rotation.Quat {
-            const change = (new_pos - current_pos) * sensitivity;
-            if (debug and change != 0) {
-                std.debug.print("change: + should go clockwise: ({d})\n", .{change});
-            }
+            const change = (a_pos - b_pos) * sensitivity;
             const a: math.rotation.AxisAngle = .{
                 .angle = change,
                 .axis = axis,
