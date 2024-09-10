@@ -63,9 +63,9 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
     while (i < num_vertices) : (i += 1) {
         if (i > 2) {
             // Complete circle every with previous index and origin
-            indices[indices_index] = 0;
-            indices_index += 1;
             indices[indices_index] = last_index;
+            indices_index += 1;
+            indices[indices_index] = 0;
             indices_index += 1;
         }
         p[i] = current_vector;

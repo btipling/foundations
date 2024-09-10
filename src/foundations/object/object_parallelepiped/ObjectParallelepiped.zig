@@ -95,12 +95,12 @@ fn addIndicesPerSurface(
 ) usize {
     // first surface triangle
     indices[offset] = far_corner0;
-    indices[offset + 1] = shared_1;
-    indices[offset + 2] = shared_0;
+    indices[offset + 2] = shared_1;
+    indices[offset + 1] = shared_0;
     // second surface triangle
     indices[offset + 3] = far_corner1;
-    indices[offset + 4] = shared_0;
-    indices[offset + 5] = shared_1;
+    indices[offset + 5] = shared_0;
+    indices[offset + 4] = shared_1;
     return offset + 6;
 }
 

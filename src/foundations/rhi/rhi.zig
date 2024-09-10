@@ -51,7 +51,7 @@ pub fn init(allocator: std.mem.Allocator) void {
     c.glDebugMessageCallback(&messageCallback, null);
     c.glClipControl(c.GL_LOWER_LEFT, c.GL_NEGATIVE_ONE_TO_ONE);
     c.glEnable(c.GL_DEPTH_TEST);
-    c.glFrontFace(c.GL_CCW);
+    c.glFrontFace(c.GL_CW);
     c.glEnable(c.GL_CULL_FACE);
     c.glClipControl(c.GL_LOWER_LEFT, c.GL_ZERO_TO_ONE);
     rhi = allocator.create(RHI) catch @panic("OOM");

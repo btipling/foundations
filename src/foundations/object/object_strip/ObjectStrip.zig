@@ -11,8 +11,8 @@ pub fn init(
     // zig fmt: off
     const positions: [3][3]f32 = .{
         .{ -1,  0, -1, },
-        .{ -1,  0,  1, },
         .{  1,  0,  0, },
+        .{ -1,  0,  1, },
     };
     // zig fmt: on
     var indices: [3]u32 = .{ 0, 1, 2 };

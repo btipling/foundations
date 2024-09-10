@@ -38,10 +38,10 @@ pub inline fn rotationX(angle: f32) matrix {
 
 pub inline fn rotationY(angle: f32) matrix {
     return mc(.{
-        @cos(angle),  0, @sin(angle), 0,
-        0,            1, 0,           0,
-        -@sin(angle), 0, @cos(angle), 0,
-        0,            0, 0,           1,
+        @cos(angle), 0, -@sin(angle), 0,
+        0,           1, 0,            0,
+        @sin(angle), 0, @cos(angle),  0,
+        0,           0, 0,            1,
     });
 }
 
