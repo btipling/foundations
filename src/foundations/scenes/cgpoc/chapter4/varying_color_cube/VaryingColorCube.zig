@@ -1,25 +1,24 @@
 allocator: std.mem.Allocator,
-grid: *scenery.Grid = undefined,
 parallelepiped: object.object = .{ .norender = .{} },
-view_camera: *physics.camera.Camera(*PlainRedCube, physics.Integrator(physics.SmoothDeceleration)),
+view_camera: *physics.camera.Camera(*VaryingColorCube, physics.Integrator(physics.SmoothDeceleration)),
 
-const PlainRedCube = @This();
+const VaryingColorCube = @This();
 
-const vertex_shader: []const u8 = @embedFile("plain_red_cube_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("plain_red_cube_frag.glsl");
+const vertex_shader: []const u8 = @embedFile("varying_color_cube_vertex.glsl");
+const frag_shader: []const u8 = @embedFile("varying_color_cube_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
-        .name = "Plain Red Cube",
+        .name = "Varying Color Cube",
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlainRedCube {
-    const pd = allocator.create(PlainRedCube) catch @panic("OOM");
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *VaryingColorCube {
+    const pd = allocator.create(VaryingColorCube) catch @panic("OOM");
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
-    const cam = physics.camera.Camera(*PlainRedCube, physics.Integrator(physics.SmoothDeceleration)).init(
+    const cam = physics.camera.Camera(*VaryingColorCube, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         cfg,
         pd,
@@ -28,30 +27,23 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlainRedCube {
         0,
     );
     errdefer cam.deinit(allocator);
-    const grid = scenery.Grid.init(allocator);
-    errdefer grid.deinit();
 
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
-        .grid = grid,
     };
     pd.renderParallepiped();
-    cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
     return pd;
 }
 
-pub fn deinit(self: *PlainRedCube, allocator: std.mem.Allocator) void {
-    self.grid.deinit();
-    self.grid = undefined;
+pub fn deinit(self: *VaryingColorCube, allocator: std.mem.Allocator) void {
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
 }
 
-pub fn draw(self: *PlainRedCube, dt: f64) void {
+pub fn draw(self: *VaryingColorCube, dt: f64) void {
     self.view_camera.update(dt);
-    self.grid.draw(dt);
     {
         const objects: [1]object.object = .{
             self.parallelepiped,
@@ -60,14 +52,14 @@ pub fn draw(self: *PlainRedCube, dt: f64) void {
     }
 }
 
-pub fn updateCamera(_: *PlainRedCube) void {}
+pub fn updateCamera(_: *VaryingColorCube) void {}
 
-pub fn updateParallepipedTransform(_: *PlainRedCube, prog: u32) void {
+pub fn updateParallepipedTransform(_: *VaryingColorCube, prog: u32) void {
     const m = math.matrix.identity();
     rhi.setUniformMatrix(prog, "f_cube_transform", m);
 }
 
-pub fn renderParallepiped(self: *PlainRedCube) void {
+pub fn renderParallepiped(self: *VaryingColorCube) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, vertex_shader, frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;
@@ -104,4 +96,3 @@ const math = @import("../../../../math/math.zig");
 const object = @import("../../../../object/object.zig");
 const config = @import("../../../../config/config.zig");
 const physics = @import("../../../../physics/physics.zig");
-const scenery = @import("../../../../scenery/scenery.zig");
