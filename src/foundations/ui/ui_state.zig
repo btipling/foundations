@@ -44,6 +44,7 @@ pub const scene_nav_type = enum {
     shape,
     math,
     color,
+    cgpoc,
 };
 
 pub const scene_nav_info = struct {

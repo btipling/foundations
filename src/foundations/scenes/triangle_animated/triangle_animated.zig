@@ -11,7 +11,7 @@ const frag_shader: []const u8 = @embedFile("frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
-        .nav_type = .shape,
+        .nav_type = .cgpoc,
         .name = "Triangle animated",
     };
 }
