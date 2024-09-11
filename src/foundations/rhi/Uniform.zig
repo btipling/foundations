@@ -16,5 +16,9 @@ pub fn setUniformMatrix(self: Uniform, m: math.matrix) void {
     c.glProgramUniformMatrix4fv(@intCast(self.program), self.location, 1, c.GL_FALSE, &v);
 }
 
+pub fn setUniform1f(self: Uniform, v: f32) void {
+    c.glProgramUniform1f(@intCast(self.program), self.location, @floatCast(v));
+}
+
 const c = @import("../c.zig").c;
 const math = @import("../math/math.zig");

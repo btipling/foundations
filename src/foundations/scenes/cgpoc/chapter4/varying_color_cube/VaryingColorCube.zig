@@ -1,10 +1,15 @@
 allocator: std.mem.Allocator,
 parallelepiped: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*VaryingColorCube, physics.Integrator(physics.SmoothDeceleration)),
+time_uinform: rhi.Uniform = undefined,
 
 const VaryingColorCube = @This();
 
-const vertex_shader: []const u8 = @embedFile("varying_color_cube_vertex.glsl");
+const num_cubes = 100_000;
+
+const transforms: []const u8 = @embedFile("transforms.glsl");
+const vertex_main: []const u8 = @embedFile("varying_color_cube_vertex_main.glsl");
+const vertex_header: []const u8 = @embedFile("varying_color_cube_vertex_header.glsl");
 const frag_shader: []const u8 = @embedFile("varying_color_cube_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -16,6 +21,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator, cfg: *config) *VaryingColorCube {
     const pd = allocator.create(VaryingColorCube) catch @panic("OOM");
+
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
     const cam = physics.camera.Camera(*VaryingColorCube, physics.Integrator(physics.SmoothDeceleration)).init(
@@ -43,6 +49,7 @@ pub fn deinit(self: *VaryingColorCube, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *VaryingColorCube, dt: f64) void {
+    self.time_uinform.setUniform1f(@floatCast(dt));
     self.view_camera.update(dt);
     {
         const objects: [1]object.object = .{
@@ -61,20 +68,26 @@ pub fn updateParallepipedTransform(_: *VaryingColorCube, prog: u32) void {
 
 pub fn renderParallepiped(self: *VaryingColorCube) void {
     const prog = rhi.createProgram();
+    const vertex_shader = std.mem.concat(self.allocator, u8, &[_][]const u8{
+        vertex_header,
+        transforms,
+        vertex_main,
+    }) catch @panic("OOM");
+    defer self.allocator.free(vertex_shader);
     rhi.attachShaders(prog, vertex_shader, frag_shader);
-    var i_datas: [1]rhi.instanceData = undefined;
-    {
-        var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
-        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
-        const i_data: rhi.instanceData = .{
-            .t_column0 = cm.columns[0],
-            .t_column1 = cm.columns[1],
-            .t_column2 = cm.columns[2],
-            .t_column3 = cm.columns[3],
-            .color = .{ 1, 0, 1, 1 },
-        };
-        i_datas[0] = i_data;
+    var cm = math.matrix.identity();
+    cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
+    cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
+    const i_data: rhi.instanceData = .{
+        .t_column0 = cm.columns[0],
+        .t_column1 = cm.columns[1],
+        .t_column2 = cm.columns[2],
+        .t_column3 = cm.columns[3],
+        .color = .{ 1, 0, 1, 1 },
+    };
+    var i_datas: [num_cubes]rhi.instanceData = undefined;
+    for (0..num_cubes) |i| {
+        i_datas[i] = i_data;
     }
     const parallelepiped: object.object = .{
         .parallelepiped = object.Parallelepiped.init(
@@ -86,6 +99,7 @@ pub fn renderParallepiped(self: *VaryingColorCube) void {
     self.updateParallepipedTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
     self.parallelepiped = parallelepiped;
+    self.time_uinform = rhi.Uniform.init(prog, "f_tf");
 }
 
 const std = @import("std");
