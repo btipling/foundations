@@ -1,4 +1,4 @@
-mesh: rhi.mesh,
+mesh: rhi.Mesh,
 vertex_data_size: usize = 0,
 instance_data_stride: usize = 0,
 instanced: bool = false,

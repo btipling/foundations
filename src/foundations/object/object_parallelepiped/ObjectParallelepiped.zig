@@ -1,4 +1,4 @@
-mesh: rhi.mesh,
+mesh: rhi.Mesh,
 vertex_data_size: usize,
 instance_data_stride: usize,
 attribute_data: [num_vertices]rhi.attributeData,

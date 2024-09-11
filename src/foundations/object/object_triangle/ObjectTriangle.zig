@@ -1,4 +1,4 @@
-mesh: rhi.mesh,
+mesh: rhi.Mesh,
 
 const Triangle = @This();
 

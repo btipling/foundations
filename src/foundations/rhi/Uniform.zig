@@ -1,0 +1,20 @@
+program: u32,
+location: c.GLint,
+
+const Uniform = @This();
+
+pub fn init(prog: u32, name: []const u8) Uniform {
+    const loc: c.GLint = c.glGetUniformLocation(@intCast(prog), @ptrCast(name));
+    return .{
+        .program = prog,
+        .location = loc,
+    };
+}
+
+pub fn setUniformMatrix(self: Uniform, m: math.matrix) void {
+    const v = math.matrix.array(m);
+    c.glProgramUniformMatrix4fv(@intCast(self.program), self.location, 1, c.GL_FALSE, &v);
+}
+
+const c = @import("../c.zig").c;
+const math = @import("../math/math.zig");

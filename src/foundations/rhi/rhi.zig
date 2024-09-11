@@ -241,13 +241,13 @@ pub fn drawArrays(program: u32, vao: u32, count: usize) void {
     c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
 }
 
-pub fn drawElements(m: mesh, element: mesh.element) void {
+pub fn drawElements(m: Mesh, element: Mesh.element) void {
     c.glUseProgram(@intCast(m.program));
     c.glBindVertexArray(m.vao);
     c.glDrawElements(element.primitive, @intCast(element.count), element.format, null);
 }
 
-pub fn drawInstances(m: mesh, instanced: mesh.instanced) void {
+pub fn drawInstances(m: Mesh, instanced: Mesh.instanced) void {
     c.glUseProgram(@intCast(m.program));
     c.glBindVertexArray(m.vao);
     c.glDrawElementsInstanced(
@@ -301,7 +301,7 @@ pub fn deletePrimitive(program: u32, vao: u32, buffer: u32) void {
     if (buffer != 0) c.glDeleteBuffers(1, @ptrCast(&buffer));
 }
 
-pub fn deleteMesh(m: mesh) void {
+pub fn deleteMesh(m: Mesh) void {
     c.glDeleteProgram(m.program);
     c.glDeleteVertexArrays(1, @ptrCast(&m.vao));
     switch (m.instance_type) {
@@ -311,7 +311,7 @@ pub fn deleteMesh(m: mesh) void {
     if (m.buffer != 0) c.glDeleteBuffers(1, @ptrCast(&m.buffer));
 }
 
-pub fn deleteMeshVao(m: mesh) void {
+pub fn deleteMeshVao(m: Mesh) void {
     c.glDeleteVertexArrays(1, @ptrCast(&m.vao));
     switch (m.instance_type) {
         .element => |e| c.glDeleteBuffers(1, e.ebo),
@@ -329,7 +329,7 @@ pub fn drawObjects(objects: []const object.object) void {
     }
 }
 
-pub fn drawMesh(m: mesh) void {
+pub fn drawMesh(m: Mesh) void {
     if (m.linear_colorspace) {
         c.glEnable(c.GL_FRAMEBUFFER_SRGB);
     }
@@ -387,4 +387,5 @@ const ui = @import("../ui/ui.zig");
 const math = @import("../math/math.zig");
 const object = @import("../object/object.zig");
 
-pub const mesh = @import("./mesh.zig");
+pub const Mesh = @import("./Mesh.zig");
+pub const Uniform = @import("./Uniform.zig");
