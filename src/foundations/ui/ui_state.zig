@@ -1,8 +1,6 @@
 pub const scene_type = enum(usize) {
-    point,
     point_rotating,
     triangle,
-    triangle_animated,
     cubes_animated,
     math_vector_arithmetic,
     linear_colorspace,
@@ -17,13 +15,14 @@ pub const scene_type = enum(usize) {
     cylinder_animated,
     cone_animated,
     frustum_planes,
+    // CGPOC
+    point,
+    triangle_animated,
 };
 
 pub const scenes = union(scene_type) {
-    point: *point,
     point_rotating: *point_rotating,
     triangle: *triangle,
-    triangle_animated: *triangle_animated,
     cubes_animated: *CubeAnimated,
     math_vector_arithmetic: *math_vector_arithmetic,
     linear_colorspace: *linear_colorspace,
@@ -38,6 +37,9 @@ pub const scenes = union(scene_type) {
     cylinder_animated: *CylinderAnimated,
     cone_animated: *ConeAnimated,
     frustum_planes: *FrustumPlanes,
+    // CGPOC
+    point: *point,
+    triangle_animated: *triangle_animated,
 };
 
 pub const scene_nav_type = enum {
