@@ -38,8 +38,8 @@ pub const scenes = union(scene_type) {
     cone_animated: *ConeAnimated,
     frustum_planes: *FrustumPlanes,
     // CGPOC
-    point: *point,
-    triangle_animated: *triangle_animated,
+    point: *cgpoc.point,
+    triangle_animated: *cgpoc.triangle_animated,
 };
 
 pub const scene_nav_type = enum {
@@ -54,10 +54,8 @@ pub const scene_nav_info = struct {
     name: []const u8,
 };
 
-const point = @import("../scenes/point/point.zig");
 const point_rotating = @import("../scenes/point_rotating/point_rotating.zig");
 const triangle = @import("../scenes/triangle/triangle.zig");
-const triangle_animated = @import("../scenes/triangle_animated/triangle_animated.zig");
 const math_vector_arithmetic = @import("../scenes/math_vector_arithmetic/math_vector_arithmetic.zig");
 const linear_colorspace = @import("../scenes/linear_colorspace/linear_colorspace.zig");
 const CubeAnimated = @import("../scenes/cubes_animated/CubeAnimated.zig");
@@ -72,3 +70,5 @@ const PlaneDistance = @import("../scenes/plane_distance/PlaneDistance.zig");
 const CylinderAnimated = @import("../scenes/cylinder_animated/CylinderAnimated.zig");
 const ConeAnimated = @import("../scenes/cone_animated/ConeAnimated.zig");
 const FrustumPlanes = @import("../scenes/frustum_planes/FrustumPlanes.zig");
+// CGPOC
+const cgpoc = @import("../scenes/cgpoc/cgpoc.zig");

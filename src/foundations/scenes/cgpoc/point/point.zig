@@ -53,6 +53,6 @@ pub fn draw(self: *Point, _: f64) void {
 }
 
 const std = @import("std");
-const rhi = @import("../../rhi/rhi.zig");
-const ui = @import("../../ui/ui.zig");
-const config = @import("../../config/config.zig");
+const rhi = @import("../../../rhi/rhi.zig");
+const ui = @import("../../../ui/ui.zig");
+const config = @import("../../../config/config.zig");

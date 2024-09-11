@@ -59,7 +59,7 @@ pub fn draw(self: *AnimatedTriangle, frame_time: f64) void {
 }
 
 const std = @import("std");
-const rhi = @import("../../rhi/rhi.zig");
-const ui = @import("../../ui/ui.zig");
-const config = @import("../../config/config.zig");
-const math = @import("../../math/math.zig");
+const rhi = @import("../../../rhi/rhi.zig");
+const ui = @import("../../../ui/ui.zig");
+const config = @import("../../../config/config.zig");
+const math = @import("../../../math/math.zig");
