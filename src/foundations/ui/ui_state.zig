@@ -1,20 +1,23 @@
 pub const scene_type = enum(usize) {
+    // shapes
     point_rotating,
     triangle,
     cubes_animated,
-    math_vector_arithmetic,
-    linear_colorspace,
     circle,
     sphere,
+    cylinder_animated,
+    cone_animated,
+    // math
+    math_vector_arithmetic,
     line,
     unit_circle,
     barycentric_coordinates,
     line_distance,
     look_at,
     plane_distance,
-    cylinder_animated,
-    cone_animated,
     frustum_planes,
+    // color
+    linear_colorspace,
     // CGPOC
     point,
     triangle_animated,
@@ -24,22 +27,25 @@ pub const scene_type = enum(usize) {
 };
 
 pub const scenes = union(scene_type) {
+    // shapes
     point_rotating: *scenes_list.shapes.Point,
     triangle: *scenes_list.shapes.Triangle,
     cubes_animated: *scenes_list.shapes.Cube,
-    math_vector_arithmetic: *scenes_list.math.MathVectorArithmetic,
-    linear_colorspace: *scenes_list.color.LinearColorspace,
     circle: *scenes_list.shapes.Circle,
     sphere: *scenes_list.shapes.Sphere,
+    cylinder_animated: *scenes_list.shapes.Cylinder,
+    cone_animated: *scenes_list.shapes.Cone,
+    // math
+    math_vector_arithmetic: *scenes_list.math.MathVectorArithmetic,
     line: *scenes_list.math.Line,
     unit_circle: *scenes_list.math.UnitCircle,
     barycentric_coordinates: *scenes_list.math.BarycentricCoordinates,
     line_distance: *scenes_list.math.LineDistance,
     look_at: *scenes_list.math.LookAt,
     plane_distance: *scenes_list.math.PlaneDistance,
-    cylinder_animated: *scenes_list.shapes.Cylinder,
-    cone_animated: *scenes_list.shapes.Cone,
     frustum_planes: *scenes_list.math.FrustumPlanes,
+    // color
+    linear_colorspace: *scenes_list.color.LinearColorspace,
     // CGPOC
     point: *scenes_list.cgpoc.point,
     triangle_animated: *scenes_list.cgpoc.triangle_animated,
