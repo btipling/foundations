@@ -23,7 +23,7 @@ pub fn draw(self: *ca_ui) void {
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
     const size = c.ImVec2_ImVec2_Float(550, 680);
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
-    _ = c.igBegin("Animated cylinders", null, 0);
+    _ = c.igBegin("Pyramid", null, 0);
     _ = c.igSliderFloat("scale", &self.scale, 0.01, 1, "%.3f", c.ImGuiSliderFlags_None);
     if (c.igTreeNode_Str("rotation")) {
         _ = c.igSliderFloat("x", &self.x_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
