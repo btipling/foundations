@@ -13,7 +13,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Scenes {
         .allocator = allocator,
         .cfg = cfg,
     };
-    scenes.initScene(ui.ui_state.scene_type.four_varying_color_cube);
+    scenes.initScene(ui.ui_state.scene_type.four_cube_and_pyramid);
     return scenes;
 }
 

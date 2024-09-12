@@ -20,6 +20,7 @@ pub const scene_type = enum(usize) {
     triangle_animated,
     four_plane_red_cube,
     four_varying_color_cube,
+    four_cube_and_pyramid,
 };
 
 pub const scenes = union(scene_type) {
@@ -44,6 +45,7 @@ pub const scenes = union(scene_type) {
     triangle_animated: *cgpoc.triangle_animated,
     four_plane_red_cube: *cgpoc.chapter4.PlainRedCube,
     four_varying_color_cube: *cgpoc.chapter4.VaryingColorCube,
+    four_cube_and_pyramid: *cgpoc.chapter4.CubeAndPyramid,
 };
 
 pub const scene_nav_type = enum {

@@ -1,30 +1,30 @@
 allocator: std.mem.Allocator,
 parallelepiped: object.object = .{ .norender = .{} },
-view_camera: *physics.camera.Camera(*VaryingColorCube, physics.Integrator(physics.SmoothDeceleration)),
+view_camera: *physics.camera.Camera(*CubeAndPyramid, physics.Integrator(physics.SmoothDeceleration)),
 time_uinform: rhi.Uniform = undefined,
 
-const VaryingColorCube = @This();
+const CubeAndPyramid = @This();
 
-const num_cubes = 100_000;
+const num_cubes = 1;
 
 const transforms: []const u8 = @embedFile("../../../../shaders/transforms.glsl");
-const vertex_main: []const u8 = @embedFile("varying_color_cube_vertex_main.glsl");
-const vertex_header: []const u8 = @embedFile("varying_color_cube_vertex_header.glsl");
-const frag_shader: []const u8 = @embedFile("varying_color_cube_frag.glsl");
+const vertex_main: []const u8 = @embedFile("cube_and_pyramid_vertex_main.glsl");
+const vertex_header: []const u8 = @embedFile("cube_and_pyramid_vertex_header.glsl");
+const frag_shader: []const u8 = @embedFile("cube_and_pyramid_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
-        .name = "Varying Color Cube",
+        .name = "Cube And Pyramid",
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *VaryingColorCube {
-    const pd = allocator.create(VaryingColorCube) catch @panic("OOM");
+pub fn init(allocator: std.mem.Allocator, cfg: *config) *CubeAndPyramid {
+    const pd = allocator.create(CubeAndPyramid) catch @panic("OOM");
 
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
-    const cam = physics.camera.Camera(*VaryingColorCube, physics.Integrator(physics.SmoothDeceleration)).init(
+    const cam = physics.camera.Camera(*CubeAndPyramid, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         cfg,
         pd,
@@ -42,13 +42,13 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *VaryingColorCube {
     return pd;
 }
 
-pub fn deinit(self: *VaryingColorCube, allocator: std.mem.Allocator) void {
+pub fn deinit(self: *CubeAndPyramid, allocator: std.mem.Allocator) void {
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
 }
 
-pub fn draw(self: *VaryingColorCube, dt: f64) void {
+pub fn draw(self: *CubeAndPyramid, dt: f64) void {
     self.time_uinform.setUniform1f(@floatCast(dt));
     self.view_camera.update(dt);
     {
@@ -59,14 +59,14 @@ pub fn draw(self: *VaryingColorCube, dt: f64) void {
     }
 }
 
-pub fn updateCamera(_: *VaryingColorCube) void {}
+pub fn updateCamera(_: *CubeAndPyramid) void {}
 
-pub fn updateParallepipedTransform(_: *VaryingColorCube, prog: u32) void {
+pub fn updateParallepipedTransform(_: *CubeAndPyramid, prog: u32) void {
     const m = math.matrix.identity();
     rhi.setUniformMatrix(prog, "f_cube_transform", m);
 }
 
-pub fn renderParallepiped(self: *VaryingColorCube) void {
+pub fn renderParallepiped(self: *CubeAndPyramid) void {
     const prog = rhi.createProgram();
     const vertex_shader = std.mem.concat(self.allocator, u8, &[_][]const u8{
         vertex_header,
