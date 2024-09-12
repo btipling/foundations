@@ -72,7 +72,7 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     s_os = addSurface(&rv_data, p0, p4, p1, s_os);
     i_os = addIndicesPerSurface(&indices, 9, 10, 11, i_os);
     // top x_pos_y_pos
-    _ = addBottomSurface(&rv_data, p1, p2, p3, p4, s_os);
+    _ = addBottomSurface(&rv_data, p1, p2, p4, p3, s_os);
     i_os = addBottomIndicesPerSurface(&indices, 12, 13, 14, 15, i_os);
     return .{ .data = rv_data, .indices = indices };
 }
@@ -129,12 +129,12 @@ fn addBottomIndicesPerSurface(
 ) usize {
     // first surface triangle
     indices[offset] = far_corner0;
-    indices[offset + 2] = shared_1;
     indices[offset + 1] = shared_0;
+    indices[offset + 2] = shared_1;
     // second surface triangle
     indices[offset + 3] = far_corner1;
-    indices[offset + 5] = shared_0;
     indices[offset + 4] = shared_1;
+    indices[offset + 5] = shared_0;
     return offset + 6;
 }
 
