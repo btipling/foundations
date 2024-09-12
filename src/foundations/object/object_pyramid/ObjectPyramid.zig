@@ -9,11 +9,10 @@ const Pyramid = @This();
 const num_vertices: usize = 24;
 const num_indices: usize = 36; // because normals
 
-pub const pp: math.geometry.Parallelepiped = .{
-    .v0 = .{ 1, 0, 0 },
-    .v1 = .{ 0, 1, 0 },
-    .v2 = .{ 0, 0, 1 },
+// zig fmt: off
+pub const pp: math.geometry.Pyramid = .{
 };
+// zig fmt: on
 
 pub fn init(
     program: u32,
@@ -53,39 +52,74 @@ pub fn updateInstanceAt(self: Pyramid, index: usize, instance_data: rhi.instance
 fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
     var rv_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
-    const origin: [3]f32 = .{ 0, 0, 0 };
-    const p0 = origin;
-    const p1 = pp.v0;
-    const p2 = pp.v1;
-    const p3 = pp.v2;
-    const p4 = math.vector.add(p1, p3);
-    const p5 = math.vector.add(p1, p2);
-    const p6 = math.vector.add(p2, p3);
-    const p7 = math.vector.add(p1, p6);
+    const p0: [3]f32 = .{ 1, 0, 0 };
+    const p1: [3]f32 = .{ 0, -1, 1 };
+    const p2: [3]f32 = .{ 0, 1, 1 };
+    const p3: [3]f32 = .{ 0, 1, -1 };
+    const p4: [3]f32 = .{ 0, -1, -1 };
     var s_os: usize = 0;
     var i_os: usize = 0;
     // front origin_z_pos
-    s_os = addSurface(&rv_data, p0, p1, p3, p4, s_os);
-    i_os = addIndicesPerSurface(&indices, 0, 1, 2, 3, i_os);
+    s_os = addSurface(&rv_data, p0, p1, p2, s_os);
+    i_os = addIndicesPerSurface(&indices, 0, 1, 2, i_os);
     // left origin_x_pos
-    s_os = addSurface(&rv_data, p2, p5, p0, p1, s_os);
-    i_os = addIndicesPerSurface(&indices, 4, 5, 6, 7, i_os);
+    s_os = addSurface(&rv_data, p0, p2, p3, s_os);
+    i_os = addIndicesPerSurface(&indices, 3, 4, 5, i_os);
     // back y_pos_z_pos
-    s_os = addSurface(&rv_data, p6, p7, p2, p5, s_os);
-    i_os = addIndicesPerSurface(&indices, 8, 9, 10, 11, i_os);
+    s_os = addSurface(&rv_data, p0, p3, p4, s_os);
+    i_os = addIndicesPerSurface(&indices, 6, 7, 8, i_os);
     // right z_pos_x_pos
-    s_os = addSurface(&rv_data, p3, p4, p6, p7, s_os);
-    i_os = addIndicesPerSurface(&indices, 12, 13, 14, 15, i_os);
-    // bottom origin_y_pos
-    s_os = addSurface(&rv_data, p0, p3, p2, p6, s_os);
-    i_os = addIndicesPerSurface(&indices, 16, 17, 18, 19, i_os);
+    s_os = addSurface(&rv_data, p0, p4, p1, s_os);
+    i_os = addIndicesPerSurface(&indices, 9, 10, 11, i_os);
     // top x_pos_y_pos
-    _ = addSurface(&rv_data, p4, p1, p7, p5, s_os);
-    i_os = addIndicesPerSurface(&indices, 20, 21, 22, 23, i_os);
+    _ = addBottomSurface(&rv_data, p1, p2, p3, p4, s_os);
+    i_os = addBottomIndicesPerSurface(&indices, 12, 13, 14, 15, i_os);
     return .{ .data = rv_data, .indices = indices };
 }
 
 fn addIndicesPerSurface(
+    indices: *[num_indices]u32,
+    origin: u32,
+    left: u32,
+    right: u32,
+    offset: usize,
+) usize {
+    // first surface triangle
+    indices[offset] = origin;
+    indices[offset + 2] = left;
+    indices[offset + 1] = right;
+    return offset + 3;
+}
+
+fn addSurface(
+    s_data: *[num_vertices]rhi.attributeData,
+    sp0: math.vector.vec3,
+    sp1: math.vector.vec3,
+    sp2: math.vector.vec3,
+    offset: usize,
+) usize {
+    const e1 = math.vector.sub(sp0, sp1);
+    const e2 = math.vector.sub(sp0, sp2);
+    const n = math.vector.normalize(math.vector.crossProduct(e1, e2));
+    s_data[offset] = .{
+        .position = sp0,
+        .color = color.debug_color,
+        .normals = n,
+    };
+    s_data[offset + 1] = .{
+        .position = sp1,
+        .color = color.debug_color,
+        .normals = n,
+    };
+    s_data[offset + 2] = .{
+        .position = sp2,
+        .color = color.debug_color,
+        .normals = n,
+    };
+    return offset + 3;
+}
+
+fn addBottomIndicesPerSurface(
     indices: *[num_indices]u32,
     far_corner0: u32,
     shared_0: u32,
@@ -104,7 +138,7 @@ fn addIndicesPerSurface(
     return offset + 6;
 }
 
-fn addSurface(
+fn addBottomSurface(
     s_data: *[num_vertices]rhi.attributeData,
     sp0: math.vector.vec3,
     sp1: math.vector.vec3,
