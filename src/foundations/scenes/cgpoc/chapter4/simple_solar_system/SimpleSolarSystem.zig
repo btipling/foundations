@@ -1,8 +1,13 @@
 allocator: std.mem.Allocator,
 pyramid: object.object = .{ .norender = .{} },
+pyramid_uniform: rhi.Uniform = .empty,
 parallelepiped: object.object = .{ .norender = .{} },
+parallelepiped_uniform: rhi.Uniform = .empty,
 cylinder: object.object = .{ .norender = .{} },
+cylinder_uniform: rhi.Uniform = .empty,
 view_camera: *physics.camera.Camera(*SimpleSolarSystem, physics.Integrator(physics.SmoothDeceleration)),
+stack: [5]math.matrix = undefined,
+current_stack_index: u8 = 0,
 
 const SimpleSolarSystem = @This();
 
@@ -39,6 +44,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *SimpleSolarSystem {
         .allocator = allocator,
         .view_camera = cam,
     };
+    pd.stack[0] = math.matrix.identity();
     pd.renderPyramid();
     pd.renderParallepiped();
     pd.renderCylinder();
@@ -52,6 +58,10 @@ pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
+    self.stack[self.current_stack_index].debug("huh?");
+    self.pyramid_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
+    self.parallelepiped_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
+    self.cylinder_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
     self.view_camera.update(dt);
     {
         const objects: [3]object.object = .{
@@ -65,17 +75,10 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
 
 pub fn updateCamera(_: *SimpleSolarSystem) void {}
 
-pub fn updatePyramidTransform(_: *SimpleSolarSystem, prog: u32) void {
-    const m = math.matrix.identity();
-    rhi.setUniformMatrix(prog, "f_transform", m);
-}
-
 pub fn renderPyramid(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
     rhi.attachShaders(prog, pyramid_vertex_shader, frag_shader);
-    var cm = math.matrix.identity();
-    cm = math.matrix.transformMatrix(cm, math.matrix.translate(5, 4, 3));
-    cm = math.matrix.transformMatrix(cm, math.matrix.scale(1.5, 1, 1));
+    const cm = math.matrix.identity();
     const i_data: rhi.instanceData = .{
         .t_column0 = cm.columns[0],
         .t_column1 = cm.columns[1],
@@ -94,14 +97,9 @@ pub fn renderPyramid(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.updatePyramidTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
     self.pyramid = pyramid;
-}
-
-pub fn updateParallepipedTransform(_: *SimpleSolarSystem, prog: u32) void {
-    const m = math.matrix.identity();
-    rhi.setUniformMatrix(prog, "f_transform", m);
+    self.pyramid_uniform = rhi.Uniform.init(prog, "f_pyramid_transform");
 }
 
 pub fn renderParallepiped(self: *SimpleSolarSystem) void {
@@ -109,9 +107,7 @@ pub fn renderParallepiped(self: *SimpleSolarSystem) void {
     rhi.attachShaders(prog, cube_vertex_shader, frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;
     {
-        var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, 0, -1));
-        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
+        const cm = math.matrix.identity();
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
             .t_column1 = cm.columns[1],
@@ -128,14 +124,9 @@ pub fn renderParallepiped(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.updateParallepipedTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
     self.parallelepiped = parallelepiped;
-}
-
-pub fn updateCylinderTransform(_: *SimpleSolarSystem, prog: u32) void {
-    const m = math.matrix.identity();
-    rhi.setUniformMatrix(prog, "f_transform", m);
+    self.parallelepiped_uniform = rhi.Uniform.init(prog, "f_cube_transform");
 }
 
 pub fn renderCylinder(self: *SimpleSolarSystem) void {
@@ -143,9 +134,7 @@ pub fn renderCylinder(self: *SimpleSolarSystem) void {
     rhi.attachShaders(prog, cylinder_vertex_shader, frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;
     {
-        var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.translate(3, 2, -1));
-        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(0.5));
+        const cm = math.matrix.identity();
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
             .t_column1 = cm.columns[1],
@@ -162,9 +151,9 @@ pub fn renderCylinder(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.updateParallepipedTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
     self.cylinder = cylinder;
+    self.cylinder_uniform = rhi.Uniform.init(prog, "f_cylinder_transform");
 }
 
 const std = @import("std");

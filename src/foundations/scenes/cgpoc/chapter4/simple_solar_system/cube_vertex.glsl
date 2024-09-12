@@ -9,7 +9,7 @@ layout (location = 6) in vec4 f_t_column3;
 layout (location = 7) in vec4 f_i_color;
 
 uniform mat4 f_mvp;
-uniform float f_transform;
+uniform mat4 f_cube_transform;
 
 out vec4 f_varying_color;
 
@@ -21,7 +21,7 @@ void main()
         f_t_column2,
         f_t_column3
     );
-    vec4 f_pos = f_mvp *  f_transform * vec4(f_position.xyz, 1.0);
+    vec4 f_pos = f_mvp * f_cube_transform * f_transform * vec4(f_position.xyz, 1.0);
     gl_Position = f_pos;
     f_varying_color = ((vec4(f_position.xyz, 1.0) * 2.0) - 1.0) * 0.5 + vec4(0.5, 0.5, 0.5, 0.5);
 }
