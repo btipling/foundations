@@ -25,6 +25,7 @@ pub const scene_type = enum(usize) {
     four_plane_red_cube,
     four_varying_color_cube,
     four_cube_and_pyramid,
+    four_simple_solar_system,
 };
 
 pub const scenes = union(scene_type) {
@@ -54,6 +55,7 @@ pub const scenes = union(scene_type) {
     four_plane_red_cube: *scenes_list.cgpoc.chapter4.PlainRedCube,
     four_varying_color_cube: *scenes_list.cgpoc.chapter4.VaryingColorCube,
     four_cube_and_pyramid: *scenes_list.cgpoc.chapter4.CubeAndPyramid,
+    four_simple_solar_system: *scenes_list.cgpoc.chapter4.SimpleSolarSystem,
 };
 
 pub const scene_nav_type = enum {
