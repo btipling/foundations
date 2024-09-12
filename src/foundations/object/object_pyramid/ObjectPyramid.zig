@@ -4,7 +4,7 @@ instance_data_stride: usize,
 attribute_data: [num_vertices]rhi.attributeData,
 indices: [num_indices]u32,
 
-const Parallelepied = @This();
+const Pyramid = @This();
 
 const num_vertices: usize = 24;
 const num_indices: usize = 36; // because normals
@@ -19,7 +19,7 @@ pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
     blend: bool,
-) Parallelepied {
+) Pyramid {
     var d = data();
 
     const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data);
@@ -46,7 +46,7 @@ pub fn init(
         .indices = d.indices,
     };
 }
-pub fn updateInstanceAt(self: Parallelepied, index: usize, instance_data: rhi.instanceData) void {
+pub fn updateInstanceAt(self: Pyramid, index: usize, instance_data: rhi.instanceData) void {
     rhi.updateInstanceData(self.mesh.buffer, self.vertex_data_size, self.instance_data_stride, index, instance_data);
 }
 

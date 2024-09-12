@@ -1,5 +1,5 @@
 allocator: std.mem.Allocator,
-parallelepiped: object.object = .{ .norender = .{} },
+pyramid: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*CubeAndPyramid, physics.Integrator(physics.SmoothDeceleration)),
 time_uinform: rhi.Uniform = undefined,
 
@@ -53,7 +53,7 @@ pub fn draw(self: *CubeAndPyramid, dt: f64) void {
     self.view_camera.update(dt);
     {
         const objects: [1]object.object = .{
-            self.parallelepiped,
+            self.pyramid,
         };
         rhi.drawObjects(objects[0..]);
     }
@@ -61,7 +61,7 @@ pub fn draw(self: *CubeAndPyramid, dt: f64) void {
 
 pub fn updateCamera(_: *CubeAndPyramid) void {}
 
-pub fn updateParallepipedTransform(_: *CubeAndPyramid, prog: u32) void {
+pub fn updatePyramidTransform(_: *CubeAndPyramid, prog: u32) void {
     const m = math.matrix.identity();
     rhi.setUniformMatrix(prog, "f_cube_transform", m);
 }
@@ -89,16 +89,16 @@ pub fn renderParallepiped(self: *CubeAndPyramid) void {
     for (0..num_cubes) |i| {
         i_datas[i] = i_data;
     }
-    const parallelepiped: object.object = .{
-        .parallelepiped = object.Parallelepiped.init(
+    const pyramid: object.object = .{
+        .pyramid = object.Pyramid.init(
             prog,
             i_datas[0..],
             false,
         ),
     };
-    self.updateParallepipedTransform(prog);
+    self.updatePyramidTransform(prog);
     self.view_camera.addProgram(prog, "f_mvp");
-    self.parallelepiped = parallelepiped;
+    self.pyramid = pyramid;
     self.time_uinform = rhi.Uniform.init(prog, "f_tf");
 }
 
