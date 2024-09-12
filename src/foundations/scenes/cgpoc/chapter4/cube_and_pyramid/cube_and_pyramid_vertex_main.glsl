@@ -2,9 +2,9 @@
 void main()
 {
     float f_i = gl_InstanceID + f_tf;
-    float f_a = sin(203.0 * f_i/8000.0) * 403.0;
-    float f_b = sin(301.0 * f_i/4001.0) * 401.0;
-    float f_c = sin(400.0 * f_i/6003.0) * 405.0;
+    float f_a = sin(1.0 * f_i) * 3.0;
+    float f_b = sin(2.0 * f_i) * 1.0;
+    float f_c = sin(3.0 * f_i) * 5.0;
     mat4 f_transform = mat4(
         f_t_column0,
         f_t_column1,
@@ -18,5 +18,5 @@ void main()
     mat4 newM_matrix = f_localTrans * f_localRotX * f_localRotY * f_localRotZ;
     vec4 f_pos = f_mvp * newM_matrix * f_transform * vec4(f_position.xyz, 1.0);
     gl_Position = f_pos;
-    f_varying_color = ((vec4(f_position.xyz, 1.0) * 2.0) - 1.0) * 0.5 + vec4(0.5, 0.5, 0.5, 0.5);
+    f_varying_color = (vec4(f_position.xyz, 1.0) - 0.5) * 0.5 + vec4(0.5, 0.5, 0.5, 0.5);
 }
