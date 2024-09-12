@@ -6,7 +6,7 @@ parallelepiped_uniform: rhi.Uniform = .empty,
 cylinder: object.object = .{ .norender = .{} },
 cylinder_uniform: rhi.Uniform = .empty,
 view_camera: *physics.camera.Camera(*SimpleSolarSystem, physics.Integrator(physics.SmoothDeceleration)),
-stack: [5]math.matrix = undefined,
+stack: [10]math.matrix = undefined,
 current_stack_index: u8 = 0,
 
 const SimpleSolarSystem = @This();
@@ -57,11 +57,51 @@ pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
+fn pushStack(self: *SimpleSolarSystem, m: math.matrix) void {
+    const next_stack_index = self.current_stack_index + 1;
+    self.stack[next_stack_index] = math.matrix.transformMatrix(self.stack[self.current_stack_index], m);
+    self.current_stack_index = next_stack_index;
+}
+
+fn popStack(self: *SimpleSolarSystem) void {
+    self.current_stack_index -= 1;
+}
+
+fn resetStack(self: *SimpleSolarSystem) void {
+    self.current_stack_index = 0;
+}
+
 pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
-    self.stack[self.current_stack_index].debug("huh?");
+    // pyramid == sun
+    // sun position already at 0
+    // sun rotation
+    self.pushStack(math.matrix.rotationX(@floatCast(dt)));
     self.pyramid_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
+    self.popStack(); // remove sun rotation
+    // cube == planet
+    self.pushStack(math.matrix.translate(
+        0,
+        @sin(@as(f32, @floatCast(dt))) * 8.0,
+        @cos(@as(f32, @floatCast(dt))) * 8.0,
+    ));
+    self.pushStack(math.matrix.rotationX(@as(f32, @floatCast(dt)) * -2.0));
+    self.pushStack(math.matrix.translate(
+        -0.5,
+        -0.5,
+        -0.5,
+    ));
     self.parallelepiped_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
+    self.popStack(); // remove earth rotation
+    self.popStack();
+    // cylinder == moon
+    self.pushStack(math.matrix.translate(
+        @cos(@as(f32, @floatCast(dt))) * 1.5,
+        0,
+        @sin(@as(f32, @floatCast(dt))) * 1.5,
+    ));
+    self.pushStack(math.matrix.rotationY(@as(f32, @floatCast(dt)) * 2.0));
     self.cylinder_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
+    self.resetStack();
     self.view_camera.update(dt);
     {
         const objects: [3]object.object = .{
@@ -134,7 +174,8 @@ pub fn renderCylinder(self: *SimpleSolarSystem) void {
     rhi.attachShaders(prog, cylinder_vertex_shader, frag_shader);
     var i_datas: [1]rhi.instanceData = undefined;
     {
-        const cm = math.matrix.identity();
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(0.5));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
             .t_column1 = cm.columns[1],
