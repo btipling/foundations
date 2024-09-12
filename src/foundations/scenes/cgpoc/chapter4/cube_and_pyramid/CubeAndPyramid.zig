@@ -77,7 +77,7 @@ pub fn renderParallepiped(self: *CubeAndPyramid) void {
     rhi.attachShaders(prog, vertex_shader, frag_shader);
     var cm = math.matrix.identity();
     cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
-    cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
+    cm = math.matrix.transformMatrix(cm, math.matrix.scale(2, 1, 1));
     const i_data: rhi.instanceData = .{
         .t_column0 = cm.columns[0],
         .t_column1 = cm.columns[1],
