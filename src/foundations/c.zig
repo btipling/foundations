@@ -7,5 +7,7 @@ pub const c = @cImport({
     @cInclude("cimgui.h");
     @cInclude("cimgui_impl.h");
     @cInclude("stb_perlin.h");
+    @cDefine("STB_INCLUDE_LINE_GLSL", {});
+    @cInclude("stb_include.h");
     @cDefine("STB_PERLIN_IMPLEMENTATION", {});
 });

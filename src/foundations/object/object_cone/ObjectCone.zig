@@ -1,4 +1,4 @@
-mesh: rhi.mesh,
+mesh: rhi.Mesh,
 
 const Cone = @This();
 const num_triangles: usize = 256;

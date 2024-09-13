@@ -1,3 +1,3 @@
-mesh: rhi.mesh = .{ .instance_type = .{ .norender = {} } },
+mesh: rhi.Mesh = .{ .instance_type = .{ .norender = {} } },
 
 const rhi = @import("../../rhi/rhi.zig");

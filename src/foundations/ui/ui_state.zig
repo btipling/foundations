@@ -1,49 +1,68 @@
 pub const scene_type = enum(usize) {
-    point,
+    // shapes
     point_rotating,
     triangle,
-    triangle_animated,
     cubes_animated,
-    math_vector_arithmetic,
-    linear_colorspace,
     circle,
     sphere,
+    cylinder_animated,
+    cone_animated,
+    pyramid,
+    // math
+    math_vector_arithmetic,
     line,
     unit_circle,
     barycentric_coordinates,
     line_distance,
     look_at,
     plane_distance,
-    cylinder_animated,
-    cone_animated,
     frustum_planes,
+    // color
+    linear_colorspace,
+    // CGPOC
+    point,
+    triangle_animated,
+    four_plane_red_cube,
+    four_varying_color_cube,
+    four_cube_and_pyramid,
+    four_simple_solar_system,
 };
 
 pub const scenes = union(scene_type) {
-    point: *point,
-    point_rotating: *point_rotating,
-    triangle: *triangle,
-    triangle_animated: *triangle_animated,
-    cubes_animated: *CubeAnimated,
-    math_vector_arithmetic: *math_vector_arithmetic,
-    linear_colorspace: *linear_colorspace,
-    circle: *circle,
-    sphere: *Sphere,
-    line: *line,
-    unit_circle: *UnitCircle,
-    barycentric_coordinates: *BarycentricCoordinates,
-    line_distance: *LineDistance,
-    look_at: *LookAt,
-    plane_distance: *PlaneDistance,
-    cylinder_animated: *CylinderAnimated,
-    cone_animated: *ConeAnimated,
-    frustum_planes: *FrustumPlanes,
+    // shapes
+    point_rotating: *scenes_list.shapes.Point,
+    triangle: *scenes_list.shapes.Triangle,
+    cubes_animated: *scenes_list.shapes.Cube,
+    circle: *scenes_list.shapes.Circle,
+    sphere: *scenes_list.shapes.Sphere,
+    cylinder_animated: *scenes_list.shapes.Cylinder,
+    cone_animated: *scenes_list.shapes.Cone,
+    pyramid: *scenes_list.shapes.Pyramid,
+    // math
+    math_vector_arithmetic: *scenes_list.math.MathVectorArithmetic,
+    line: *scenes_list.math.Line,
+    unit_circle: *scenes_list.math.UnitCircle,
+    barycentric_coordinates: *scenes_list.math.BarycentricCoordinates,
+    line_distance: *scenes_list.math.LineDistance,
+    look_at: *scenes_list.math.LookAt,
+    plane_distance: *scenes_list.math.PlaneDistance,
+    frustum_planes: *scenes_list.math.FrustumPlanes,
+    // color
+    linear_colorspace: *scenes_list.color.LinearColorspace,
+    // CGPOC
+    point: *scenes_list.cgpoc.point,
+    triangle_animated: *scenes_list.cgpoc.triangle_animated,
+    four_plane_red_cube: *scenes_list.cgpoc.chapter4.PlainRedCube,
+    four_varying_color_cube: *scenes_list.cgpoc.chapter4.VaryingColorCube,
+    four_cube_and_pyramid: *scenes_list.cgpoc.chapter4.CubeAndPyramid,
+    four_simple_solar_system: *scenes_list.cgpoc.chapter4.SimpleSolarSystem,
 };
 
 pub const scene_nav_type = enum {
     shape,
     math,
     color,
+    cgpoc,
 };
 
 pub const scene_nav_info = struct {
@@ -51,21 +70,4 @@ pub const scene_nav_info = struct {
     name: []const u8,
 };
 
-const point = @import("../scenes/point/point.zig");
-const point_rotating = @import("../scenes/point_rotating/point_rotating.zig");
-const triangle = @import("../scenes/triangle/triangle.zig");
-const triangle_animated = @import("../scenes/triangle_animated/triangle_animated.zig");
-const math_vector_arithmetic = @import("../scenes/math_vector_arithmetic/math_vector_arithmetic.zig");
-const linear_colorspace = @import("../scenes/linear_colorspace/linear_colorspace.zig");
-const CubeAnimated = @import("../scenes/cubes_animated/CubeAnimated.zig");
-const circle = @import("../scenes/circle/circle.zig");
-const Sphere = @import("../scenes/sphere/Sphere.zig");
-const line = @import("../scenes/line/line.zig");
-const UnitCircle = @import("../scenes/unit_circle/UnitCircle.zig");
-const BarycentricCoordinates = @import("../scenes/barycentric_coordinates/BarycentricCoordinates.zig");
-const LineDistance = @import("../scenes/line_distance/LineDistance.zig");
-const LookAt = @import("../scenes/look_at/LookAt.zig");
-const PlaneDistance = @import("../scenes/plane_distance/PlaneDistance.zig");
-const CylinderAnimated = @import("../scenes/cylinder_animated/CylinderAnimated.zig");
-const ConeAnimated = @import("../scenes/cone_animated/ConeAnimated.zig");
-const FrustumPlanes = @import("../scenes/frustum_planes/FrustumPlanes.zig");
+const scenes_list = @import("../scenes/scenes.zig");

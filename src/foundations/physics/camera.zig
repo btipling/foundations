@@ -22,7 +22,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         persp_m: math.matrix,
         mvp: math.matrix,
         movement: physics.movement,
-        programs: std.ArrayListUnmanaged(program) = .{},
+        uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
         scene: T,
         integrator: IntegratorT,
         emit_matrix: bool = true,
@@ -90,7 +90,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
-            self.programs.deinit(self.allocator);
+            self.uniforms.deinit(self.allocator);
             allocator.destroy(self);
         }
 
@@ -400,16 +400,17 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
         pub fn updatePrograms(self: *Self) void {
             if (!self.emit_matrix) return;
-            for (self.programs.items) |prog| {
-                rhi.setUniformMatrix(prog.program, prog.uniform, self.mvp);
+            for (self.uniforms.items) |prog| {
+                prog.setUniformMatrix(self.mvp);
             }
             self.scene.updateCamera();
         }
 
         pub fn addProgram(self: *Self, p: u32, uniform: []const u8) void {
-            self.programs.append(
+            const u: rhi.Uniform = .init(p, uniform);
+            self.uniforms.append(
                 self.allocator,
-                .{ .program = p, .uniform = uniform },
+                u,
             ) catch @panic("OOM");
             rhi.setUniformMatrix(p, uniform, self.mvp);
             self.updateMVP();
