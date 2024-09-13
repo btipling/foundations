@@ -39,6 +39,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config, glsl_version: []const u8
     s.* = .{};
     ui = allocator.create(UI) catch @panic("OOM");
     errdefer allocator.destroy(ui);
+    theme.theme();
     ui.* = .{
         .io = io,
         .ctx = ctx,
@@ -112,6 +113,7 @@ const std = @import("std");
 const c = @import("../c.zig").c;
 const ui_helpers = @import("ui_helpers.zig");
 const config = @import("../config/config.zig");
+const theme = @import("ui_theme.zig");
 pub const nav = @import("ui_navigation.zig");
 
 pub const glfw = @import("ui_glfw.zig");
