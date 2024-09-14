@@ -1,3 +1,4 @@
+ui_state: TexturedPyramidUI,
 allocator: std.mem.Allocator,
 pyramid: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*TexturedPyramid, physics.Integrator(physics.SmoothDeceleration)),
@@ -28,7 +29,9 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *TexturedPyramid {
     );
     errdefer cam.deinit(allocator);
 
+    const ui_state: TexturedPyramidUI = .{};
     pd.* = .{
+        .ui_state = ui_state,
         .allocator = allocator,
         .view_camera = cam,
     };
@@ -50,6 +53,7 @@ pub fn draw(self: *TexturedPyramid, dt: f64) void {
         };
         rhi.drawObjects(objects[0..]);
     }
+    self.ui_state.draw();
 }
 
 pub fn updateCamera(_: *TexturedPyramid) void {}
@@ -97,3 +101,4 @@ const object = @import("../../../../object/object.zig");
 const config = @import("../../../../config/config.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
+const TexturedPyramidUI = @import("TexturedPyramidUI.zig");
