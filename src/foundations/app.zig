@@ -2,6 +2,7 @@ app_scenes: *scenes,
 nav: ui.nav,
 allocator: std.mem.Allocator,
 app_config: *config,
+image_loader: *assets.loader.Loader(assets.Image),
 
 const App = @This();
 
@@ -17,10 +18,15 @@ pub fn init(allocator: std.mem.Allocator) *App {
 
     ui.init(allocator, cfg, glsl_version);
     errdefer ui.deinit();
+
     rhi.init(allocator);
     errdefer rhi.deinit();
+
     const app_scenes = scenes.init(allocator, cfg);
     errdefer app_scenes.deinit();
+
+    const image_loader: *assets.loader.Loader(assets.Image) = assets.loader.Loader(assets.Image).init(allocator);
+    errdefer image_loader.deinit();
 
     app = allocator.create(App) catch @panic("OOM");
     app.* = .{
@@ -28,11 +34,13 @@ pub fn init(allocator: std.mem.Allocator) *App {
         .allocator = allocator,
         .nav = ui.nav.init(app_scenes),
         .app_config = cfg,
+        .image_loader = image_loader,
     };
     return app;
 }
 
 pub fn deinit(self: *App) void {
+    self.image_loader.deinit();
     self.app_scenes.deinit();
     rhi.deinit();
     ui.deinit();
@@ -56,3 +64,4 @@ const ui = @import("ui/ui.zig");
 const scenes = @import("scenes/scenes.zig");
 const rhi = @import("rhi/rhi.zig");
 const config = @import("config/config.zig");
+const assets = @import("assets/assets.zig");
