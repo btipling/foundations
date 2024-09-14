@@ -2,7 +2,7 @@ app_scenes: *scenes,
 nav: ui.nav,
 allocator: std.mem.Allocator,
 app_config: *config,
-image_loader: *assets.loader.Loader(assets.Image),
+textures_loader: *assets.loader.Loader(assets.Image),
 
 const App = @This();
 
@@ -22,12 +22,15 @@ pub fn init(allocator: std.mem.Allocator) *App {
     rhi.init(allocator);
     errdefer rhi.deinit();
 
-    const image_loader: *assets.loader.Loader(assets.Image) = assets.loader.Loader(assets.Image).init(allocator);
-    errdefer image_loader.deinit();
+    const textures_loader: *assets.loader.Loader(assets.Image) = assets.loader.Loader(assets.Image).init(
+        allocator,
+        "textures",
+    );
+    errdefer textures_loader.deinit();
 
     const scene_ctx: scenes.SceneContext = .{
         .cfg = cfg,
-        .image_loader = image_loader,
+        .textures_loader = textures_loader,
     };
     const app_scenes = scenes.init(allocator, scene_ctx);
     errdefer app_scenes.deinit();
@@ -38,14 +41,14 @@ pub fn init(allocator: std.mem.Allocator) *App {
         .allocator = allocator,
         .nav = ui.nav.init(app_scenes),
         .app_config = cfg,
-        .image_loader = image_loader,
+        .textures_loader = textures_loader,
     };
     return app;
 }
 
 pub fn deinit(self: *App) void {
     self.app_scenes.deinit();
-    self.image_loader.deinit();
+    self.textures_loader.deinit();
     rhi.deinit();
     ui.deinit();
     self.app_config.deinit();
