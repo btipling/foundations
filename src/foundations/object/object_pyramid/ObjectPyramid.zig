@@ -60,8 +60,8 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     var s_os: usize = 0;
     var i_os: usize = 0;
     // front origin_z_pos
-    const texture_face: [3][2]f32 = .{ .{ 0, 0 }, .{ 1, 0 }, .{ 0.5, 1 } };
-    const texture_floor: [4][2]f32 = .{ .{ 0, 0 }, .{ 1, 1 }, .{ 0, 1 }, .{ 1, 0 } };
+    const texture_face: [3][2]f32 = .{ .{ 0.5, 1 }, .{ 1, 0 }, .{ 0, 0 } };
+    const texture_floor: [4][2]f32 = .{ .{ 0, 1 }, .{ 1, 1 }, .{ 0, 0 }, .{ 1, 0 } };
     s_os = addSurface(&rv_data, p0, p1, p2, s_os, texture_face);
     i_os = addIndicesPerSurface(&indices, 0, 1, 2, i_os);
     // left origin_x_pos

@@ -36,7 +36,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedPyr
         std.debug.print("brick image: {s} data len: ({d})\n", .{ img.file_name, img.data.len });
         brick_texture = rhi.Texture.init(img);
     } else {
-        std.debug.print("no brick image", .{});
+        std.debug.print("no brick image\n", .{});
     }
 
     const ui_state: TexturedPyramidUI = .{};
