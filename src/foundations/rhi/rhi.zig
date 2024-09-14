@@ -388,4 +388,5 @@ const math = @import("../math/math.zig");
 const object = @import("../object/object.zig");
 
 pub const Mesh = @import("./Mesh.zig");
-pub const Uniform = @import("./Uniform.zig");
+pub const Uniform = @import("Uniform.zig");
+pub const Texture = @import("Texture.zig");

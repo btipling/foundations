@@ -2,6 +2,7 @@ ui_state: TexturedPyramidUI,
 allocator: std.mem.Allocator,
 pyramid: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*TexturedPyramid, physics.Integrator(physics.SmoothDeceleration)),
+brick_texture: ?rhi.Texture,
 
 const TexturedPyramid = @This();
 
@@ -30,8 +31,10 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedPyr
     errdefer cam.deinit(allocator);
 
     const brick_img = ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null;
+    var brick_texture: ?rhi.Texture = null;
     if (brick_img) |img| {
         std.debug.print("brick image: {s} data len: ({d})\n", .{ img.file_name, img.data.len });
+        brick_texture = rhi.Texture.init(img);
     } else {
         std.debug.print("no brick image", .{});
     }
@@ -41,6 +44,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedPyr
         .ui_state = ui_state,
         .allocator = allocator,
         .view_camera = cam,
+        .brick_texture = brick_texture,
     };
     pd.renderParallepiped();
     return pd;
@@ -54,6 +58,9 @@ pub fn deinit(self: *TexturedPyramid, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *TexturedPyramid, dt: f64) void {
     self.view_camera.update(dt);
+    if (self.brick_texture) |bt| {
+        bt.bind();
+    }
     {
         const objects: [1]object.object = .{
             self.pyramid,
