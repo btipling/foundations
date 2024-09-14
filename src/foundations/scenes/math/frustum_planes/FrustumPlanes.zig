@@ -33,13 +33,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *FrustumPlanes {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *FrustumPlanes {
     const pd = allocator.create(FrustumPlanes) catch @panic("OOM");
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
     const cam1 = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
-        cfg,
+        ctx.cfg,
         pd,
         integrator,
         .{ 15, 30, -30 },
@@ -47,7 +47,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *FrustumPlanes {
     );
     var cam2 = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
-        cfg,
+        ctx.cfg,
         pd,
         integrator,
         .{ 15, -30, 30 },
@@ -282,6 +282,6 @@ const rhi = @import("../../../rhi/rhi.zig");
 const math = @import("../../../math/math.zig");
 const FrustumPlanesUI = @import("FrustumPlanesUI.zig");
 const object = @import("../../../object/object.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");
 const physics = @import("../../../physics/physics.zig");
 const scenery = @import("../../../scenery/scenery.zig");

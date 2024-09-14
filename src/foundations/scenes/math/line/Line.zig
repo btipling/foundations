@@ -1,7 +1,7 @@
 line_manager: *manager = undefined,
 ui_state: *line_ui,
 allocator: std.mem.Allocator,
-cfg: *config,
+ctx: scenes.SceneContext,
 ortho_persp: math.matrix,
 
 const Line = @This();
@@ -13,7 +13,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *Line {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Line {
     const line = allocator.create(Line) catch @panic("OOM");
     const ui_state = line_ui.init(allocator);
     const ortho_persp = math.matrix.orthographicProjection(
@@ -21,14 +21,14 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Line {
         9,
         0,
         6,
-        cfg.near,
-        cfg.far,
+        ctx.cfg.near,
+        ctx.cfg.far,
     );
     line.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
-        .line_manager = manager.init(allocator, ui_state, cfg),
-        .cfg = cfg,
+        .line_manager = manager.init(allocator, ui_state, ctx.cfg),
+        .ctx = ctx,
         .ortho_persp = ortho_persp,
     };
 
@@ -100,4 +100,4 @@ const line_ui = @import("LineUI.zig");
 const point = @import("LinePoint.zig");
 const manager = @import("LineManager.zig");
 const math = @import("../../../math/math.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");

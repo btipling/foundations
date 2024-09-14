@@ -9,7 +9,7 @@ fn errorCallback(err: c_int, description: [*c]const u8) callconv(.C) void {
     std.log.err("GLFW Error: {d} {s}\n", .{ err, description });
 }
 
-pub fn init(cfg: *config) !void {
+pub fn init(cfg: *const config) !void {
     if (c.glfwInit() == c.GL_FALSE) {
         std.debug.print("could not init glfw\n", .{});
         return GLFWError.Fatal;

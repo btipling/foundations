@@ -20,13 +20,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *LookAt {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LookAt {
     const lkt = allocator.create(LookAt) catch @panic("OOM");
     errdefer allocator.destroy(lkt);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
     const cam = physics.camera.Camera(*LookAt, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
-        cfg,
+        ctx.cfg,
         lkt,
         integrator,
         .{ 1, 3.5, 1 },
@@ -143,6 +143,6 @@ const rhi = @import("../../../rhi/rhi.zig");
 const math = @import("../../../math/math.zig");
 const LookAtUI = @import("LookAtUI.zig");
 const object = @import("../../../object/object.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");
 const physics = @import("../../../physics/physics.zig");
 const scenery = @import("../../../scenery/scenery.zig");

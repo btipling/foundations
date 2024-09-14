@@ -2,7 +2,7 @@ io: *c.ImGuiIO,
 ctx: *c.ImGuiContext,
 win: *glfw.window,
 allocator: std.mem.Allocator,
-cfg: *config,
+cfg: *const config,
 helpers: ui_helpers,
 state: *ui_state,
 

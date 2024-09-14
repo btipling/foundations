@@ -1,7 +1,7 @@
 program: u32,
 objects: [1]object.object = undefined,
 ui_state: CubeAnimatedUI,
-cfg: *config,
+ctx: scenes.SceneContext,
 aspect_ratio: f32,
 
 const kf0: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
@@ -47,7 +47,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *CubeAnimated {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *CubeAnimated {
     const p = allocator.create(CubeAnimated) catch @panic("OOM");
 
     const program = rhi.createProgram();
@@ -62,8 +62,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *CubeAnimated {
     p.* = .{
         .program = program,
         .ui_state = CubeAnimatedUI.init(),
-        .cfg = cfg,
-        .aspect_ratio = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height)),
+        .ctx = ctx,
+        .aspect_ratio = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height)),
     };
     p.objects[0] = cube;
     return p;
@@ -83,7 +83,7 @@ pub fn draw(self: *CubeAnimated, frame_time: f64) void {
     }
 
     const t: f32 = @as(f32, @floatCast(@mod(frame_time, animation_duration)));
-    var m = math.matrix.perspectiveProjection(self.cfg.fovy, self.aspect_ratio, self.cfg.near, self.cfg.far);
+    var m = math.matrix.perspectiveProjection(self.ctx.cfg.fovy, self.aspect_ratio, self.ctx.cfg.near, self.ctx.cfg.far);
     if (self.ui_state.use_lh_x_up == 1) {
         m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     }
@@ -122,4 +122,4 @@ const object = @import("../../../object/object.zig");
 const math = @import("../../../math/math.zig");
 const CubeAnimatedUI = @import("CubeAnimatedUI.zig");
 const ui = @import("../../../ui/ui.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");

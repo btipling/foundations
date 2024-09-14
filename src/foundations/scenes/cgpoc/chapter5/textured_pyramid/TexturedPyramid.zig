@@ -15,13 +15,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *TexturedPyramid {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedPyramid {
     const pd = allocator.create(TexturedPyramid) catch @panic("OOM");
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
     const cam = physics.camera.Camera(*TexturedPyramid, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
-        cfg,
+        ctx.cfg,
         pd,
         integrator,
         .{ 3, -15, 0 },
@@ -98,7 +98,7 @@ const ui = @import("../../../../ui/ui.zig");
 const rhi = @import("../../../../rhi/rhi.zig");
 const math = @import("../../../../math/math.zig");
 const object = @import("../../../../object/object.zig");
-const config = @import("../../../../config/config.zig");
+const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
 const TexturedPyramidUI = @import("TexturedPyramidUI.zig");

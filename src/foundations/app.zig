@@ -22,11 +22,15 @@ pub fn init(allocator: std.mem.Allocator) *App {
     rhi.init(allocator);
     errdefer rhi.deinit();
 
-    const app_scenes = scenes.init(allocator, cfg);
-    errdefer app_scenes.deinit();
-
     const image_loader: *assets.loader.Loader(assets.Image) = assets.loader.Loader(assets.Image).init(allocator);
     errdefer image_loader.deinit();
+
+    const scene_ctx: scenes.SceneContext = .{
+        .cfg = cfg,
+        .image_loader = image_loader,
+    };
+    const app_scenes = scenes.init(allocator, scene_ctx);
+    errdefer app_scenes.deinit();
 
     app = allocator.create(App) catch @panic("OOM");
     app.* = .{
@@ -40,8 +44,8 @@ pub fn init(allocator: std.mem.Allocator) *App {
 }
 
 pub fn deinit(self: *App) void {
-    self.image_loader.deinit();
     self.app_scenes.deinit();
+    self.image_loader.deinit();
     rhi.deinit();
     ui.deinit();
     self.app_config.deinit();

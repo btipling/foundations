@@ -36,13 +36,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *PlaneDistance {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistance {
     const pd = allocator.create(PlaneDistance) catch @panic("OOM");
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
     const cam = physics.camera.Camera(*PlaneDistance, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
-        cfg,
+        ctx.cfg,
         pd,
         integrator,
         .{ 5, 30, -30 },
@@ -449,6 +449,6 @@ const rhi = @import("../../../rhi/rhi.zig");
 const math = @import("../../../math/math.zig");
 const PlaneDistanceUI = @import("PlaneDistanceUI.zig");
 const object = @import("../../../object/object.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");
 const physics = @import("../../../physics/physics.zig");
 const scenery = @import("../../../scenery/scenery.zig");

@@ -10,7 +10,7 @@ z_small_node: ?*Point = null,
 i_data: rhi.instanceData = undefined,
 target: ?usize = null,
 selected: bool = false,
-cfg: *config,
+cfg: *const config,
 
 const point_limit: usize = 1000;
 const point_scale: f32 = 0.025;
@@ -29,7 +29,7 @@ pub inline fn coordinate(c: f32) f32 {
     return c;
 }
 
-pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, target: ?usize, cfg: *config) *Point {
+pub fn init(allocator: std.mem.Allocator, x: f32, z: f32, index: usize, target: ?usize, cfg: *const config) *Point {
     const p = allocator.create(Point) catch @panic("OOM");
     var m = math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far);
     m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());

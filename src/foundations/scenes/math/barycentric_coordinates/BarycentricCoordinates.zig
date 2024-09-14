@@ -7,7 +7,7 @@ circumscribed: math.geometry.Circle = undefined,
 ui_state: BarycentricCoordinatesUI,
 circles: [num_circles]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
-cfg: *config,
+ctx: scenes.SceneContext,
 ortho_persp: math.matrix,
 
 const BCTriangle = @This();
@@ -35,7 +35,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *BCTriangle {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BCTriangle {
     const bct = allocator.create(BCTriangle) catch @panic("OOM");
     const ui_state: BarycentricCoordinatesUI = .{};
     const ortho_persp = math.matrix.orthographicProjection(
@@ -43,13 +43,13 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *BCTriangle {
         9,
         0,
         6,
-        cfg.near,
-        cfg.far,
+        ctx.cfg.near,
+        ctx.cfg.far,
     );
     bct.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
-        .cfg = cfg,
+        .ctx = ctx,
         .ortho_persp = ortho_persp,
     };
     bct.updateTriangle();
@@ -289,4 +289,4 @@ const rhi = @import("../../../rhi/rhi.zig");
 const math = @import("../../../math/math.zig");
 const BarycentricCoordinatesUI = @import("BarycentricCoordinatesUI.zig");
 const object = @import("../../../object/object.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");

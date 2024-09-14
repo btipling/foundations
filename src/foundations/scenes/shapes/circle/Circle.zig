@@ -1,6 +1,6 @@
 program: u32 = 0,
 objects: [1]object.object = undefined,
-cfg: *config,
+ctx: scenes.SceneContext,
 
 const Circle = @This();
 
@@ -14,15 +14,15 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *Circle {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Circle {
     const p = allocator.create(Circle) catch @panic("OOM");
     p.* = .{
-        .cfg = cfg,
+        .ctx = ctx,
     };
 
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
-    var m = math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far);
+    var m = math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far);
     m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(0.5));
     var i_data: [1]rhi.instanceData = .{
@@ -60,4 +60,4 @@ const rhi = @import("../../../rhi/rhi.zig");
 const object = @import("../../../object/object.zig");
 const math = @import("../../../math/math.zig");
 const ui = @import("../../../ui/ui.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");

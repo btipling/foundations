@@ -1,5 +1,5 @@
 objects: [2]object.object = undefined,
-cfg: *config,
+ctx: scenes.SceneContext,
 
 const LinearColorSpace = @This();
 
@@ -13,10 +13,10 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LinearColorSpace {
     const p = allocator.create(LinearColorSpace) catch @panic("OOM");
     p.* = .{
-        .cfg = cfg,
+        .ctx = ctx,
     };
 
     var triangle_positions: [3][3]f32 = undefined;
@@ -37,7 +37,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
         const nv = math.vector.mul(pm, p_r);
         const v = math.vector.add(offset, nv);
         triangle_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(
-            math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far),
+            math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far),
             math.vector.vec3ToVec4Point(v),
         ));
     }
@@ -68,7 +68,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LinearColorSpace {
         const nv = math.vector.mul(pm, p_r);
         const v = math.vector.add(offset, nv);
         triangle_positions[pi] = math.vector.vec4ToVec3(math.matrix.transformVector(
-            math.matrix.orthographicProjection(0, 9, 0, 6, cfg.near, cfg.far),
+            math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far),
             math.vector.vec3ToVec4Point(v),
         ));
     }
@@ -100,4 +100,4 @@ const rhi = @import("../../../rhi/rhi.zig");
 const object = @import("../../../object/object.zig");
 const math = @import("../../../math/math.zig");
 const ui = @import("../../../ui/ui.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");
