@@ -23,7 +23,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *TexturedPyramid {
         cfg,
         pd,
         integrator,
-        .{ 3, -8, 0 },
+        .{ 3, -15, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
