@@ -7,7 +7,7 @@ indices: [num_indices]u32,
 const Pyramid = @This();
 
 const num_vertices: usize = 24;
-const num_indices: usize = 36; // because normals
+const num_indices: usize = 36;
 
 // zig fmt: off
 pub const pp: math.geometry.Pyramid = .{
@@ -60,20 +60,30 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     var s_os: usize = 0;
     var i_os: usize = 0;
     // front origin_z_pos
-    s_os = addSurface(&rv_data, p0, p1, p2, s_os);
+    const texture_face: [3][2]f32 = .{ .{ 0, 0 }, .{ 1, 0 }, .{ 0.5, 1 } };
+    const texture_floor: [4][2]f32 = .{ .{ 0, 0 }, .{ 1, 1 }, .{ 0, 1 }, .{ 1, 0 } };
+    s_os = addSurface(&rv_data, p0, p1, p2, s_os, texture_face);
     i_os = addIndicesPerSurface(&indices, 0, 1, 2, i_os);
     // left origin_x_pos
-    s_os = addSurface(&rv_data, p0, p2, p3, s_os);
+    s_os = addSurface(&rv_data, p0, p2, p3, s_os, texture_face);
     i_os = addIndicesPerSurface(&indices, 3, 4, 5, i_os);
     // back y_pos_z_pos
-    s_os = addSurface(&rv_data, p0, p3, p4, s_os);
+    s_os = addSurface(&rv_data, p0, p3, p4, s_os, texture_face);
     i_os = addIndicesPerSurface(&indices, 6, 7, 8, i_os);
     // right z_pos_x_pos
-    s_os = addSurface(&rv_data, p0, p4, p1, s_os);
+    s_os = addSurface(&rv_data, p0, p4, p1, s_os, texture_face);
     i_os = addIndicesPerSurface(&indices, 9, 10, 11, i_os);
     // top x_pos_y_pos
-    _ = addBottomSurface(&rv_data, p1, p2, p4, p3, s_os);
-    i_os = addBottomIndicesPerSurface(&indices, 12, 13, 14, 15, i_os);
+    _ = addBottomSurface(&rv_data, p1, p2, p4, p3, s_os, texture_floor);
+    i_os = addBottomIndicesPerSurface(
+        &indices,
+        12,
+        13,
+        14,
+        15,
+        i_os,
+    );
+
     return .{ .data = rv_data, .indices = indices };
 }
 
@@ -97,6 +107,7 @@ fn addSurface(
     sp1: math.vector.vec3,
     sp2: math.vector.vec3,
     offset: usize,
+    texture_coords: [3][2]f32,
 ) usize {
     const e1 = math.vector.sub(sp0, sp1);
     const e2 = math.vector.sub(sp0, sp2);
@@ -105,16 +116,19 @@ fn addSurface(
         .position = sp0,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = texture_coords[0],
     };
     s_data[offset + 1] = .{
         .position = sp1,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = texture_coords[1],
     };
     s_data[offset + 2] = .{
         .position = sp2,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = texture_coords[2],
     };
     return offset + 3;
 }
@@ -145,6 +159,7 @@ fn addBottomSurface(
     sp2: math.vector.vec3,
     sp3: math.vector.vec3,
     offset: usize,
+    texture_coords: [4][2]f32,
 ) usize {
     const e1 = math.vector.sub(sp0, sp1);
     const e2 = math.vector.sub(sp0, sp2);
@@ -153,21 +168,25 @@ fn addBottomSurface(
         .position = sp0,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = texture_coords[0],
     };
     s_data[offset + 1] = .{
         .position = sp1,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = texture_coords[1],
     };
     s_data[offset + 2] = .{
         .position = sp2,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = texture_coords[2],
     };
     s_data[offset + 3] = .{
         .position = sp3,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = texture_coords[3],
     };
     return offset + 4;
 }
