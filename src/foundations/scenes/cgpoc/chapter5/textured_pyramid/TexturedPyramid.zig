@@ -29,6 +29,13 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedPyr
     );
     errdefer cam.deinit(allocator);
 
+    const brick_img = ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null;
+    if (brick_img) |img| {
+        std.debug.print("brick image: {s} data len: ({d})\n", .{ img.file_name, img.data.len });
+    } else {
+        std.debug.print("no brick image", .{});
+    }
+
     const ui_state: TexturedPyramidUI = .{};
     pd.* = .{
         .ui_state = ui_state,

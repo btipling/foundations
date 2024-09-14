@@ -8,7 +8,7 @@ pub const LoaderError = error{
 pub fn Loader(comptime T: type) type {
     return struct {
         allocator: std.mem.Allocator,
-        cache: std.StringArrayHashMapUnmanaged(T) = .empty,
+        cache: std.StringArrayHashMapUnmanaged(*T) = .empty,
         absolute_root_path: []u8,
 
         const Self = @This();
@@ -44,7 +44,7 @@ pub fn Loader(comptime T: type) type {
         }
 
         pub fn deinit(self: *Self) void {
-            for (self.cache.values()) |*v| {
+            for (self.cache.values()) |v| {
                 v.deinit(self.allocator);
             }
             self.allocator.free(self.absolute_root_path);
@@ -54,14 +54,14 @@ pub fn Loader(comptime T: type) type {
             self.allocator.destroy(self);
         }
 
-        pub fn loadAsset(self: *Self, file_name: []const u8) LoaderError!T {
+        pub fn loadAsset(self: *Self, file_name: []const u8) LoaderError!*T {
             if (self.cache.contains(file_name)) {
-                return self.cache.get(file_name);
+                return self.cache.get(file_name).?;
             }
             const data = try self.read(file_name);
             errdefer self.allocator.free(data);
 
-            var t: T = self.allocator.create(T);
+            var t: *T = self.allocator.create(T) catch @panic("OOM");
             errdefer self.allocator.destroy(t);
 
             t.init(data, file_name);
@@ -82,7 +82,7 @@ pub fn Loader(comptime T: type) type {
                 @panic("Failed opening asset");
             };
             defer fd.close();
-            return fd.readToEndAlloc(self.allocator, max_file_size) catch return null;
+            return fd.readToEndAlloc(self.allocator, max_file_size) catch @panic("asset too big");
         }
     };
 }
