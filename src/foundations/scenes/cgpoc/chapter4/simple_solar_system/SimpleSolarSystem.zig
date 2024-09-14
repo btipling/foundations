@@ -21,7 +21,7 @@ const frag_shader: []const u8 = @embedFile("simple_solar_system_frag.glsl");
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
-        .name = "Cube And Pyramid",
+        .name = "Simple Solar System",
     };
 }
 
@@ -35,7 +35,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *SimpleSolarSystem {
         cfg,
         pd,
         integrator,
-        .{ 3, -8, 0 },
+        .{ 3, -15, 0 },
         0,
     );
     errdefer cam.deinit(allocator);

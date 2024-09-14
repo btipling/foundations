@@ -13,7 +13,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Scenes {
         .allocator = allocator,
         .cfg = cfg,
     };
-    scenes.initScene(ui.ui_state.scene_type.four_simple_solar_system);
+    scenes.initScene(ui.ui_state.scene_type.five_textured_pyramid);
     return scenes;
 }
 
@@ -36,6 +36,7 @@ fn updateSceneType(self: *Scenes) void {
 }
 
 fn initScene(self: *Scenes, dt: ui.ui_state.scene_type) void {
+    @setEvalBranchQuota(10_000);
     self.scene_instance = switch (dt) {
         inline else => |dtag| @unionInit(ui.ui_state.scenes, @tagName(dtag), std.meta.Child(
             std.meta.TagPayload(

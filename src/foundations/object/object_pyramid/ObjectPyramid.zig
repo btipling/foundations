@@ -52,7 +52,7 @@ pub fn updateInstanceAt(self: Pyramid, index: usize, instance_data: rhi.instance
 fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
     var rv_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
-    const p0: [3]f32 = .{ 1, 0, 0 };
+    const p0: [3]f32 = .{ 1.5, 0, 0 };
     const p1: [3]f32 = .{ 0, -1, 1 };
     const p2: [3]f32 = .{ 0, 1, 1 };
     const p3: [3]f32 = .{ 0, 1, -1 };

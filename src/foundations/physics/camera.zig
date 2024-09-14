@@ -57,7 +57,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
             var camera_heading: math.rotation.Quat = .{ 1, 0, 0, 0 };
             if (heading) |h| {
-                std.debug.print("setting heading\n", .{});
                 const a: math.rotation.AxisAngle = .{
                     .angle = h,
                     .axis = world_up,
