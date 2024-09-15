@@ -27,13 +27,21 @@ pub const default_correct_indices: [6]u32 = .{
 };
 
 pub fn init(
-    vertex_shader: []const u8,
-    frag_shader: []const u8,
+    allocator: std.mem.Allocator,
+    vertex_partials: []const []const u8,
+    frag_shader: rhi.Shader.fragment_shader_type,
     positions: [6][3]f32,
     colors: [6][4]f32,
 ) Quad {
     const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = program,
+            .instance_data = true,
+            .fragment_shader = frag_shader,
+        };
+        s.attach(allocator, vertex_partials);
+    }
 
     var data: [6]rhi.attributeData = undefined;
     var i: usize = 0;

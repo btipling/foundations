@@ -22,7 +22,6 @@ const point_index = 2;
 const origin_point_index = 3;
 
 const vertex_shader: []const u8 = @embedFile("line_distance_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("line_distance_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -74,12 +73,19 @@ pub fn deleteConnectionStrip(self: *LineDistance) void {
 }
 
 pub fn renderCircle(self: *LineDistance) void {
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     for (0..num_points - 1) |i| self.updatePointIData(i);
     const circle: object.object = .{
         .circle = object.Circle.init(
-            program,
+            prog,
             self.circles[0..],
         ),
     };
@@ -88,8 +94,15 @@ pub fn renderCircle(self: *LineDistance) void {
 
 pub fn renderStrip(self: *LineDistance) void {
     self.deleteStrip();
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
     var times: [num_points_interpolated]f32 = undefined;
@@ -116,7 +129,7 @@ pub fn renderStrip(self: *LineDistance) void {
     }
     const strip: object.object = .{
         .strip = object.Strip.init(
-            program,
+            prog,
             i_datas[0..],
         ),
     };
@@ -127,8 +140,15 @@ pub fn renderStrip(self: *LineDistance) void {
 pub fn renderConnectionStrip(self: *LineDistance) void {
     const pv = self.ui_state.point_vector orelse return;
     self.deleteConnectionStrip();
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
     var times: [num_points_interpolated]f32 = undefined;
@@ -155,7 +175,7 @@ pub fn renderConnectionStrip(self: *LineDistance) void {
     }
     const strip: object.object = .{
         .strip = object.Strip.init(
-            program,
+            prog,
             i_datas[0..],
         ),
     };

@@ -26,7 +26,6 @@ const inscribed_circle_index = 4;
 const circumscribed_circle_index = 5;
 
 const vertex_shader: []const u8 = @embedFile("bc_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("bc_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -72,8 +71,15 @@ pub fn deleteStrip(self: *BCTriangle) void {
 
 pub fn renderStrip(self: *BCTriangle) void {
     self.deleteStrip();
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
     var times: [num_points_interpolated]f32 = undefined;
@@ -104,7 +110,7 @@ pub fn renderStrip(self: *BCTriangle) void {
     }
     const strip: object.object = .{
         .strip = object.Strip.init(
-            program,
+            prog,
             i_datas[0..],
         ),
     };
@@ -112,15 +118,22 @@ pub fn renderStrip(self: *BCTriangle) void {
 }
 
 pub fn renderCircle(self: *BCTriangle) void {
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     for (0..num_points) |i| self.updatePointIData(i);
     self.updatePointIData(center_circle_index);
     self.updatePointIData(inscribed_circle_index);
     self.updatePointIData(circumscribed_circle_index);
     const circle: object.object = .{
         .circle = object.Circle.init(
-            program,
+            prog,
             self.circles[0..],
         ),
     };

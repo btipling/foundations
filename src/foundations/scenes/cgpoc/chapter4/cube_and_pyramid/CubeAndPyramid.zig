@@ -9,7 +9,6 @@ const num_cubes = 1;
 
 const pyramid_vertex_shader: []const u8 = @embedFile("pyramid_vertex.glsl");
 const cube_vertex_shader: []const u8 = @embedFile("cube_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("cube_and_pyramid_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -68,7 +67,14 @@ pub fn updatePyramidTransform(_: *CubeAndPyramid, prog: u32) void {
 
 pub fn renderPyramid(self: *CubeAndPyramid) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, pyramid_vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(pyramid_vertex_shader)[0..]);
+    }
     var cm = math.matrix.identity();
     cm = math.matrix.transformMatrix(cm, math.matrix.translate(5, 4, 3));
     cm = math.matrix.transformMatrix(cm, math.matrix.scale(1.5, 1, 1));
@@ -102,7 +108,14 @@ pub fn updateParallepipedTransform(_: *CubeAndPyramid, prog: u32) void {
 
 pub fn renderParallepiped(self: *CubeAndPyramid) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, cube_vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();

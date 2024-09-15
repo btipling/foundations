@@ -38,7 +38,6 @@ const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf4, kf5, kf6, kf0
 const CubeAnimated = @This();
 
 const vertex_shader: []const u8 = @embedFile("ca_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("ca_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -50,17 +49,24 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *CubeAnimated {
     const p = allocator.create(CubeAnimated) catch @panic("OOM");
 
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = false,
+            .fragment_shader = .normals,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     const cube: object.object = .{
         .cube = object.Cube.init(
-            program,
+            prog,
             object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
         ),
     };
     p.* = .{
-        .program = program,
+        .program = prog,
         .ui_state = CubeAnimatedUI.init(),
         .ctx = ctx,
         .aspect_ratio = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height)),

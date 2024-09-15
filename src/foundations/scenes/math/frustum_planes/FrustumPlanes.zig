@@ -22,9 +22,7 @@ const invisible = math.matrix.translate(-500, -500, -500);
 const FrustumPlanes = @This();
 
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
-const sphere_frag_shader: []const u8 = @embedFile("sphere_frag.glsl");
 const voxel_vertex_shader: []const u8 = @embedFile("voxel_vertex.glsl");
-const voxel_frag_shader: []const u8 = @embedFile("voxel_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -228,7 +226,14 @@ fn genObject(
 
 pub fn renderSphere(self: *FrustumPlanes) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, sphere_vertex_shader, sphere_frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+    }
     var i_datas: [sphere_max]rhi.instanceData = undefined;
     const m = math.matrix.identity();
     i_datas[0] = .{
@@ -258,7 +263,14 @@ pub fn updateParallepipedTransform(_: *FrustumPlanes, prog: u32) void {
 
 pub fn renderParallepiped(self: *FrustumPlanes) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, voxel_vertex_shader, voxel_frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(voxel_vertex_shader)[0..]);
+    }
     var i_datas: [voxel_max]rhi.instanceData = undefined;
     const i = genObject(&self.voxel_map, &self.voxel_transforms, &i_datas, 3.0, 1.5, 1.0, 0.45, 1, 4);
     const parallelepiped: object.object = .{

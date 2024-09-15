@@ -10,7 +10,6 @@ const num_cubes = 100_000;
 const transforms: []const u8 = @embedFile("../../../../shaders/transforms.glsl");
 const vertex_main: []const u8 = @embedFile("varying_color_cube_vertex_main.glsl");
 const vertex_header: []const u8 = @embedFile("varying_color_cube_vertex_header.glsl");
-const frag_shader: []const u8 = @embedFile("varying_color_cube_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -68,13 +67,18 @@ pub fn updateParallepipedTransform(_: *VaryingColorCube, prog: u32) void {
 
 pub fn renderParallepiped(self: *VaryingColorCube) void {
     const prog = rhi.createProgram();
-    const vertex_shader = std.mem.concat(self.allocator, u8, &[_][]const u8{
-        vertex_header,
-        transforms,
-        vertex_main,
-    }) catch @panic("OOM");
-    defer self.allocator.free(vertex_shader);
-    rhi.attachShaders(prog, vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        const partials = &[_][]const u8{
+            transforms,
+            vertex_main,
+        };
+        s.attach(self.allocator, partials[0..]);
+    }
     var cm = math.matrix.identity();
     cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
     cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));

@@ -6,7 +6,6 @@ view_camera: *physics.camera.Camera(*PlainRedCube, physics.Integrator(physics.Sm
 const PlainRedCube = @This();
 
 const vertex_shader: []const u8 = @embedFile("plain_red_cube_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("plain_red_cube_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -69,7 +68,14 @@ pub fn updateParallepipedTransform(_: *PlainRedCube, prog: u32) void {
 
 pub fn renderParallepiped(self: *PlainRedCube) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
@@ -80,7 +86,7 @@ pub fn renderParallepiped(self: *PlainRedCube) void {
             .t_column1 = cm.columns[1],
             .t_column2 = cm.columns[2],
             .t_column3 = cm.columns[3],
-            .color = .{ 1, 0, 1, 1 },
+            .color = .{ 1, 0, 0, 1 },
         };
         i_datas[0] = i_data;
     }

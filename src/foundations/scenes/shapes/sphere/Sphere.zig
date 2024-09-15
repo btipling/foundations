@@ -7,7 +7,6 @@ aspect_ratio: f32,
 const Sphere = @This();
 
 const vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("sphere_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -20,8 +19,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Sphere {
     const p = allocator.create(Sphere) catch @panic("OOM");
     errdefer allocator.destroy(p);
 
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
@@ -35,13 +41,13 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Sphere {
     }
     const sphere: object.object = .{
         .sphere = object.Sphere.init(
-            program,
+            prog,
             i_datas[0..],
             false,
         ),
     };
     p.* = .{
-        .program = program,
+        .program = prog,
         .objects = .{
             sphere,
         },
