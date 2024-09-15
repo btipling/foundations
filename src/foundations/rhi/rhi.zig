@@ -84,6 +84,7 @@ pub const attributeData = struct {
     position: [3]f32,
     color: [4]f32 = .{ 1, 0, 1, 1 },
     normals: [3]f32 = .{ 1, 1, 1 },
+    texture_coords: [2]f32 = .{ 0, 0 },
 };
 
 pub const instanceData = struct {
@@ -388,4 +389,5 @@ const math = @import("../math/math.zig");
 const object = @import("../object/object.zig");
 
 pub const Mesh = @import("./Mesh.zig");
-pub const Uniform = @import("./Uniform.zig");
+pub const Uniform = @import("Uniform.zig");
+pub const Texture = @import("Texture.zig");

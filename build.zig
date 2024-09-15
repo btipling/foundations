@@ -82,7 +82,7 @@ pub fn build(b: *std.Build) void {
             exe.addCSourceFiles(.{
                 .files = &.{
                     "libs/stb/src/stb_perlin.c",
-                    "libs/stb/src/stb_include.c",
+                    "libs/stb/src/stb_image.c",
                 },
                 .flags = cflags,
             });

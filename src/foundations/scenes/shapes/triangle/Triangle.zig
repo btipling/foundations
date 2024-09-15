@@ -2,14 +2,14 @@ program: u32,
 vao: u32,
 buffer: u32,
 count: usize,
-cfg: *config,
+ctx: scenes.SceneContext,
 
 const Triangle = @This();
 
 const positions: [3][3]f32 = .{
     .{ -0.5, 0.5, 0.5 },
-    .{ -0.5, -0.5, 0.5 },
     .{ 0.5, -0.5, 0.5 },
+    .{ -0.5, -0.5, 0.5 },
 };
 
 const colors: [3][4]f32 = .{
@@ -28,7 +28,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *Triangle {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Triangle {
     const t = allocator.create(Triangle) catch @panic("OOM");
     const program = rhi.createProgram();
     rhi.attachShaders(program, vertex_shader, frag_shader);
@@ -40,8 +40,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Triangle {
         9,
         0,
         6,
-        cfg.near,
-        cfg.far,
+        ctx.cfg.near,
+        ctx.cfg.far,
     );
     while (i < data.len) : (i += 1) {
         const p = math.vector.vec4ToVec3(
@@ -58,7 +58,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Triangle {
         .vao = vao_buf.vao,
         .buffer = vao_buf.buffer,
         .count = positions.len,
-        .cfg = cfg,
+        .ctx = ctx,
     };
     return t;
 }
@@ -75,5 +75,5 @@ pub fn draw(self: *Triangle, _: f64) void {
 const std = @import("std");
 const rhi = @import("../../../rhi/rhi.zig");
 const ui = @import("../../../ui/ui.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");
 const math = @import("../../../math/math.zig");

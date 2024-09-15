@@ -2,7 +2,7 @@ strip: object.object = undefined,
 ui_state: UnitCircleUI,
 allocator: std.mem.Allocator,
 circle: math.geometry.Circle,
-cfg: *config,
+ctx: scenes.SceneContext,
 
 const UnitCircle = @This();
 
@@ -20,13 +20,13 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *UnitCircle {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *UnitCircle {
     const unit_circle = allocator.create(UnitCircle) catch @panic("OOM");
     unit_circle.* = .{
         .ui_state = .{},
         .allocator = allocator,
         .circle = .{ .center = .{ 0, 0 }, .radius = 1.0 },
-        .cfg = cfg,
+        .ctx = ctx,
     };
 
     unit_circle.renderCircle();
@@ -50,7 +50,7 @@ pub fn renderCircle(self: *UnitCircle) void {
     for (0..num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
         const res = self.circle.parametricCircle(t / num_triangles_f);
-        var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.cfg.near, self.cfg.far);
+        var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.ctx.cfg.near, self.ctx.cfg.far);
         m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
         m = math.matrix.transformMatrix(m, math.matrix.translate(res[1], 0.0, res[0]));
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(strip_scale));
@@ -95,4 +95,4 @@ const rhi = @import("../../../rhi/rhi.zig");
 const math = @import("../../../math/math.zig");
 const UnitCircleUI = @import("UnitCircleUI.zig");
 const object = @import("../../../object/object.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");

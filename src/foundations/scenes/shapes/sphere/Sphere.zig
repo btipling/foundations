@@ -1,7 +1,7 @@
 program: u32,
 objects: [1]object.object = undefined,
 ui_state: sphere_ui,
-cfg: *config,
+ctx: scenes.SceneContext,
 aspect_ratio: f32,
 
 const Sphere = @This();
@@ -16,7 +16,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Sphere {
     const p = allocator.create(Sphere) catch @panic("OOM");
     errdefer allocator.destroy(p);
 
@@ -49,8 +49,8 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *Sphere {
             .wireframe = false,
             .rotation_time = 5.0,
         },
-        .cfg = cfg,
-        .aspect_ratio = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height)),
+        .ctx = ctx,
+        .aspect_ratio = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height)),
     };
 
     return p;
@@ -66,7 +66,7 @@ pub fn draw(self: *Sphere, frame_time: f64) void {
     const angle_radiants: f32 = @as(f32, @floatCast(rot)) * std.math.pi * 2;
     self.objects[0].sphere.mesh.wire_mesh = self.ui_state.wireframe;
     rhi.drawObjects(self.objects[0..]);
-    var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.cfg.near, self.cfg.far);
+    var m = math.matrix.orthographicProjection(0, 9, 0, 6, self.ctx.cfg.near, self.ctx.cfg.far);
     m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
     m = math.matrix.transformMatrix(m, math.matrix.translate(0, 3.5, 0));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(3));
@@ -81,4 +81,4 @@ const rhi = @import("../../../rhi/rhi.zig");
 const sphere_ui = @import("SphereUI.zig");
 const object = @import("../../../object/object.zig");
 const math = @import("../../../math/math.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");

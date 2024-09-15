@@ -1,19 +1,24 @@
 scene_instance: ?ui.ui_state.scenes = null,
 next_scene_type: ?ui.ui_state.scene_type = null,
-cfg: *config,
+context: SceneContext,
 
 allocator: std.mem.Allocator,
 
 const Scenes = @This();
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *Scenes {
+pub const SceneContext = struct {
+    cfg: *const config,
+    textures_loader: *assets.loader.Loader(assets.Image),
+};
+
+pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
     const scenes = allocator.create(Scenes) catch @panic("OOM");
     errdefer allocator.destroy(scenes);
     scenes.* = .{
         .allocator = allocator,
-        .cfg = cfg,
+        .context = ctx,
     };
-    scenes.initScene(ui.ui_state.scene_type.four_simple_solar_system);
+    scenes.initScene(ui.ui_state.scene_type.five_textured_pyramid);
     return scenes;
 }
 
@@ -36,13 +41,14 @@ fn updateSceneType(self: *Scenes) void {
 }
 
 fn initScene(self: *Scenes, dt: ui.ui_state.scene_type) void {
+    @setEvalBranchQuota(10_000);
     self.scene_instance = switch (dt) {
         inline else => |dtag| @unionInit(ui.ui_state.scenes, @tagName(dtag), std.meta.Child(
             std.meta.TagPayload(
                 ui.ui_state.scenes,
                 dtag,
             ),
-        ).init(self.allocator, self.cfg)),
+        ).init(self.allocator, self.context)),
     };
 }
 
@@ -74,3 +80,4 @@ pub const cgpoc = @import("cgpoc/cgpoc.zig");
 pub const color = @import("color/color.zig");
 pub const math = @import("math/math.zig");
 pub const shapes = @import("shapes/shapes.zig");
+pub const assets = @import("../assets/assets.zig");

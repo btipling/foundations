@@ -7,7 +7,7 @@ const cursor_horizontal_sensitivity: f32 = 0.65;
 pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
     return struct {
         allocator: std.mem.Allocator,
-        cfg: *config,
+        cfg: *const config,
         camera_matrix: math.matrix = undefined,
         camera_pos: math.vector.vec3 = undefined,
         camera_orientation_pitch: math.rotation.Quat = .{ 1, 0, 0, 0 },
@@ -43,7 +43,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
         pub fn init(
             allocator: std.mem.Allocator,
-            cfg: *config,
+            cfg: *const config,
             scene: T,
             integrator: IntegratorT,
             pos: math.vector.vec3,
@@ -57,7 +57,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
             var camera_heading: math.rotation.Quat = .{ 1, 0, 0, 0 };
             if (heading) |h| {
-                std.debug.print("setting heading\n", .{});
                 const a: math.rotation.AxisAngle = .{
                     .angle = h,
                     .axis = world_up,

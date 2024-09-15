@@ -2,7 +2,7 @@ ui_state: vma_ui,
 objects: [200]object.object = undefined,
 num_objects: usize = 0,
 num_vectors: usize = 0,
-cfg: *config,
+ctx: scenes.SceneContext,
 ortho_persp: math.matrix,
 
 const MathVectorArithmetic = @This();
@@ -17,19 +17,19 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *MathVectorArithmetic {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *MathVectorArithmetic {
     const p = allocator.create(MathVectorArithmetic) catch @panic("OOM");
     const ortho_persp = math.matrix.orthographicProjection(
         0,
         9,
         0,
         6,
-        cfg.near,
-        cfg.far,
+        ctx.cfg.near,
+        ctx.cfg.far,
     );
     p.* = .{
         .ui_state = vma_ui.init(),
-        .cfg = cfg,
+        .ctx = ctx,
         .ortho_persp = ortho_persp,
     };
     return p;
@@ -145,4 +145,4 @@ const rhi = @import("../../../rhi/rhi.zig");
 const object = @import("../../../object/object.zig");
 const math = @import("../../../math/math.zig");
 const ui = @import("../../../ui/ui.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");

@@ -2,6 +2,7 @@ app_scenes: *scenes,
 nav: ui.nav,
 allocator: std.mem.Allocator,
 app_config: *config,
+textures_loader: *assets.loader.Loader(assets.Image),
 
 const App = @This();
 
@@ -17,9 +18,21 @@ pub fn init(allocator: std.mem.Allocator) *App {
 
     ui.init(allocator, cfg, glsl_version);
     errdefer ui.deinit();
+
     rhi.init(allocator);
     errdefer rhi.deinit();
-    const app_scenes = scenes.init(allocator, cfg);
+
+    const textures_loader: *assets.loader.Loader(assets.Image) = assets.loader.Loader(assets.Image).init(
+        allocator,
+        "textures",
+    );
+    errdefer textures_loader.deinit();
+
+    const scene_ctx: scenes.SceneContext = .{
+        .cfg = cfg,
+        .textures_loader = textures_loader,
+    };
+    const app_scenes = scenes.init(allocator, scene_ctx);
     errdefer app_scenes.deinit();
 
     app = allocator.create(App) catch @panic("OOM");
@@ -28,12 +41,14 @@ pub fn init(allocator: std.mem.Allocator) *App {
         .allocator = allocator,
         .nav = ui.nav.init(app_scenes),
         .app_config = cfg,
+        .textures_loader = textures_loader,
     };
     return app;
 }
 
 pub fn deinit(self: *App) void {
     self.app_scenes.deinit();
+    self.textures_loader.deinit();
     rhi.deinit();
     ui.deinit();
     self.app_config.deinit();
@@ -56,3 +71,4 @@ const ui = @import("ui/ui.zig");
 const scenes = @import("scenes/scenes.zig");
 const rhi = @import("rhi/rhi.zig");
 const config = @import("config/config.zig");
+const assets = @import("assets/assets.zig");

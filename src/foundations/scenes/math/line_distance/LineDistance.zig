@@ -5,7 +5,7 @@ ui_state: LineDistanceUI,
 line: math.geometry.Line = undefined,
 circles: [num_points]rhi.instanceData = undefined,
 allocator: std.mem.Allocator,
-cfg: *config,
+ctx: scenes.SceneContext,
 ortho_persp: math.matrix,
 
 const LineDistance = @This();
@@ -31,7 +31,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *LineDistance {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LineDistance {
     const bct = allocator.create(LineDistance) catch @panic("OOM");
     const ui_state: LineDistanceUI = .{};
     const ortho_persp = math.matrix.orthographicProjection(
@@ -39,13 +39,13 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config) *LineDistance {
         4.5,
         0,
         3,
-        cfg.near,
-        cfg.far,
+        ctx.cfg.near,
+        ctx.cfg.far,
     );
     bct.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
-        .cfg = cfg,
+        .ctx = ctx,
         .ortho_persp = ortho_persp,
     };
     bct.updateLine();
@@ -321,4 +321,4 @@ const rhi = @import("../../../rhi/rhi.zig");
 const math = @import("../../../math/math.zig");
 const LineDistanceUI = @import("LineDistanceUI.zig");
 const object = @import("../../../object/object.zig");
-const config = @import("../../../config/config.zig");
+const scenes = @import("../../scenes.zig");

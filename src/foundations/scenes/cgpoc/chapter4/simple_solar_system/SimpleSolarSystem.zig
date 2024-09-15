@@ -21,21 +21,21 @@ const frag_shader: []const u8 = @embedFile("simple_solar_system_frag.glsl");
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
-        .name = "Cube And Pyramid",
+        .name = "Simple Solar System",
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, cfg: *config) *SimpleSolarSystem {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolarSystem {
     const pd = allocator.create(SimpleSolarSystem) catch @panic("OOM");
 
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
     const cam = physics.camera.Camera(*SimpleSolarSystem, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
-        cfg,
+        ctx.cfg,
         pd,
         integrator,
-        .{ 3, -8, 0 },
+        .{ 3, -15, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -203,5 +203,5 @@ const ui = @import("../../../../ui/ui.zig");
 const rhi = @import("../../../../rhi/rhi.zig");
 const math = @import("../../../../math/math.zig");
 const object = @import("../../../../object/object.zig");
-const config = @import("../../../../config/config.zig");
+const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");

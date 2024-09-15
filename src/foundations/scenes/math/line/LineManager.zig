@@ -8,7 +8,7 @@ num_tangents: usize = 0,
 highlighted_point: ?usize = null,
 dragging_point: ?usize = null,
 selected_point: ?usize = null,
-cfg: *config,
+cfg: *const config,
 
 const point_limit: usize = 100;
 const strip_scale: f32 = 0.005;
@@ -22,7 +22,7 @@ pub inline fn coordinate(c: f32) f32 {
     return c;
 }
 
-pub fn init(allocator: std.mem.Allocator, ui_state: *const line_ui, cfg: *config) *Manager {
+pub fn init(allocator: std.mem.Allocator, ui_state: *const line_ui, cfg: *const config) *Manager {
     const m = allocator.create(Manager) catch @panic("OOM");
     m.* = .{
         .ui_state = ui_state,
