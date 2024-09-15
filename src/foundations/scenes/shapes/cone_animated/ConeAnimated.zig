@@ -38,7 +38,6 @@ const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf4, kf5, kf6, kf0
 const ConeAnimated = @This();
 
 const vertex_shader: []const u8 = @embedFile("ca_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("ca_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -50,7 +49,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ConeAnimated {
     const p = allocator.create(ConeAnimated) catch @panic("OOM");
 
-    const program = rhi.createProgram();
+    const prog = rhi.createProgram();
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
@@ -62,15 +61,22 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ConeAnimate
             .color = .{ 1, 0, 0, 0.1 },
         };
     }
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     const cone: object.object = .{
         .cone = object.Cone.init(
-            program,
+            prog,
             i_datas[0..],
         ),
     };
     p.* = .{
-        .program = program,
+        .program = prog,
         .ui_state = ConeAnimatedUI.init(),
         .ctx = ctx,
         .aspect_ratio = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height)),

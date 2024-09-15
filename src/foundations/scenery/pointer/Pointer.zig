@@ -7,7 +7,6 @@ pub const mvp_uniform_name: []const u8 = "f_mvp";
 pub const pointer_uniform_name: []const u8 = "f_pointer_transform";
 
 const pointer_vertex_shader: []const u8 = @embedFile("pointer_vertex.glsl");
-const pointer_frag_shader: []const u8 = @embedFile("pointer_frag.glsl");
 
 pub fn init(allocator: std.mem.Allocator) *Pointer {
     const pointer = allocator.create(Pointer) catch @panic("OOM");
@@ -43,7 +42,14 @@ pub fn programs(self: *Pointer) [2]u32 {
 
 pub fn renderCylinder(self: *Pointer) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, pointer_vertex_shader, pointer_frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(pointer_vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0.075, 0));
@@ -69,7 +75,14 @@ pub fn renderCylinder(self: *Pointer) void {
 
 pub fn renderCone(self: *Pointer) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, pointer_vertex_shader, pointer_frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(pointer_vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translate(3.85, 0, 0));

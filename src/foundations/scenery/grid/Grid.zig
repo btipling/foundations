@@ -13,7 +13,6 @@ const num_grid_lines: usize = 101;
 const grid_increments: usize = 1;
 
 const grid_vertex_shader: []const u8 = @embedFile("grid_vertex.glsl");
-const grid_frag_shader: []const u8 = @embedFile("grid_frag.glsl");
 
 pub fn init(allocator: std.mem.Allocator) *Grid {
     const grid = allocator.create(Grid) catch @panic("OOM");
@@ -48,7 +47,14 @@ pub fn program(self: *Grid) u32 {
 
 fn renderGrid(self: *Grid) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, grid_vertex_shader, grid_frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(grid_vertex_shader)[0..]);
+    }
     var i_datas: [num_grid_lines * 2]rhi.instanceData = undefined;
     var i_data_i: usize = 0;
     for (0..2) |axis| {

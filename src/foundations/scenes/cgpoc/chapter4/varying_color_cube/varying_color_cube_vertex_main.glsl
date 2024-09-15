@@ -1,3 +1,7 @@
+uniform mat4 f_mvp;
+uniform float f_tf;
+
+out vec4 f_frag_color;
 
 void main()
 {
@@ -18,5 +22,5 @@ void main()
     mat4 newM_matrix = f_localTrans * f_localRotX * f_localRotY * f_localRotZ;
     vec4 f_pos = f_mvp * newM_matrix * f_transform * vec4(f_position.xyz, 1.0);
     gl_Position = f_pos;
-    f_varying_color = ((vec4(f_position.xyz, 1.0) * 2.0) - 1.0) * 0.5 + vec4(0.5, 0.5, 0.5, 0.5);
+    f_frag_color = ((vec4(f_position.xyz, 1.0) * 2.0) - 1.0) * 0.5 + vec4(0.5, 0.5, 0.5, 0.5);
 }

@@ -193,49 +193,6 @@ pub fn initEBO(indices: []const u32, vao: u32) u32 {
     return ebo;
 }
 
-pub fn attachShaders(program: u32, vertex: []const u8, frag: []const u8) void {
-    const shaders = [_]struct { source: []const u8, shader_type: c.GLenum }{
-        .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
-        .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
-    };
-    const log_len: usize = 1024;
-
-    var i: usize = 0;
-    while (i < shaders.len) : (i += 1) {
-        const source: [:0]u8 = std.mem.concatWithSentinel(rhi.allocator, u8, &[_][]const u8{shaders[i].source}, 0) catch @panic("OOM");
-        defer rhi.allocator.free(source);
-
-        const shader = c.glCreateShader(shaders[i].shader_type);
-
-        c.glShaderSource(shader, 1, &[_][*c]const u8{source.ptr}, null);
-        c.glCompileShader(shader);
-
-        var success: c.GLint = 0;
-        c.glGetShaderiv(shader, c.GL_COMPILE_STATUS, &success);
-        if (success == c.GL_FALSE) {
-            var infoLog: [log_len]u8 = std.mem.zeroes([log_len]u8);
-            var logSize: c.GLsizei = 0;
-            c.glGetShaderInfoLog(shader, @intCast(log_len), &logSize, @ptrCast(&infoLog));
-            const len: usize = @intCast(logSize);
-            std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n{s}\n", .{ infoLog[0..len], source });
-        }
-        c.glAttachShader(@intCast(program), shader);
-    }
-    {
-        c.glLinkProgram(@intCast(program));
-        var success: c.GLint = 0;
-        c.glGetProgramiv(@intCast(program), c.GL_LINK_STATUS, &success);
-        if (success == c.GL_FALSE) {
-            var infoLog: [log_len]u8 = std.mem.zeroes([log_len]u8);
-            var logSize: c.GLsizei = 0;
-            c.glGetProgramInfoLog(@intCast(program), @intCast(log_len), &logSize, @ptrCast(&infoLog));
-            const len: usize = @intCast(logSize);
-            std.debug.panic("ERROR::PROGRAM::LINKING_FAILED\n{s}\n", .{infoLog[0..len]});
-        }
-    }
-    return;
-}
-
 pub fn drawArrays(program: u32, vao: u32, count: usize) void {
     c.glUseProgram(@intCast(program));
     c.glBindVertexArray(vao);
@@ -391,3 +348,4 @@ const object = @import("../object/object.zig");
 pub const Mesh = @import("./Mesh.zig");
 pub const Uniform = @import("Uniform.zig");
 pub const Texture = @import("Texture.zig");
+pub const Shader = @import("Shader.zig");

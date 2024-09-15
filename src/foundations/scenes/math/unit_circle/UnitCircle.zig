@@ -11,7 +11,6 @@ const num_triangles_f: f32 = @floatFromInt(num_triangles);
 const strip_scale: f32 = 0.005;
 
 const vertex_shader: []const u8 = @embedFile("unit_circle_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("unit_circle_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -44,8 +43,15 @@ pub fn deleteStrip(self: *UnitCircle) void {
 }
 
 pub fn renderCircle(self: *UnitCircle) void {
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     var i_datas: [num_triangles]rhi.instanceData = undefined;
     for (0..num_triangles) |i| {
         const t: f32 = @floatFromInt(i);
@@ -65,7 +71,7 @@ pub fn renderCircle(self: *UnitCircle) void {
     }
     const strip: object.object = .{
         .strip = object.Strip.init(
-            program,
+            prog,
             i_datas[0..],
         ),
     };

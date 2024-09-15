@@ -1,7 +1,7 @@
-#version 460 core
-
 uniform float f_offset;
 uniform mat4 f_transform;
+
+out vec4 f_frag_color;
 
 void main()
 {
@@ -13,4 +13,5 @@ void main()
     pos = vec4(pos.x += f_offset, pos.yzw);
     pos = f_transform * pos;
     gl_Position = pos;
+    f_frag_color = vec4(0.0, 0.0, 1.0, 1.0);
 }

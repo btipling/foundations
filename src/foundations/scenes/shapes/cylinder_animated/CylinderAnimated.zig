@@ -38,7 +38,6 @@ const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf4, kf5, kf6, kf0
 const CylinderAnimated = @This();
 
 const vertex_shader: []const u8 = @embedFile("ca_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("ca_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -50,8 +49,15 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *CylinderAnimated {
     const p = allocator.create(CylinderAnimated) catch @panic("OOM");
 
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
@@ -65,13 +71,13 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *CylinderAni
     }
     const cylinder: object.object = .{
         .cylinder = object.Cylinder.init(
-            program,
+            prog,
             i_datas[0..],
             false,
         ),
     };
     p.* = .{
-        .program = program,
+        .program = prog,
         .ui_state = CylinderAnimatedUI.init(),
         .ctx = ctx,
         .aspect_ratio = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height)),

@@ -23,7 +23,6 @@ pub const selected_color: [4]f32 = .{ 0, 1, 0, 1 };
 pub const tangent_color: [4]f32 = .{ 0.22, 0.22, 0.22, 1 };
 
 const vertex_shader: []const u8 = @embedFile("line_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("line_frag.glsl");
 
 pub inline fn coordinate(c: f32) f32 {
     return c;

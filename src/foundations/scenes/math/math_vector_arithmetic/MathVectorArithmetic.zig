@@ -4,11 +4,11 @@ num_objects: usize = 0,
 num_vectors: usize = 0,
 ctx: scenes.SceneContext,
 ortho_persp: math.matrix,
+allocator: std.mem.Allocator,
 
 const MathVectorArithmetic = @This();
 
 const vertex_shader: []const u8 = @embedFile("mva_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("mva_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -31,6 +31,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *MathVectorA
         .ui_state = vma_ui.init(),
         .ctx = ctx,
         .ortho_persp = ortho_persp,
+        .allocator = allocator,
     };
     return p;
 }
@@ -86,8 +87,9 @@ fn addVector(self: *MathVectorArithmetic) void {
 
     self.objects[self.num_objects] = .{
         .triangle = object.Triangle.init(
-            vertex_shader,
-            frag_shader,
+            self.allocator,
+            rhi.Shader.single_vertex(vertex_shader)[0..],
+            .color,
             triangle_positions,
             triangle_colors,
             object.Triangle.default_normals,
@@ -123,8 +125,9 @@ fn addVector(self: *MathVectorArithmetic) void {
 
     self.objects[self.num_objects] = .{
         .quad = object.Quad.init(
-            vertex_shader,
-            frag_shader,
+            self.allocator,
+            rhi.Shader.single_vertex(vertex_shader)[0..],
+            .color,
             quad_positions,
             quad_colors,
         ),

@@ -21,13 +21,9 @@ const plane_origin_point_sphere: usize = 1;
 const plane_cube_point_sphere: usize = 2;
 
 const plane_vertex_shader: []const u8 = @embedFile("plane_vertex.glsl");
-const plane_frag_shader: []const u8 = @embedFile("plane_frag.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
-const sphere_frag_shader: []const u8 = @embedFile("sphere_frag.glsl");
 const cube_vertex_shader: []const u8 = @embedFile("cube_vertex.glsl");
-const cube_frag_shader: []const u8 = @embedFile("cube_frag.glsl");
 const reflection_vertex_shader: []const u8 = @embedFile("reflection_vertex.glsl");
-const reflection_frag_shader: []const u8 = @embedFile("reflection_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -56,8 +52,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistan
     const ui_state: PlaneDistanceUI = .{};
 
     const reflection_program = rhi.createProgram();
-    rhi.attachShaders(reflection_program, reflection_vertex_shader, reflection_frag_shader);
-
+    {
+        var s: rhi.Shader = .{
+            .program = reflection_program,
+            .instance_data = false,
+            .fragment_shader = .normals,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(reflection_vertex_shader)[0..]);
+    }
     pd.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
@@ -255,7 +257,14 @@ pub fn updateCamera(_: *PlaneDistance) void {}
 
 pub fn renderPlane(self: *PlaneDistance) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, plane_vertex_shader, plane_frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(plane_vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
@@ -281,7 +290,14 @@ pub fn renderPlane(self: *PlaneDistance) void {
 
 pub fn renderSphere(self: *PlaneDistance) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, sphere_vertex_shader, sphere_frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+    }
     var i_datas: [3]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
@@ -327,7 +343,14 @@ pub fn renderSphere(self: *PlaneDistance) void {
 
 pub fn renderParallepiped(self: *PlaneDistance) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, cube_vertex_shader, cube_frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .normals,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();

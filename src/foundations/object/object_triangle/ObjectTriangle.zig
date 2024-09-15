@@ -21,14 +21,22 @@ pub const default_normals: [3][3]f32 = .{
 };
 
 pub fn init(
-    vertex_shader: []const u8,
-    frag_shader: []const u8,
+    allocator: std.mem.Allocator,
+    vertex_partials: []const []const u8,
+    frag_shader: rhi.Shader.fragment_shader_type,
     positions: [3][3]f32,
     colors: [3][4]f32,
     normals: [3][3]f32,
 ) Triangle {
     const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = program,
+            .instance_data = true,
+            .fragment_shader = frag_shader,
+        };
+        s.attach(allocator, vertex_partials);
+    }
     return initWithProgram(program, positions, colors, normals);
 }
 
@@ -63,4 +71,5 @@ pub fn initWithProgram(
     };
 }
 
+const std = @import("std");
 const rhi = @import("../../rhi/rhi.zig");

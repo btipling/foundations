@@ -19,7 +19,6 @@ const colors: [3][4]f32 = .{
 };
 
 const vertex_shader: []const u8 = @embedFile("vertex.glsl");
-const frag_shader: []const u8 = @embedFile("frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -30,8 +29,15 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Triangle {
     const t = allocator.create(Triangle) catch @panic("OOM");
-    const program = rhi.createProgram();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
 
     var data: [3]rhi.attributeData = undefined;
     var i: usize = 0;
@@ -54,7 +60,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Triangle {
     }
     const vao_buf = rhi.attachBuffer(data[0..]);
     t.* = .{
-        .program = program,
+        .program = prog,
         .vao = vao_buf.vao,
         .buffer = vao_buf.buffer,
         .count = positions.len,

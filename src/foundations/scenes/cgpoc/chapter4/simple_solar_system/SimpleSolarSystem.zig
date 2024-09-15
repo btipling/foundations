@@ -16,7 +16,6 @@ const num_cubes = 1;
 const pyramid_vertex_shader: []const u8 = @embedFile("pyramid_vertex.glsl");
 const cube_vertex_shader: []const u8 = @embedFile("cube_vertex.glsl");
 const cylinder_vertex_shader: []const u8 = @embedFile("cylinder_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("simple_solar_system_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -117,7 +116,14 @@ pub fn updateCamera(_: *SimpleSolarSystem) void {}
 
 pub fn renderPyramid(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, pyramid_vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(pyramid_vertex_shader)[0..]);
+    }
     const cm = math.matrix.identity();
     const i_data: rhi.instanceData = .{
         .t_column0 = cm.columns[0],
@@ -144,7 +150,14 @@ pub fn renderPyramid(self: *SimpleSolarSystem) void {
 
 pub fn renderParallepiped(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, cube_vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const cm = math.matrix.identity();
@@ -171,7 +184,14 @@ pub fn renderParallepiped(self: *SimpleSolarSystem) void {
 
 pub fn renderCylinder(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, cylinder_vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(cylinder_vertex_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();

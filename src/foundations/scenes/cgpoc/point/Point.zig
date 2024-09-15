@@ -10,7 +10,6 @@ inc: f32 = 0.01,
 const Point = @This();
 
 const vertex_shader: []const u8 = @embedFile("vertex.glsl");
-const frag_shader: []const u8 = @embedFile("frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -20,13 +19,20 @@ pub fn navType() ui.ui_state.scene_nav_info {
 }
 
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Point {
-    const program = rhi.createProgram();
+    const prog = rhi.createProgram();
     const vao = rhi.createVAO();
-    rhi.attachShaders(program, vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = false,
+            .fragment_shader = .color,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
 
     const p = allocator.create(Point) catch @panic("OOM");
     p.* = .{
-        .program = program,
+        .program = prog,
         .vao = vao,
         .buffer = 0,
         .count = 1,

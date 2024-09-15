@@ -9,9 +9,7 @@ ice_texture: ?rhi.Texture,
 const TexturedPyramid = @This();
 
 const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
-const frag_shader: []const u8 = @embedFile("../../../../shaders/i_obj_frag.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
-const frag_color_shader: []const u8 = @embedFile("../../../../shaders/i_obj_color_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -96,7 +94,15 @@ pub fn updateCamera(_: *TexturedPyramid) void {}
 
 pub fn renderParallepiped(self: *TexturedPyramid) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, vertex_shader, frag_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .texture,
+        };
+        const partials = [_][]const u8{vertex_shader};
+        s.attach(self.allocator, @ptrCast(partials[0..]));
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
@@ -124,7 +130,14 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
 
 pub fn renderBG(self: *TexturedPyramid) void {
     const prog = rhi.createProgram();
-    rhi.attachShaders(prog, vertex_static_shader, frag_color_shader);
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+    }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();

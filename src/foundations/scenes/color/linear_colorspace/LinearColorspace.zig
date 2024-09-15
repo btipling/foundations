@@ -4,7 +4,6 @@ ctx: scenes.SceneContext,
 const LinearColorSpace = @This();
 
 const vertex_shader: []const u8 = @embedFile("lcs_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("lcs_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -43,8 +42,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LinearColor
     }
     const triangle1: object.object = .{
         .triangle = object.Triangle.init(
-            vertex_shader,
-            frag_shader,
+            allocator,
+            rhi.Shader.single_vertex(vertex_shader)[0..],
+            .color,
             triangle_positions,
             triangle_colors,
             object.Triangle.default_normals,
@@ -74,8 +74,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LinearColor
     }
     var triangle2: object.object = .{
         .triangle = object.Triangle.init(
-            vertex_shader,
-            frag_shader,
+            allocator,
+            rhi.Shader.single_vertex(vertex_shader)[0..],
+            .color,
             triangle_positions,
             triangle_colors,
             object.Triangle.default_normals,
