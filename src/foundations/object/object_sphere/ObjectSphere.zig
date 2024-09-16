@@ -3,18 +3,10 @@ vertex_data_size: usize,
 instance_data_stride: usize,
 
 const Sphere = @This();
-const angle_delta: f32 = std.math.pi * 0.02;
-const x_angle_delta = angle_delta / 2.0;
-const x_grid_rows: f32 = std.math.pi * 2.0 - angle_delta * 1.5;
-const grid_dimension: usize = @intFromFloat((2.0 * std.math.pi) / angle_delta);
-const quad_dimensions = grid_dimension - 1;
-const num_quads = quad_dimensions * quad_dimensions;
-const num_triangles = quad_dimensions;
-const num_triangles_in_end = quad_dimensions * 2;
-const num_quads_in_grid = ((x_grid_rows - x_angle_delta * 2) / x_angle_delta) * grid_dimension;
-const num_vertices: usize = (num_triangles_in_end * 2 + 1) + (3 * grid_dimension) * (3 * grid_dimension) + (num_triangles_in_end * 2 + 1);
-const num_indices: usize = (grid_dimension * 3) + 6 * num_quads_in_grid + (grid_dimension * 3);
-const sphere_scale: f32 = 0.75;
+const precision: usize = 48;
+const precision_f: f32 = @floatFromInt(precision);
+const num_vertices = (precision + 1) * (precision + 1);
+const num_indices = precision * precision * 6;
 
 pub fn init(
     program: u32,
@@ -53,118 +45,59 @@ pub fn updateInstanceAt(self: Sphere, index: usize, instance_data: rhi.instanceD
 fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
     var attribute_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
-    const y_angle_delta = angle_delta;
-    var x_axis_angle: f32 = x_angle_delta;
-    var y_axis_angle: f32 = y_angle_delta;
 
-    var positions: [num_vertices]math.vector.vec3 = undefined;
-    const r: f32 = 1.0;
+    const p_index: usize = precision + 1;
 
-    const start: math.vector.vec3 = .{ 1, 0, 0 };
-    const end: math.vector.vec3 = .{ -1, 0, 0 };
-    positions[0] = start;
-    positions[1] = end;
-    var pi: usize = 2;
-    while (y_axis_angle <= std.math.pi * 2 + y_angle_delta) : (y_axis_angle += y_angle_delta) {
-        positions[pi] = .{
-            r * @cos(x_axis_angle),
-            r * @sin(x_axis_angle) * @sin(y_axis_angle),
-            r * @sin(x_axis_angle) * @cos(y_axis_angle),
-        };
-        pi += 1;
-    }
-    y_axis_angle += y_angle_delta;
-    x_axis_angle += x_angle_delta;
-
-    var ii: usize = 0;
-    var i: u32 = 0;
-    var pii: u32 = 1;
-    while (i < num_triangles) : (i += 1) {
-        indices[ii] = 0;
-        indices[ii + 1] = pii + 2;
-        indices[ii + 2] = pii + 1;
-        ii += 3;
-        pii += 1;
-    }
-    indices[ii] = 0;
-    indices[ii + 1] = pii + 2;
-    indices[ii + 2] = 1;
-    ii += 3;
-    pii += 2;
-
-    var iii: usize = 2;
-    while (x_axis_angle < x_grid_rows) : (x_axis_angle += x_angle_delta) {
-        const start_iii = iii;
-        y_axis_angle = y_angle_delta;
-        for (0..grid_dimension) |ri| {
-            positions[pi] = .{
-                r * @cos(x_axis_angle),
-                r * @sin(x_axis_angle) * @sin(y_axis_angle),
-                r * @sin(x_axis_angle) * @cos(y_axis_angle),
+    for (0..p_index) |i| {
+        const i_f: f32 = @floatFromInt(i);
+        for (0..p_index) |j| {
+            const j_f: f32 = @floatFromInt(j);
+            const half_circle: f32 = std.math.pi;
+            const full_circle: f32 = std.math.pi * 2;
+            const x: f32 = @cos(half_circle - i_f * std.math.pi / precision_f);
+            const phi: f32 = @abs(@cos(std.math.asin(x)));
+            const theta: f32 = j_f * full_circle / precision_f;
+            const z = -@cos(theta) * phi;
+            const y = @sin(theta) * phi;
+            const pos: [3]f32 = .{ x, y, z };
+            const index: usize = i * p_index + j;
+            attribute_data[index] = .{
+                .position = pos,
+                .normals = .{ x, y, z },
+                .texture_coords = .{ j_f / precision_f, i_f / precision_f },
             };
-            pi += 1;
-            y_axis_angle += y_angle_delta;
-            positions[pi] = .{
-                r * @cos(x_axis_angle),
-                r * @sin(x_axis_angle) * @sin(y_axis_angle),
-                r * @sin(x_axis_angle) * @cos(y_axis_angle),
-            };
-            pi += 1;
-            {
-                var tr = iii + 1;
-                if (ri == grid_dimension - 1) {
-                    tr = start_iii;
-                }
-                const br = iii + grid_dimension + 1;
-                const tl = iii;
-                const bl = iii + grid_dimension;
-
-                // Triangle 1
-                indices[ii] = @intCast(tl);
-                indices[ii + 1] = @intCast(br);
-                indices[ii + 2] = @intCast(bl);
-
-                // Triangle 2
-                indices[ii + 3] = @intCast(tl);
-                indices[ii + 4] = @intCast(tr);
-                indices[ii + 5] = @intCast(br);
-
-                ii += 6;
-                iii += 1;
-            }
-            y_axis_angle += y_angle_delta;
-            pii += 2;
         }
     }
+    for (0..(precision)) |i| {
+        const inext: usize = i + 1;
 
-    y_axis_angle = y_angle_delta;
-    x_axis_angle = std.math.pi + x_angle_delta;
-    while (y_axis_angle <= std.math.pi * 2 + y_angle_delta) : (y_axis_angle += y_angle_delta) {
-        positions[pi] = .{
-            r * @cos(x_axis_angle),
-            r * @sin(x_axis_angle) * @sin(y_axis_angle),
-            r * @sin(x_axis_angle) * @cos(y_axis_angle),
-        };
-        pi += 1;
-    }
+        const i_pindex: usize = i * p_index;
+        const inext_pindex: usize = inext * p_index;
+        const i_precision: usize = i * precision;
 
-    i = 0;
-    const closer = pii;
-    while (i < num_triangles) : (i += 1) {
-        indices[ii + 2] = 1;
-        indices[ii + 1] = pii + 1;
-        indices[ii] = pii + 0;
-        ii += 3;
-        pii += 1;
-    }
-    indices[ii + 2] = 1;
-    indices[ii + 1] = closer;
-    indices[ii] = pii;
-    var adi: usize = 0;
+        for (0..(precision)) |j| {
+            const jnext: usize = j + 1;
 
-    while (adi < pi) : (adi += 1) {
-        attribute_data[adi].position = positions[adi];
-        attribute_data[adi].normals = math.vector.normalize(positions[adi]);
+            const i_j_pindex = i_pindex + j;
+            const i_jnext_pindex = i_pindex + jnext;
+            const inext_j_pindex = inext_pindex + j;
+            const inext_jnext_pindex = inext_pindex + jnext;
+
+            const v1: u32 = @intCast(i_j_pindex);
+            const v2: u32 = @intCast(i_jnext_pindex);
+            const v3: u32 = @intCast(inext_j_pindex);
+            const v4: u32 = @intCast(inext_jnext_pindex);
+
+            const offset = 6 * (i_precision + j);
+
+            indices[offset + 0] = v1;
+            indices[offset + 1] = v2;
+            indices[offset + 2] = v3;
+
+            indices[offset + 3] = v2;
+            indices[offset + 4] = v4;
+            indices[offset + 5] = v3;
+        }
     }
 
     return .{ .attribute_data = attribute_data, .indices = indices };
