@@ -8,6 +8,7 @@ pub const scene_type = enum(usize) {
     cylinder_animated,
     cone_animated,
     pyramid,
+    torus,
     // math
     math_vector_arithmetic,
     line,
@@ -40,6 +41,7 @@ pub const scenes = union(scene_type) {
     cylinder_animated: *scenes_list.shapes.Cylinder,
     cone_animated: *scenes_list.shapes.Cone,
     pyramid: *scenes_list.shapes.Pyramid,
+    torus: *scenes_list.shapes.Torus,
     // math
     math_vector_arithmetic: *scenes_list.math.MathVectorArithmetic,
     line: *scenes_list.math.Line,

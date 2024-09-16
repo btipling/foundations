@@ -56,14 +56,14 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         var m: math.matrix = math.matrix.rotationY(phi);
         var p1: math.vector.vec4 = .{ outer_radius, 0.0, 0.0, 1.0 };
         p1 = math.matrix.transformVector(m, p1);
-        const p2: math.vector.vec4 = math.vector.add(p1, .{ 0.0, 0.0, inner_radius, 0.0 });
+        const p2: math.vector.vec4 = math.vector.add(p1, @as(math.vector.vec4, .{ 0.0, 0.0, inner_radius, 0.0 }));
 
         const vertex: [3]f32 = .{ p2[0], p2[1], p2[2] };
 
-        const texture_coord: [2]f32 = .{ 0.0, i_f / precision_f };
+        const texture_coords: [2]f32 = .{ 0.0, i_f / precision_f };
 
         //TODO: support tangents in vertex attributes
-        m = math.matrix.transformMatrix(m, math.matrix.rotationY(phi + (std.math.pi / 2)));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationY(phi + (std.math.pi / 2.0)));
         var tv: math.vector.vec4 = .{ -1.0, 0.0, 0.0, 1.0 };
         tv = math.matrix.transformVector(m, tv);
         const t_tangent: math.vector.vec3 = .{ tv[0], tv[1], tv[2] };
@@ -72,13 +72,14 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         attribute_data[i] = .{
             .position = vertex,
             .normals = normals,
-            .texture_coord = texture_coord,
+            .texture_coords = texture_coords,
         };
     }
 
     for (1..p_index) |ring| {
         const ring_f: f32 = @floatFromInt(ring);
         const phi: f32 = ring_f * std.math.tau / precision_f;
+        // float amt = (float)toRadians((float)ring * 360.0f / (prec));
         const m: math.matrix = math.matrix.rotationX(phi);
         for (0..p_index) |i| {
             const index = ring * p_index + i;
@@ -89,19 +90,19 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             v1 = math.matrix.transformVector(m, v1);
             const vertex: [3]f32 = .{ v1[0], v1[1], v1[2] };
 
-            const texture_coord: [2]f32 = .{ ring_f * 2.0 / precision_f, ad.texture_coords[1] };
+            const texture_coords: [2]f32 = .{ ring_f * 2.0 / precision_f, ad.texture_coords[1] };
 
             // TODO: support tangents in vertex attributes
             // s and t tangents need to be created here
 
             const n = ad.normals;
             var n1: math.vector.vec4 = .{ n[0], n[1], n[2], 0 };
-            n1 = math.matrix.transformVector(m, v1);
+            n1 = math.matrix.transformVector(m, n1);
             const normals: math.vector.vec3 = .{ n1[0], n1[1], n1[2] };
             attribute_data[index] = .{
                 .position = vertex,
                 .normals = math.vector.normalize(normals),
-                .texture_coords = texture_coord,
+                .texture_coords = texture_coords,
             };
         }
     }
@@ -111,11 +112,11 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         for (0..precision) |i| {
             const offset = (ring * precision + i) * 2;
             indices[offset * 3 + 0] = @intCast(ring * (precision + 1) + i);
-            indices[offset * 3 + 1] = @intCast((ring + 1) * (precision + 1) + i);
-            indices[offset * 3 + 2] = @intCast(ring * (precision + 1) + i + 1);
+            indices[offset * 3 + 2] = @intCast((ring + 1) * (precision + 1) + i);
+            indices[offset * 3 + 1] = @intCast(ring * (precision + 1) + i + 1);
             indices[(offset + 1) * 3 + 0] = @intCast(ring * (precision + 1) + i + 1);
-            indices[(offset + 1) * 3 + 1] = @intCast((ring + 1) * (precision + 1) + i);
-            indices[(offset + 1) * 3 + 2] = @intCast((ring + 1) * (precision + 1) + i + 1);
+            indices[(offset + 1) * 3 + 2] = @intCast((ring + 1) * (precision + 1) + i);
+            indices[(offset + 1) * 3 + 1] = @intCast((ring + 1) * (precision + 1) + i + 1);
         }
     }
 

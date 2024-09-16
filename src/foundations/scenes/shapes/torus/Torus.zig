@@ -1,6 +1,6 @@
 program: u32,
 objects: [1]object.object = undefined,
-ui_state: PyramidUI,
+ui_state: TorusUI,
 ctx: scenes.SceneContext,
 aspect_ratio: f32,
 
@@ -35,19 +35,19 @@ const kf6: math.rotation.Quat = math.rotation.axisAngleToQuat(.{
 
 const key_frames = [_]math.rotation.Quat{ kf0, kf1, kf2, kf3, kf4, kf5, kf6, kf0 };
 
-const Pyramid = @This();
+const Torus = @This();
 
 const vertex_shader: []const u8 = @embedFile("../../../shaders/vertex_no_camera.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .shape,
-        .name = "Pyramid",
+        .name = "Torus",
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Pyramid {
-    const p = allocator.create(Pyramid) catch @panic("OOM");
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Torus {
+    const p = allocator.create(Torus) catch @panic("OOM");
 
     const prog = rhi.createProgram();
     {
@@ -69,8 +69,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Pyramid {
             .color = .{ 1, 0, 0, 0.1 },
         };
     }
-    const pyramid: object.object = .{
-        .pyramid = object.Pyramid.init(
+    const torus: object.object = .{
+        .torus = object.Torus.init(
             prog,
             i_datas[0..],
             false,
@@ -78,21 +78,21 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Pyramid {
     };
     p.* = .{
         .program = prog,
-        .ui_state = PyramidUI.init(),
+        .ui_state = TorusUI.init(),
         .ctx = ctx,
         .aspect_ratio = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height)),
     };
-    p.objects[0] = pyramid;
+    p.objects[0] = torus;
     return p;
 }
 
-pub fn deinit(self: *Pyramid, allocator: std.mem.Allocator) void {
+pub fn deinit(self: *Torus, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
 const animation_duration: f64 = @floatFromInt(key_frames.len - 1);
 
-pub fn draw(self: *Pyramid, frame_time: f64) void {
+pub fn draw(self: *Torus, frame_time: f64) void {
     var frame_times: [key_frames.len]f32 = undefined;
     comptime var i: usize = 0;
     inline while (i < key_frames.len) : (i += 1) {
@@ -137,6 +137,6 @@ const std = @import("std");
 const rhi = @import("../../../rhi/rhi.zig");
 const object = @import("../../../object/object.zig");
 const math = @import("../../../math/math.zig");
-const PyramidUI = @import("PyramidUI.zig");
+const TorusUI = @import("TorusUI.zig");
 const ui = @import("../../../ui/ui.zig");
 const scenes = @import("../../scenes.zig");
