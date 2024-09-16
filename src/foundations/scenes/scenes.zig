@@ -9,6 +9,7 @@ const Scenes = @This();
 pub const SceneContext = struct {
     cfg: *const config,
     textures_loader: *assets.loader.Loader(assets.Image),
+    obj_loader: *assets.loader.Loader(assets.Obj),
 };
 
 pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {

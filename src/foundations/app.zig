@@ -3,6 +3,7 @@ nav: ui.nav,
 allocator: std.mem.Allocator,
 app_config: *config,
 textures_loader: *assets.loader.Loader(assets.Image),
+obj_loader: *assets.loader.Loader(assets.Obj),
 
 const App = @This();
 
@@ -28,9 +29,16 @@ pub fn init(allocator: std.mem.Allocator) *App {
     );
     errdefer textures_loader.deinit();
 
+    const obj_loader: *assets.loader.Loader(assets.Obj) = assets.loader.Loader(assets.Obj).init(
+        allocator,
+        "models",
+    );
+    errdefer obj_loader.deinit();
+
     const scene_ctx: scenes.SceneContext = .{
         .cfg = cfg,
         .textures_loader = textures_loader,
+        .obj_loader = obj_loader,
     };
     const app_scenes = scenes.init(allocator, scene_ctx);
     errdefer app_scenes.deinit();
@@ -42,12 +50,14 @@ pub fn init(allocator: std.mem.Allocator) *App {
         .nav = ui.nav.init(app_scenes),
         .app_config = cfg,
         .textures_loader = textures_loader,
+        .obj_loader = obj_loader,
     };
     return app;
 }
 
 pub fn deinit(self: *App) void {
     self.app_scenes.deinit();
+    self.obj_loader.deinit();
     self.textures_loader.deinit();
     rhi.deinit();
     ui.deinit();
