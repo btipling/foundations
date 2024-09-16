@@ -64,7 +64,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             attribute_data[index] = .{
                 .position = pos,
                 .normals = .{ x, y, z },
-                .texture_coords = .{ j_f / precision_f, i_f / precision_f },
+                .texture_coords = .{ 1.0 - j_f / precision_f, 1.0 - i_f / precision_f },
             };
         }
     }
