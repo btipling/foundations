@@ -67,7 +67,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         var tv: math.vector.vec4 = .{ -1.0, 0.0, 0.0, 1.0 };
         tv = math.matrix.transformVector(m, tv);
         const t_tangent: math.vector.vec3 = .{ tv[0], tv[1], tv[2] };
-        const s_tangent: math.vector.vec3 = .{ 0, -1, 0 };
+        const s_tangent: math.vector.vec3 = .{ 0, 1, 0 };
         const normals = math.vector.normalize(math.vector.crossProduct(t_tangent, s_tangent));
         attribute_data[i] = .{
             .position = vertex,

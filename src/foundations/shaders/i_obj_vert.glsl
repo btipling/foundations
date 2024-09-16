@@ -1,6 +1,7 @@
 uniform mat4 f_mvp;
 out vec2 f_tc;
 out vec4 f_frag_color;
+out vec3 fo_normals;
 
 void main()
 {
@@ -14,4 +15,5 @@ void main()
     gl_Position = f_pos;
     f_tc = f_texture_coords;
     f_frag_color = f_i_color;
+    fo_normals = f_normals;
 }
