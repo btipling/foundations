@@ -11,7 +11,10 @@ pub fn init(image: *assets.Image) Texture {
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR_MIPMAP_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
-    c.glTextureStorage2D(name, 1, c.GL_RGBA8, @intCast(image.width), @intCast(image.height));
+    const w: f32 = @floatFromInt(image.width);
+    const h: f32 = @floatFromInt(image.height);
+    const mip_map_levels: c.GLsizei = @intFromFloat(@ceil(@log2(@max(w, h))));
+    c.glTextureStorage2D(name, mip_map_levels, c.GL_RGBA8, @intCast(image.width), @intCast(image.height));
     c.glTextureSubImage2D(
         name,
         0,
