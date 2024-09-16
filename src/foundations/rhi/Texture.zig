@@ -7,9 +7,14 @@ const Texture = @This();
 
 pub const TextureError = error{
     BindlessHandleCreationFailed,
+    BindlessNotSupported,
 };
 
 pub fn init(image: *assets.Image, program: u32, uniform_name: []const u8) TextureError!Texture {
+    if (c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1 or c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1) {
+        return TextureError.BindlessNotSupported;
+    }
+
     var t: Texture = .{};
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));

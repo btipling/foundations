@@ -52,15 +52,25 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         const i_f: f32 = @floatFromInt(i);
         for (0..p_index) |j| {
             const j_f: f32 = @floatFromInt(j);
-            const half_circle: f32 = std.math.pi;
-            const full_circle: f32 = std.math.pi * 2;
-            const x: f32 = @cos(half_circle - i_f * std.math.pi / precision_f);
+            const x: f32 = @cos(std.math.pi - i_f * std.math.pi / precision_f);
             const phi: f32 = @abs(@cos(std.math.asin(x)));
-            const theta: f32 = j_f * full_circle / precision_f;
+            const theta: f32 = j_f * std.math.tau / precision_f;
             const z = -@cos(theta) * phi;
             const y = @sin(theta) * phi;
             const pos: [3]f32 = .{ x, y, z };
             const index: usize = i * p_index + j;
+
+            //TODO: support tangents in vertex attributes
+            // calculate tangent vector
+            var tangent: [3]f32 = undefined;
+            if ((math.float.equal_e(x, 1.0) and math.float.equal_e(y, 0.0) and math.float.equal_e(z, 0.0)) or
+                (math.float.equal_e(x, -1.0) and math.float.equal_e(y, 0.0) and math.float.equal_e(z, 0.0)))
+            {
+                tangent = .{ 0, -1, 0 };
+            } else {
+                tangent = .{ 1, 0, 0 };
+            }
+
             attribute_data[index] = .{
                 .position = pos,
                 .normals = .{ x, y, z },

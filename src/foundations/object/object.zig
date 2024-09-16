@@ -11,6 +11,7 @@ pub const object_type = enum {
     cone,
     instanced_triangle,
     pyramid,
+    torus,
 };
 
 pub const object = union(object_type) {
@@ -26,6 +27,7 @@ pub const object = union(object_type) {
     cone: Cone,
     instanced_triangle: InstancedTriangle,
     pyramid: Pyramid,
+    torus: Torus,
 };
 
 pub const NoRender = @import("object_no_render/ObjectNoRender.zig");
@@ -40,3 +42,4 @@ pub const Cylinder = @import("object_cylinder/ObjectCylinder.zig");
 pub const Cone = @import("object_cone/ObjectCone.zig");
 pub const InstancedTriangle = @import("object_instanced_triangle/ObjectInstancedTriangle.zig");
 pub const Pyramid = @import("object_pyramid/ObjectPyramid.zig");
+pub const Torus = @import("object_torus/ObjectTorus.zig");
