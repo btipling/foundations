@@ -64,7 +64,11 @@ pub fn draw(self: *Shuttle, dt: f64) void {
 pub fn updateCamera(_: *Shuttle) void {}
 
 pub fn renderShuttle(self: *Shuttle) void {
-    _ = self;
+    if (self.ctx.obj_loader.loadAsset("cgpoc\\NasaShuttle\\shuttle.obj") catch null) |_| {
+        std.debug.print("got shuttle\n", .{});
+    } else {
+        std.debug.print("no shuttle\n", .{});
+    }
 }
 
 const std = @import("std");
