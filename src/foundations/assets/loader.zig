@@ -64,7 +64,7 @@ pub fn Loader(comptime T: type) type {
             var t: *T = self.allocator.create(T) catch @panic("OOM");
             errdefer self.allocator.destroy(t);
 
-            t.init(data, file_name);
+            t.init(self.allocator, data, file_name);
             errdefer t.deinit();
 
             self.cache.put(self.allocator, file_name, t) catch @panic("OOM");

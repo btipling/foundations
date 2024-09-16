@@ -7,7 +7,7 @@ stb_data: []u8,
 const Image = @This();
 const rgba_channels: u8 = 4;
 
-pub fn init(self: *Image, data: []u8, file_name: []const u8) void {
+pub fn init(self: *Image, _: std.mem.Allocator, data: []u8, file_name: []const u8) void {
     var x: c_int = undefined;
     var y: c_int = undefined;
     var ch: c_int = undefined;

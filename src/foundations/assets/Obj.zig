@@ -10,10 +10,10 @@ num_indicies: usize = 0,
 const max_vertices: usize = 100_000;
 const max_indicies: usize = max_vertices * 3;
 
-const Image = @This();
+const Obj = @This();
 const rgba_channels: u8 = 4;
 
-pub fn init(self: *Image, data: []u8, file_name: []const u8) void {
+pub fn init(self: *Obj, _: std.mem.Allocator, data: []u8, file_name: []const u8) void {
     self.data = data;
     self.file_name = file_name;
     std.debug.print("loaded object\n", .{});
@@ -75,7 +75,7 @@ fn parseFace(face: []const u8) ![3]usize {
     return .{ v, t, n };
 }
 
-pub fn deinit(self: *Image, allocator: std.mem.Allocator) void {
+pub fn deinit(self: *Obj, allocator: std.mem.Allocator) void {
     allocator.free(self.data);
     self.data = undefined;
     allocator.destroy(self);
