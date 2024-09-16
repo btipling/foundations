@@ -2,6 +2,8 @@ name: c.GLuint = 0,
 texture_unit: c.GLuint = 0,
 handle: c.GLuint64 = 0,
 uniform: Uniform = undefined,
+wrap_s: c.GLint = c.GL_CLAMP_TO_EDGE,
+wrap_t: c.GLint = c.GL_CLAMP_TO_EDGE,
 
 const Texture = @This();
 
@@ -11,15 +13,19 @@ pub const TextureError = error{
 };
 
 pub fn init(image: *assets.Image, program: u32, uniform_name: []const u8) TextureError!Texture {
+    var t: Texture = .{};
+    return t.setup(image, program, uniform_name);
+}
+
+pub fn setup(self: *Texture, image: *assets.Image, program: u32, uniform_name: []const u8) TextureError!Texture {
     if (c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1 or c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1) {
         return TextureError.BindlessNotSupported;
     }
 
-    var t: Texture = .{};
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
-    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
-    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, self.wrap_s);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, self.wrap_t);
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR_MIPMAP_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
     const w: f32 = @floatFromInt(image.width);
@@ -45,20 +51,20 @@ pub fn init(image: *assets.Image, program: u32, uniform_name: []const u8) Textur
         c.glTextureParameterf(name, c.GL_TEXTURE_MAX_ANISOTROPY, ansio_setting);
     }
 
-    t.name = name;
+    self.name = name;
 
     // Generate bindless handle
-    t.handle = c.glGetTextureHandleARB(t.name);
-    if (t.handle == 0) {
+    self.handle = c.glGetTextureHandleARB(self.name);
+    if (self.handle == 0) {
         return TextureError.BindlessHandleCreationFailed;
     }
 
     // Make the texture resident
-    c.glMakeTextureHandleResidentARB(t.handle);
+    c.glMakeTextureHandleResidentARB(self.handle);
 
-    t.uniform = Uniform.init(program, uniform_name);
+    self.uniform = Uniform.init(program, uniform_name);
 
-    return t;
+    return self.*;
 }
 
 pub fn makeNonResident(self: Texture) void {

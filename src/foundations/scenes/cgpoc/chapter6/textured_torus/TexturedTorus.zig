@@ -1,10 +1,10 @@
 allocator: std.mem.Allocator,
-sphere: object.object = .{ .norender = .{} },
-view_camera: *physics.camera.Camera(*Earth, physics.Integrator(physics.SmoothDeceleration)),
-earth_texture: ?rhi.Texture,
+torus: object.object = .{ .norender = .{} },
+view_camera: *physics.camera.Camera(*TexturedTorus, physics.Integrator(physics.SmoothDeceleration)),
+brick_texture: ?rhi.Texture,
 ctx: scenes.SceneContext,
 
-const Earth = @This();
+const TexturedTorus = @This();
 
 const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
@@ -12,20 +12,20 @@ const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_s
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
-        .name = "Earth",
+        .name = "Textured Torus",
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Earth {
-    const pd = allocator.create(Earth) catch @panic("OOM");
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTorus {
+    const pd = allocator.create(TexturedTorus) catch @panic("OOM");
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
-    const cam = physics.camera.Camera(*Earth, physics.Integrator(physics.SmoothDeceleration)).init(
+    const cam = physics.camera.Camera(*TexturedTorus, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         ctx.cfg,
         pd,
         integrator,
-        .{ 3, -15, 0 },
+        .{ 0, -15, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -33,15 +33,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Earth {
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
-        .earth_texture = null,
+        .brick_texture = null,
         .ctx = ctx,
     };
-    pd.renderSphere();
+    pd.renderTorus();
     return pd;
 }
 
-pub fn deinit(self: *Earth, allocator: std.mem.Allocator) void {
-    if (self.earth_texture) |et| {
+pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
+    if (self.brick_texture) |et| {
         et.deinit();
     }
     self.view_camera.deinit(allocator);
@@ -49,22 +49,22 @@ pub fn deinit(self: *Earth, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn draw(self: *Earth, dt: f64) void {
+pub fn draw(self: *TexturedTorus, dt: f64) void {
     self.view_camera.update(dt);
-    if (self.earth_texture) |et| {
+    if (self.brick_texture) |et| {
         et.bind();
     }
     {
         const objects: [1]object.object = .{
-            self.sphere,
+            self.torus,
         };
         rhi.drawObjects(objects[0..]);
     }
 }
 
-pub fn updateCamera(_: *Earth) void {}
+pub fn updateCamera(_: *TexturedTorus) void {}
 
-pub fn renderSphere(self: *Earth) void {
+pub fn renderTorus(self: *TexturedTorus) void {
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
@@ -89,8 +89,8 @@ pub fn renderSphere(self: *Earth) void {
         };
         i_datas[0] = i_data;
     }
-    const sphere: object.object = .{
-        .sphere = object.Sphere.init(
+    const torus: object.object = .{
+        .torus = object.Torus.init(
             prog,
             i_datas[0..],
             false,
@@ -98,12 +98,13 @@ pub fn renderSphere(self: *Earth) void {
     };
     self.view_camera.addProgram(prog, "f_mvp");
 
-    if (self.ctx.textures_loader.loadAsset("cgpoc\\earth.jpg") catch null) |img| {
-        self.earth_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
+    if (self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null) |img| {
+        var t: rhi.Texture = .{ .wrap_s = c.GL_REPEAT };
+        self.brick_texture = t.setup(img, prog, "f_samp") catch null;
     } else {
-        std.debug.print("no earth image\n", .{});
+        std.debug.print("no brick image\n", .{});
     }
-    self.sphere = sphere;
+    self.torus = torus;
 }
 
 const std = @import("std");
