@@ -2,6 +2,8 @@ allocator: std.mem.Allocator,
 sphere: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Earth, physics.Integrator(physics.SmoothDeceleration)),
 earth_texture: ?rhi.Texture,
+earth_uniform: ?rhi.Uniform,
+ctx: scenes.SceneContext,
 
 const Earth = @This();
 
@@ -29,23 +31,21 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Earth {
     );
     errdefer cam.deinit(allocator);
 
-    var earth_texture: ?rhi.Texture = null;
-    if (ctx.textures_loader.loadAsset("cgpoc\\earth.jpg") catch null) |img| {
-        earth_texture = rhi.Texture.init(img);
-    } else {
-        std.debug.print("no earth image\n", .{});
-    }
-
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
-        .earth_texture = earth_texture,
+        .earth_texture = null,
+        .earth_uniform = null,
+        .ctx = ctx,
     };
     pd.renderSphere();
     return pd;
 }
 
 pub fn deinit(self: *Earth, allocator: std.mem.Allocator) void {
+    if (self.earth_texture) |et| {
+        et.deinit();
+    }
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -72,7 +72,7 @@ pub fn renderSphere(self: *Earth) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .texture,
+            .fragment_shader = .bindless,
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
@@ -99,6 +99,12 @@ pub fn renderSphere(self: *Earth) void {
         ),
     };
     self.view_camera.addProgram(prog, "f_mvp");
+
+    if (self.ctx.textures_loader.loadAsset("cgpoc\\earth.jpg") catch null) |img| {
+        self.earth_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
+    } else {
+        std.debug.print("no earth image\n", .{});
+    }
     self.sphere = sphere;
 }
 

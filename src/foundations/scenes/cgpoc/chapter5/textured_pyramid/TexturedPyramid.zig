@@ -5,6 +5,7 @@ pyramid: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*TexturedPyramid, physics.Integrator(physics.SmoothDeceleration)),
 brick_texture: ?rhi.Texture,
 ice_texture: ?rhi.Texture,
+ctx: scenes.SceneContext,
 
 const TexturedPyramid = @This();
 
@@ -32,27 +33,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedPyr
     );
     errdefer cam.deinit(allocator);
 
-    var brick_texture: ?rhi.Texture = null;
-    if (ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null) |img| {
-        brick_texture = rhi.Texture.init(img);
-    } else {
-        std.debug.print("no brick image\n", .{});
-    }
-
-    var ice_texture: ?rhi.Texture = null;
-    if (ctx.textures_loader.loadAsset("cgpoc\\luna\\ice.jpg") catch null) |img| {
-        ice_texture = rhi.Texture.init(img);
-    } else {
-        std.debug.print("no ice image\n", .{});
-    }
-
     const ui_state: TexturedPyramidUI = .{};
     pd.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
         .view_camera = cam,
-        .brick_texture = brick_texture,
-        .ice_texture = ice_texture,
+        .brick_texture = null,
+        .ice_texture = null,
+        .ctx = ctx,
     };
     pd.renderBG();
     pd.renderParallepiped();
@@ -98,7 +86,7 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .texture,
+            .fragment_shader = .bindless,
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
@@ -125,6 +113,18 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
         ),
     };
     self.view_camera.addProgram(prog, "f_mvp");
+
+    if (self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null) |img| {
+        self.brick_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
+    } else {
+        std.debug.print("no brick image\n", .{});
+    }
+
+    if (self.ctx.textures_loader.loadAsset("cgpoc\\luna\\ice.jpg") catch null) |img| {
+        self.ice_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
+    } else {
+        std.debug.print("no ice image\n", .{});
+    }
     self.pyramid = pyramid;
 }
 
