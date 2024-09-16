@@ -72,4 +72,4 @@ pub fn initWithProgram(
 }
 
 const std = @import("std");
-const rhi = @import("../../rhi/rhi.zig");
+const rhi = @import("../rhi/rhi.zig");

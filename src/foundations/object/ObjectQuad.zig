@@ -112,5 +112,5 @@ pub fn updateInstanceAt(self: Quad, index: usize, instance_data: rhi.instanceDat
 }
 
 const std = @import("std");
-const c = @import("../../c.zig").c;
-const rhi = @import("../../rhi/rhi.zig");
+const c = @import("../c.zig").c;
+const rhi = @import("../rhi/rhi.zig");

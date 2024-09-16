@@ -192,7 +192,7 @@ fn addBottomSurface(
 }
 
 const std = @import("std");
-const c = @import("../../c.zig").c;
-const rhi = @import("../../rhi/rhi.zig");
-const math = @import("../../math/math.zig");
-const color = @import("../../color/color.zig");
+const c = @import("../c.zig").c;
+const rhi = @import("../rhi/rhi.zig");
+const math = @import("../math/math.zig");
+const color = @import("../color/color.zig");

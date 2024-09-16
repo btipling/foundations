@@ -138,4 +138,4 @@ pub fn init(
     };
 }
 
-const rhi = @import("../../rhi/rhi.zig");
+const rhi = @import("../rhi/rhi.zig");

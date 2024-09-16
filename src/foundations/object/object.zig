@@ -12,6 +12,7 @@ pub const object_type = enum {
     instanced_triangle,
     pyramid,
     torus,
+    obj,
 };
 
 pub const object = union(object_type) {
@@ -28,18 +29,20 @@ pub const object = union(object_type) {
     instanced_triangle: InstancedTriangle,
     pyramid: Pyramid,
     torus: Torus,
+    obj: Obj,
 };
 
-pub const NoRender = @import("object_no_render/ObjectNoRender.zig");
-pub const Triangle = @import("object_triangle/ObjectTriangle.zig");
-pub const Quad = @import("object_quad/ObjectQuad.zig");
-pub const Cube = @import("object_cube/ObjectCube.zig");
-pub const Circle = @import("object_circle/ObjectCircle.zig");
-pub const Sphere = @import("object_sphere/ObjectSphere.zig");
-pub const Strip = @import("object_strip/ObjectStrip.zig");
-pub const Parallelepiped = @import("object_parallelepiped/ObjectParallelepiped.zig");
-pub const Cylinder = @import("object_cylinder/ObjectCylinder.zig");
-pub const Cone = @import("object_cone/ObjectCone.zig");
-pub const InstancedTriangle = @import("object_instanced_triangle/ObjectInstancedTriangle.zig");
-pub const Pyramid = @import("object_pyramid/ObjectPyramid.zig");
-pub const Torus = @import("object_torus/ObjectTorus.zig");
+pub const NoRender = @import("ObjectNoRender.zig");
+pub const Triangle = @import("ObjectTriangle.zig");
+pub const Quad = @import("ObjectQuad.zig");
+pub const Cube = @import("ObjectCube.zig");
+pub const Circle = @import("ObjectCircle.zig");
+pub const Sphere = @import("ObjectSphere.zig");
+pub const Strip = @import("ObjectStrip.zig");
+pub const Parallelepiped = @import("ObjectParallelepiped.zig");
+pub const Cylinder = @import("ObjectCylinder.zig");
+pub const Cone = @import("ObjectCone.zig");
+pub const InstancedTriangle = @import("ObjectInstancedTriangle.zig");
+pub const Pyramid = @import("ObjectPyramid.zig");
+pub const Torus = @import("ObjectTorus.zig");
+pub const Obj = @import("ObjectObj.zig");
