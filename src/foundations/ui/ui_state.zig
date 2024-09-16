@@ -30,6 +30,7 @@ pub const scene_type = enum(usize) {
     five_textured_pyramid,
     six_earth,
     six_textured_torus,
+    six_shuttle,
 };
 
 pub const scenes = union(scene_type) {
@@ -64,6 +65,7 @@ pub const scenes = union(scene_type) {
     five_textured_pyramid: *scenes_list.cgpoc.chapter5.TexturedPyramid,
     six_earth: *scenes_list.cgpoc.chapter6.Earth,
     six_textured_torus: *scenes_list.cgpoc.chapter6.TexturedTorus,
+    six_shuttle: *scenes_list.cgpoc.chapter6.Shuttle,
 };
 
 pub const scene_nav_type = enum {

@@ -48,6 +48,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedPyr
 }
 
 pub fn deinit(self: *TexturedPyramid, allocator: std.mem.Allocator) void {
+    if (self.brick_texture) |et| {
+        et.deinit();
+    }
+    if (self.ice_texture) |et| {
+        et.deinit();
+    }
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
