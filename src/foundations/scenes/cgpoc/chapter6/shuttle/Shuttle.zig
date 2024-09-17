@@ -6,7 +6,7 @@ ctx: scenes.SceneContext,
 
 const Shuttle = @This();
 
-const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
+const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_wavefront_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -64,11 +64,48 @@ pub fn draw(self: *Shuttle, dt: f64) void {
 pub fn updateCamera(_: *Shuttle) void {}
 
 pub fn renderShuttle(self: *Shuttle) void {
-    if (self.ctx.obj_loader.loadAsset("cgpoc\\NasaShuttle\\shuttle.obj") catch null) |_| {
+    var shuttle_model: *assets.Obj = undefined;
+    if (self.ctx.obj_loader.loadAsset("cgpoc\\NasaShuttle\\shuttle.obj") catch null) |o| {
         std.debug.print("got shuttle\n", .{});
+        shuttle_model = o;
     } else {
         std.debug.print("no shuttle\n", .{});
+        return;
     }
+
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .bindless,
+        };
+        const partials = [_][]const u8{vertex_shader};
+        s.attach(self.allocator, @ptrCast(partials[0..]));
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
+    self.view_camera.addProgram(prog, "f_mvp");
+
+    if (self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null) |img| {
+        self.shuttle_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
+    } else {
+        std.debug.print("no shuttle image\n", .{});
+    }
+    self.shuttle = shuttle_object;
 }
 
 const std = @import("std");
@@ -80,3 +117,4 @@ const object = @import("../../../../object/object.zig");
 const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
+const assets = @import("../../../../assets/assets.zig");
