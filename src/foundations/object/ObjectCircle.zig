@@ -83,6 +83,6 @@ fn data() struct { positions: [num_vertices][3]f32, indices: [num_indices]u32 } 
 }
 
 const std = @import("std");
-const c = @import("../../c.zig").c;
-const rhi = @import("../../rhi/rhi.zig");
-const math = @import("../../math/math.zig");
+const c = @import("../c.zig").c;
+const rhi = @import("../rhi/rhi.zig");
+const math = @import("../math/math.zig");

@@ -6,3 +6,4 @@ pub const Point = @import("point_rotating/PointRotating.zig");
 pub const Cylinder = @import("cylinder_animated/CylinderAnimated.zig");
 pub const Sphere = @import("sphere/Sphere.zig");
 pub const Pyramid = @import("pyramid/Pyramid.zig");
+pub const Torus = @import("torus/Torus.zig");

@@ -1,5 +1,5 @@
 const app_name: []const u8 = "foundations_game_engine";
-pub const max_file_size: usize = 4096 << 8;
+pub const max_file_size: usize = 4096 << 9;
 
 pub const LoaderError = error{
     FileNotFound,
@@ -64,7 +64,7 @@ pub fn Loader(comptime T: type) type {
             var t: *T = self.allocator.create(T) catch @panic("OOM");
             errdefer self.allocator.destroy(t);
 
-            t.init(data, file_name);
+            t.init(self.allocator, data, file_name);
             errdefer t.deinit();
 
             self.cache.put(self.allocator, file_name, t) catch @panic("OOM");

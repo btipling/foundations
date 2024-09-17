@@ -9,6 +9,7 @@ const Scenes = @This();
 pub const SceneContext = struct {
     cfg: *const config,
     textures_loader: *assets.loader.Loader(assets.Image),
+    obj_loader: *assets.loader.Loader(assets.Obj),
 };
 
 pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
@@ -18,7 +19,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
         .allocator = allocator,
         .context = ctx,
     };
-    scenes.initScene(ui.ui_state.scene_type.five_textured_pyramid);
+    scenes.initScene(ui.ui_state.scene_type.six_shuttle);
     return scenes;
 }
 

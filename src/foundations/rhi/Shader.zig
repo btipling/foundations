@@ -10,6 +10,7 @@ pub const fragment_shader_type = enum(usize) {
     color,
     normals,
     texture,
+    bindless,
 };
 
 pub inline fn single_vertex(vertex_shader: []const u8) [1][]const u8 {
@@ -24,12 +25,14 @@ const vertex_attrib_i_data = @embedFile("../shaders/vertex_attrib_i_data.glsl");
 const frag_color = @embedFile("../shaders/frag_color.glsl");
 const frag_normals = @embedFile("../shaders/frag_normals.glsl");
 const frag_texture = @embedFile("../shaders/frag_texture.glsl");
+const frag_bindless = @embedFile("../shaders/frag_bindless.glsl");
 
 pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []const []const u8) void {
     const frag = switch (self.fragment_shader) {
         .color => frag_color,
         .normals => frag_normals,
         .texture => frag_texture,
+        .bindless => frag_bindless,
     };
 
     {

@@ -57,6 +57,6 @@ pub fn updateInstanceAt(self: InstancedTriangle, index: usize, instance_data: rh
     rhi.updateInstanceData(self.mesh.buffer, self.vertex_data_size, self.instance_data_stride, index, instance_data);
 }
 
-const c = @import("../../c.zig").c;
-const rhi = @import("../../rhi/rhi.zig");
-const math = @import("../../math/math.zig");
+const c = @import("../c.zig").c;
+const rhi = @import("../rhi/rhi.zig");
+const math = @import("../math/math.zig");

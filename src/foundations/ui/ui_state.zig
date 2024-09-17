@@ -8,6 +8,7 @@ pub const scene_type = enum(usize) {
     cylinder_animated,
     cone_animated,
     pyramid,
+    torus,
     // math
     math_vector_arithmetic,
     line,
@@ -27,6 +28,9 @@ pub const scene_type = enum(usize) {
     four_cube_and_pyramid,
     four_simple_solar_system,
     five_textured_pyramid,
+    six_earth,
+    six_textured_torus,
+    six_shuttle,
 };
 
 pub const scenes = union(scene_type) {
@@ -39,6 +43,7 @@ pub const scenes = union(scene_type) {
     cylinder_animated: *scenes_list.shapes.Cylinder,
     cone_animated: *scenes_list.shapes.Cone,
     pyramid: *scenes_list.shapes.Pyramid,
+    torus: *scenes_list.shapes.Torus,
     // math
     math_vector_arithmetic: *scenes_list.math.MathVectorArithmetic,
     line: *scenes_list.math.Line,
@@ -58,6 +63,9 @@ pub const scenes = union(scene_type) {
     four_cube_and_pyramid: *scenes_list.cgpoc.chapter4.CubeAndPyramid,
     four_simple_solar_system: *scenes_list.cgpoc.chapter4.SimpleSolarSystem,
     five_textured_pyramid: *scenes_list.cgpoc.chapter5.TexturedPyramid,
+    six_earth: *scenes_list.cgpoc.chapter6.Earth,
+    six_textured_torus: *scenes_list.cgpoc.chapter6.TexturedTorus,
+    six_shuttle: *scenes_list.cgpoc.chapter6.Shuttle,
 };
 
 pub const scene_nav_type = enum {
