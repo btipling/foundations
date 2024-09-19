@@ -5,6 +5,7 @@ view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.Smooth
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
+light_position: rhi.Uniform = undefined,
 
 const Lighting = @This();
 
@@ -161,6 +162,9 @@ pub fn renderTorus(self: *Lighting) void {
             false,
         ),
     };
+
+    self.light_position = rhi.Uniform.init(prog, "f_light_pos");
+    self.light_position.setUniform3fv(.{ 5, 0, 0 });
     self.view_camera.addProgram(prog);
     self.torus = torus;
 }
