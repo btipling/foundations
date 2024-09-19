@@ -2,8 +2,12 @@ fragment_shader: fragment_shader_type,
 instance_data: bool,
 vertex_partials: [max_vertex_partials][]const u8 = undefined,
 num_vertex_partials: usize = 0,
+frag_partials: [max_frag_partials][]const u8 = undefined,
+num_frag_partials: usize = 0,
+lighting: bool = false,
 program: u32 = 0,
 
+const max_frag_partials: usize = 10;
 const max_vertex_partials: usize = 10;
 
 pub const fragment_shader_type = enum(usize) {
@@ -23,6 +27,11 @@ const Shader = @This();
 const vertex_attrib_header = @embedFile("../shaders/vertex_attrib_header.glsl");
 const vertex_attrib_i_data = @embedFile("../shaders/vertex_attrib_i_data.glsl");
 
+const lighting_glsl = @embedFile("../shaders/lighting.glsl");
+
+const frag_header = @embedFile("../shaders/frag_header.glsl");
+const frag_bindless_header = @embedFile("../shaders/frag_bindless_header.glsl");
+const frag_subheader = @embedFile("../shaders/frag_subheader.glsl");
 const frag_color = @embedFile("../shaders/frag_color.glsl");
 const frag_normals = @embedFile("../shaders/frag_normals.glsl");
 const frag_texture = @embedFile("../shaders/frag_texture.glsl");
@@ -30,14 +39,7 @@ const frag_bindless = @embedFile("../shaders/frag_bindless.glsl");
 const frag_lighting = @embedFile("../shaders/frag_lighting.glsl");
 
 pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []const []const u8) void {
-    const frag = switch (self.fragment_shader) {
-        .color => frag_color,
-        .normals => frag_normals,
-        .texture => frag_texture,
-        .bindless => frag_bindless,
-        .lighting => frag_lighting,
-    };
-
+    self.lighting = self.fragment_shader == .lighting;
     {
         self.vertex_partials[self.num_vertex_partials] = vertex_attrib_header;
         self.num_vertex_partials += 1;
@@ -46,12 +48,46 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
         self.vertex_partials[self.num_vertex_partials] = vertex_attrib_i_data;
         self.num_vertex_partials += 1;
     }
+    if (self.lighting) {
+        self.vertex_partials[self.num_vertex_partials] = lighting_glsl;
+        self.num_vertex_partials += 1;
+    }
     for (vertex_partials) |partial| {
         self.vertex_partials[self.num_vertex_partials] = partial;
         self.num_vertex_partials += 1;
     }
     const vertex = std.mem.concat(allocator, u8, self.vertex_partials[0..self.num_vertex_partials]) catch @panic("OOM");
     defer allocator.free(vertex);
+
+    {
+        self.frag_partials[self.num_frag_partials] = frag_header;
+        self.num_frag_partials += 1;
+    }
+    if (self.fragment_shader == .bindless) {
+        self.frag_partials[self.num_frag_partials] = frag_bindless_header;
+        self.num_frag_partials += 1;
+    }
+    {
+        self.frag_partials[self.num_frag_partials] = frag_subheader;
+        self.num_frag_partials += 1;
+    }
+    if (self.lighting) {
+        self.frag_partials[self.num_frag_partials] = lighting_glsl;
+        self.num_frag_partials += 1;
+    }
+    {
+        const frag_body = switch (self.fragment_shader) {
+            .color => frag_color,
+            .normals => frag_normals,
+            .texture => frag_texture,
+            .bindless => frag_bindless,
+            .lighting => frag_lighting,
+        };
+        self.frag_partials[self.num_frag_partials] = frag_body;
+        self.num_frag_partials += 1;
+    }
+    const frag = std.mem.concat(allocator, u8, self.frag_partials[0..self.num_frag_partials]) catch @panic("OOM");
+    defer allocator.free(frag);
 
     const shaders = [_]struct { source: []const u8, shader_type: c.GLenum }{
         .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },

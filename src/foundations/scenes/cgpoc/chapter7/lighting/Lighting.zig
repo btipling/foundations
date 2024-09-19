@@ -14,7 +14,7 @@ const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_s
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
-        .name = "Textured Torus",
+        .name = "Lighting",
     };
 }
 
