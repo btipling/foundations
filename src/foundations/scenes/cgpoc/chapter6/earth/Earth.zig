@@ -65,11 +65,12 @@ pub fn updateCamera(_: *Earth) void {}
 
 pub fn renderSphere(self: *Earth) void {
     const prog = rhi.createProgram();
+    self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .bindless,
+            .fragment_shader = rhi.Texture.frag_shader(self.earth_texture),
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
@@ -95,13 +96,12 @@ pub fn renderSphere(self: *Earth) void {
             false,
         ),
     };
-    self.view_camera.addProgram(prog, "f_mvp");
-
-    if (self.ctx.textures_loader.loadAsset("cgpoc\\earth.jpg") catch null) |img| {
-        self.earth_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
-    } else {
-        std.debug.print("no earth image\n", .{});
+    if (self.earth_texture) |*bt| {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\earth.jpg") catch null, prog, "f_samp") catch {
+            self.earth_texture = null;
+        };
     }
+    self.view_camera.addProgram(prog, "f_mvp");
     self.sphere = sphere;
 }
 

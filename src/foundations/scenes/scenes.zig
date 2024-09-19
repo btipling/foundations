@@ -8,6 +8,7 @@ const Scenes = @This();
 
 pub const SceneContext = struct {
     cfg: *const config,
+    args: Args,
     textures_loader: *assets.loader.Loader(assets.Image),
     obj_loader: *assets.loader.Loader(assets.Obj),
 };
@@ -76,6 +77,7 @@ pub fn drawScene(self: Scenes, frame_time: f64) void {
 const std = @import("std");
 const ui = @import("../ui/ui.zig");
 const config = @import("../config/config.zig");
+const Args = @import("../Args.zig");
 
 pub const cgpoc = @import("cgpoc/cgpoc.zig");
 pub const color = @import("color/color.zig");

@@ -88,11 +88,13 @@ pub fn updateCamera(_: *TexturedPyramid) void {}
 
 pub fn renderParallepiped(self: *TexturedPyramid) void {
     const prog = rhi.createProgram();
+    self.brick_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.ice_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .bindless,
+            .fragment_shader = rhi.Texture.frag_shader(self.brick_texture),
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
@@ -119,17 +121,15 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
         ),
     };
     self.view_camera.addProgram(prog, "f_mvp");
-
-    if (self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null) |img| {
-        self.brick_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
-    } else {
-        std.debug.print("no brick image\n", .{});
+    if (self.brick_texture) |*bt| {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null, prog, "f_samp") catch {
+            self.brick_texture = null;
+        };
     }
-
-    if (self.ctx.textures_loader.loadAsset("cgpoc\\luna\\ice.jpg") catch null) |img| {
-        self.ice_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
-    } else {
-        std.debug.print("no ice image\n", .{});
+    if (self.ice_texture) |*it| {
+        it.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\ice.jpg") catch null, prog, "f_samp") catch {
+            self.ice_texture = null;
+        };
     }
     self.pyramid = pyramid;
 }
