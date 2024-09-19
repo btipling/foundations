@@ -28,6 +28,13 @@ pub fn init(disable_bindless: bool) TextureError!Texture {
     return t;
 }
 
+pub fn deinit(self: Texture) void {
+    self.makeNonResident();
+    if (self.name != 0) {
+        c.glDeleteTextures(1, &self.name);
+    }
+}
+
 pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: []const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
@@ -96,13 +103,6 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
 pub fn makeNonResident(self: Texture) void {
     if (self.handle != 0) {
         c.glMakeTextureHandleNonResidentARB(self.handle);
-    }
-}
-
-pub fn deinit(self: Texture) void {
-    self.makeNonResident();
-    if (self.name != 0) {
-        c.glDeleteTextures(1, &self.name);
     }
 }
 

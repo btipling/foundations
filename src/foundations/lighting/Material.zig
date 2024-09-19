@@ -1,0 +1,7 @@
+ambient: [4]f32,
+diffuse: [4]f32,
+specular: [4]f32,
+shininess: f32,
+padding_1: f32,
+padding_2: f32,
+padding_3: f32,
