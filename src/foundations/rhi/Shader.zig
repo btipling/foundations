@@ -26,6 +26,7 @@ const Shader = @This();
 
 const vertex_attrib_header = @embedFile("../shaders/vertex_attrib_header.glsl");
 const vertex_attrib_i_data = @embedFile("../shaders/vertex_attrib_i_data.glsl");
+const vertex_subheader = @embedFile("../shaders/vertex_subheader.glsl");
 
 const lighting_glsl = @embedFile("../shaders/lighting.glsl");
 
@@ -42,6 +43,10 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     self.lighting = self.fragment_shader == .lighting;
     {
         self.vertex_partials[self.num_vertex_partials] = vertex_attrib_header;
+        self.num_vertex_partials += 1;
+    }
+    {
+        self.vertex_partials[self.num_vertex_partials] = vertex_subheader;
         self.num_vertex_partials += 1;
     }
     if (self.instance_data) {

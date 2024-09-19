@@ -73,15 +73,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistan
     pd.renderParallepiped();
     {
         pd.renderReflection();
-        cam.addProgram(reflection_program, "f_mvp");
+        cam.addProgram(reflection_program);
         rhi.setUniformMatrix(reflection_program, "f_reflection_transform", math.matrix.identity());
     }
     pd.renderPlane();
-    cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
+    cam.addProgram(grid.program());
     {
         const progs = pointer.programs();
         for (progs) |p| {
-            cam.addProgram(p, scenery.Pointer.mvp_uniform_name);
+            cam.addProgram(p);
         }
     }
     return pd;
@@ -285,7 +285,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
     };
     self.plane_visualization = plane_vis;
     self.updatePlaneTransform(prog);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
 }
 
 pub fn renderSphere(self: *PlaneDistance) void {
@@ -337,7 +337,7 @@ pub fn renderSphere(self: *PlaneDistance) void {
             false,
         ),
     };
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.sphere = sphere;
 }
 
@@ -370,7 +370,7 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
         ),
     };
     self.updateCubeTransform(prog);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.parallelepiped = parallelepiped;
 }
 

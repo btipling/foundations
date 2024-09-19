@@ -101,7 +101,7 @@ pub fn renderParallepiped(self: *VaryingColorCube) void {
         ),
     };
     self.updateParallepipedTransform(prog);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.parallelepiped = parallelepiped;
     self.time_uinform = rhi.Uniform.init(prog, "f_tf");
 }

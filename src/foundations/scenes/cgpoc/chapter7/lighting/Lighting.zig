@@ -161,7 +161,7 @@ pub fn renderTorus(self: *Lighting) void {
             false,
         ),
     };
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.torus = torus;
 }
 

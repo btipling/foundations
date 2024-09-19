@@ -1,4 +1,4 @@
-uniform mat4 f_mvp;
+mat4 f_mvp = p_matrix * v_matrix;
 uniform float f_transform;
 
 out vec4 f_frag_color;
