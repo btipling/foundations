@@ -14,6 +14,9 @@ void main()
     vec4 f_pos = f_mvp * f_transform * vec4(f_position.xyz, 1.0);
     gl_Position = f_pos;
     f_tc = f_texture_coords;
+    
+    fo_normals = transpose(inverse(mat3(f_transform))) * f_normals;
+
+
     f_frag_color = f_i_color;
-    fo_normals = f_normals;
 }
