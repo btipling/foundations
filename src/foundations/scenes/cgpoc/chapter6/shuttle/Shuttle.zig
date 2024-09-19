@@ -74,11 +74,12 @@ pub fn renderShuttle(self: *Shuttle) void {
     }
 
     const prog = rhi.createProgram();
+    self.shuttle_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .bindless,
+            .fragment_shader = rhi.Texture.frag_shader(self.shuttle_texture),
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
@@ -97,14 +98,13 @@ pub fn renderShuttle(self: *Shuttle) void {
         };
         i_datas[0] = i_data;
     }
+    if (self.shuttle_texture) |*bt| {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null, prog, "f_samp") catch {
+            self.shuttle_texture = null;
+        };
+    }
     const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
     self.view_camera.addProgram(prog, "f_mvp");
-
-    if (self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null) |img| {
-        self.shuttle_texture = rhi.Texture.init(img, prog, "f_samp") catch null;
-    } else {
-        std.debug.print("no shuttle image\n", .{});
-    }
     self.shuttle = shuttle_object;
 }
 

@@ -12,6 +12,8 @@ var app: *App = undefined;
 pub fn init(allocator: std.mem.Allocator) *App {
     const glsl_version: []const u8 = "#version 460";
 
+    const args = Args.init(allocator);
+
     const cfg = config.init(allocator);
     errdefer cfg.deinit();
     cfg.open();
@@ -37,6 +39,7 @@ pub fn init(allocator: std.mem.Allocator) *App {
 
     const scene_ctx: scenes.SceneContext = .{
         .cfg = cfg,
+        .args = args,
         .textures_loader = textures_loader,
         .obj_loader = obj_loader,
     };
@@ -81,4 +84,5 @@ const ui = @import("ui/ui.zig");
 const scenes = @import("scenes/scenes.zig");
 const rhi = @import("rhi/rhi.zig");
 const config = @import("config/config.zig");
+const Args = @import("Args.zig");
 const assets = @import("assets/assets.zig");
