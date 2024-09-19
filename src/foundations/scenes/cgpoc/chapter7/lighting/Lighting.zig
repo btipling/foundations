@@ -4,6 +4,7 @@ bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
+lights: rhi.Buffer,
 
 const Lighting = @This();
 
@@ -36,11 +37,30 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
+    const lights = [_]lighting.Light{.{
+        .ambient = [4]f32{ 0.1, 0.1, 0.3, 1.0 }, // Slight blue tint for ambient
+        .diffuse = [4]f32{ 0.7, 0.7, 1.0, 1.0 }, // Cool blue-white for diffuse
+        .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 }, // Bright white specular
+        .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 }, // Not used for directional lights
+        .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 }, // Coming from above and slightly to the side
+        .cutoff = 0.0, // Not used for directional lights
+        .exponent = 0.0, // Not used for directional lights
+        .attenuation_constant = 1.0, // No attenuation for directional lights
+        .attenuation_linear = 0.0, // No attenuation for directional lights
+        .attenuation_quadratic = 0.0, // No attenuation for directional lights
+        .light_kind = .direction, // Set the light type to directional
+    }};
+    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
+    errdefer mats_buf.deinit();
+    var lights_buf = rhi.Buffer.init(ld);
+    errdefer lights_buf.deinit();
+
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
         .ctx = ctx,
         .materials = mats_buf,
+        .lights = lights_buf,
     };
     pd.renderBG();
     pd.renderTorus();
