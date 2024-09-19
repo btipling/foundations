@@ -2,6 +2,7 @@ allocator: std.mem.Allocator,
 torus: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
+materials: rhi.Buffer,
 
 const Lighting = @This();
 
@@ -28,16 +29,23 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     );
     errdefer cam.deinit(allocator);
 
+    const mats = [_]lighting.Material{lighting.materials.Gold};
+    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
+    var mats_buf = rhi.Buffer.init(bd);
+    errdefer mats_buf.deinit();
+
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
         .ctx = ctx,
+        .materials = mats_buf,
     };
     pd.renderTorus();
     return pd;
 }
 
 pub fn deinit(self: *Lighting, allocator: std.mem.Allocator) void {
+    self.materials.deinit();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -100,3 +108,4 @@ const object = @import("../../../../object/object.zig");
 const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
+const lighting = @import("../../../../lighting/lighting.zig");

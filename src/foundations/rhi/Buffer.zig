@@ -9,28 +9,34 @@ pub const buffer_type = enum(usize) {
 };
 
 pub const buffer_data = union(buffer_type) {
-    materials: []lighting.Material,
-    lights: []lighting.Light,
+    materials: []const lighting.Material,
+    lights: []const lighting.Light,
 };
 
 pub fn init(data: buffer_data) Buffer {
     var name: c.GLuint = 0;
     c.glCreateBuffers(1, @ptrCast(&name));
-    const data_size = s: switch (data) {
-        inline else => |d| break :s @sizeOf(@TypeOf(d).Child),
+    const data_size: usize = s: switch (data) {
+        .materials => break :s @sizeOf(lighting.Material),
+        .lights => break :s @sizeOf(lighting.Light),
     };
-    const data_len = s: switch (data) {
-        inline else => |d| break :s d.len,
+    const data_len: usize = s: switch (data) {
+        .materials => |d| break :s d.len,
+        .lights => |d| break :s d.len,
     };
-    const ptr = s: switch (data) {
-        inline else => |d| break :s d.ptr,
-    };
-    const block_binding_point = s: switch (buffer_data) {
+    const block_binding_point: u32 = s: switch (data) {
         .materials => break :s 0,
         .lights => break :s 1,
     };
     const size = data_len * data_size;
-    c.glNamedBufferData(name, @intCast(size), ptr, c.GL_STATIC_DRAW);
+    switch (data) {
+        .materials => |d| {
+            c.glNamedBufferData(name, @intCast(size), d.ptr, c.GL_STATIC_DRAW);
+        },
+        .lights => |d| {
+            c.glNamedBufferData(name, @intCast(size), d.ptr, c.GL_STATIC_DRAW);
+        },
+    }
     c.glBindBufferBase(c.GL_SHADER_STORAGE_BUFFER, block_binding_point, name);
     return .{
         .name = name,
