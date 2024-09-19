@@ -1,4 +1,5 @@
 allocator: std.mem.Allocator,
+ui_state: LightingUI,
 torus: object.object = .{ .norender = .{} },
 bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.SmoothDeceleration)),
@@ -56,8 +57,10 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
+    const ui_state: LightingUI = .{};
     pd.* = .{
         .allocator = allocator,
+        .ui_state = ui_state,
         .view_camera = cam,
         .ctx = ctx,
         .materials = mats_buf,
@@ -76,6 +79,10 @@ pub fn deinit(self: *Lighting, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *Lighting, dt: f64) void {
+    if (self.ui_state.light_updated) {
+        self.light_position.setUniform3fv(self.ui_state.light_position);
+        self.ui_state.light_updated = false;
+    }
     self.view_camera.update(dt);
     {
         const objects: [1]object.object = .{
@@ -89,6 +96,7 @@ pub fn draw(self: *Lighting, dt: f64) void {
         };
         rhi.drawObjects(objects[0..]);
     }
+    self.ui_state.draw();
 }
 
 pub fn updateCamera(_: *Lighting) void {}
@@ -163,10 +171,11 @@ pub fn renderTorus(self: *Lighting) void {
         ),
     };
 
-    self.light_position = rhi.Uniform.init(prog, "f_light_pos");
-    self.light_position.setUniform3fv(.{ 5, 0, 0 });
     self.view_camera.addProgram(prog);
     self.torus = torus;
+    var lp: rhi.Uniform = .init(prog, "f_light_pos");
+    lp.setUniform3fv(self.ui_state.light_position);
+    self.light_position = lp;
 }
 
 const std = @import("std");
@@ -179,3 +188,4 @@ const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
+const LightingUI = @import("LightingUI.zig");

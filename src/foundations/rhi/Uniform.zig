@@ -7,6 +7,7 @@ pub const empty: Uniform = .{ .program = 0, .location = 0 };
 
 pub fn init(prog: u32, name: []const u8) Uniform {
     const loc: c.GLint = c.glGetUniformLocation(@intCast(prog), @ptrCast(name));
+    std.debug.print("{s} {d}\n", .{ name, loc });
     return .{
         .program = prog,
         .location = loc,
@@ -24,12 +25,13 @@ pub fn setUniform1f(self: Uniform, v: f32) void {
 
 pub fn setUniform3fv(self: Uniform, v: [3]f32) void {
     const d: [3]c.GLfloat = .{ @floatCast(v[0]), @floatCast(v[1]), @floatCast(v[2]) };
-    c.glUniform3fv(@intCast(self.program), self.location, &d);
+    c.glProgramUniform3fv(@intCast(self.program), self.location, 1, &d);
 }
 
 pub fn setUniformHandleui64ARB(self: Uniform, handle: c.GLuint64) void {
     c.glProgramUniformHandleui64ARB(@intCast(self.program), self.location, handle);
 }
 
+const std = @import("std");
 const c = @import("../c.zig").c;
 const math = @import("../math/math.zig");
