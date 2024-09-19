@@ -1,5 +1,6 @@
 allocator: std.mem.Allocator,
 torus: object.object = .{ .norender = .{} },
+bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
@@ -7,6 +8,7 @@ materials: rhi.Buffer,
 const Lighting = @This();
 
 const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
+const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -40,6 +42,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
         .ctx = ctx,
         .materials = mats_buf,
     };
+    pd.renderBG();
     pd.renderTorus();
     return pd;
 }
@@ -55,6 +58,12 @@ pub fn draw(self: *Lighting, dt: f64) void {
     self.view_camera.update(dt);
     {
         const objects: [1]object.object = .{
+            self.bg,
+        };
+        rhi.drawObjects(objects[0..]);
+    }
+    {
+        const objects: [1]object.object = .{
             self.torus,
         };
         rhi.drawObjects(objects[0..]);
@@ -62,6 +71,41 @@ pub fn draw(self: *Lighting, dt: f64) void {
 }
 
 pub fn updateCamera(_: *Lighting) void {}
+
+pub fn renderBG(self: *Lighting) void {
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.leftHandedXUpToNDC());
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-1, 0.9999, -3));
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(6));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 0, 0, 0.05, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    var bg: object.object = .{
+        .instanced_triangle = object.InstancedTriangle.init(
+            prog,
+            i_datas[0..],
+        ),
+    };
+    bg.instanced_triangle.mesh.cull = false;
+    self.bg = bg;
+}
 
 pub fn renderTorus(self: *Lighting) void {
     const prog = rhi.createProgram();
@@ -77,7 +121,9 @@ pub fn renderTorus(self: *Lighting) void {
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -10, -1));
+        cm = math.matrix.transformMatrix(cm, math.matrix.rotationZ(std.math.pi / -4.0));
+        cm = math.matrix.transformMatrix(cm, math.matrix.rotationX(std.math.pi / 3.0));
         cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
