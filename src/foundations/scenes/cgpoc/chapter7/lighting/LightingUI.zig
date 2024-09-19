@@ -1,4 +1,4 @@
-light_position: [3]f32 = .{ 0, -15, -20 },
+light_position: [3]f32 = .{ 0, -12, -0.0 },
 light_updated: bool = false,
 
 const LightingUI = @This();
@@ -20,9 +20,9 @@ pub fn draw(self: *LightingUI) void {
         c.igText(@ptrCast(txt));
     }
     if (c.igTreeNode_Str("light translate")) {
-        if (c.igSliderFloat("x", &self.light_position[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
-        if (c.igSliderFloat("y", &self.light_position[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
-        if (c.igSliderFloat("z", &self.light_position[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
+        if (c.igSliderFloat("x", &self.light_position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
+        if (c.igSliderFloat("y", &self.light_position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
+        if (c.igSliderFloat("z", &self.light_position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
         c.igTreePop();
     }
     c.igEnd();

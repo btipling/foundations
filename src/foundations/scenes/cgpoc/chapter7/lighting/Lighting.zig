@@ -1,17 +1,20 @@
 allocator: std.mem.Allocator,
 ui_state: LightingUI,
 torus: object.object = .{ .norender = .{} },
+sphere: object.object = .{ .norender = .{} },
 bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 light_position: rhi.Uniform = undefined,
+sphere_matrix: rhi.Uniform = undefined,
 
 const Lighting = @This();
 
 const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_light_vert.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
+const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -68,6 +71,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     };
     pd.renderBG();
     pd.renderTorus();
+    pd.renderSphere();
     return pd;
 }
 
@@ -80,7 +84,9 @@ pub fn deinit(self: *Lighting, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *Lighting, dt: f64) void {
     if (self.ui_state.light_updated) {
-        self.light_position.setUniform3fv(self.ui_state.light_position);
+        const lp = self.ui_state.light_position;
+        self.sphere_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
+        self.light_position.setUniform3fv(lp);
         self.ui_state.light_updated = false;
     }
     self.view_camera.update(dt);
@@ -91,7 +97,8 @@ pub fn draw(self: *Lighting, dt: f64) void {
         rhi.drawObjects(objects[0..]);
     }
     {
-        const objects: [1]object.object = .{
+        const objects: [2]object.object = .{
+            self.sphere,
             self.torus,
         };
         rhi.drawObjects(objects[0..]);
@@ -176,6 +183,40 @@ pub fn renderTorus(self: *Lighting) void {
     var lp: rhi.Uniform = .init(prog, "f_light_pos");
     lp.setUniform3fv(self.ui_state.light_position);
     self.light_position = lp;
+}
+
+pub fn renderSphere(self: *Lighting) void {
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    const m = math.matrix.uniformScale(0.125);
+    i_datas[0] = .{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = .{ 1, 1, 1, 1 },
+    };
+    const sphere: object.object = .{
+        .sphere = object.Sphere.init(
+            prog,
+            i_datas[0..],
+            false,
+        ),
+    };
+    const lp = self.ui_state.light_position;
+    var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
+    sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
+    self.sphere_matrix = sm;
+    self.view_camera.addProgram(prog);
+    self.sphere = sphere;
 }
 
 const std = @import("std");
