@@ -13,15 +13,15 @@ void main()
     vec3 f_L = normalize(fo_lightdir);
     vec3 f_V = normalize(-v_matrix[3].xyz - fo_vert);
     vec3 f_N = normalize(fo_normals);
-    vec3 f_R = reflect(-f_L, f_N);
+    vec3 f_H = normalize(f_L + f_V).xyz;
 
     float cosTheta = dot(f_L, f_N);
-    float cosPhi = dot(f_V, f_R);
+    float cosPhi = dot(f_H, f_N);
 
     vec4 f_global_ambient = vec4(0.7, 0.7, 0.7, 1.0);
     vec3 f_ambient = ((f_global_ambient * f_m.ambient) + (f_l.ambient * f_m.ambient)).xyz;
     vec3 f_diffuse = f_l.diffuse.xyz * f_m.diffuse.xyz * max(cosTheta, 0.0);
-    vec3 f_specular = f_m.specular.xyz * f_l.specular.xyz * pow(max(cosPhi, 0.0), f_m.shininess);
+    vec3 f_specular = f_m.specular.xyz * f_l.specular.xyz * pow(max(cosPhi, 0.0), f_m.shininess * 4.0);
 
     fo_frag_color = vec4((f_ambient + f_diffuse + f_specular), 1.0);
 }

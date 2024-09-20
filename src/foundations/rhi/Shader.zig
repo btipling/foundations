@@ -47,6 +47,7 @@ const frag_bindless = @embedFile("../shaders/frag_bindless.glsl");
 
 const frag_gouraud_lighting = @embedFile("../shaders/frag_gouraud_lighting.glsl");
 const frag_phong_lighting = @embedFile("../shaders/frag_phong_lighting.glsl");
+const frag_blinn_phong_lighting = @embedFile("../shaders/frag_blinn_phong_lighting.glsl");
 
 pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []const []const u8) void {
     {
@@ -97,7 +98,7 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
             .lighting => s: switch (self.lighting) {
                 .gauraud => break :s frag_gouraud_lighting,
                 .phong => break :s frag_phong_lighting,
-                else => break :s frag_gouraud_lighting,
+                else => break :s frag_blinn_phong_lighting,
             },
         };
         self.frag_partials[self.num_frag_partials] = frag_body;

@@ -12,7 +12,7 @@ sphere_matrix: rhi.Uniform = undefined,
 
 const Lighting = @This();
 
-const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_phong_light_vert.glsl");
+const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_blinn_phong_light_vert.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
@@ -43,17 +43,17 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{.{
-        .ambient = [4]f32{ 0.1, 0.1, 0.3, 1.0 }, // Slight blue tint for ambient
-        .diffuse = [4]f32{ 0.7, 0.7, 1.0, 1.0 }, // Cool blue-white for diffuse
-        .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 }, // Bright white specular
-        .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 }, // Not used for directional lights
-        .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 }, // Coming from above and slightly to the side
-        .cutoff = 0.0, // Not used for directional lights
-        .exponent = 0.0, // Not used for directional lights
-        .attenuation_constant = 1.0, // No attenuation for directional lights
-        .attenuation_linear = 0.0, // No attenuation for directional lights
-        .attenuation_quadratic = 0.0, // No attenuation for directional lights
-        .light_kind = .direction, // Set the light type to directional
+        .ambient = [4]f32{ 0.1, 0.1, 0.3, 1.0 },
+        .diffuse = [4]f32{ 0.7, 0.7, 1.0, 1.0 },
+        .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+        .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+        .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+        .cutoff = 0.0,
+        .exponent = 0.0,
+        .attenuation_constant = 1.0,
+        .attenuation_linear = 0.0,
+        .attenuation_quadratic = 0.0,
+        .light_kind = .direction,
     }};
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
     errdefer mats_buf.deinit();
@@ -150,7 +150,7 @@ pub fn renderTorus(self: *Lighting) void {
             .program = prog,
             .instance_data = true,
             .fragment_shader = .lighting,
-            .lighting = .phong,
+            .lighting = .blinn_phong,
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
