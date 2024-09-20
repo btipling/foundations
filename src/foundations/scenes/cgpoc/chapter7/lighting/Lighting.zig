@@ -12,7 +12,7 @@ sphere_matrix: rhi.Uniform = undefined,
 
 const Lighting = @This();
 
-const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_light_vert.glsl");
+const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_phong_light_vert.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
@@ -150,6 +150,7 @@ pub fn renderTorus(self: *Lighting) void {
             .program = prog,
             .instance_data = true,
             .fragment_shader = .lighting,
+            .lighting = .phong,
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
