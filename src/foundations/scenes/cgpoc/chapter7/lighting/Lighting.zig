@@ -170,13 +170,14 @@ pub fn renderTorus(self: *Lighting) void {
         };
         i_datas[0] = i_data;
     }
-    const torus: object.object = .{
+    var torus: object.object = .{
         .torus = object.Torus.init(
             prog,
             i_datas[0..],
             false,
         ),
     };
+    torus.torus.mesh.linear_colorspace = false;
 
     self.view_camera.addProgram(prog);
     self.torus = torus;

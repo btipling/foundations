@@ -19,12 +19,10 @@ pub fn draw(self: *LightingUI) void {
         }) catch @panic("bufsize too small");
         c.igText(@ptrCast(txt));
     }
-    if (c.igTreeNode_Str("light translate")) {
-        if (c.igSliderFloat("x", &self.light_position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
-        if (c.igSliderFloat("y", &self.light_position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
-        if (c.igSliderFloat("z", &self.light_position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
-        c.igTreePop();
-    }
+    if (c.igSliderFloat("x", &self.light_position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
+    if (c.igSliderFloat("y", &self.light_position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
+    if (c.igSliderFloat("z", &self.light_position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
+
     c.igEnd();
 }
 
