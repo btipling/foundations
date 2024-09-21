@@ -4,6 +4,8 @@ light_1: lightSetting = .{
 light_2: lightSetting = .{
     .position = .{ 0, 12, 0.0 },
 },
+light_position: [3]f32 = .{ 0, -12, -0.0 },
+light_position_updated: bool = false,
 torus_updated: bool = false,
 current_material: usize = 0,
 current_lighting: usize = 0,
@@ -67,16 +69,16 @@ pub fn draw(self: *LightingUI) void {
         c.igText("Light 1");
         {
             const txt = std.fmt.bufPrintZ(&buf, "Position: ({d:.3}, {d:.3}, {d:.3}", .{
-                self.light_1.position[0],
-                self.light_1.position[1],
-                self.light_1.position[2],
+                self.light_position[0],
+                self.light_position[1],
+                self.light_position[2],
             }) catch @panic("bufsize too small");
             c.igText(@ptrCast(txt));
         }
         {
-            if (c.igSliderFloat("x", &self.light_1.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
-            if (c.igSliderFloat("y", &self.light_1.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
-            if (c.igSliderFloat("z", &self.light_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
+            if (c.igSliderFloat("x", &self.light_position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_position_updated = true;
+            if (c.igSliderFloat("y", &self.light_position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_position_updated = true;
+            if (c.igSliderFloat("z", &self.light_position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_position_updated = true;
         }
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color", @ptrCast(&self.light_1.color), flags)) {

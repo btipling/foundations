@@ -7,7 +7,7 @@ view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.Smooth
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
-wtf: rhi.Uniform = undefined,
+light_1_position: rhi.Uniform = undefined,
 sphere_1_matrix: rhi.Uniform = undefined,
 material_selection: rhi.Uniform = undefined,
 torus_prog_index: ?usize = null,
@@ -150,11 +150,11 @@ fn updateLights(self: *Lighting) void {
 }
 
 pub fn draw(self: *Lighting, dt: f64) void {
-    if (self.ui_state.light_1.position_updated) {
-        const lp = self.ui_state.light_1.position;
+    if (self.ui_state.light_position_updated) {
+        const lp = self.ui_state.light_position;
         self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-        self.wtf.setUniform3fv(lp);
-        self.ui_state.light_1.position_updated = false;
+        self.light_1_position.setUniform3fv(lp);
+        self.ui_state.light_position_updated = false;
     }
     if (self.ui_state.torus_updated) {
         self.deleteTorus();
@@ -288,8 +288,8 @@ pub fn renderTorus(self: *Lighting) void {
     }
     self.torus = torus;
     var lp: rhi.Uniform = .init(prog, "f_light_pos");
-    lp.setUniform3fv(self.ui_state.light_1.position);
-    self.wtf = lp;
+    lp.setUniform3fv(self.ui_state.light_position);
+    self.light_1_position = lp;
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.current_material);
     self.material_selection = msu;
@@ -333,7 +333,7 @@ pub fn rendersphere_1(self: *Lighting) void {
             false,
         ),
     };
-    const lp = self.ui_state.light_1.position;
+    const lp = self.ui_state.light_position;
     var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_1_matrix = sm;
