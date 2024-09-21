@@ -117,8 +117,6 @@ pub fn draw(self: *CubeAnimated, frame_time: f64) void {
 
     rhi.drawObjects(self.objects[0..]);
     rhi.setUniformMatrix(self.program, "f_transform", m);
-    const pinhole_distance: f32 = 0;
-    rhi.setUniform1f(self.program, "f_pinhole", pinhole_distance);
     self.ui_state.draw();
 }
 
