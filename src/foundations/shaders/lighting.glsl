@@ -55,7 +55,7 @@ vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[2], vec3 f_light_dirs
         vec3 f_diffuse = f_light.diffuse.xyz * f_mat.diffuse.xyz * max(cosTheta, 0.0);
         vec3 f_specular = f_mat.specular.xyz * f_light.specular.xyz * pow(max(cosPhi, 0.0), f_mat.shininess * 4.0);
 
-        rv = vec4((f_ambient + f_diffuse + f_specular), 0.0);
+        rv = rv + vec4((f_ambient + f_diffuse + f_specular), 0.0);
         i += 1;
     } while (i < num_lights);
     return rv;
