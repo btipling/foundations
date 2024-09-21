@@ -16,6 +16,7 @@ pub fn draw(self: *pr_ui) void {
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Rotating Point", null, 0);
     c.igText(@ptrCast(txt));
+    c.igPushItemWidth(-1);
     _ = c.igSliderFloat("radius", &self.r, 0.1, 1.0, "%.4f", c.ImGuiSliderFlags_Logarithmic);
     _ = c.igSliderFloat("speed", &self.rotation_time, 0.1, 5.0, "%.4f", c.ImGuiSliderFlags_Logarithmic);
     c.igEnd();

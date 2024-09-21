@@ -24,19 +24,18 @@ pub fn draw(self: *ca_ui) void {
     const size = c.ImVec2_ImVec2_Float(550, 680);
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
     _ = c.igBegin("Animated cylinders", null, 0);
-    _ = c.igSliderFloat("scale", &self.scale, 0.01, 10, "%.3f", c.ImGuiSliderFlags_None);
-    if (c.igTreeNode_Str("rotation")) {
-        _ = c.igSliderFloat("x", &self.x_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
-        _ = c.igSliderFloat("y", &self.y_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
-        _ = c.igSliderFloat("z", &self.z_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
-        c.igTreePop();
-    }
-    if (c.igTreeNode_Str("translate")) {
-        _ = c.igSliderFloat("x", &self.x_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
-        _ = c.igSliderFloat("y", &self.y_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
-        _ = c.igSliderFloat("z", &self.z_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
-        c.igTreePop();
-    }
+    c.igPushItemWidth(-1);
+    c.igText("scale");
+    _ = c.igSliderFloat("##scale", &self.scale, 0.01, 1, "%.3f", c.ImGuiSliderFlags_None);
+    c.igText("rotation");
+    _ = c.igSliderFloat("x", &self.x_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
+    _ = c.igSliderFloat("y", &self.y_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
+    _ = c.igSliderFloat("z", &self.z_rot, 0.01, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None);
+    c.igText("translate");
+    c.igPushItemWidth(-1);
+    _ = c.igSliderFloat("x", &self.x_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
+    _ = c.igSliderFloat("y", &self.y_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
+    _ = c.igSliderFloat("z", &self.z_translate, -25, 25, "%.3f", c.ImGuiSliderFlags_None);
     _ = c.igCheckbox("animate", &self.animate);
     _ = c.igRadioButton_IntPtr("slerp", &self.use_slerp, 1);
     c.igSameLine(0, 0);

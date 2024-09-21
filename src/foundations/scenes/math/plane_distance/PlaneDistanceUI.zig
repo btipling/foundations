@@ -59,30 +59,30 @@ pub fn draw(self: *PlaneDistanceUI) void {
         c.igText(@ptrCast(txt));
     }
 
-    if (c.igTreeNode_Str("plane rotation")) {
-        if (c.igSliderFloat("x", &self.plane_rotation[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
-        if (c.igSliderFloat("y", &self.plane_rotation[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
-        if (c.igSliderFloat("z", &self.plane_rotation[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
-        c.igTreePop();
-    }
-    if (c.igTreeNode_Str("plane translate")) {
-        if (c.igSliderFloat("x", &self.plane_translate[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
-        if (c.igSliderFloat("y", &self.plane_translate[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
-        if (c.igSliderFloat("z", &self.plane_translate[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
-        c.igTreePop();
-    }
-    if (c.igTreeNode_Str("cube rotation")) {
-        if (c.igSliderFloat("x", &self.cube_rotation[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
-        if (c.igSliderFloat("y", &self.cube_rotation[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
-        if (c.igSliderFloat("z", &self.cube_rotation[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
-        c.igTreePop();
-    }
-    if (c.igTreeNode_Str("cube translate")) {
-        if (c.igSliderFloat("x", &self.cube_translate[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
-        if (c.igSliderFloat("y", &self.cube_translate[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
-        if (c.igSliderFloat("z", &self.cube_translate[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
-        c.igTreePop();
-    }
+    c.igText("plane rotation");
+    c.igPushItemWidth(-1);
+    if (c.igSliderFloat("x", &self.plane_rotation[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+    if (c.igSliderFloat("y", &self.plane_rotation[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+    if (c.igSliderFloat("z", &self.plane_rotation[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+
+    c.igText("plane translate");
+    c.igPushItemWidth(-1);
+    if (c.igSliderFloat("x", &self.plane_translate[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+    if (c.igSliderFloat("y", &self.plane_translate[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+    if (c.igSliderFloat("z", &self.plane_translate[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.plane_updated = true;
+
+    c.igText("cube rotation");
+    c.igPushItemWidth(-1);
+    if (c.igSliderFloat("x", &self.cube_rotation[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+    if (c.igSliderFloat("y", &self.cube_rotation[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+    if (c.igSliderFloat("z", &self.cube_rotation[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+
+    c.igText("cube translate");
+    c.igPushItemWidth(-1);
+    if (c.igSliderFloat("x", &self.cube_translate[0], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+    if (c.igSliderFloat("y", &self.cube_translate[1], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+    if (c.igSliderFloat("z", &self.cube_translate[2], -100, 100, "%.3f", c.ImGuiSliderFlags_None)) self.cube_updated = true;
+
     c.igEnd();
 }
 

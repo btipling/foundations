@@ -35,6 +35,7 @@ pub fn draw(self: *LightingUI) void {
         c.igSameLine(0, 0);
         c.igText(items[self.current_lighting]);
         const data: [*c]const [*c]const u8 = items[0..].ptr;
+        c.igPushItemWidth(-1);
         if (c.igListBox_Str_arr("##lightingslist", @ptrCast(&self.current_lighting), data, items.len, -1)) {
             self.torus_updated = true;
         }
@@ -58,6 +59,7 @@ pub fn draw(self: *LightingUI) void {
         c.igSameLine(0, 0);
         c.igText(items[self.current_material]);
         const data: [*c]const [*c]const u8 = items[0..].ptr;
+        c.igPushItemWidth(-1);
         if (c.igListBox_Str_arr("##materialslist", @ptrCast(&self.current_material), data, items.len, -1)) {
             self.torus_updated = true;
         }
@@ -74,6 +76,7 @@ pub fn draw(self: *LightingUI) void {
             c.igText(@ptrCast(txt));
         }
         {
+            c.igPushItemWidth(-1);
             if (c.igSliderFloat("##l1x", &self.light_1.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
             if (c.igSliderFloat("##l1y", &self.light_1.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
             if (c.igSliderFloat("##l1z", &self.light_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
@@ -96,6 +99,7 @@ pub fn draw(self: *LightingUI) void {
             c.igText(@ptrCast(txt));
         }
         {
+            c.igPushItemWidth(-1);
             if (c.igSliderFloat("##l2x", &self.light_2.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
             if (c.igSliderFloat("##l2y", &self.light_2.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
             if (c.igSliderFloat("##l2z", &self.light_2.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
