@@ -6,6 +6,7 @@ light_2: lightSetting = .{
 },
 torus_updated: bool = false,
 current_material: usize = 0,
+current_model: usize = 0,
 current_lighting: usize = 0,
 
 pub const lightSetting = struct {
@@ -61,6 +62,26 @@ pub fn draw(self: *LightingUI) void {
         const data: [*c]const [*c]const u8 = items[0..].ptr;
         c.igPushItemWidth(-1);
         if (c.igListBox_Str_arr("##materialslist", @ptrCast(&self.current_material), data, items.len, -1)) {
+            self.torus_updated = true;
+        }
+    }
+    {
+        const items = [_][*]const u8{
+            "Torus",
+            "Parallelepiped",
+            "Sphere",
+            "Cone",
+            "Cylinder",
+            "Pyramid",
+        };
+        c.igNewLine();
+        c.igText("Model");
+        c.igText("current model: ");
+        c.igSameLine(0, 0);
+        c.igText(items[self.current_model]);
+        const data: [*c]const [*c]const u8 = items[0..].ptr;
+        c.igPushItemWidth(-1);
+        if (c.igListBox_Str_arr("##modelslist", @ptrCast(&self.current_model), data, items.len, -1)) {
             self.torus_updated = true;
         }
     }
