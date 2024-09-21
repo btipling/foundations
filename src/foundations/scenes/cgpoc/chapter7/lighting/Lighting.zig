@@ -1,6 +1,6 @@
 allocator: std.mem.Allocator,
 ui_state: LightingUI,
-torus: object.object = .{ .norender = .{} },
+model: object.object = .{ .norender = .{} },
 sphere_1: object.object = .{ .norender = .{} },
 sphere_2: object.object = .{ .norender = .{} },
 bg: object.object = .{ .norender = .{} },
@@ -109,7 +109,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
         .lights = lights_buf,
     };
     pd.renderBG();
-    pd.renderTorus();
+    pd.renderModel();
     pd.rendersphere_1();
     pd.rendersphere_2();
     return pd;
@@ -192,10 +192,10 @@ pub fn draw(self: *Lighting, dt: f64) void {
         self.light_2_position.setUniform3fv(lp);
         self.ui_state.light_2.position_updated = false;
     }
-    if (self.ui_state.torus_updated) {
-        self.deleteTorus();
-        self.renderTorus();
-        self.ui_state.torus_updated = false;
+    if (self.ui_state.model_updated) {
+        self.deleteModel();
+        self.renderModel();
+        self.ui_state.model_updated = false;
     }
     if (self.ui_state.light_1.updated) {
         self.updateLights();
@@ -220,7 +220,7 @@ pub fn draw(self: *Lighting, dt: f64) void {
         const objects: [3]object.object = .{
             self.sphere_1,
             self.sphere_2,
-            self.torus,
+            self.model,
         };
         rhi.drawObjects(objects[0..]);
     }
@@ -264,14 +264,14 @@ pub fn renderBG(self: *Lighting) void {
     self.bg = bg;
 }
 
-pub fn deleteTorus(self: *Lighting) void {
+pub fn deleteModel(self: *Lighting) void {
     const objects: [1]object.object = .{
-        self.torus,
+        self.model,
     };
     rhi.deleteObjects(objects[0..]);
 }
 
-pub fn renderTorus(self: *Lighting) void {
+pub fn renderModel(self: *Lighting) void {
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
@@ -329,7 +329,7 @@ pub fn renderTorus(self: *Lighting) void {
     } else {
         self.torus_prog_index = self.view_camera.addProgramMutable(prog);
     }
-    self.torus = torus;
+    self.model = torus;
 
     var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
     lp1.setUniform3fv(self.ui_state.light_1.position);

@@ -4,7 +4,7 @@ light_1: lightSetting = .{
 light_2: lightSetting = .{
     .position = .{ -0.624, -12.688, -1.372 },
 },
-torus_updated: bool = false,
+model_updated: bool = false,
 current_material: usize = 0,
 current_model: usize = 0,
 current_lighting: usize = 0,
@@ -38,7 +38,7 @@ pub fn draw(self: *LightingUI) void {
         const data: [*c]const [*c]const u8 = items[0..].ptr;
         c.igPushItemWidth(-1);
         if (c.igListBox_Str_arr("##lightingslist", @ptrCast(&self.current_lighting), data, items.len, -1)) {
-            self.torus_updated = true;
+            self.model_updated = true;
         }
     }
     {
@@ -62,7 +62,7 @@ pub fn draw(self: *LightingUI) void {
         const data: [*c]const [*c]const u8 = items[0..].ptr;
         c.igPushItemWidth(-1);
         if (c.igListBox_Str_arr("##materialslist", @ptrCast(&self.current_material), data, items.len, -1)) {
-            self.torus_updated = true;
+            self.model_updated = true;
         }
     }
     {
@@ -82,7 +82,7 @@ pub fn draw(self: *LightingUI) void {
         const data: [*c]const [*c]const u8 = items[0..].ptr;
         c.igPushItemWidth(-1);
         if (c.igListBox_Str_arr("##modelslist", @ptrCast(&self.current_model), data, items.len, -1)) {
-            self.torus_updated = true;
+            self.model_updated = true;
         }
     }
     {
@@ -105,7 +105,7 @@ pub fn draw(self: *LightingUI) void {
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color1", @ptrCast(&self.light_1.color), flags)) {
             self.light_1.updated = true;
-            self.torus_updated = true;
+            self.model_updated = true;
         }
     }
     {
@@ -128,7 +128,7 @@ pub fn draw(self: *LightingUI) void {
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color2", @ptrCast(&self.light_2.color), flags)) {
             self.light_2.updated = true;
-            self.torus_updated = true;
+            self.model_updated = true;
         }
     }
 
