@@ -1,0 +1,9 @@
+uniform uint f_material_selection; 
+
+void main()
+{
+    Material f_m = f_materials[f_material_selection];
+    Light f_l = f_lights[0];
+    
+    fo_frag_color = f_blinn_phong_lighting(f_m, f_l);
+}

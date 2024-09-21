@@ -5,6 +5,7 @@ num_vertex_partials: usize = 0,
 frag_partials: [max_frag_partials][]const u8 = undefined,
 num_frag_partials: usize = 0,
 lighting: lighting_type = .none,
+frag_body: ?[]const u8 = null,
 program: u32 = 0,
 
 const max_frag_partials: usize = 10;
@@ -88,16 +89,19 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
         self.frag_partials[self.num_frag_partials] = lighting_glsl;
         self.num_frag_partials += 1;
     }
-    {
+    if (self.frag_body) |frag_body| {
+        self.frag_partials[self.num_frag_partials] = frag_body;
+        self.num_frag_partials += 1;
+    } else {
         const frag_body = switch (self.fragment_shader) {
             .color => frag_color,
             .normals => frag_normals,
             .texture => frag_texture,
             .bindless => frag_bindless,
-            .lighting => s: switch (self.lighting) {
-                .gauraud => break :s frag_color,
-                .phong => break :s frag_phong_lighting,
-                else => break :s frag_blinn_phong_lighting,
+            .lighting => switch (self.lighting) {
+                .gauraud => frag_color,
+                .phong => frag_phong_lighting,
+                else => frag_blinn_phong_lighting,
             },
         };
         self.frag_partials[self.num_frag_partials] = frag_body;

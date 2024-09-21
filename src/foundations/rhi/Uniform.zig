@@ -27,6 +27,10 @@ pub fn setUniform3fv(self: Uniform, v: [3]f32) void {
     c.glProgramUniform3fv(@intCast(self.program), self.location, 1, &d);
 }
 
+pub fn setUniform1ui(self: Uniform, v: usize) void {
+    c.glProgramUniform1ui(@intCast(self.program), self.location, @intCast(v));
+}
+
 pub fn setUniformHandleui64ARB(self: Uniform, handle: c.GLuint64) void {
     c.glProgramUniformHandleui64ARB(@intCast(self.program), self.location, handle);
 }

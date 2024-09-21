@@ -388,6 +388,22 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             self.scene.updateCamera();
         }
 
+        pub fn addProgramMutable(self: *Self, p: u32) usize {
+            const index = self.view_uniforms.items.len;
+            self.addProgram(p);
+            return index;
+        }
+
+        pub fn updateProgramMutable(self: *Self, p: u32, i: usize) void {
+            const v_u: rhi.Uniform = .init(p, "v_matrix");
+            self.view_uniforms.items[i] = v_u;
+            v_u.setUniformMatrix(self.view_m);
+
+            const p_u: rhi.Uniform = .init(p, "p_matrix");
+            self.perspective_uniforms.items[i] = p_u;
+            p_u.setUniformMatrix(self.persp_m);
+        }
+
         pub fn addProgram(self: *Self, p: u32) void {
             const v_u: rhi.Uniform = .init(p, "v_matrix");
             self.view_uniforms.append(

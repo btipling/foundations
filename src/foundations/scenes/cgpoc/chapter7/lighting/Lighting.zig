@@ -9,18 +9,27 @@ materials: rhi.Buffer,
 lights: rhi.Buffer,
 light_position: rhi.Uniform = undefined,
 sphere_matrix: rhi.Uniform = undefined,
+material_selection: rhi.Uniform = undefined,
+torus_prog_index: ?usize = null,
 
 const Lighting = @This();
 
 const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_blinn_phong_light_vert.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
+const frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
 
 const mats = [_]lighting.Material{
     lighting.materials.Gold,
     lighting.materials.Jade,
     lighting.materials.Pearl,
     lighting.materials.Silver,
+    lighting.materials.Copper,
+    lighting.materials.Chrome,
+    lighting.materials.Emerald,
+    lighting.materials.Ruby,
+    lighting.materials.Obsidian,
+    lighting.materials.Brass,
 };
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -95,6 +104,11 @@ pub fn draw(self: *Lighting, dt: f64) void {
         self.light_position.setUniform3fv(lp);
         self.ui_state.light_updated = false;
     }
+    if (self.ui_state.torus_updated) {
+        self.deleteTorus();
+        self.renderTorus();
+        self.ui_state.torus_updated = false;
+    }
     self.view_camera.update(dt);
     {
         const objects: [1]object.object = .{
@@ -135,7 +149,7 @@ pub fn renderBG(self: *Lighting) void {
             .t_column1 = cm.columns[1],
             .t_column2 = cm.columns[2],
             .t_column3 = cm.columns[3],
-            .color = .{ 0, 0, 0.05, 1 },
+            .color = .{ 0.01, 0.01, 0.01, 1 },
         };
         i_datas[0] = i_data;
     }
@@ -149,6 +163,13 @@ pub fn renderBG(self: *Lighting) void {
     self.bg = bg;
 }
 
+pub fn deleteTorus(self: *Lighting) void {
+    const objects: [1]object.object = .{
+        self.torus,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
 pub fn renderTorus(self: *Lighting) void {
     const prog = rhi.createProgram();
     {
@@ -157,6 +178,7 @@ pub fn renderTorus(self: *Lighting) void {
             .instance_data = true,
             .fragment_shader = .lighting,
             .lighting = .blinn_phong,
+            .frag_body = frag_shader,
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
@@ -186,11 +208,18 @@ pub fn renderTorus(self: *Lighting) void {
     };
     torus.torus.mesh.linear_colorspace = false;
 
-    self.view_camera.addProgram(prog);
+    if (self.torus_prog_index) |i| {
+        self.view_camera.updateProgramMutable(prog, i);
+    } else {
+        self.torus_prog_index = self.view_camera.addProgramMutable(prog);
+    }
     self.torus = torus;
     var lp: rhi.Uniform = .init(prog, "f_light_pos");
     lp.setUniform3fv(self.ui_state.light_position);
     self.light_position = lp;
+    var msu: rhi.Uniform = .init(prog, "f_material_selection");
+    msu.setUniform1ui(self.ui_state.current_material);
+    self.material_selection = msu;
 }
 
 pub fn renderSphere(self: *Lighting) void {
