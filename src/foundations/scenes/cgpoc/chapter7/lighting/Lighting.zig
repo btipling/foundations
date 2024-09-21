@@ -287,7 +287,7 @@ pub fn renderTorus(self: *Lighting) void {
         self.torus_prog_index = self.view_camera.addProgramMutable(prog);
     }
     self.torus = torus;
-    var lp: rhi.Uniform = .init(prog, "f_light_pos");
+    var lp: rhi.Uniform = .init(prog, "f_light_1_pos");
     lp.setUniform3fv(self.ui_state.light_position);
     self.light_1_position = lp;
     var msu: rhi.Uniform = .init(prog, "f_material_selection");

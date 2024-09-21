@@ -1,5 +1,5 @@
 uniform uint f_material_selection; 
-uniform vec3 f_light_pos;
+uniform vec3 f_light_1_pos;
 
 void main()
 {
@@ -16,7 +16,7 @@ void main()
 
     vec4 f_P = m_matrix * vec4(f_position.xyz, 1.0);
     vec3 f_N = normalize(f_norm_matrix * f_normals);
-    vec3 f_L = normalize(f_light_pos - f_P.xyz);
+    vec3 f_L = normalize(f_light_1_pos - f_P.xyz);
 
     vec3 f_V = normalize(-v_matrix[3].xyz - f_P.xyz);
     vec3 f_R = reflect(-f_L, f_N);
