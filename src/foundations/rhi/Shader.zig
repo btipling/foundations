@@ -45,7 +45,6 @@ const frag_normals = @embedFile("../shaders/frag_normals.glsl");
 const frag_texture = @embedFile("../shaders/frag_texture.glsl");
 const frag_bindless = @embedFile("../shaders/frag_bindless.glsl");
 
-const frag_gouraud_lighting = @embedFile("../shaders/frag_gouraud_lighting.glsl");
 const frag_phong_lighting = @embedFile("../shaders/frag_phong_lighting.glsl");
 const frag_blinn_phong_lighting = @embedFile("../shaders/frag_blinn_phong_lighting.glsl");
 
@@ -96,7 +95,7 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
             .texture => frag_texture,
             .bindless => frag_bindless,
             .lighting => s: switch (self.lighting) {
-                .gauraud => break :s frag_gouraud_lighting,
+                .gauraud => break :s frag_color,
                 .phong => break :s frag_phong_lighting,
                 else => break :s frag_blinn_phong_lighting,
             },
