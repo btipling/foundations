@@ -1,5 +1,5 @@
 light_1: lightSetting = .{
-    .position = .{ 0, -12, 0.0 },
+    .position = .{ 0, -11.121, 2.366 },
 },
 light_2: lightSetting = .{
     .position = .{ -0.624, -12.688, -1.372 },

@@ -58,7 +58,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
         ctx.cfg,
         pd,
         integrator,
-        .{ 0, -15, 0 },
+        .{ 0, -16, 1 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -315,6 +315,7 @@ pub fn renderModel(self: *Lighting) void {
         };
         i_datas[0] = i_data;
     }
+
     const model: object.object = s: switch (self.ui_state.current_model) {
         0 => {
             var torus: object.object = .{
@@ -326,6 +327,60 @@ pub fn renderModel(self: *Lighting) void {
             };
             torus.torus.mesh.linear_colorspace = false;
             break :s torus;
+        },
+        1 => {
+            var parallelepiped: object.object = .{
+                .parallelepiped = object.Parallelepiped.init(
+                    prog,
+                    i_datas[0..],
+                    true,
+                ),
+            };
+            parallelepiped.parallelepiped.mesh.linear_colorspace = false;
+            break :s parallelepiped;
+        },
+        2 => {
+            var sphere: object.object = .{
+                .sphere = object.Sphere.init(
+                    prog,
+                    i_datas[0..],
+                    false,
+                ),
+            };
+            sphere.sphere.mesh.linear_colorspace = false;
+            break :s sphere;
+        },
+        3 => {
+            var cone: object.object = .{
+                .cone = object.Cone.init(
+                    prog,
+                    i_datas[0..],
+                ),
+            };
+            cone.cone.mesh.linear_colorspace = false;
+            break :s cone;
+        },
+        4 => {
+            var cylinder: object.object = .{
+                .cylinder = object.Cylinder.init(
+                    prog,
+                    i_datas[0..],
+                    false,
+                ),
+            };
+            cylinder.cylinder.mesh.linear_colorspace = false;
+            break :s cylinder;
+        },
+        5 => {
+            var pyramid: object.object = .{
+                .pyramid = object.Pyramid.init(
+                    prog,
+                    i_datas[0..],
+                    false,
+                ),
+            };
+            pyramid.pyramid.mesh.linear_colorspace = false;
+            break :s pyramid;
         },
         else => .{ .norender = .{} },
     };
