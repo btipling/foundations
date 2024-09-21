@@ -1,8 +1,10 @@
 light_position: [3]f32 = .{ 0, -12, -0.0 },
-light_updated: bool = false,
+light_position_updated: bool = false,
 torus_updated: bool = false,
 current_material: usize = 0,
 current_lighting: usize = 0,
+light_updated: bool = false,
+light_color: [3]f32 = .{ 1, 1, 1 },
 
 const LightingUI = @This();
 
@@ -23,9 +25,9 @@ pub fn draw(self: *LightingUI) void {
         c.igText(@ptrCast(txt));
     }
     {
-        if (c.igSliderFloat("x", &self.light_position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
-        if (c.igSliderFloat("y", &self.light_position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
-        if (c.igSliderFloat("z", &self.light_position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_updated = true;
+        if (c.igSliderFloat("x", &self.light_position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_position_updated = true;
+        if (c.igSliderFloat("y", &self.light_position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_position_updated = true;
+        if (c.igSliderFloat("z", &self.light_position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_position_updated = true;
     }
     {
         const items = [_][*]const u8{
@@ -40,6 +42,7 @@ pub fn draw(self: *LightingUI) void {
             "Obsidian",
             "Brass",
         };
+        c.igNewLine();
         c.igText("Materials");
         c.igText("current material: ");
         c.igSameLine(0, 0);
@@ -55,7 +58,13 @@ pub fn draw(self: *LightingUI) void {
             "Phong",
             "Gouraud",
         };
+        c.igNewLine();
         c.igText("Lighting");
+        const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
+        if (c.igColorEdit3("##Color", @ptrCast(&self.light_color), flags)) {
+            self.light_updated = true;
+            self.torus_updated = true;
+        }
         c.igText("current lighting: ");
         c.igSameLine(0, 0);
         c.igText(items[self.current_lighting]);

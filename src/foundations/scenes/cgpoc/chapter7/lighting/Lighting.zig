@@ -11,6 +11,7 @@ light_position: rhi.Uniform = undefined,
 sphere_matrix: rhi.Uniform = undefined,
 material_selection: rhi.Uniform = undefined,
 torus_prog_index: ?usize = null,
+sphere_prog_index: ?usize = null,
 
 const Lighting = @This();
 
@@ -63,8 +64,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{.{
-        .ambient = [4]f32{ 0.1, 0.1, 0.3, 1.0 },
-        .diffuse = [4]f32{ 0.7, 0.7, 1.0, 1.0 },
+        .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+        .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
         .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
         .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
         .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
@@ -76,7 +77,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
         .light_kind = .direction,
     }};
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    errdefer mats_buf.deinit();
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
@@ -102,17 +102,55 @@ pub fn deinit(self: *Lighting, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
+fn updateLight(self: *Lighting) void {
+    const ambient_factor: f32 = 0.1;
+    const lights = [_]lighting.Light{.{
+        .ambient = [4]f32{
+            self.ui_state.light_color[0] * ambient_factor,
+            self.ui_state.light_color[1] * ambient_factor,
+            self.ui_state.light_color[2] * ambient_factor,
+            1.0,
+        },
+        .diffuse = [4]f32{
+            self.ui_state.light_color[0],
+            self.ui_state.light_color[1],
+            self.ui_state.light_color[2],
+            1.0,
+        },
+        .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+        .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+        .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+        .cutoff = 0.0,
+        .exponent = 0.0,
+        .attenuation_constant = 1.0,
+        .attenuation_linear = 0.0,
+        .attenuation_quadratic = 0.0,
+        .light_kind = .direction,
+    }};
+    self.lights.deinit();
+    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
+    var lights_buf = rhi.Buffer.init(ld);
+    errdefer lights_buf.deinit();
+    self.lights = lights_buf;
+}
+
 pub fn draw(self: *Lighting, dt: f64) void {
-    if (self.ui_state.light_updated) {
+    if (self.ui_state.light_position_updated) {
         const lp = self.ui_state.light_position;
         self.sphere_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
         self.light_position.setUniform3fv(lp);
-        self.ui_state.light_updated = false;
+        self.ui_state.light_position_updated = false;
     }
     if (self.ui_state.torus_updated) {
         self.deleteTorus();
         self.renderTorus();
         self.ui_state.torus_updated = false;
+    }
+    if (self.ui_state.light_updated) {
+        self.updateLight();
+        self.deleteSphere();
+        self.renderSphere();
+        self.ui_state.light_updated = false;
     }
     self.view_camera.update(dt);
     {
@@ -242,6 +280,13 @@ pub fn renderTorus(self: *Lighting) void {
     self.material_selection = msu;
 }
 
+pub fn deleteSphere(self: *Lighting) void {
+    const objects: [1]object.object = .{
+        self.sphere,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
 pub fn renderSphere(self: *Lighting) void {
     const prog = rhi.createProgram();
     {
@@ -259,7 +304,12 @@ pub fn renderSphere(self: *Lighting) void {
         .t_column1 = m.columns[1],
         .t_column2 = m.columns[2],
         .t_column3 = m.columns[3],
-        .color = .{ 1, 1, 1, 1 },
+        .color = .{
+            self.ui_state.light_color[0],
+            self.ui_state.light_color[1],
+            self.ui_state.light_color[2],
+            1,
+        },
     };
     const sphere: object.object = .{
         .sphere = object.Sphere.init(
@@ -272,7 +322,11 @@ pub fn renderSphere(self: *Lighting) void {
     var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_matrix = sm;
-    self.view_camera.addProgram(prog);
+    if (self.sphere_prog_index) |i| {
+        self.view_camera.updateProgramMutable(prog, i);
+    } else {
+        self.sphere_prog_index = self.view_camera.addProgramMutable(prog);
+    }
     self.sphere = sphere;
 }
 
