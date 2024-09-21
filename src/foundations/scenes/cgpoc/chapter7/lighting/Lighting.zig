@@ -13,7 +13,7 @@ light_2_position: rhi.Uniform = undefined,
 sphere_1_matrix: rhi.Uniform = undefined,
 sphere_2_matrix: rhi.Uniform = undefined,
 material_selection: rhi.Uniform = undefined,
-torus_prog_index: ?usize = null,
+model_prog_index: ?usize = null,
 sphere_1_prog_index: ?usize = null,
 sphere_2_prog_index: ?usize = null,
 
@@ -315,21 +315,27 @@ pub fn renderModel(self: *Lighting) void {
         };
         i_datas[0] = i_data;
     }
-    var torus: object.object = .{
-        .torus = object.Torus.init(
-            prog,
-            i_datas[0..],
-            false,
-        ),
+    const model: object.object = s: switch (self.ui_state.current_model) {
+        0 => {
+            var torus: object.object = .{
+                .torus = object.Torus.init(
+                    prog,
+                    i_datas[0..],
+                    false,
+                ),
+            };
+            torus.torus.mesh.linear_colorspace = false;
+            break :s torus;
+        },
+        else => .{ .norender = .{} },
     };
-    torus.torus.mesh.linear_colorspace = false;
 
-    if (self.torus_prog_index) |i| {
+    if (self.model_prog_index) |i| {
         self.view_camera.updateProgramMutable(prog, i);
     } else {
-        self.torus_prog_index = self.view_camera.addProgramMutable(prog);
+        self.model_prog_index = self.view_camera.addProgramMutable(prog);
     }
-    self.model = torus;
+    self.model = model;
 
     var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
     lp1.setUniform3fv(self.ui_state.light_1.position);
