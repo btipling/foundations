@@ -1,6 +1,8 @@
 
 uniform vec3 f_light_1_pos;
+uniform vec3 f_light_2_pos;
 out vec3 fo_light_1_dir;
+out vec3 fo_light_2_dir;
 
 void main()
 {
@@ -16,6 +18,7 @@ void main()
     fo_vert = f_main_pos.xyz;
     fo_normals = f_norm_matrix * f_normals;
     fo_light_1_dir = f_light_1_pos - fo_vert;
+    fo_light_2_dir = f_light_2_pos - fo_vert;
 
     gl_Position =  f_mvp * f_main_pos;
     f_tc = f_texture_coords;

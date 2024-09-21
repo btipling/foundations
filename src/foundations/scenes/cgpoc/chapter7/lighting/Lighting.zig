@@ -8,6 +8,7 @@ ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 light_1_position: rhi.Uniform = undefined,
+light_2_position: rhi.Uniform = undefined,
 sphere_1_matrix: rhi.Uniform = undefined,
 material_selection: rhi.Uniform = undefined,
 torus_prog_index: ?usize = null,
@@ -119,29 +120,54 @@ pub fn deinit(self: *Lighting, allocator: std.mem.Allocator) void {
 
 fn updateLights(self: *Lighting) void {
     const ambient_factor: f32 = 0.1;
-    const lights = [_]lighting.Light{.{
-        .ambient = [4]f32{
-            self.ui_state.light_1.color[0] * ambient_factor,
-            self.ui_state.light_1.color[1] * ambient_factor,
-            self.ui_state.light_1.color[2] * ambient_factor,
-            1.0,
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{
+                self.ui_state.light_1.color[0] * ambient_factor,
+                self.ui_state.light_1.color[1] * ambient_factor,
+                self.ui_state.light_1.color[2] * ambient_factor,
+                1.0,
+            },
+            .diffuse = [4]f32{
+                self.ui_state.light_1.color[0],
+                self.ui_state.light_1.color[1],
+                self.ui_state.light_1.color[2],
+                1.0,
+            },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
         },
-        .diffuse = [4]f32{
-            self.ui_state.light_1.color[0],
-            self.ui_state.light_1.color[1],
-            self.ui_state.light_1.color[2],
-            1.0,
+        .{
+            .ambient = [4]f32{
+                self.ui_state.light_2.color[0] * ambient_factor,
+                self.ui_state.light_2.color[1] * ambient_factor,
+                self.ui_state.light_2.color[2] * ambient_factor,
+                1.0,
+            },
+            .diffuse = [4]f32{
+                self.ui_state.light_2.color[0],
+                self.ui_state.light_2.color[1],
+                self.ui_state.light_2.color[2],
+                1.0,
+            },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
         },
-        .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-        .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-        .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
-        .cutoff = 0.0,
-        .exponent = 0.0,
-        .attenuation_constant = 1.0,
-        .attenuation_linear = 0.0,
-        .attenuation_quadratic = 0.0,
-        .light_kind = .positional,
-    }};
+    };
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
     var lights_buf = rhi.Buffer.init(ld);
@@ -287,9 +313,15 @@ pub fn renderTorus(self: *Lighting) void {
         self.torus_prog_index = self.view_camera.addProgramMutable(prog);
     }
     self.torus = torus;
-    var lp: rhi.Uniform = .init(prog, "f_light_1_pos");
-    lp.setUniform3fv(self.ui_state.light_1.position);
-    self.light_1_position = lp;
+
+    var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
+    lp1.setUniform3fv(self.ui_state.light_1.position);
+    self.light_1_position = lp1;
+
+    var lp2: rhi.Uniform = .init(prog, "f_light_2_pos");
+    lp2.setUniform3fv(self.ui_state.light_2.position);
+    self.light_2_position = lp2;
+
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.current_material);
     self.material_selection = msu;
