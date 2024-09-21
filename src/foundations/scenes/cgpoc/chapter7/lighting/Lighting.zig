@@ -150,11 +150,11 @@ fn updateLights(self: *Lighting) void {
 }
 
 pub fn draw(self: *Lighting, dt: f64) void {
-    if (self.ui_state.light_position_updated) {
+    if (self.ui_state.light_1.position_updated) {
         const lp = self.ui_state.light_position;
         self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
         self.light_1_position.setUniform3fv(lp);
-        self.ui_state.light_position_updated = false;
+        self.ui_state.light_1.position_updated = false;
     }
     if (self.ui_state.torus_updated) {
         self.deleteTorus();
