@@ -2,6 +2,7 @@ allocator: std.mem.Allocator,
 ui_state: LightingUI,
 torus: object.object = .{ .norender = .{} },
 sphere_1: object.object = .{ .norender = .{} },
+sphere_2: object.object = .{ .norender = .{} },
 bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
@@ -10,9 +11,11 @@ lights: rhi.Buffer,
 light_1_position: rhi.Uniform = undefined,
 light_2_position: rhi.Uniform = undefined,
 sphere_1_matrix: rhi.Uniform = undefined,
+sphere_2_matrix: rhi.Uniform = undefined,
 material_selection: rhi.Uniform = undefined,
 torus_prog_index: ?usize = null,
 sphere_1_prog_index: ?usize = null,
+sphere_2_prog_index: ?usize = null,
 
 const Lighting = @This();
 
@@ -108,6 +111,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     pd.renderBG();
     pd.renderTorus();
     pd.rendersphere_1();
+    pd.rendersphere_2();
     return pd;
 }
 
@@ -182,6 +186,12 @@ pub fn draw(self: *Lighting, dt: f64) void {
         self.light_1_position.setUniform3fv(lp);
         self.ui_state.light_1.position_updated = false;
     }
+    if (self.ui_state.light_2.position_updated) {
+        const lp = self.ui_state.light_2.position;
+        self.sphere_2_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
+        self.light_2_position.setUniform3fv(lp);
+        self.ui_state.light_2.position_updated = false;
+    }
     if (self.ui_state.torus_updated) {
         self.deleteTorus();
         self.renderTorus();
@@ -193,6 +203,12 @@ pub fn draw(self: *Lighting, dt: f64) void {
         self.rendersphere_1();
         self.ui_state.light_1.updated = false;
     }
+    if (self.ui_state.light_2.updated) {
+        self.updateLights();
+        self.deletesphere_2();
+        self.rendersphere_2();
+        self.ui_state.light_2.updated = false;
+    }
     self.view_camera.update(dt);
     {
         const objects: [1]object.object = .{
@@ -201,8 +217,9 @@ pub fn draw(self: *Lighting, dt: f64) void {
         rhi.drawObjects(objects[0..]);
     }
     {
-        const objects: [2]object.object = .{
+        const objects: [3]object.object = .{
             self.sphere_1,
+            self.sphere_2,
             self.torus,
         };
         rhi.drawObjects(objects[0..]);
@@ -375,6 +392,56 @@ pub fn rendersphere_1(self: *Lighting) void {
         self.sphere_1_prog_index = self.view_camera.addProgramMutable(prog);
     }
     self.sphere_1 = sphere;
+}
+
+pub fn deletesphere_2(self: *Lighting) void {
+    const objects: [1]object.object = .{
+        self.sphere_2,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
+pub fn rendersphere_2(self: *Lighting) void {
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    const m = math.matrix.uniformScale(0.125);
+    i_datas[0] = .{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = .{
+            self.ui_state.light_2.color[0],
+            self.ui_state.light_2.color[1],
+            self.ui_state.light_2.color[2],
+            1,
+        },
+    };
+    const sphere: object.object = .{
+        .sphere = object.Sphere.init(
+            prog,
+            i_datas[0..],
+            false,
+        ),
+    };
+    const lp = self.ui_state.light_2.position;
+    var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
+    sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
+    self.sphere_2_matrix = sm;
+    if (self.sphere_2_prog_index) |i| {
+        self.view_camera.updateProgramMutable(prog, i);
+    } else {
+        self.sphere_2_prog_index = self.view_camera.addProgramMutable(prog);
+    }
+    self.sphere_2 = sphere;
 }
 
 const std = @import("std");

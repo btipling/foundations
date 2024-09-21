@@ -2,7 +2,7 @@ light_1: lightSetting = .{
     .position = .{ 0, -12, 0.0 },
 },
 light_2: lightSetting = .{
-    .position = .{ 0, 12, 0.0 },
+    .position = .{ -0.624, -12.688, -1.372 },
 },
 torus_updated: bool = false,
 current_material: usize = 0,
@@ -79,7 +79,7 @@ pub fn draw(self: *LightingUI) void {
             if (c.igSliderFloat("##l1z", &self.light_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
         }
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
-        if (c.igColorEdit3("##Color", @ptrCast(&self.light_1.color), flags)) {
+        if (c.igColorEdit3("##Color1", @ptrCast(&self.light_1.color), flags)) {
             self.light_1.updated = true;
             self.torus_updated = true;
         }
@@ -101,7 +101,7 @@ pub fn draw(self: *LightingUI) void {
             if (c.igSliderFloat("##l2z", &self.light_2.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
         }
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
-        if (c.igColorEdit3("##Color", @ptrCast(&self.light_2.color), flags)) {
+        if (c.igColorEdit3("##Color2", @ptrCast(&self.light_2.color), flags)) {
             self.light_2.updated = true;
             self.torus_updated = true;
         }
