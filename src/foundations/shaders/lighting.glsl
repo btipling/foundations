@@ -33,9 +33,9 @@ layout(std430, binding = 1) buffer LightBuffer {
     Light f_lights[];
 };
 
-vec4 f_blinn_phong_lighting(Material f_mat, Light f_light) {
+vec4 f_blinn_phong_lighting(Material f_mat, Light f_light, vec3 f_light_dir) {
     
-    vec3 f_L = normalize(fo_lightdir);
+    vec3 f_L = normalize(f_light_dir);
     vec3 f_V = normalize(-v_matrix[3].xyz - fo_vert);
     vec3 f_N = normalize(fo_normals);
     vec3 f_H = normalize(f_L + f_V).xyz;
@@ -51,9 +51,9 @@ vec4 f_blinn_phong_lighting(Material f_mat, Light f_light) {
     return vec4((f_ambient + f_diffuse + f_specular), 1.0);
 }
 
-vec4 f_phong_lighting(Material f_mat, Light f_light) {
+vec4 f_phong_lighting(Material f_mat, Light f_light, vec3 f_light_dir) {
 
-    vec3 f_L = normalize(fo_lightdir);
+    vec3 f_L = normalize(f_light_dir);
     vec3 f_V = normalize(-v_matrix[3].xyz - fo_vert);
     vec3 f_N = normalize(fo_normals);
     vec3 f_R = reflect(-f_L, f_N);

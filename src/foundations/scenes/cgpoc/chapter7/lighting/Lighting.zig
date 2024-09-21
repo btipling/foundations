@@ -1,24 +1,24 @@
 allocator: std.mem.Allocator,
 ui_state: LightingUI,
 torus: object.object = .{ .norender = .{} },
-sphere: object.object = .{ .norender = .{} },
+sphere_1: object.object = .{ .norender = .{} },
 bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Lighting, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
-light_position: rhi.Uniform = undefined,
-sphere_matrix: rhi.Uniform = undefined,
+wtf: rhi.Uniform = undefined,
+sphere_1_matrix: rhi.Uniform = undefined,
 material_selection: rhi.Uniform = undefined,
 torus_prog_index: ?usize = null,
-sphere_prog_index: ?usize = null,
+sphere_1_prog_index: ?usize = null,
 
 const Lighting = @This();
 
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
-const blinn_phong_vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_blinn_phong_light_vert.glsl");
+const blinn_phong_vertex_shader: []const u8 = @embedFile("blinn_phong_vert.glsl");
 const gouraud_vertex_shader: []const u8 = @embedFile("gouraud_vert.glsl");
 
 const blinn_phong_frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
@@ -63,19 +63,34 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
-    const lights = [_]lighting.Light{.{
-        .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
-        .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-        .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-        .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-        .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
-        .cutoff = 0.0,
-        .exponent = 0.0,
-        .attenuation_constant = 1.0,
-        .attenuation_linear = 0.0,
-        .attenuation_quadratic = 0.0,
-        .light_kind = .direction,
-    }};
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+        .{
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+    };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
@@ -91,7 +106,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     };
     pd.renderBG();
     pd.renderTorus();
-    pd.renderSphere();
+    pd.rendersphere_1();
     return pd;
 }
 
@@ -102,19 +117,19 @@ pub fn deinit(self: *Lighting, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-fn updateLight(self: *Lighting) void {
+fn updateLights(self: *Lighting) void {
     const ambient_factor: f32 = 0.1;
     const lights = [_]lighting.Light{.{
         .ambient = [4]f32{
-            self.ui_state.light_color[0] * ambient_factor,
-            self.ui_state.light_color[1] * ambient_factor,
-            self.ui_state.light_color[2] * ambient_factor,
+            self.ui_state.light_1.color[0] * ambient_factor,
+            self.ui_state.light_1.color[1] * ambient_factor,
+            self.ui_state.light_1.color[2] * ambient_factor,
             1.0,
         },
         .diffuse = [4]f32{
-            self.ui_state.light_color[0],
-            self.ui_state.light_color[1],
-            self.ui_state.light_color[2],
+            self.ui_state.light_1.color[0],
+            self.ui_state.light_1.color[1],
+            self.ui_state.light_1.color[2],
             1.0,
         },
         .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
@@ -125,7 +140,7 @@ fn updateLight(self: *Lighting) void {
         .attenuation_constant = 1.0,
         .attenuation_linear = 0.0,
         .attenuation_quadratic = 0.0,
-        .light_kind = .direction,
+        .light_kind = .positional,
     }};
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
@@ -135,22 +150,22 @@ fn updateLight(self: *Lighting) void {
 }
 
 pub fn draw(self: *Lighting, dt: f64) void {
-    if (self.ui_state.light_position_updated) {
-        const lp = self.ui_state.light_position;
-        self.sphere_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-        self.light_position.setUniform3fv(lp);
-        self.ui_state.light_position_updated = false;
+    if (self.ui_state.light_1.position_updated) {
+        const lp = self.ui_state.light_1.position;
+        self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
+        self.wtf.setUniform3fv(lp);
+        self.ui_state.light_1.position_updated = false;
     }
     if (self.ui_state.torus_updated) {
         self.deleteTorus();
         self.renderTorus();
         self.ui_state.torus_updated = false;
     }
-    if (self.ui_state.light_updated) {
-        self.updateLight();
-        self.deleteSphere();
-        self.renderSphere();
-        self.ui_state.light_updated = false;
+    if (self.ui_state.light_1.updated) {
+        self.updateLights();
+        self.deletesphere_1();
+        self.rendersphere_1();
+        self.ui_state.light_1.updated = false;
     }
     self.view_camera.update(dt);
     {
@@ -161,7 +176,7 @@ pub fn draw(self: *Lighting, dt: f64) void {
     }
     {
         const objects: [2]object.object = .{
-            self.sphere,
+            self.sphere_1,
             self.torus,
         };
         rhi.drawObjects(objects[0..]);
@@ -273,21 +288,21 @@ pub fn renderTorus(self: *Lighting) void {
     }
     self.torus = torus;
     var lp: rhi.Uniform = .init(prog, "f_light_pos");
-    lp.setUniform3fv(self.ui_state.light_position);
-    self.light_position = lp;
+    lp.setUniform3fv(self.ui_state.light_1.position);
+    self.wtf = lp;
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.current_material);
     self.material_selection = msu;
 }
 
-pub fn deleteSphere(self: *Lighting) void {
+pub fn deletesphere_1(self: *Lighting) void {
     const objects: [1]object.object = .{
-        self.sphere,
+        self.sphere_1,
     };
     rhi.deleteObjects(objects[0..]);
 }
 
-pub fn renderSphere(self: *Lighting) void {
+pub fn rendersphere_1(self: *Lighting) void {
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
@@ -305,9 +320,9 @@ pub fn renderSphere(self: *Lighting) void {
         .t_column2 = m.columns[2],
         .t_column3 = m.columns[3],
         .color = .{
-            self.ui_state.light_color[0],
-            self.ui_state.light_color[1],
-            self.ui_state.light_color[2],
+            self.ui_state.light_1.color[0],
+            self.ui_state.light_1.color[1],
+            self.ui_state.light_1.color[2],
             1,
         },
     };
@@ -318,16 +333,16 @@ pub fn renderSphere(self: *Lighting) void {
             false,
         ),
     };
-    const lp = self.ui_state.light_position;
+    const lp = self.ui_state.light_1.position;
     var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-    self.sphere_matrix = sm;
-    if (self.sphere_prog_index) |i| {
+    self.sphere_1_matrix = sm;
+    if (self.sphere_1_prog_index) |i| {
         self.view_camera.updateProgramMutable(prog, i);
     } else {
-        self.sphere_prog_index = self.view_camera.addProgramMutable(prog);
+        self.sphere_1_prog_index = self.view_camera.addProgramMutable(prog);
     }
-    self.sphere = sphere;
+    self.sphere_1 = sphere;
 }
 
 const std = @import("std");
