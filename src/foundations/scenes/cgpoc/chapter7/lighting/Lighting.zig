@@ -14,10 +14,15 @@ torus_prog_index: ?usize = null,
 
 const Lighting = @This();
 
-const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_blinn_phong_light_vert.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
-const frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
+
+const blinn_phong_vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_blinn_phong_light_vert.glsl");
+const gouraud_vertex_shader: []const u8 = @embedFile("gouraud_vert.glsl");
+
+const blinn_phong_frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
+const phong_frag_shader: []const u8 = @embedFile("phong_frag.glsl");
+const gouraud_frag_shader: []const u8 = @embedFile("gouraud_frag.glsl");
 
 const mats = [_]lighting.Material{
     lighting.materials.Gold,
@@ -177,10 +182,25 @@ pub fn renderTorus(self: *Lighting) void {
             .program = prog,
             .instance_data = true,
             .fragment_shader = .lighting,
-            .lighting = .blinn_phong,
-            .frag_body = frag_shader,
         };
-        const partials = [_][]const u8{vertex_shader};
+        var partials: [1][]const u8 = undefined;
+        switch (self.ui_state.current_lighting) {
+            0 => {
+                s.lighting = .blinn_phong;
+                s.frag_body = blinn_phong_frag_shader;
+                partials = .{blinn_phong_vertex_shader};
+            },
+            1 => {
+                s.lighting = .phong;
+                s.frag_body = phong_frag_shader;
+                partials = .{blinn_phong_vertex_shader};
+            },
+            else => {
+                s.lighting = .gauraud;
+                s.frag_body = gouraud_frag_shader;
+                partials = .{gouraud_vertex_shader};
+            },
+        }
         s.attach(self.allocator, @ptrCast(partials[0..]));
     }
     var i_datas: [1]rhi.instanceData = undefined;
