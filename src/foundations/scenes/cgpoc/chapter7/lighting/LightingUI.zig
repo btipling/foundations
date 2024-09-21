@@ -74,13 +74,35 @@ pub fn draw(self: *LightingUI) void {
             c.igText(@ptrCast(txt));
         }
         {
-            if (c.igSliderFloat("x", &self.light_1.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
-            if (c.igSliderFloat("y", &self.light_1.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
-            if (c.igSliderFloat("z", &self.light_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
+            if (c.igSliderFloat("##l1x", &self.light_1.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
+            if (c.igSliderFloat("##l1y", &self.light_1.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
+            if (c.igSliderFloat("##l1z", &self.light_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
         }
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color", @ptrCast(&self.light_1.color), flags)) {
             self.light_1.updated = true;
+            self.torus_updated = true;
+        }
+    }
+    {
+        c.igNewLine();
+        c.igText("Light 2");
+        {
+            const txt = std.fmt.bufPrintZ(&buf, "Position: ({d:.3}, {d:.3}, {d:.3}", .{
+                self.light_2.position[0],
+                self.light_2.position[1],
+                self.light_2.position[2],
+            }) catch @panic("bufsize too small");
+            c.igText(@ptrCast(txt));
+        }
+        {
+            if (c.igSliderFloat("##l2x", &self.light_2.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
+            if (c.igSliderFloat("##l2y", &self.light_2.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
+            if (c.igSliderFloat("##l2z", &self.light_2.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
+        }
+        const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
+        if (c.igColorEdit3("##Color", @ptrCast(&self.light_2.color), flags)) {
+            self.light_2.updated = true;
             self.torus_updated = true;
         }
     }
