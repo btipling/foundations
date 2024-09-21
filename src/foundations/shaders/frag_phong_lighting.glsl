@@ -1,10 +1,4 @@
 
-in vec4 f_frag_color;
-in vec3 fo_normals;
-in vec3 fo_vert;
-in vec3 fo_lightdir;
-
-
 void main()
 {
     Material f_m = f_materials[0];

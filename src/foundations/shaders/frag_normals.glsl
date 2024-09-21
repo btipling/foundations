@@ -1,6 +1,4 @@
 
-in vec4 f_frag_color;
-in vec3 fo_normals;
 
 void main()
 {

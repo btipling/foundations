@@ -1,7 +1,3 @@
-mat4 f_mvp = p_matrix * v_matrix;
-out vec2 f_tc;
-out vec4 f_frag_color;
-out vec3 fo_normals;
 
 void main()
 {

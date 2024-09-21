@@ -7,7 +7,6 @@ pub const empty: Uniform = .{ .program = 0, .location = 0 };
 
 pub fn init(prog: u32, name: []const u8) Uniform {
     const loc: c.GLint = c.glGetUniformLocation(@intCast(prog), @ptrCast(name));
-    std.debug.print("{s} {d}\n", .{ name, loc });
     return .{
         .program = prog,
         .location = loc,

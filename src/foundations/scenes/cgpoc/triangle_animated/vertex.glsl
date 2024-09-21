@@ -1,8 +1,6 @@
 uniform float f_offset;
 uniform mat4 f_transform;
 
-out vec4 f_frag_color;
-
 void main()
 {
     vec4 f_positions[3];

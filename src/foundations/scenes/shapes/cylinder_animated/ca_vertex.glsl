@@ -1,9 +1,6 @@
 uniform mat4 f_transform;
 uniform float f_pinhole;
 
-out vec4 f_frag_color;
-out vec3 fo_normals;
-
 void main()
 {
     vec4 pos = f_transform * vec4(f_position.xyz, 1.0);

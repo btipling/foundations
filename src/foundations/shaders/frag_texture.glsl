@@ -1,6 +1,4 @@
 
-in vec2 f_tc;
-
 layout (binding=0) uniform sampler2D f_samp;
 
 void main()

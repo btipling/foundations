@@ -1,5 +1,3 @@
-out vec2 f_tc;
-out vec4 f_frag_color;
 
 void main()
 {

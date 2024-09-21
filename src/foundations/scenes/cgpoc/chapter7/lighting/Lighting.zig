@@ -16,6 +16,13 @@ const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_blinn_ph
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
+const mats = [_]lighting.Material{
+    lighting.materials.Gold,
+    lighting.materials.Jade,
+    lighting.materials.Pearl,
+    lighting.materials.Silver,
+};
+
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
@@ -37,7 +44,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     );
     errdefer cam.deinit(allocator);
 
-    const mats = [_]lighting.Material{lighting.materials.Gold};
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
