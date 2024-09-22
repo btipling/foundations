@@ -18,9 +18,10 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         fly_mode: bool = false,
         persp_m: math.matrix,
         view_m: math.matrix,
+        mvp: math.matrix,
         movement: physics.movement,
         perspective_uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
-        view_uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
+        cam_pos_uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
         scene: T,
         integrator: IntegratorT,
         emit_matrix: bool = true,
@@ -72,6 +73,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .camera_matrix = math.matrix.identity(),
                 .persp_m = P,
                 .view_m = math.matrix.identity(),
+                .mvp = math.matrix.identity(),
                 .movement = undefined,
                 .scene = scene,
                 .integrator = integrator,
@@ -86,7 +88,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
-            self.view_uniforms.deinit(self.allocator);
+            self.cam_pos_uniforms.deinit(self.allocator);
             self.perspective_uniforms.deinit(self.allocator);
             allocator.destroy(self);
         }
@@ -374,50 +376,51 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
         pub fn updateMVP(self: *Self) void {
             self.view_m = math.matrix.cameraInverse(self.camera_matrix);
+            self.mvp = math.matrix.transformMatrix(self.persp_m, self.view_m);
             self.updatePrograms();
         }
 
         pub fn updatePrograms(self: *Self) void {
             if (!self.emit_matrix) return;
-            for (self.view_uniforms.items) |prog| {
-                prog.setUniformMatrix(self.view_m);
+            for (self.cam_pos_uniforms.items) |prog| {
+                prog.setUniform3fv(self.camera_pos);
             }
             for (self.perspective_uniforms.items) |prog| {
-                prog.setUniformMatrix(self.persp_m);
+                prog.setUniformMatrix(self.mvp);
             }
             self.scene.updateCamera();
         }
 
         pub fn addProgramMutable(self: *Self, p: u32) usize {
-            const index = self.view_uniforms.items.len;
+            const index = self.cam_pos_uniforms.items.len;
             self.addProgram(p);
             return index;
         }
 
         pub fn updateProgramMutable(self: *Self, p: u32, i: usize) void {
-            const v_u: rhi.Uniform = .init(p, "v_matrix");
-            self.view_uniforms.items[i] = v_u;
-            v_u.setUniformMatrix(self.view_m);
+            const v_u: rhi.Uniform = .init(p, "f_camera_pos");
+            self.cam_pos_uniforms.items[i] = v_u;
+            v_u.setUniform3fv(self.camera_pos);
 
-            const p_u: rhi.Uniform = .init(p, "p_matrix");
+            const p_u: rhi.Uniform = .init(p, "f_mvp");
             self.perspective_uniforms.items[i] = p_u;
-            p_u.setUniformMatrix(self.persp_m);
+            p_u.setUniformMatrix(self.mvp);
         }
 
         pub fn addProgram(self: *Self, p: u32) void {
-            const v_u: rhi.Uniform = .init(p, "v_matrix");
-            self.view_uniforms.append(
+            const v_u: rhi.Uniform = .init(p, "f_camera_pos");
+            self.cam_pos_uniforms.append(
                 self.allocator,
                 v_u,
             ) catch @panic("OOM");
-            v_u.setUniformMatrix(self.view_m);
+            v_u.setUniform3fv(self.camera_pos);
 
-            const p_u: rhi.Uniform = .init(p, "p_matrix");
+            const p_u: rhi.Uniform = .init(p, "f_mvp");
             self.perspective_uniforms.append(
                 self.allocator,
                 p_u,
             ) catch @panic("OOM");
-            p_u.setUniformMatrix(self.persp_m);
+            p_u.setUniformMatrix(self.mvp);
 
             self.updateMVP();
         }

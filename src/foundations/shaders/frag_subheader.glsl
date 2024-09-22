@@ -1,5 +1,5 @@
 
-uniform mat4 v_matrix;
+uniform vec3 f_camera_pos;
 out vec4 fo_frag_color;
 
 in vec2 f_tc;
