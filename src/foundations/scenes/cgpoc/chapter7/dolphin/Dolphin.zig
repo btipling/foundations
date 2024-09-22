@@ -9,6 +9,7 @@ lights: rhi.Buffer,
 const Dolphin = @This();
 
 const vertex_shader: []const u8 = @embedFile("blinn_phong_vert.glsl");
+const frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -50,7 +51,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .direction = [4]f32{ 0.75, -0.5, -0.5, 0.0 },
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
@@ -114,10 +115,11 @@ pub fn renderDolphin(self: *Dolphin) void {
             .program = prog,
             .instance_data = true,
             .xup = .wavefront,
+            .lighting = .blinn_phong,
+            .frag_body = frag_shader,
             .fragment_shader = rhi.Texture.frag_shader(self.dolphin_texture),
         };
-        const partials = [_][]const u8{vertex_shader};
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

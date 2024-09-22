@@ -49,6 +49,7 @@ const lighting_glsl = @embedFile("../shaders/lighting.glsl");
 
 const frag_header = @embedFile("../shaders/frag_header.glsl");
 const frag_bindless_header = @embedFile("../shaders/frag_bindless_header.glsl");
+const frag_texture_header = @embedFile("../shaders/frag_texture_header.glsl");
 const frag_subheader = @embedFile("../shaders/frag_subheader.glsl");
 const frag_color = @embedFile("../shaders/frag_color.glsl");
 const frag_normals = @embedFile("../shaders/frag_normals.glsl");
@@ -96,6 +97,9 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     }
     if (self.fragment_shader == .bindless) {
         self.frag_partials[self.num_frag_partials] = frag_bindless_header;
+        self.num_frag_partials += 1;
+    } else if (self.fragment_shader == .texture) {
+        self.frag_partials[self.num_frag_partials] = frag_texture_header;
         self.num_frag_partials += 1;
     }
     {
