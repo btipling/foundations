@@ -79,6 +79,7 @@ pub fn renderShuttle(self: *Shuttle) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
+            .xup = .wavefront,
             .fragment_shader = rhi.Texture.frag_shader(self.shuttle_texture),
         };
         const partials = [_][]const u8{vertex_shader};

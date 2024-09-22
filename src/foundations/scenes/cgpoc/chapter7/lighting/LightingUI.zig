@@ -73,6 +73,7 @@ pub fn draw(self: *LightingUI) void {
             "Cone",
             "Cylinder",
             "Pyramid",
+            "Shuttle",
         };
         c.igNewLine();
         c.igText("Model");

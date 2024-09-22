@@ -4,6 +4,7 @@ vertex_partials: [max_vertex_partials][]const u8 = undefined,
 num_vertex_partials: usize = 0,
 frag_partials: [max_frag_partials][]const u8 = undefined,
 num_frag_partials: usize = 0,
+xup: xup_type = .none,
 lighting: lighting_type = .none,
 frag_body: ?[]const u8 = null,
 program: u32 = 0,
@@ -26,6 +27,11 @@ pub const lighting_type = enum(usize) {
     blinn_phong,
 };
 
+pub const xup_type = enum(usize) {
+    none,
+    wavefront,
+};
+
 pub inline fn single_vertex(vertex_shader: []const u8) [1][]const u8 {
     return [_][]const u8{vertex_shader};
 }
@@ -35,6 +41,9 @@ const Shader = @This();
 const vertex_attrib_header = @embedFile("../shaders/vertex_attrib_header.glsl");
 const vertex_attrib_i_data = @embedFile("../shaders/vertex_attrib_i_data.glsl");
 const vertex_subheader = @embedFile("../shaders/vertex_subheader.glsl");
+
+const vertex_xup = @embedFile("../shaders/vertex_xup.glsl");
+const vertex_xup_wavefront = @embedFile("../shaders/vertex_xup_wavefront.glsl");
 
 const lighting_glsl = @embedFile("../shaders/lighting.glsl");
 
@@ -56,6 +65,14 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     }
     {
         self.vertex_partials[self.num_vertex_partials] = vertex_subheader;
+        self.num_vertex_partials += 1;
+    }
+    {
+        const xup = switch (self.xup) {
+            .wavefront => vertex_xup_wavefront,
+            else => vertex_xup,
+        };
+        self.vertex_partials[self.num_vertex_partials] = xup;
         self.num_vertex_partials += 1;
     }
     if (self.instance_data) {
