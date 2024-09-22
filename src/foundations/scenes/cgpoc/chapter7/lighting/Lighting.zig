@@ -286,6 +286,9 @@ pub fn renderModel(self: *Lighting) void {
             7 => {
                 s.xup = .wavefront;
             },
+            8 => {
+                s.xup = .wavefront;
+            },
             else => {},
         }
         var partials: [1][]const u8 = undefined;
@@ -408,10 +411,17 @@ pub fn renderModel(self: *Lighting) void {
         7 => {
             var dolphin_model: *assets.Obj = undefined;
             if (self.ctx.obj_loader.loadAsset("cgpoc\\Dolphin\\dolphinLowPoly.obj") catch null) |o| {
-                std.debug.print("got dolphin\n", .{});
                 dolphin_model = o;
             } else {
-                std.debug.print("no dolphin\n", .{});
+                break :s .{ .norender = .{} };
+            }
+            break :s dolphin_model.toObject(prog, i_datas[0..]);
+        },
+        8 => {
+            var dolphin_model: *assets.Obj = undefined;
+            if (self.ctx.obj_loader.loadAsset("cgpoc\\Dolphin\\dolphinHighPoly.obj") catch null) |o| {
+                dolphin_model = o;
+            } else {
                 break :s .{ .norender = .{} };
             }
             break :s dolphin_model.toObject(prog, i_datas[0..]);

@@ -75,6 +75,7 @@ pub fn draw(self: *LightingUI) void {
             "Pyramid",
             "Shuttle",
             "Dolphin Lowpoly",
+            "Dolphin highpoly",
         };
         c.igNewLine();
         c.igText("Model");

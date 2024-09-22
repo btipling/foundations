@@ -9,7 +9,7 @@ num_indicies: usize = 0,
 num_texture_coords: usize = 0,
 num_normals: usize = 0,
 
-const max_vertices: usize = 50_000;
+const max_vertices: usize = 100_000;
 const max_indicies: usize = max_vertices * 2;
 
 const Obj = @This();

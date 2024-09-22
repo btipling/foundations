@@ -10,7 +10,7 @@ void main()
         f_t_column2,
         f_t_column3
     );
-    mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
+    mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix * f_xup)));
 
     Material f_m = f_materials[f_material_selection];
 
