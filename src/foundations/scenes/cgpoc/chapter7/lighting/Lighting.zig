@@ -13,6 +13,7 @@ light_2_position: rhi.Uniform = undefined,
 sphere_1_matrix: rhi.Uniform = undefined,
 sphere_2_matrix: rhi.Uniform = undefined,
 material_selection: rhi.Uniform = undefined,
+camera_pos: rhi.Uniform = undefined,
 model_prog_index: ?usize = null,
 sphere_1_prog_index: ?usize = null,
 sphere_2_prog_index: ?usize = null,
@@ -227,7 +228,9 @@ pub fn draw(self: *Lighting, dt: f64) void {
     self.ui_state.draw();
 }
 
-pub fn updateCamera(_: *Lighting) void {}
+pub fn updateCamera(self: *Lighting) void {
+    self.camera_pos.setUniform3fv(self.view_camera.camera_pos);
+}
 
 pub fn renderBG(self: *Lighting) void {
     const prog = rhi.createProgram();
@@ -447,6 +450,10 @@ pub fn renderModel(self: *Lighting) void {
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.current_material);
     self.material_selection = msu;
+
+    var cpu: rhi.Uniform = .init(prog, "f_camera_pos");
+    cpu.setUniform3fv(.{ 0, 0, 0 });
+    self.camera_pos = cpu;
 }
 
 pub fn deletesphere_1(self: *Lighting) void {

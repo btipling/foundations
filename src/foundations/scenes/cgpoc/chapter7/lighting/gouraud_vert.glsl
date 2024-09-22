@@ -26,7 +26,7 @@ void main()
         Light f_l = f_lights[i];
         vec3 f_L = normalize(f_l_dirs[i] - f_P.xyz);
 
-        vec3 f_V = normalize(-v_matrix[3].xyz - f_P.xyz);
+        vec3 f_V = normalize(f_camera_pos - f_P.xyz);
         vec3 f_R = reflect(-f_L, f_N);
 
         vec4 f_global_ambient = vec4(0.7, 0.7, 0.7, 1.0);
