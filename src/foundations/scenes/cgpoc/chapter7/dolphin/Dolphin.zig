@@ -3,6 +3,8 @@ dolphin: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Dolphin, physics.Integrator(physics.SmoothDeceleration)),
 dolphin_texture: ?rhi.Texture,
 ctx: scenes.SceneContext,
+materials: rhi.Buffer,
+lights: rhi.Buffer,
 
 const Dolphin = @This();
 
@@ -29,11 +31,45 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     );
     errdefer cam.deinit(allocator);
 
+    const mats = [_]lighting.Material{
+        .{
+            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
+            .diffuse = [4]f32{ 0.8, 0.8, 0.8, 1.0 },
+            .specular = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
+            .shininess = 32.0,
+        },
+    };
+
+    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
+    var mats_buf = rhi.Buffer.init(bd);
+    errdefer mats_buf.deinit();
+
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .direction,
+        },
+    };
+    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
+    var lights_buf = rhi.Buffer.init(ld);
+    errdefer lights_buf.deinit();
+
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
         .dolphin_texture = null,
         .ctx = ctx,
+        .materials = mats_buf,
+        .lights = lights_buf,
     };
     pd.renderDolphin();
     return pd;
@@ -117,3 +153,4 @@ const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
 const assets = @import("../../../../assets/assets.zig");
+const lighting = @import("../../../../lighting/lighting.zig");
