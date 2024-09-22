@@ -283,6 +283,9 @@ pub fn renderModel(self: *Lighting) void {
             6 => {
                 s.xup = .wavefront;
             },
+            7 => {
+                s.xup = .wavefront;
+            },
             else => {},
         }
         var partials: [1][]const u8 = undefined;
@@ -396,13 +399,22 @@ pub fn renderModel(self: *Lighting) void {
         6 => {
             var shuttle_model: *assets.Obj = undefined;
             if (self.ctx.obj_loader.loadAsset("cgpoc\\NasaShuttle\\shuttle.obj") catch null) |o| {
-                std.debug.print("got shuttle\n", .{});
                 shuttle_model = o;
             } else {
-                std.debug.print("no shuttle\n", .{});
                 break :s .{ .norender = .{} };
             }
             break :s shuttle_model.toObject(prog, i_datas[0..]);
+        },
+        7 => {
+            var dolphin_model: *assets.Obj = undefined;
+            if (self.ctx.obj_loader.loadAsset("cgpoc\\Dolphin\\dolphinLowPoly.obj") catch null) |o| {
+                std.debug.print("got dolphin\n", .{});
+                dolphin_model = o;
+            } else {
+                std.debug.print("no dolphin\n", .{});
+                break :s .{ .norender = .{} };
+            }
+            break :s dolphin_model.toObject(prog, i_datas[0..]);
         },
         else => .{ .norender = .{} },
     };
