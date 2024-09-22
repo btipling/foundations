@@ -1,7 +1,3 @@
-uniform mat4 f_mvp;
-uniform float f_transform;
-
-out vec4 f_frag_color;
 
 void main()
 {

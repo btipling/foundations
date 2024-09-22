@@ -24,7 +24,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shuttle {
         ctx.cfg,
         pd,
         integrator,
-        .{ 0, -15, 0 },
+        .{ 0, -5, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -79,6 +79,7 @@ pub fn renderShuttle(self: *Shuttle) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
+            .xup = .wavefront,
             .fragment_shader = rhi.Texture.frag_shader(self.shuttle_texture),
         };
         const partials = [_][]const u8{vertex_shader};
@@ -104,7 +105,7 @@ pub fn renderShuttle(self: *Shuttle) void {
         };
     }
     const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.shuttle = shuttle_object;
 }
 

@@ -16,6 +16,7 @@ pub fn draw(self: *pr_ui) void {
     _ = c.igBegin("Sphere", null, 0);
     c.igText(@ptrCast(txt));
     _ = c.igCheckbox("wireframe", &self.wireframe);
+    c.igPushItemWidth(-1);
     _ = c.igSliderFloat("speed", &self.rotation_time, 0.1, 5.0, "%.4f", c.ImGuiSliderFlags_Logarithmic);
     c.igEnd();
 }

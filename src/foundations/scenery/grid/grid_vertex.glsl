@@ -1,9 +1,4 @@
 
-uniform mat4 f_mvp;
-
-out vec4 f_frag_color;
-out vec3 fo_normals;
-
 void main()
 {
     mat4 f_transform = mat4(

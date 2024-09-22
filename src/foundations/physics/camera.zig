@@ -15,14 +15,12 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         camera_orientation: math.rotation.Quat = .{ 1, 0, 0, 0 },
         cursor_pos: math.vector.vec3 = .{ 0, 0, 0 },
         cursor_mode: bool = false,
-        use_camera: bool = true,
-        can_toggle_view: bool = false,
         fly_mode: bool = false,
-        persp_only: math.matrix,
         persp_m: math.matrix,
-        mvp: math.matrix,
+        view_m: math.matrix,
         movement: physics.movement,
-        uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
+        perspective_uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
+        view_uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
         scene: T,
         integrator: IntegratorT,
         emit_matrix: bool = true,
@@ -52,8 +50,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             const cam = allocator.create(Self) catch @panic("OOM");
             const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
             const g: f32 = 1.0 / @tan(cfg.fovy * 0.5);
-            const P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
-            const mvp = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
+            var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
+            P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
 
             var camera_heading: math.rotation.Quat = .{ 1, 0, 0, 0 };
             if (heading) |h| {
@@ -71,10 +69,9 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .allocator = allocator,
                 .camera_pos = pos,
                 .cfg = cfg,
-                .persp_only = P,
-                .persp_m = mvp,
-                .mvp = mvp,
                 .camera_matrix = math.matrix.identity(),
+                .persp_m = P,
+                .view_m = math.matrix.identity(),
                 .movement = undefined,
                 .scene = scene,
                 .integrator = integrator,
@@ -89,7 +86,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
-            self.uniforms.deinit(self.allocator);
+            self.view_uniforms.deinit(self.allocator);
+            self.perspective_uniforms.deinit(self.allocator);
             allocator.destroy(self);
         }
 
@@ -135,11 +133,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                     c.GLFW_KEY_C => {
                         if (input.key_action) |action| {
                             if (action == c.GLFW_RELEASE) self.toggleCursor();
-                        }
-                    },
-                    c.GLFW_KEY_ESCAPE => {
-                        if (input.key_action) |action| {
-                            if (action == c.GLFW_RELEASE) self.toggleView();
                         }
                     },
                     c.GLFW_KEY_TAB => {
@@ -306,16 +299,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             return;
         }
 
-        fn toggleView(self: *Self) void {
-            if (!self.can_toggle_view) return;
-            if (self.use_camera) {
-                self.use_camera = false;
-                return;
-            }
-            self.use_camera = true;
-            return;
-        }
-
         fn moveCameraUp(self: *Self) void {
             const orientation_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(world_up, self.camera_orientation));
             const velocity = math.vector.mul(self.movement.step.state.position, orientation_vector);
@@ -390,28 +373,52 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         pub fn updateMVP(self: *Self) void {
-            if (self.use_camera) {
-                const m = math.matrix.cameraInverse(self.camera_matrix);
-                self.mvp = math.matrix.transformMatrix(self.persp_m, m);
-            } else self.mvp = self.persp_m;
+            self.view_m = math.matrix.cameraInverse(self.camera_matrix);
             self.updatePrograms();
         }
 
         pub fn updatePrograms(self: *Self) void {
             if (!self.emit_matrix) return;
-            for (self.uniforms.items) |prog| {
-                prog.setUniformMatrix(self.mvp);
+            for (self.view_uniforms.items) |prog| {
+                prog.setUniformMatrix(self.view_m);
+            }
+            for (self.perspective_uniforms.items) |prog| {
+                prog.setUniformMatrix(self.persp_m);
             }
             self.scene.updateCamera();
         }
 
-        pub fn addProgram(self: *Self, p: u32, uniform: []const u8) void {
-            const u: rhi.Uniform = .init(p, uniform);
-            self.uniforms.append(
+        pub fn addProgramMutable(self: *Self, p: u32) usize {
+            const index = self.view_uniforms.items.len;
+            self.addProgram(p);
+            return index;
+        }
+
+        pub fn updateProgramMutable(self: *Self, p: u32, i: usize) void {
+            const v_u: rhi.Uniform = .init(p, "v_matrix");
+            self.view_uniforms.items[i] = v_u;
+            v_u.setUniformMatrix(self.view_m);
+
+            const p_u: rhi.Uniform = .init(p, "p_matrix");
+            self.perspective_uniforms.items[i] = p_u;
+            p_u.setUniformMatrix(self.persp_m);
+        }
+
+        pub fn addProgram(self: *Self, p: u32) void {
+            const v_u: rhi.Uniform = .init(p, "v_matrix");
+            self.view_uniforms.append(
                 self.allocator,
-                u,
+                v_u,
             ) catch @panic("OOM");
-            rhi.setUniformMatrix(p, uniform, self.mvp);
+            v_u.setUniformMatrix(self.view_m);
+
+            const p_u: rhi.Uniform = .init(p, "p_matrix");
+            self.perspective_uniforms.append(
+                self.allocator,
+                p_u,
+            ) catch @panic("OOM");
+            p_u.setUniformMatrix(self.persp_m);
+
             self.updateMVP();
         }
     };

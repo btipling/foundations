@@ -1,8 +1,5 @@
-uniform mat4 f_mvp;
-uniform mat4 f_reflection_transform;
 
-out vec4 f_frag_color;
-out vec3 fo_normals;
+uniform mat4 f_reflection_transform;
 
 void main()
 {

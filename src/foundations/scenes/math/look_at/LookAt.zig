@@ -43,8 +43,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LookAt {
     };
     lkt.renderCube();
     lkt.renderCamera();
-    cam.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
-    cam.can_toggle_view = true;
+    cam.addProgram(grid.program());
     lkt.initialized = true;
     return lkt;
 }
@@ -63,10 +62,6 @@ pub fn draw(self: *LookAt, dt: f64) void {
     self.grid.draw(dt);
     {
         const objects: [1]object.object = .{self.cube};
-        rhi.drawObjects(objects[0..]);
-    }
-    if (!self.view_camera.use_camera) {
-        const objects: [1]object.object = .{self.camera};
         rhi.drawObjects(objects[0..]);
     }
     self.ui_state.draw();
@@ -121,7 +116,7 @@ pub fn renderCube(self: *LookAt) void {
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.cube_rot[2]));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(0.5));
     rhi.setUniformMatrix(prog, "f_transform", m);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.cube = cube;
 }
 
@@ -144,7 +139,7 @@ pub fn renderCamera(self: *LookAt) void {
     };
     const m = math.matrix.transformMatrix(math.matrix.identity(), self.view_camera.camera_matrix);
     rhi.setUniformMatrix(prog, "f_camera_transform", m);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.camera = camera;
 }
 

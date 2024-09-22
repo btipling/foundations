@@ -22,9 +22,19 @@ pub fn setUniform1f(self: Uniform, v: f32) void {
     c.glProgramUniform1f(@intCast(self.program), self.location, @floatCast(v));
 }
 
+pub fn setUniform3fv(self: Uniform, v: [3]f32) void {
+    const d: [3]c.GLfloat = .{ @floatCast(v[0]), @floatCast(v[1]), @floatCast(v[2]) };
+    c.glProgramUniform3fv(@intCast(self.program), self.location, 1, &d);
+}
+
+pub fn setUniform1ui(self: Uniform, v: usize) void {
+    c.glProgramUniform1ui(@intCast(self.program), self.location, @intCast(v));
+}
+
 pub fn setUniformHandleui64ARB(self: Uniform, handle: c.GLuint64) void {
     c.glProgramUniformHandleui64ARB(@intCast(self.program), self.location, handle);
 }
 
+const std = @import("std");
 const c = @import("../c.zig").c;
 const math = @import("../math/math.zig");

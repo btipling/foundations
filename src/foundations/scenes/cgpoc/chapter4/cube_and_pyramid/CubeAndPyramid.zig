@@ -97,7 +97,7 @@ pub fn renderPyramid(self: *CubeAndPyramid) void {
         ),
     };
     self.updatePyramidTransform(prog);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.pyramid = pyramid;
 }
 
@@ -138,7 +138,7 @@ pub fn renderParallepiped(self: *CubeAndPyramid) void {
         ),
     };
     self.updateParallepipedTransform(prog);
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.parallelepiped = parallelepiped;
 }
 

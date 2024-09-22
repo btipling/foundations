@@ -143,7 +143,7 @@ pub fn renderPyramid(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.pyramid = pyramid;
     self.pyramid_uniform = rhi.Uniform.init(prog, "f_pyramid_transform");
 }
@@ -177,7 +177,7 @@ pub fn renderParallepiped(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.parallelepiped = parallelepiped;
     self.parallelepiped_uniform = rhi.Uniform.init(prog, "f_cube_transform");
 }
@@ -212,7 +212,7 @@ pub fn renderCylinder(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.view_camera.addProgram(prog, "f_mvp");
+    self.view_camera.addProgram(prog);
     self.cylinder = cylinder;
     self.cylinder_uniform = rhi.Uniform.init(prog, "f_cylinder_transform");
 }

@@ -39,7 +39,7 @@ pub fn init(allocator: std.mem.Allocator, cfg: *config, glsl_version: []const u8
     s.* = .{};
     ui = allocator.create(UI) catch @panic("OOM");
     errdefer allocator.destroy(ui);
-    theme.theme();
+    theme.theme(io.FontGlobalScale);
     ui.* = .{
         .io = io,
         .ctx = ctx,
@@ -84,7 +84,7 @@ pub fn windowDimensions() [2]u32 {
 
 pub fn hellWorld() void {
     var show = true;
-    c.igShowSceneWindow(@ptrCast(&show));
+    c.igShowDemoWindow(@ptrCast(&show));
 }
 
 pub fn beginFrame() void {

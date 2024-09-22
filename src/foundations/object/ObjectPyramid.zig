@@ -111,7 +111,7 @@ fn addSurface(
 ) usize {
     const e1 = math.vector.sub(sp0, sp1);
     const e2 = math.vector.sub(sp0, sp2);
-    const n = math.vector.normalize(math.vector.crossProduct(e1, e2));
+    const n = math.vector.normalize(math.vector.crossProduct(e2, e1));
     s_data[offset] = .{
         .position = sp0,
         .color = color.debug_color,

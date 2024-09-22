@@ -69,8 +69,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *FrustumPlan
     };
     pd.renderSphere();
     pd.renderParallepiped();
-    cam1.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
-    cam2.addProgram(grid.program(), scenery.Grid.mvp_uniform_name);
+    cam1.addProgram(grid.program());
+    cam2.addProgram(grid.program());
     return pd;
 }
 
@@ -144,7 +144,7 @@ pub fn updateCamera(self: *FrustumPlanes) void {
         bot_plane = cameraPlaneExtraction(-cam.perspective_plane_distance_g, 1.0, cm.columns[0], cm.columns[1], cm);
         top_plane = cameraPlaneExtraction(cam.perspective_plane_distance_g, 1.0, cm.columns[0], cm.columns[1], cm);
     } else {
-        const p = math.matrix.transpose(cam.mvp);
+        const p = math.matrix.transpose(math.matrix.transformMatrix(cam.persp_m, cam.view_m));
         left_plane = clipPlaneExtraction(math.vector.add(p.columns[3], p.columns[0]));
         right_plane = clipPlaneExtraction(math.vector.sub(p.columns[3], p.columns[0]));
         top_plane = clipPlaneExtraction(math.vector.add(p.columns[3], p.columns[1]));
@@ -250,8 +250,8 @@ pub fn renderSphere(self: *FrustumPlanes) void {
             false,
         ),
     };
-    self.view_camera_0.addProgram(prog, "f_mvp");
-    self.view_camera_1.addProgram(prog, "f_mvp");
+    self.view_camera_0.addProgram(prog);
+    self.view_camera_1.addProgram(prog);
     self.num_spheres = sphere_max;
     self.sphere = sphere;
 }
@@ -281,8 +281,8 @@ pub fn renderParallepiped(self: *FrustumPlanes) void {
         ),
     };
     self.updateParallepipedTransform(prog);
-    self.view_camera_0.addProgram(prog, "f_mvp");
-    self.view_camera_1.addProgram(prog, "f_mvp");
+    self.view_camera_0.addProgram(prog);
+    self.view_camera_1.addProgram(prog);
     self.num_voxels = i;
     self.parallelepiped = parallelepiped;
 }

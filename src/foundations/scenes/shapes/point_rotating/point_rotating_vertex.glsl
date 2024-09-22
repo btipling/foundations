@@ -1,5 +1,4 @@
 uniform vec2 f_rotating_point;
-out vec4 f_frag_color;
 
 void main()
 {

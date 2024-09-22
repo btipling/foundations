@@ -7,7 +7,6 @@ grid_z_translate: math.vector.vec3 = .{ -0.05, -50, -51 },
 grid_z_rot: math.vector.vec3 = .{ std.math.pi / 2.0, 0, std.math.pi / 2.0 },
 
 const Grid = @This();
-pub const mvp_uniform_name: []const u8 = "f_mvp";
 
 const num_grid_lines: usize = 101;
 const grid_increments: usize = 1;

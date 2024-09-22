@@ -63,7 +63,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         const texture_coords: [2]f32 = .{ 0.0, i_f / precision_f };
 
         //TODO: support tangents in vertex attributes
-        m = math.matrix.transformMatrix(m, math.matrix.rotationY(phi + (std.math.pi / 2.0)));
+        m = math.matrix.rotationY(phi + (std.math.pi / 2.0));
         var tv: math.vector.vec4 = .{ -1.0, 0.0, 0.0, 1.0 };
         tv = math.matrix.transformVector(m, tv);
         const t_tangent: math.vector.vec3 = .{ tv[0], tv[1], tv[2] };

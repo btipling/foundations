@@ -66,7 +66,7 @@ pub fn beginFrame() void {
     const dims = ui.windowDimensions();
     c.glViewport(0, 0, @intCast(dims[0]), @intCast(dims[1]));
     c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
-    c.glClearColor(0.7, 0.8, 0.9, 1);
+    c.glClearColor(0.53, 0.81, 0.98, 1);
 }
 
 pub fn createProgram() u32 {
@@ -349,3 +349,4 @@ pub const Mesh = @import("./Mesh.zig");
 pub const Uniform = @import("Uniform.zig");
 pub const Texture = @import("Texture.zig");
 pub const Shader = @import("Shader.zig");
+pub const Buffer = @import("Buffer.zig");
