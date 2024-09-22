@@ -24,7 +24,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shuttle {
         ctx.cfg,
         pd,
         integrator,
-        .{ 0, -15, 0 },
+        .{ 0, -5, 0 },
         0,
     );
     errdefer cam.deinit(allocator);

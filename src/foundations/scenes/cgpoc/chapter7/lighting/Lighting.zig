@@ -279,6 +279,12 @@ pub fn renderModel(self: *Lighting) void {
             .instance_data = true,
             .fragment_shader = .lighting,
         };
+        switch (self.ui_state.current_model) {
+            6 => {
+                s.xup = .wavefront;
+            },
+            else => {},
+        }
         var partials: [1][]const u8 = undefined;
         switch (self.ui_state.current_lighting) {
             0 => {
@@ -302,7 +308,14 @@ pub fn renderModel(self: *Lighting) void {
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -10, -1));
+        switch (self.ui_state.current_model) {
+            6 => {
+                cm = math.matrix.transformMatrix(cm, math.matrix.translate(1, -10, 0));
+            },
+            else => {
+                cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -10, -1));
+            },
+        }
         cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
@@ -379,6 +392,17 @@ pub fn renderModel(self: *Lighting) void {
             };
             pyramid.pyramid.mesh.linear_colorspace = false;
             break :s pyramid;
+        },
+        6 => {
+            var shuttle_model: *assets.Obj = undefined;
+            if (self.ctx.obj_loader.loadAsset("cgpoc\\NasaShuttle\\shuttle.obj") catch null) |o| {
+                std.debug.print("got shuttle\n", .{});
+                shuttle_model = o;
+            } else {
+                std.debug.print("no shuttle\n", .{});
+                break :s .{ .norender = .{} };
+            }
+            break :s shuttle_model.toObject(prog, i_datas[0..]);
         },
         else => .{ .norender = .{} },
     };
@@ -514,3 +538,4 @@ const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const LightingUI = @import("LightingUI.zig");
+const assets = @import("../../../../assets/assets.zig");

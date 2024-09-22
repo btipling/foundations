@@ -14,7 +14,7 @@ void main()
 
     Material f_m = f_materials[f_material_selection];
 
-    vec4 f_P = m_matrix * vec4(f_position.xyz, 1.0);
+    vec4 f_P = m_matrix * f_xup * vec4(f_position.xyz, 1.0);
     vec3 f_N = normalize(f_norm_matrix * f_normals);
 
     
