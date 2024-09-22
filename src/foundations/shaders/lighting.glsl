@@ -34,18 +34,16 @@ layout(std430, binding = 1) buffer LightBuffer {
 };
 
 
-vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[2], vec3 f_light_dirs[2]) {
+vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights) {
     vec3 f_V = normalize(f_camera_pos - fo_vert);
     vec3 f_N = normalize(fo_normals);
 
     vec4 rv = vec4(0.0, 0.0, 0.0, 1.0);
     
-    uint num_lights = 2;
     uint i = 0;
     do {
-        vec3 f_light_dir = f_light_dirs[i];
         Light f_light = f_lights[i];
-        vec3 f_L = normalize(f_light_dir);
+        vec3 f_L = normalize(f_light.direction.xyz);
         vec3 f_H = normalize(f_L + f_V).xyz;
 
         float cosTheta = dot(f_L, f_N);
@@ -62,18 +60,16 @@ vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[2], vec3 f_light_dirs
     return rv;
 }
 
-vec4 f_phong_lighting(Material f_mat, Light f_lights[2], vec3 f_light_dirs[2]) {
+vec4 f_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights) {
     vec3 f_V = normalize(f_camera_pos - fo_vert);
     vec3 f_N = normalize(fo_normals);
 
     vec4 rv = vec4(0.0, 0.0, 0.0, 1.0);
 
-    uint num_lights = 2;
     uint i = 0;
     do {
-        vec3 f_light_dir = f_light_dirs[i];
         Light f_light = f_lights[i];
-        vec3 f_L = normalize(f_light_dir);
+        vec3 f_L = normalize(f_light.direction.xyz);
         vec3 f_R = reflect(-f_L, f_N);
 
         float cosTheta = dot(f_L, f_N);

@@ -6,7 +6,7 @@ ctx: scenes.SceneContext,
 
 const Dolphin = @This();
 
-const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
+const vertex_shader: []const u8 = @embedFile("blinn_phong_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
