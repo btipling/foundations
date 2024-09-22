@@ -2,7 +2,7 @@ light_1: lightSetting = .{
     .position = .{ 0, -11.121, 2.366 },
 },
 light_2: lightSetting = .{
-    .position = .{ -0.624, -12.688, -1.372 },
+    .position = .{ 0.796, -12.688, -1.372 },
 },
 model_updated: bool = false,
 current_material: usize = 0,

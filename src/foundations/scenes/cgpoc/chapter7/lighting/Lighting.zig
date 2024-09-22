@@ -58,8 +58,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
         ctx.cfg,
         pd,
         integrator,
-        .{ 0, -16, 1 },
-        0,
+        .{ 1.5, -16, 3 },
+        -(std.math.pi / 8.0),
     );
     errdefer cam.deinit(allocator);
 
@@ -303,8 +303,6 @@ pub fn renderModel(self: *Lighting) void {
     {
         var cm = math.matrix.identity();
         cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -10, -1));
-        cm = math.matrix.transformMatrix(cm, math.matrix.rotationZ(std.math.pi / -4.0));
-        cm = math.matrix.transformMatrix(cm, math.matrix.rotationX(std.math.pi / 3.0));
         cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
