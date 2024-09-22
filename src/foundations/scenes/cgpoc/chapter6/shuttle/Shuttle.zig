@@ -6,7 +6,7 @@ ctx: scenes.SceneContext,
 
 const Shuttle = @This();
 
-const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_wavefront_vert.glsl");
+const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
