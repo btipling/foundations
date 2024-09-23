@@ -4,6 +4,10 @@ const pitch_sensitivity: f32 = 1.5;
 const cursor_vertical_sensitivity: f32 = 0.4;
 const cursor_horizontal_sensitivity: f32 = 0.65;
 
+pub const world_up: math.vector.vec3 = .{ 1, 0, 0 };
+pub const world_right: math.vector.vec3 = .{ 0, 0, 1 };
+pub const world_forward: math.vector.vec3 = .{ 0, 1, 0 };
+
 pub const CameraData = struct {
     f_mvp: [16]f32,
     v_matrix: [16]f32,
@@ -42,10 +46,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             program: u32,
             uniform: []const u8,
         };
-
-        const world_up: math.vector.vec3 = .{ 1, 0, 0 };
-        const world_right: math.vector.vec3 = .{ 0, 0, 1 };
-        const world_forward: math.vector.vec3 = .{ 0, 1, 0 };
 
         pub fn init(
             allocator: std.mem.Allocator,
@@ -414,6 +414,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 },
                 .f_global_ambient = self.global_ambient,
             } });
+            self.scene.updateCamera();
         }
     };
 }

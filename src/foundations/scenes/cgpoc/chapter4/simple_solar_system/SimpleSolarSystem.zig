@@ -18,6 +18,7 @@ moon_texture: ?rhi.Texture = null,
 shuttle_texture: ?rhi.Texture = null,
 shuttle_uniform: rhi.Uniform = .empty,
 ctx: scenes.SceneContext,
+initialized: bool = false,
 
 const SimpleSolarSystem = @This();
 
@@ -36,19 +37,20 @@ pub fn navType() ui.ui_state.scene_nav_info {
 }
 
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolarSystem {
-    const pd = allocator.create(SimpleSolarSystem) catch @panic("OOM");
+    const ss = allocator.create(SimpleSolarSystem) catch @panic("OOM");
+    errdefer allocator.destroy(ss);
 
-    errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
     const cam = physics.camera.Camera(*SimpleSolarSystem, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         ctx.cfg,
-        pd,
+        ss,
         integrator,
         .{ 3, -15, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
+
     const mats = [_]lighting.Material{
         .{
             .ambient = [4]f32{ 0.2, 0.2, 0.2, 0.0 },
@@ -81,20 +83,21 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
-    pd.* = .{
+    ss.* = .{
         .allocator = allocator,
         .view_camera = cam,
         .materials = mats_buf,
         .lights = lights_buf,
         .ctx = ctx,
     };
-    pd.stack[0] = math.matrix.identity();
-    pd.renderBG();
-    pd.renderSun();
-    pd.renderEarth();
-    pd.renderMoon();
-    pd.renderShuttle();
-    return pd;
+    ss.stack[0] = math.matrix.identity();
+    ss.renderBG();
+    ss.renderSun();
+    ss.renderEarth();
+    ss.renderMoon();
+    ss.renderShuttle();
+    ss.initialized = true;
+    return ss;
 }
 
 pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
@@ -211,9 +214,32 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
 }
 
 pub fn updateCamera(self: *SimpleSolarSystem) void {
-    const pos = self.view_camera.camera_pos;
-    self.shuttle_uniform.setUniformMatrix(math.matrix.translate(pos[0], pos[1], pos[2]));
-    std.debug.print("huh?\n", .{});
+    if (!self.initialized) return;
+    var pos = self.view_camera.camera_pos;
+    const orientation = self.view_camera.camera_orientation;
+
+    const direction_vector = math.vector.normalize(math.rotation.rotateVectorWithNormalizedQuat(
+        physics.camera.world_right,
+        orientation,
+    ));
+    const orientation_vector = math.vector.normalize(
+        math.rotation.rotateVectorWithNormalizedQuat(physics.camera.world_up, orientation),
+    );
+    const left_vector = math.vector.crossProduct(direction_vector, orientation_vector);
+    const velocity = math.vector.mul(1.0, left_vector);
+    pos = math.vector.add(pos, velocity);
+    var m = math.matrix.identity();
+
+    m = math.matrix.transformMatrix(m, math.matrix.translate(pos[0] - 0.5, pos[1], pos[2]));
+    const a: math.rotation.AxisAngle = .{
+        .angle = std.math.pi,
+        .axis = physics.camera.world_up,
+    };
+    var q = math.rotation.axisAngleToQuat(a);
+    q = math.vector.normalize(q);
+    q = math.rotation.multiplyQuaternions(orientation, q);
+    m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(q));
+    self.shuttle_uniform.setUniformMatrix(m);
 }
 
 pub fn renderSun(self: *SimpleSolarSystem) void {
