@@ -27,6 +27,11 @@ pub fn setUniform3fv(self: Uniform, v: [3]f32) void {
     c.glProgramUniform3fv(@intCast(self.program), self.location, 1, &d);
 }
 
+pub fn setUniform4fv(self: Uniform, v: [4]f32) void {
+    const d: [4]c.GLfloat = .{ @floatCast(v[0]), @floatCast(v[1]), @floatCast(v[2]), @floatCast(v[3]) };
+    c.glProgramUniform4fv(@intCast(self.program), self.location, 1, &d);
+}
+
 pub fn setUniform1ui(self: Uniform, v: usize) void {
     c.glProgramUniform1ui(@intCast(self.program), self.location, @intCast(v));
 }

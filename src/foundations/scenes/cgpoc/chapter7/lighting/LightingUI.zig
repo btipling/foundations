@@ -8,6 +8,7 @@ model_updated: bool = false,
 current_material: usize = 0,
 current_model: usize = 0,
 current_lighting: usize = 0,
+global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1 },
 
 pub const lightSetting = struct {
     position: [3]f32 = .{ 0, 0, 0 },

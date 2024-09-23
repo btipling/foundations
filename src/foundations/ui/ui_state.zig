@@ -32,6 +32,7 @@ pub const scene_type = enum(usize) {
     six_textured_torus,
     six_shuttle,
     seven_lighting,
+    seven_dolphin,
 };
 
 pub const scenes = union(scene_type) {
@@ -68,6 +69,7 @@ pub const scenes = union(scene_type) {
     six_textured_torus: *scenes_list.cgpoc.chapter6.TexturedTorus,
     six_shuttle: *scenes_list.cgpoc.chapter6.Shuttle,
     seven_lighting: *scenes_list.cgpoc.chapter7.Lighting,
+    seven_dolphin: *scenes_list.cgpoc.chapter7.Dolphin,
 };
 
 pub const scene_nav_type = enum {
