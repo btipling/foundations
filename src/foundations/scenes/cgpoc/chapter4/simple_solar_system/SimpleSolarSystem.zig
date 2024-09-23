@@ -11,7 +11,9 @@ current_stack_index: u8 = 0,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 bg: object.object = .{ .norender = .{} },
+sun_texture: ?rhi.Texture = null,
 earth_texture: ?rhi.Texture = null,
+moon_texture: ?rhi.Texture = null,
 ctx: scenes.SceneContext,
 
 const SimpleSolarSystem = @This();
@@ -19,7 +21,7 @@ const SimpleSolarSystem = @This();
 const num_cubes = 1;
 
 const vertex_shader: []const u8 = @embedFile("blinn_phong_vert.glsl");
-const frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
+const texture_frag_shader: []const u8 = @embedFile("texture_frag.glsl");
 const frag_texture_shader: []const u8 = @embedFile("blinn_phong_texture_frag.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 
@@ -92,8 +94,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
 }
 
 pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
+    if (self.sun_texture) |st| {
+        st.deinit();
+    }
     if (self.earth_texture) |et| {
         et.deinit();
+    }
+    if (self.moon_texture) |mt| {
+        mt.deinit();
     }
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
@@ -151,19 +159,35 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
     self.resetStack();
 
     self.view_camera.update(dt);
-    if (self.earth_texture) |et| {
-        et.bind();
-    }
     {
         const objects: [1]object.object = .{
             self.bg,
         };
         rhi.drawObjects(objects[0..]);
     }
+    if (self.sun_texture) |st| {
+        st.bind();
+    }
     {
-        const objects: [3]object.object = .{
+        const objects: [1]object.object = .{
             self.sun,
+        };
+        rhi.drawObjects(objects[0..]);
+    }
+    if (self.earth_texture) |et| {
+        et.bind();
+    }
+    {
+        const objects: [1]object.object = .{
             self.earth,
+        };
+        rhi.drawObjects(objects[0..]);
+    }
+    if (self.moon_texture) |mt| {
+        mt.bind();
+    }
+    {
+        const objects: [1]object.object = .{
             self.moon,
         };
         rhi.drawObjects(objects[0..]);
@@ -173,15 +197,15 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
 pub fn updateCamera(_: *SimpleSolarSystem) void {}
 
 pub fn renderSun(self: *SimpleSolarSystem) void {
+    self.sun_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .lighting = .blinn_phong,
-            .frag_body = frag_shader,
-            // .fragment_shader = rhi.Texture.frag_shader(self.dolphin_texture),
-            .fragment_shader = .lighting,
+            .frag_body = texture_frag_shader,
+            .fragment_shader = rhi.Texture.frag_shader(self.sun_texture),
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
     }
@@ -204,6 +228,12 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
             false,
         ),
     };
+    if (self.sun_texture) |*bt| {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\sunmap.jpg") catch null, prog, "f_samp") catch {
+            std.debug.print("didn't load sun\n", .{});
+            self.sun_texture = null;
+        };
+    }
     self.sun = sun;
     self.sun_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
@@ -242,7 +272,7 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
         ),
     };
     if (self.earth_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\earth.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_samp") catch {
             self.earth_texture = null;
         };
     }
@@ -251,15 +281,15 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
 }
 
 pub fn renderMoon(self: *SimpleSolarSystem) void {
+    self.moon_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .lighting = .blinn_phong,
-            .frag_body = frag_shader,
-            // .fragment_shader = rhi.Texture.frag_shader(self.dolphin_texture),
-            .fragment_shader = .lighting,
+            .frag_body = frag_texture_shader,
+            .fragment_shader = rhi.Texture.frag_shader(self.moon_texture),
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
     }
@@ -283,6 +313,11 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
             false,
         ),
     };
+    if (self.moon_texture) |*bt| {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\moon.jpg") catch null, prog, "f_samp") catch {
+            self.moon_texture = null;
+        };
+    }
     self.moon = moon;
     self.moon_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
