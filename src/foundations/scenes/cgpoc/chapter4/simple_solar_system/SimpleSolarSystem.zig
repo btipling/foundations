@@ -10,6 +10,7 @@ stack: [10]math.matrix = undefined,
 current_stack_index: u8 = 0,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
+bg: object.object = .{ .norender = .{} },
 
 const SimpleSolarSystem = @This();
 
@@ -17,6 +18,7 @@ const num_cubes = 1;
 
 const vertex_shader: []const u8 = @embedFile("blinn_phong_vert.glsl");
 const frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
+const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -78,6 +80,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
         .lights = lights_buf,
     };
     pd.stack[0] = math.matrix.identity();
+    pd.renderBG();
     pd.renderPyramid();
     pd.renderParallepiped();
     pd.renderCylinder();
@@ -140,6 +143,12 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
     self.cylinder_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
     self.resetStack();
     self.view_camera.update(dt);
+    {
+        const objects: [1]object.object = .{
+            self.bg,
+        };
+        rhi.drawObjects(objects[0..]);
+    }
     {
         const objects: [3]object.object = .{
             self.pyramid,
@@ -259,6 +268,40 @@ pub fn renderCylinder(self: *SimpleSolarSystem) void {
     };
     self.cylinder = cylinder;
     self.cylinder_uniform = rhi.Uniform.init(prog, "f_model_transform");
+}
+pub fn renderBG(self: *SimpleSolarSystem) void {
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.leftHandedXUpToNDC());
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-1, 0.9999, -3));
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(6));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 0, 0, 0.0125, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    var bg: object.object = .{
+        .instanced_triangle = object.InstancedTriangle.init(
+            prog,
+            i_datas[0..],
+        ),
+    };
+    bg.instanced_triangle.mesh.cull = false;
+    self.bg = bg;
 }
 
 const std = @import("std");
