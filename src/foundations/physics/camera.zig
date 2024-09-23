@@ -4,6 +4,12 @@ const pitch_sensitivity: f32 = 1.5;
 const cursor_vertical_sensitivity: f32 = 0.4;
 const cursor_horizontal_sensitivity: f32 = 0.65;
 
+pub const CameraData = struct {
+    f_mvp: [16]f32,
+    v_matrix: [16]f32,
+    f_camera_pos: [4]f32,
+};
+
 pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
     return struct {
         allocator: std.mem.Allocator,
@@ -20,14 +26,13 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         view_m: math.matrix,
         mvp: math.matrix,
         movement: physics.movement,
-        perspective_uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
-        cam_pos_uniforms: std.ArrayListUnmanaged(rhi.Uniform) = .{},
         scene: T,
         integrator: IntegratorT,
         emit_matrix: bool = true,
         input_inactive: bool = false,
         perspective_plane_distance_g: f32 = 0,
         aspect_ratio_s: f32 = 0,
+        camera_buffer: rhi.Buffer,
 
         const Self = @This();
 
@@ -49,6 +54,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             heading: ?f32,
         ) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");
+            errdefer allocator.free(cam);
+
             const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
             const g: f32 = 1.0 / @tan(cfg.fovy * 0.5);
             var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
@@ -66,14 +73,24 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 camera_heading = math.vector.normalize(q);
             }
 
+            const v_matrix = math.matrix.identity();
+            const mvp = math.matrix.identity();
+            const cd: rhi.Buffer.buffer_data = .{ .camera = .{
+                .f_mvp = P.array(),
+                .v_matrix = v_matrix.array(),
+                .f_camera_pos = .{ pos[0], pos[1], pos[2], 1 },
+            } };
+            var camera_buffer = rhi.Buffer.init(cd);
+            errdefer camera_buffer.deinit();
+
             cam.* = .{
                 .allocator = allocator,
                 .camera_pos = pos,
                 .cfg = cfg,
                 .camera_matrix = math.matrix.identity(),
                 .persp_m = P,
-                .view_m = math.matrix.identity(),
-                .mvp = math.matrix.identity(),
+                .view_m = v_matrix,
+                .mvp = mvp,
                 .movement = undefined,
                 .scene = scene,
                 .integrator = integrator,
@@ -81,15 +98,17 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .camera_orientation_heading = camera_heading,
                 .perspective_plane_distance_g = g,
                 .aspect_ratio_s = s,
+                .camera_buffer = camera_buffer,
             };
             cam.movement = physics.movement.init(cam.camera_pos, 0, .none);
             cam.updateCameraMatrix();
+            cam.updateMVP();
             return cam;
         }
 
         pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
-            self.cam_pos_uniforms.deinit(self.allocator);
-            self.perspective_uniforms.deinit(self.allocator);
+            self.camera_buffer.deinit();
+            self.camera_buffer = undefined;
             allocator.destroy(self);
         }
 
@@ -377,52 +396,17 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         pub fn updateMVP(self: *Self) void {
             self.view_m = math.matrix.cameraInverse(self.camera_matrix);
             self.mvp = math.matrix.transformMatrix(self.persp_m, self.view_m);
-            self.updatePrograms();
-        }
 
-        pub fn updatePrograms(self: *Self) void {
-            if (!self.emit_matrix) return;
-            for (self.cam_pos_uniforms.items) |prog| {
-                prog.setUniform3fv(self.camera_pos);
-            }
-            for (self.perspective_uniforms.items) |prog| {
-                prog.setUniformMatrix(self.mvp);
-            }
-            self.scene.updateCamera();
-        }
-
-        pub fn addProgramMutable(self: *Self, p: u32) usize {
-            const index = self.cam_pos_uniforms.items.len;
-            self.addProgram(p);
-            return index;
-        }
-
-        pub fn updateProgramMutable(self: *Self, p: u32, i: usize) void {
-            const v_u: rhi.Uniform = .init(p, "f_camera_pos");
-            self.cam_pos_uniforms.items[i] = v_u;
-            v_u.setUniform3fv(self.camera_pos);
-
-            const p_u: rhi.Uniform = .init(p, "f_mvp");
-            self.perspective_uniforms.items[i] = p_u;
-            p_u.setUniformMatrix(self.mvp);
-        }
-
-        pub fn addProgram(self: *Self, p: u32) void {
-            const v_u: rhi.Uniform = .init(p, "f_camera_pos");
-            self.cam_pos_uniforms.append(
-                self.allocator,
-                v_u,
-            ) catch @panic("OOM");
-            v_u.setUniform3fv(self.camera_pos);
-
-            const p_u: rhi.Uniform = .init(p, "f_mvp");
-            self.perspective_uniforms.append(
-                self.allocator,
-                p_u,
-            ) catch @panic("OOM");
-            p_u.setUniformMatrix(self.mvp);
-
-            self.updateMVP();
+            self.camera_buffer.update(.{ .camera = .{
+                .f_mvp = self.mvp.array(),
+                .v_matrix = self.view_m.array(),
+                .f_camera_pos = .{
+                    self.camera_pos[0],
+                    self.camera_pos[1],
+                    self.camera_pos[2],
+                    1,
+                },
+            } });
         }
     };
 }

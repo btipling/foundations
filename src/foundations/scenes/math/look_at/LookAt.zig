@@ -43,7 +43,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LookAt {
     };
     lkt.renderCube();
     lkt.renderCamera();
-    cam.addProgram(grid.program());
     lkt.initialized = true;
     return lkt;
 }
@@ -116,7 +115,6 @@ pub fn renderCube(self: *LookAt) void {
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.cube_rot[2]));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(0.5));
     rhi.setUniformMatrix(prog, "f_transform", m);
-    self.view_camera.addProgram(prog);
     self.cube = cube;
 }
 
@@ -139,7 +137,6 @@ pub fn renderCamera(self: *LookAt) void {
     };
     const m = math.matrix.transformMatrix(math.matrix.identity(), self.view_camera.camera_matrix);
     rhi.setUniformMatrix(prog, "f_camera_transform", m);
-    self.view_camera.addProgram(prog);
     self.camera = camera;
 }
 

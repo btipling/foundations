@@ -36,7 +36,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlainRedCub
         .grid = grid,
     };
     pd.renderParallepiped();
-    cam.addProgram(grid.program());
     return pd;
 }
 
@@ -98,7 +97,6 @@ pub fn renderParallepiped(self: *PlainRedCube) void {
         ),
     };
     self.updateParallepipedTransform(prog);
-    self.view_camera.addProgram(prog);
     self.parallelepiped = parallelepiped;
 }
 

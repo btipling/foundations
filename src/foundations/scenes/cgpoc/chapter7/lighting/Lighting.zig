@@ -117,9 +117,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
 }
 
 pub fn deinit(self: *Lighting, allocator: std.mem.Allocator) void {
-    self.materials.deinit();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
+    self.materials.deinit();
+    self.materials = undefined;
+    self.lights.deinit();
+    self.lights = undefined;
     allocator.destroy(self);
 }
 
@@ -430,11 +433,6 @@ pub fn renderModel(self: *Lighting) void {
         else => .{ .norender = .{} },
     };
 
-    if (self.model_prog_index) |i| {
-        self.view_camera.updateProgramMutable(prog, i);
-    } else {
-        self.model_prog_index = self.view_camera.addProgramMutable(prog);
-    }
     self.model = model;
 
     var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
@@ -496,11 +494,6 @@ pub fn rendersphere_1(self: *Lighting) void {
     var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_1_matrix = sm;
-    if (self.sphere_1_prog_index) |i| {
-        self.view_camera.updateProgramMutable(prog, i);
-    } else {
-        self.sphere_1_prog_index = self.view_camera.addProgramMutable(prog);
-    }
     self.sphere_1 = sphere;
 }
 
@@ -546,11 +539,6 @@ pub fn rendersphere_2(self: *Lighting) void {
     var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_2_matrix = sm;
-    if (self.sphere_2_prog_index) |i| {
-        self.view_camera.updateProgramMutable(prog, i);
-    } else {
-        self.sphere_2_prog_index = self.view_camera.addProgramMutable(prog);
-    }
     self.sphere_2 = sphere;
 }
 

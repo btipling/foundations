@@ -102,7 +102,6 @@ pub fn renderTorus(self: *TexturedTorus) void {
             self.brick_texture = null;
         };
     }
-    self.view_camera.addProgram(prog);
     self.torus = torus;
 }
 

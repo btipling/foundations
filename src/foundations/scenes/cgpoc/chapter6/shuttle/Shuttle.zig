@@ -105,7 +105,6 @@ pub fn renderShuttle(self: *Shuttle) void {
         };
     }
     const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
-    self.view_camera.addProgram(prog);
     self.shuttle = shuttle_object;
 }
 

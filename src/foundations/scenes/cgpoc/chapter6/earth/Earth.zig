@@ -101,7 +101,6 @@ pub fn renderSphere(self: *Earth) void {
             self.earth_texture = null;
         };
     }
-    self.view_camera.addProgram(prog);
     self.sphere = sphere;
 }
 
