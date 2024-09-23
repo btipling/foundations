@@ -135,7 +135,7 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
         .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
         .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
     };
-    const log_len: usize = 1024;
+    const log_len: usize = 1024 * 2;
 
     var i: usize = 0;
     while (i < shaders.len) : (i += 1) {

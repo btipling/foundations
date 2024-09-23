@@ -61,7 +61,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
 
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .ambient = [4]f32{ 0.01, 0.01, 0.01, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
