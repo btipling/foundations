@@ -158,7 +158,6 @@ pub fn renderPyramid(self: *SimpleSolarSystem) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .xup = .wavefront,
             .lighting = .blinn_phong,
             .frag_body = frag_shader,
             // .fragment_shader = rhi.Texture.frag_shader(self.dolphin_texture),
@@ -195,7 +194,6 @@ pub fn renderParallepiped(self: *SimpleSolarSystem) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .xup = .wavefront,
             .lighting = .blinn_phong,
             .frag_body = frag_shader,
             // .fragment_shader = rhi.Texture.frag_shader(self.dolphin_texture),
@@ -232,7 +230,6 @@ pub fn renderCylinder(self: *SimpleSolarSystem) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .xup = .wavefront,
             .lighting = .blinn_phong,
             .frag_body = frag_shader,
             // .fragment_shader = rhi.Texture.frag_shader(self.dolphin_texture),
