@@ -29,7 +29,6 @@ void main()
         vec3 f_V = normalize(f_camera_pos - f_P.xyz);
         vec3 f_R = reflect(-f_L, f_N);
 
-        vec4 f_global_ambient = vec4(0.7, 0.7, 0.7, 1.0);
         vec3 f_ambient = ((f_global_ambient * f_m.ambient) + (f_l.ambient * f_m.ambient)).xyz;
         vec3 f_diffuse = f_l.diffuse.xyz * f_m.diffuse.xyz * max(dot(f_N, f_L), 0.0);
         vec3 f_specular = f_m.specular.xyz * f_l.specular.xyz * pow(max(dot(f_R, f_V), 0.0), f_m.shininess);
