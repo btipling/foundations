@@ -1,10 +1,10 @@
 allocator: std.mem.Allocator,
-pyramid: object.object = .{ .norender = .{} },
-pyramid_uniform: rhi.Uniform = .empty,
-parallelepiped: object.object = .{ .norender = .{} },
-parallelepiped_uniform: rhi.Uniform = .empty,
-cylinder: object.object = .{ .norender = .{} },
-cylinder_uniform: rhi.Uniform = .empty,
+sun: object.object = .{ .norender = .{} },
+sun_uniform: rhi.Uniform = .empty,
+earth: object.object = .{ .norender = .{} },
+earth_uniform: rhi.Uniform = .empty,
+moon: object.object = .{ .norender = .{} },
+moon_uniform: rhi.Uniform = .empty,
 view_camera: *physics.camera.Camera(*SimpleSolarSystem, physics.Integrator(physics.SmoothDeceleration)),
 stack: [10]math.matrix = undefined,
 current_stack_index: u8 = 0,
@@ -81,9 +81,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
     };
     pd.stack[0] = math.matrix.identity();
     pd.renderBG();
-    pd.renderPyramid();
-    pd.renderParallepiped();
-    pd.renderCylinder();
+    pd.renderSun();
+    pd.renderEarth();
+    pd.renderMoon();
     return pd;
 }
 
@@ -116,7 +116,7 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
     // sun position already at 0
     // sun rotation
     self.pushStack(math.matrix.rotationX(@floatCast(dt)));
-    self.pyramid_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
+    self.sun_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
     self.popStack(); // remove sun rotation
     // cube == planet
     self.pushStack(math.matrix.translate(
@@ -130,7 +130,7 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
         -0.5,
         -0.5,
     ));
-    self.parallelepiped_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
+    self.earth_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
     self.popStack(); // remove earth rotation
     self.popStack();
     // cylinder == moon
@@ -140,7 +140,7 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
         @sin(@as(f32, @floatCast(dt))) * 1.5,
     ));
     self.pushStack(math.matrix.rotationY(@as(f32, @floatCast(dt)) * 2.0));
-    self.cylinder_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
+    self.moon_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
     self.resetStack();
     self.view_camera.update(dt);
     {
@@ -151,9 +151,9 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
     }
     {
         const objects: [3]object.object = .{
-            self.pyramid,
-            self.parallelepiped,
-            self.cylinder,
+            self.sun,
+            self.earth,
+            self.moon,
         };
         rhi.drawObjects(objects[0..]);
     }
@@ -161,7 +161,7 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
 
 pub fn updateCamera(_: *SimpleSolarSystem) void {}
 
-pub fn renderPyramid(self: *SimpleSolarSystem) void {
+pub fn renderSun(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
@@ -193,11 +193,11 @@ pub fn renderPyramid(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.pyramid = pyramid;
-    self.pyramid_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.sun = pyramid;
+    self.sun_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
 
-pub fn renderParallepiped(self: *SimpleSolarSystem) void {
+pub fn renderEarth(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
@@ -229,11 +229,11 @@ pub fn renderParallepiped(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.parallelepiped = parallelepiped;
-    self.parallelepiped_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.earth = parallelepiped;
+    self.earth_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
 
-pub fn renderCylinder(self: *SimpleSolarSystem) void {
+pub fn renderMoon(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
@@ -266,8 +266,8 @@ pub fn renderCylinder(self: *SimpleSolarSystem) void {
             false,
         ),
     };
-    self.cylinder = cylinder;
-    self.cylinder_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.moon = cylinder;
+    self.moon_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
 pub fn renderBG(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
