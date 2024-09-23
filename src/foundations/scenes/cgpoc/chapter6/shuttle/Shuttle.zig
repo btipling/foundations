@@ -66,10 +66,8 @@ pub fn updateCamera(_: *Shuttle) void {}
 pub fn renderShuttle(self: *Shuttle) void {
     var shuttle_model: *assets.Obj = undefined;
     if (self.ctx.obj_loader.loadAsset("cgpoc\\NasaShuttle\\shuttle.obj") catch null) |o| {
-        std.debug.print("got shuttle\n", .{});
         shuttle_model = o;
     } else {
-        std.debug.print("no shuttle\n", .{});
         return;
     }
 

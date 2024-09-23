@@ -4,6 +4,7 @@ sun_uniform: rhi.Uniform = .empty,
 earth: object.object = .{ .norender = .{} },
 earth_uniform: rhi.Uniform = .empty,
 moon: object.object = .{ .norender = .{} },
+shuttle: object.object = .{ .norender = .{} },
 moon_uniform: rhi.Uniform = .empty,
 view_camera: *physics.camera.Camera(*SimpleSolarSystem, physics.Integrator(physics.SmoothDeceleration)),
 stack: [10]math.matrix = undefined,
@@ -14,6 +15,8 @@ bg: object.object = .{ .norender = .{} },
 sun_texture: ?rhi.Texture = null,
 earth_texture: ?rhi.Texture = null,
 moon_texture: ?rhi.Texture = null,
+shuttle_texture: ?rhi.Texture = null,
+shuttle_uniform: rhi.Uniform = .empty,
 ctx: scenes.SceneContext,
 
 const SimpleSolarSystem = @This();
@@ -90,6 +93,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
     pd.renderSun();
     pd.renderEarth();
     pd.renderMoon();
+    pd.renderShuttle();
     return pd;
 }
 
@@ -102,6 +106,9 @@ pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
     }
     if (self.moon_texture) |mt| {
         mt.deinit();
+    }
+    if (self.shuttle_texture) |st| {
+        st.deinit();
     }
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
@@ -192,9 +199,22 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
         };
         rhi.drawObjects(objects[0..]);
     }
+    if (self.shuttle_texture) |st| {
+        st.bind();
+    }
+    {
+        const objects: [1]object.object = .{
+            self.shuttle,
+        };
+        rhi.drawObjects(objects[0..]);
+    }
 }
 
-pub fn updateCamera(_: *SimpleSolarSystem) void {}
+pub fn updateCamera(self: *SimpleSolarSystem) void {
+    const pos = self.view_camera.camera_pos;
+    self.shuttle_uniform.setUniformMatrix(math.matrix.translate(pos[0], pos[1], pos[2]));
+    std.debug.print("huh?\n", .{});
+}
 
 pub fn renderSun(self: *SimpleSolarSystem) void {
     self.sun_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
@@ -354,6 +374,56 @@ pub fn renderBG(self: *SimpleSolarSystem) void {
     };
     bg.instanced_triangle.mesh.cull = false;
     self.bg = bg;
+}
+
+pub fn renderShuttle(self: *SimpleSolarSystem) void {
+    var shuttle_model: *assets.Obj = undefined;
+    if (self.ctx.obj_loader.loadAsset("cgpoc\\NasaShuttle\\shuttle.obj") catch null) |o| {
+        std.debug.print("got shuttle\n", .{});
+        shuttle_model = o;
+    } else {
+        std.debug.print("no shuttle\n", .{});
+        return;
+    }
+
+    const prog = rhi.createProgram();
+    self.shuttle_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .lighting = .blinn_phong,
+            .frag_body = frag_texture_shader,
+            .xup = .wavefront,
+            .fragment_shader = rhi.Texture.frag_shader(self.shuttle_texture),
+        };
+        const partials = [_][]const u8{vertex_shader};
+        s.attach(self.allocator, @ptrCast(partials[0..]));
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(0.5));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    if (self.shuttle_texture) |*bt| {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null, prog, "f_samp") catch {
+            self.shuttle_texture = null;
+        };
+    }
+    const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
+    self.shuttle_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    {
+        self.shuttle_uniform.setUniformMatrix(math.matrix.translate(3, 0, 0));
+    }
+    self.shuttle = shuttle_object;
 }
 
 const std = @import("std");
