@@ -5,7 +5,6 @@ dolphin_texture: ?rhi.Texture,
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
-global_lighting: rhi.Uniform = undefined,
 
 const Dolphin = @This();
 
@@ -83,6 +82,10 @@ pub fn deinit(self: *Dolphin, allocator: std.mem.Allocator) void {
     }
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
+    self.materials.deinit();
+    self.materials = undefined;
+    self.lights.deinit();
+    self.lights = undefined;
     allocator.destroy(self);
 }
 
@@ -142,12 +145,6 @@ pub fn renderDolphin(self: *Dolphin) void {
         };
     }
     const dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..]);
-    self.view_camera.addProgram(prog);
-
-    var gau: rhi.Uniform = .init(prog, "f_global_ambient");
-    gau.setUniform4fv(.{ 0.7, 0.7, 0.7, 1 });
-    self.global_lighting = gau;
-
     self.dolphin = dolphin_object;
 }
 

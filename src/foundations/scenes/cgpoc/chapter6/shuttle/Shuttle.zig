@@ -66,10 +66,8 @@ pub fn updateCamera(_: *Shuttle) void {}
 pub fn renderShuttle(self: *Shuttle) void {
     var shuttle_model: *assets.Obj = undefined;
     if (self.ctx.obj_loader.loadAsset("cgpoc\\NasaShuttle\\shuttle.obj") catch null) |o| {
-        std.debug.print("got shuttle\n", .{});
         shuttle_model = o;
     } else {
-        std.debug.print("no shuttle\n", .{});
         return;
     }
 
@@ -105,7 +103,6 @@ pub fn renderShuttle(self: *Shuttle) void {
         };
     }
     const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
-    self.view_camera.addProgram(prog);
     self.shuttle = shuttle_object;
 }
 

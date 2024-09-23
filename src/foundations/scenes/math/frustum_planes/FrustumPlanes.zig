@@ -69,8 +69,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *FrustumPlan
     };
     pd.renderSphere();
     pd.renderParallepiped();
-    cam1.addProgram(grid.program());
-    cam2.addProgram(grid.program());
     return pd;
 }
 
@@ -250,8 +248,6 @@ pub fn renderSphere(self: *FrustumPlanes) void {
             false,
         ),
     };
-    self.view_camera_0.addProgram(prog);
-    self.view_camera_1.addProgram(prog);
     self.num_spheres = sphere_max;
     self.sphere = sphere;
 }
@@ -281,8 +277,6 @@ pub fn renderParallepiped(self: *FrustumPlanes) void {
         ),
     };
     self.updateParallepipedTransform(prog);
-    self.view_camera_0.addProgram(prog);
-    self.view_camera_1.addProgram(prog);
     self.num_voxels = i;
     self.parallelepiped = parallelepiped;
 }

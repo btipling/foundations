@@ -120,7 +120,6 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
             false,
         ),
     };
-    self.view_camera.addProgram(prog);
     if (self.brick_texture) |*bt| {
         bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null, prog, "f_samp") catch {
             self.brick_texture = null;
