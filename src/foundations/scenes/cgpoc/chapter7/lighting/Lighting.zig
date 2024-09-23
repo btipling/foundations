@@ -13,7 +13,6 @@ light_2_position: rhi.Uniform = undefined,
 sphere_1_matrix: rhi.Uniform = undefined,
 sphere_2_matrix: rhi.Uniform = undefined,
 material_selection: rhi.Uniform = undefined,
-global_lighting: rhi.Uniform = undefined,
 model_prog_index: ?usize = null,
 sphere_1_prog_index: ?usize = null,
 sphere_2_prog_index: ?usize = null,
@@ -446,10 +445,6 @@ pub fn renderModel(self: *Lighting) void {
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.current_material);
     self.material_selection = msu;
-
-    var gau: rhi.Uniform = .init(prog, "f_global_ambient");
-    gau.setUniform4fv(self.ui_state.global_ambient);
-    self.global_lighting = gau;
 }
 
 pub fn deletesphere_1(self: *Lighting) void {

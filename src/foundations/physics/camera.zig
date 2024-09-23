@@ -8,6 +8,7 @@ pub const CameraData = struct {
     f_mvp: [16]f32,
     v_matrix: [16]f32,
     f_camera_pos: [4]f32,
+    f_global_ambient: [4]f32,
 };
 
 pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
@@ -33,6 +34,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         perspective_plane_distance_g: f32 = 0,
         aspect_ratio_s: f32 = 0,
         camera_buffer: rhi.Buffer,
+        global_ambient: [4]f32,
 
         const Self = @This();
 
@@ -73,12 +75,15 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 camera_heading = math.vector.normalize(q);
             }
 
+            const global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1.0 };
+
             const v_matrix = math.matrix.identity();
             const mvp = math.matrix.identity();
             const cd: rhi.Buffer.buffer_data = .{ .camera = .{
                 .f_mvp = P.array(),
                 .v_matrix = v_matrix.array(),
                 .f_camera_pos = .{ pos[0], pos[1], pos[2], 1 },
+                .f_global_ambient = global_ambient,
             } };
             var camera_buffer = rhi.Buffer.init(cd);
             errdefer camera_buffer.deinit();
@@ -99,6 +104,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .perspective_plane_distance_g = g,
                 .aspect_ratio_s = s,
                 .camera_buffer = camera_buffer,
+                .global_ambient = global_ambient,
             };
             cam.movement = physics.movement.init(cam.camera_pos, 0, .none);
             cam.updateCameraMatrix();
@@ -406,6 +412,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                     self.camera_pos[2],
                     1,
                 },
+                .f_global_ambient = self.global_ambient,
             } });
         }
     };
