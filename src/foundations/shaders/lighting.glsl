@@ -35,6 +35,8 @@ layout(std430, binding = 1) buffer LightBuffer {
 
 
 vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights, vec4 f_ambient_light) {
+    num_lights = min(num_lights, 10u);
+
     vec3 f_V = normalize(f_camera_pos - fo_vert);
     vec3 f_N = normalize(fo_normals);
 
@@ -60,6 +62,8 @@ vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights,
 }
 
 vec4 f_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights, vec4 f_ambient_light) {
+    num_lights = min(num_lights, 10u);
+    
     vec3 f_V = normalize(f_camera_pos - fo_vert);
     vec3 f_N = normalize(fo_normals);
 
