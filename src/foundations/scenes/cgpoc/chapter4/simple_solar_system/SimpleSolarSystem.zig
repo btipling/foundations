@@ -112,13 +112,13 @@ fn resetStack(self: *SimpleSolarSystem) void {
 }
 
 pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
-    // pyramid == sun
+    // sun
     // sun position already at 0
     // sun rotation
     self.pushStack(math.matrix.rotationX(@floatCast(dt)));
     self.sun_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
     self.popStack(); // remove sun rotation
-    // cube == planet
+    // earth
     self.pushStack(math.matrix.translate(
         0,
         @sin(@as(f32, @floatCast(dt))) * 8.0,
@@ -133,7 +133,7 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
     self.earth_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
     self.popStack(); // remove earth rotation
     self.popStack();
-    // cylinder == moon
+    // moon
     self.pushStack(math.matrix.translate(
         @cos(@as(f32, @floatCast(dt))) * 1.5,
         0,
@@ -186,14 +186,14 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
     for (0..num_cubes) |i| {
         i_datas[i] = i_data;
     }
-    const pyramid: object.object = .{
-        .pyramid = object.Pyramid.init(
+    const sun: object.object = .{
+        .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
             false,
         ),
     };
-    self.sun = pyramid;
+    self.sun = sun;
     self.sun_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
 
@@ -212,7 +212,8 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
-        const cm = math.matrix.identity();
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(0.75));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
             .t_column1 = cm.columns[1],
@@ -222,14 +223,14 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
         };
         i_datas[0] = i_data;
     }
-    const parallelepiped: object.object = .{
-        .parallelepiped = object.Parallelepiped.init(
+    const earth: object.object = .{
+        .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
             false,
         ),
     };
-    self.earth = parallelepiped;
+    self.earth = earth;
     self.earth_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
 
@@ -249,7 +250,7 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(0.5));
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(0.25));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
             .t_column1 = cm.columns[1],
@@ -259,14 +260,14 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
         };
         i_datas[0] = i_data;
     }
-    const cylinder: object.object = .{
-        .cylinder = object.Cylinder.init(
+    const moon: object.object = .{
+        .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
             false,
         ),
     };
-    self.moon = cylinder;
+    self.moon = moon;
     self.moon_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
 pub fn renderBG(self: *SimpleSolarSystem) void {
