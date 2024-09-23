@@ -1,7 +1,7 @@
 allocator: std.mem.Allocator,
 sphere: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Earth, physics.Integrator(physics.SmoothDeceleration)),
-earth_texture: ?rhi.Texture,
+earth_texture: ?rhi.Texture = null,
 ctx: scenes.SceneContext,
 
 const Earth = @This();
@@ -32,7 +32,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Earth {
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
-        .earth_texture = null,
         .ctx = ctx,
     };
     pd.renderSphere();

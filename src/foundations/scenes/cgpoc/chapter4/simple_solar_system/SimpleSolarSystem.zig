@@ -11,6 +11,8 @@ current_stack_index: u8 = 0,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 bg: object.object = .{ .norender = .{} },
+earth_texture: ?rhi.Texture = null,
+ctx: scenes.SceneContext,
 
 const SimpleSolarSystem = @This();
 
@@ -18,6 +20,7 @@ const num_cubes = 1;
 
 const vertex_shader: []const u8 = @embedFile("blinn_phong_vert.glsl");
 const frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
+const frag_texture_shader: []const u8 = @embedFile("blinn_phong_texture_frag.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -43,9 +46,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
     errdefer cam.deinit(allocator);
     const mats = [_]lighting.Material{
         .{
-            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
-            .diffuse = [4]f32{ 0.8, 0.8, 0.8, 1.0 },
-            .specular = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
+            .ambient = [4]f32{ 0.2, 0.2, 0.2, 0.0 },
+            .diffuse = [4]f32{ 0.8, 0.8, 0.8, 0.0 },
+            .specular = [4]f32{ 0.5, 0.5, 0.5, 0.0 },
             .shininess = 32.0,
         },
     };
@@ -78,6 +81,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
         .view_camera = cam,
         .materials = mats_buf,
         .lights = lights_buf,
+        .ctx = ctx,
     };
     pd.stack[0] = math.matrix.identity();
     pd.renderBG();
@@ -88,6 +92,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
 }
 
 pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
+    if (self.earth_texture) |et| {
+        et.deinit();
+    }
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     self.materials.deinit();
@@ -142,7 +149,11 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
     self.pushStack(math.matrix.rotationY(@as(f32, @floatCast(dt)) * 2.0));
     self.moon_uniform.setUniformMatrix(self.stack[self.current_stack_index]);
     self.resetStack();
+
     self.view_camera.update(dt);
+    if (self.earth_texture) |et| {
+        et.bind();
+    }
     {
         const objects: [1]object.object = .{
             self.bg,
@@ -199,14 +210,14 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
 
 pub fn renderEarth(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
+    self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .lighting = .blinn_phong,
-            .frag_body = frag_shader,
-            // .fragment_shader = rhi.Texture.frag_shader(self.dolphin_texture),
-            .fragment_shader = .lighting,
+            .frag_body = frag_texture_shader,
+            .fragment_shader = rhi.Texture.frag_shader(self.earth_texture),
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
     }
@@ -230,6 +241,11 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
             false,
         ),
     };
+    if (self.earth_texture) |*bt| {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\earth.jpg") catch null, prog, "f_samp") catch {
+            self.earth_texture = null;
+        };
+    }
     self.earth = earth;
     self.earth_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
