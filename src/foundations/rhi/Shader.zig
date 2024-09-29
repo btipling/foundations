@@ -11,6 +11,7 @@ program: u32 = 0,
 
 const max_frag_partials: usize = 10;
 const max_vertex_partials: usize = 10;
+const log_len: usize = 1024 * 2;
 
 pub const fragment_shader_type = enum(usize) {
     color,
@@ -18,6 +19,7 @@ pub const fragment_shader_type = enum(usize) {
     texture,
     bindless,
     lighting,
+    shadow,
 };
 
 pub const lighting_type = enum(usize) {
@@ -55,6 +57,7 @@ const frag_color = @embedFile("../shaders/frag_color.glsl");
 const frag_normals = @embedFile("../shaders/frag_normals.glsl");
 const frag_texture = @embedFile("../shaders/frag_texture.glsl");
 const frag_bindless = @embedFile("../shaders/frag_bindless.glsl");
+const frag_shadow = @embedFile("../shaders/shadow_frag.glsl");
 
 const frag_phong_lighting = @embedFile("../shaders/frag_phong_lighting.glsl");
 const frag_blinn_phong_lighting = @embedFile("../shaders/frag_blinn_phong_lighting.glsl");
@@ -124,6 +127,7 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
                 .phong => frag_phong_lighting,
                 else => frag_blinn_phong_lighting,
             },
+            .shadow => frag_shadow,
         };
         self.frag_partials[self.num_frag_partials] = frag_body;
         self.num_frag_partials += 1;
@@ -135,7 +139,6 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
         .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
         .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
     };
-    const log_len: usize = 1024 * 2;
 
     var i: usize = 0;
     while (i < shaders.len) : (i += 1) {
@@ -144,33 +147,39 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
 
         const shader = c.glCreateShader(shaders[i].shader_type);
 
-        c.glShaderSource(shader, 1, &[_][*c]const u8{source.ptr}, null);
-        c.glCompileShader(shader);
-
-        var success: c.GLint = 0;
-        c.glGetShaderiv(shader, c.GL_COMPILE_STATUS, &success);
-        if (success == c.GL_FALSE) {
-            var infoLog: [log_len]u8 = std.mem.zeroes([log_len]u8);
-            var logSize: c.GLsizei = 0;
-            c.glGetShaderInfoLog(shader, @intCast(log_len), &logSize, @ptrCast(&infoLog));
-            const len: usize = @intCast(logSize);
-            std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n{s}\n", .{ infoLog[0..len], source });
-        }
-        c.glAttachShader(@intCast(self.program), shader);
+        self.attachToProgram(shader, source);
     }
-    {
-        c.glLinkProgram(@intCast(self.program));
-        var success: c.GLint = 0;
-        c.glGetProgramiv(@intCast(self.program), c.GL_LINK_STATUS, &success);
-        if (success == c.GL_FALSE) {
-            var infoLog: [log_len]u8 = std.mem.zeroes([log_len]u8);
-            var logSize: c.GLsizei = 0;
-            c.glGetProgramInfoLog(@intCast(self.program), @intCast(log_len), &logSize, @ptrCast(&infoLog));
-            const len: usize = @intCast(logSize);
-            std.debug.panic("ERROR::PROGRAM::LINKING_FAILED\n{s}\n", .{infoLog[0..len]});
-        }
-    }
+    self.link();
     return;
+}
+
+fn attachToProgram(self: Shader, shader: c.GLenum, source: []const u8) void {
+    c.glShaderSource(shader, 1, &[_][*c]const u8{source.ptr}, null);
+    c.glCompileShader(shader);
+
+    var success: c.GLint = 0;
+    c.glGetShaderiv(shader, c.GL_COMPILE_STATUS, &success);
+    if (success == c.GL_FALSE) {
+        var infoLog: [log_len]u8 = std.mem.zeroes([log_len]u8);
+        var logSize: c.GLsizei = 0;
+        c.glGetShaderInfoLog(shader, @intCast(log_len), &logSize, @ptrCast(&infoLog));
+        const len: usize = @intCast(logSize);
+        std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n{s}\n", .{ infoLog[0..len], source });
+    }
+    c.glAttachShader(@intCast(self.program), shader);
+}
+
+fn link(self: Shader) void {
+    c.glLinkProgram(@intCast(self.program));
+    var success: c.GLint = 0;
+    c.glGetProgramiv(@intCast(self.program), c.GL_LINK_STATUS, &success);
+    if (success == c.GL_FALSE) {
+        var infoLog: [log_len]u8 = std.mem.zeroes([log_len]u8);
+        var logSize: c.GLsizei = 0;
+        c.glGetProgramInfoLog(@intCast(self.program), @intCast(log_len), &logSize, @ptrCast(&infoLog));
+        const len: usize = @intCast(logSize);
+        std.debug.panic("ERROR::PROGRAM::LINKING_FAILED\n{s}\n", .{infoLog[0..len]});
+    }
 }
 
 const std = @import("std");

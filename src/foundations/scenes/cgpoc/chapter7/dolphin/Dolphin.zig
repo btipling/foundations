@@ -15,6 +15,7 @@ lights: rhi.Buffer,
 const Dolphin = @This();
 
 const vertex_shader: []const u8 = @embedFile("blinn_phong_vert.glsl");
+const shadow_vertex_shader: []const u8 = @embedFile("../../../../shaders/shadow_vert.glsl");
 const frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
 const matte_frag_shader: []const u8 = @embedFile("blinn_phong_frag_matte.glsl");
 
@@ -90,6 +91,16 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     var shadow_framebuffer = rhi.Framebuffer.init();
     errdefer shadow_framebuffer.deinit();
     shadow_framebuffer.attachDepthTexture(shadow_texture);
+
+    {
+        var s: rhi.Shader = .{
+            .program = shadowmap_program,
+            .instance_data = true,
+            .frag_body = matte_frag_shader,
+            .fragment_shader = .shadow,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
+    }
 
     pd.* = .{
         .allocator = allocator,
