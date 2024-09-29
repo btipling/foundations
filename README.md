@@ -26,6 +26,11 @@ programming and build a game engine.
 
 ![image](https://github.com/user-attachments/assets/0e29c0df-91f9-4b6f-a3dd-9212225a576e)
 
+![image](https://github.com/user-attachments/assets/13f13301-8e89-42f6-827a-a140e8707108)
+
+## Note
+
+The textures and models from the book I use in the CGPOC section may be copyrighted and thus they aren't included and won't load.
 
 ## Open Source Dependencies
 
