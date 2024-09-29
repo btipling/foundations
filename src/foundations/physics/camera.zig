@@ -399,6 +399,11 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             self.camera_matrix = m;
         }
 
+        pub fn updateGlobalAmbient(self: *Self, color: math.vector.vec4) void {
+            self.global_ambient = color;
+            self.updateMVP();
+        }
+
         pub fn updateMVP(self: *Self) void {
             self.view_m = math.matrix.cameraInverse(self.camera_matrix);
             self.mvp = math.matrix.transformMatrix(self.persp_m, self.view_m);

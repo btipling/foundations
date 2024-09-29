@@ -36,10 +36,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shuttle {
         .ctx = ctx,
     };
     pd.renderShuttle();
+    errdefer pd.deleteShuttle();
     return pd;
 }
 
 pub fn deinit(self: *Shuttle, allocator: std.mem.Allocator) void {
+    self.deleteShuttle();
     if (self.shuttle_texture) |et| {
         et.deinit();
     }
@@ -62,6 +64,13 @@ pub fn draw(self: *Shuttle, dt: f64) void {
 }
 
 pub fn updateCamera(_: *Shuttle) void {}
+
+pub fn deleteShuttle(self: *Shuttle) void {
+    const objects: [1]object.object = .{
+        self.shuttle,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
 
 pub fn renderShuttle(self: *Shuttle) void {
     var shuttle_model: *assets.Obj = undefined;

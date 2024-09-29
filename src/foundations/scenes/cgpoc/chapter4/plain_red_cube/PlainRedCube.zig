@@ -36,15 +36,25 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlainRedCub
         .grid = grid,
     };
     pd.renderParallepiped();
+    errdefer pd.deleteCube();
+
     return pd;
 }
 
 pub fn deinit(self: *PlainRedCube, allocator: std.mem.Allocator) void {
+    self.deleteCube();
     self.grid.deinit();
     self.grid = undefined;
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
+}
+
+pub fn deleteCube(self: *PlainRedCube) void {
+    const objects: [1]object.object = .{
+        self.parallelepiped,
+    };
+    rhi.deleteObjects(objects[0..]);
 }
 
 pub fn draw(self: *PlainRedCube, dt: f64) void {
