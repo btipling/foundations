@@ -4,6 +4,10 @@ parallelepiped: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Dolphin, physics.Integrator(physics.SmoothDeceleration)),
 dolphin_texture: ?rhi.Texture = null,
 ground_texture: ?rhi.Texture = null,
+shadowmap_program: u32 = 0,
+shadow_mvp: math.matrix,
+shadow_texture: ?rhi.Texture = null,
+shadow_framebuffer: rhi.Framebuffer,
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
@@ -49,13 +53,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
+    const light_dir: math.vector.vec4 = .{ 0.75, -0.5, -0.5, 0 };
     const lights = [_]lighting.Light{
         .{
             .ambient = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-            .direction = [4]f32{ 0.75, -0.5, -0.5, 0.0 },
+            .direction = light_dir,
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
@@ -68,12 +73,33 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
+    // Shadow objects
+
+    const shadowmap_program = rhi.createProgram();
+    errdefer c.glDeleteProgram(shadowmap_program);
+
+    var shadow_texture = rhi.Texture.init(ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
+    errdefer shadow_texture.deinit();
+    shadow_texture.setupShadow(
+        shadowmap_program,
+        "f_shadow_texture",
+        ctx.cfg.width,
+        ctx.cfg.height,
+    ) catch @panic("unable to setup shadow texture");
+
+    var shadow_framebuffer = rhi.Framebuffer.init();
+    errdefer shadow_framebuffer.deinit();
+    shadow_framebuffer.attachDepthTexture(shadow_texture);
+
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
         .ctx = ctx,
         .materials = mats_buf,
         .lights = lights_buf,
+        .shadowmap_program = shadowmap_program,
+        .shadow_framebuffer = shadow_framebuffer,
+        .shadow_mvp = generateShadowMatrix(light_dir, ctx),
     };
 
     pd.renderParallepiped();
@@ -103,12 +129,32 @@ pub fn deinit(self: *Dolphin, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
+fn generateShadowMatrix(light_dir: math.vector.vec4, ctx: scenes.SceneContext) math.matrix {
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.translate(light_dir[0], light_dir[1], light_dir[2]));
+    const a: math.rotation.AxisAngle = .{
+        .angle = std.math.pi,
+        .axis = physics.camera.world_up,
+    };
+    var q = math.rotation.axisAngleToQuat(a);
+    q = math.vector.normalize(q);
+    q = math.rotation.multiplyQuaternions(light_dir, q);
+    m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(q));
+    m = math.matrix.cameraInverse(m);
+    const P = math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far);
+    return math.matrix.transformMatrix(P, m);
+}
+
 pub fn draw(self: *Dolphin, dt: f64) void {
+    self.genShadowMap();
     self.view_camera.update(dt);
     if (self.ground_texture) |gt| {
         gt.bind();
     }
     if (self.dolphin_texture) |t| {
+        t.bind();
+    }
+    if (self.shadow_texture) |t| {
         t.bind();
     }
     {
@@ -123,6 +169,23 @@ pub fn draw(self: *Dolphin, dt: f64) void {
         };
         rhi.drawObjects(objects[0..]);
     }
+}
+
+pub fn genShadowMap(self: *Dolphin) void {
+    self.shadow_framebuffer.bind();
+    {
+        var o = self.parallelepiped;
+        o.parallelepiped.mesh.gen_shadowmap = true;
+        const objects: [1]object.object = .{o};
+        rhi.drawObjects(objects[0..]);
+    }
+    {
+        var o = self.dolphin;
+        o.obj.mesh.gen_shadowmap = true;
+        const objects: [1]object.object = .{o};
+        rhi.drawObjects(objects[0..]);
+    }
+    self.shadow_framebuffer.unbind();
 }
 
 pub fn updateCamera(_: *Dolphin) void {}
@@ -174,7 +237,10 @@ pub fn renderDolphin(self: *Dolphin) void {
             self.dolphin_texture = null;
         };
     }
-    const dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..]);
+    var dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..]);
+    dolphin_object.obj.mesh.shadowmap_program = self.shadowmap_program;
+    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_mvp");
+    u.setUniformMatrix(self.shadow_mvp);
     self.dolphin = dolphin_object;
 }
 
@@ -220,11 +286,14 @@ pub fn renderParallepiped(self: *Dolphin) void {
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
+    parallelepiped.parallelepiped.mesh.shadowmap_program = self.shadowmap_program;
     if (self.ground_texture) |*bt| {
         bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\grass.jpg") catch null, prog, "f_samp") catch {
             self.ground_texture = null;
         };
     }
+    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_mvp");
+    u.setUniformMatrix(self.shadow_mvp);
     self.parallelepiped = parallelepiped;
 }
 

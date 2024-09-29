@@ -8,6 +8,10 @@ cull: bool = true,
 
 linear_colorspace: bool = true,
 
+// for when generating a shadomap
+shadowmap_program: u32 = 0,
+gen_shadowmap: bool = false,
+
 pub const mesh_type = enum(usize) {
     array,
     element,
