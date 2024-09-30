@@ -46,9 +46,11 @@ pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_MODE, c.GL_COMPARE_REF_TO_TEXTURE);
     c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_FUNC, c.GL_LEQUAL);
+    const borderColor: [4]c.GLfloat = .{ 1.0, 1.0, 1.0, 1.0 }; // Red border color
+    c.glTextureParameterfv(name, c.GL_TEXTURE_BORDER_COLOR, &borderColor);
 
-    // c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
-    // c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_BORDER);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_BORDER);
 
     self.name = name;
     self.texture_unit = 15;

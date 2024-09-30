@@ -213,6 +213,9 @@ pub fn genShadowMap(self: *Dolphin) void {
     c.glClear(c.GL_DEPTH_BUFFER_BIT);
     c.glEnable(c.GL_DEPTH_TEST);
     c.glDepthFunc(c.GL_LEQUAL);
+
+    c.glEnable(c.GL_POLYGON_OFFSET_FILL);
+    c.glPolygonOffset(2.0, 4.0);
     self.shadow_framebuffer.bind();
     self.shadow_framebuffer.attachDepthTexture(self.shadow_texture.?);
     // const m = self.generateShadowMatrix(.{ 0, 0, 0, 0 }, self.ctx);
@@ -237,6 +240,7 @@ pub fn genShadowMap(self: *Dolphin) void {
         rhi.drawObjects(objects[0..]);
     }
     self.shadow_framebuffer.unbind();
+    c.glDisable(c.GL_POLYGON_OFFSET_FILL);
     c.glEnable(c.GL_DEPTH_TEST);
     c.glClear(c.GL_DEPTH_BUFFER_BIT);
     c.glEnable(c.GL_DEPTH_TEST);
