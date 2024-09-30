@@ -158,13 +158,13 @@ fn generateShadowMatrix(light_pos: math.vector.vec3, light_dir: math.vector.vec3
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translate(light_pos[0], light_pos[1], light_pos[2]));
     const a1: math.rotation.AxisAngle = .{
-        .angle = math.vector.angleBetweenVectors(light_dir, physics.camera.world_right),
+        .angle = math.vector.angleBetweenVectors(physics.camera.world_right, light_dir),
         .axis = physics.camera.world_right,
     };
     var q1 = math.rotation.axisAngleToQuat(a1);
     q1 = math.vector.normalize(q1);
     const a2: math.rotation.AxisAngle = .{
-        .angle = math.vector.angleBetweenVectors(light_dir, physics.camera.world_up),
+        .angle = math.vector.angleBetweenVectors(physics.camera.world_up, light_dir),
         .axis = physics.camera.world_up,
     };
     var q2 = math.rotation.axisAngleToQuat(a2);
@@ -178,7 +178,8 @@ fn generateShadowMatrix(light_pos: math.vector.vec3, light_dir: math.vector.vec3
     const g: f32 = 1.0 / @tan(ctx.cfg.fovy * 0.5);
     var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
     P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
-    return math.matrix.transformMatrix(P, m);
+    m = math.matrix.transformMatrix(P, m);
+    return m;
 }
 
 pub fn draw(self: *Dolphin, dt: f64) void {
@@ -295,7 +296,12 @@ pub fn renderDolphin(self: *Dolphin) void {
     dolphin_object.obj.mesh.shadowmap_program = self.shadowmap_program;
     var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
     self.shadow_texture.?.addUniform(prog, "f_shadow_texture");
-    u.setUniformMatrix(self.shadow_mvp);
+    u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
+        0.5, 0.0, 0.0, 0.0,
+        0.0, 0.5, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.5, 0.5, 0.0, 1.0,
+    })), self.shadow_mvp));
     self.dolphin = dolphin_object;
 }
 
@@ -351,7 +357,12 @@ pub fn renderParallepiped(self: *Dolphin) void {
     }
     var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
     self.shadow_texture.?.addUniform(prog, "f_shadow_texture");
-    u.setUniformMatrix(self.shadow_mvp);
+    u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
+        0.5, 0.0, 0.0, 0.0,
+        0.0, 0.5, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.5, 0.5, 0.0, 1.0,
+    })), self.shadow_mvp));
     self.parallelepiped = parallelepiped;
 }
 
