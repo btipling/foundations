@@ -75,6 +75,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     errdefer lights_buf.deinit();
 
     // Shadow objects
+    const shadow_mvp = generateShadowMatrix(light_dir, ctx);
+
     const shadowmap_program = rhi.createProgram();
     errdefer c.glDeleteProgram(shadowmap_program);
 
@@ -87,6 +89,11 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
     }
 
+    {
+        var u: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_shadow_m");
+        u.setUniformMatrix(shadow_mvp);
+    }
+
     var shadow_texture = rhi.Texture.init(ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
     errdefer shadow_texture.deinit();
     shadow_texture.setupShadow(
@@ -95,6 +102,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         ctx.cfg.width,
         ctx.cfg.height,
     ) catch @panic("unable to setup shadow texture");
+    shadow_texture.texture_unit = 2;
 
     var shadow_framebuffer = rhi.Framebuffer.init();
     errdefer shadow_framebuffer.deinit();
@@ -109,7 +117,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         .shadowmap_program = shadowmap_program,
         .shadow_framebuffer = shadow_framebuffer,
         .shadow_texture = shadow_texture,
-        .shadow_mvp = generateShadowMatrix(light_dir, ctx),
+        .shadow_mvp = shadow_mvp,
     };
 
     pd.renderParallepiped();
@@ -252,7 +260,7 @@ pub fn renderDolphin(self: *Dolphin) void {
     }
     var dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..]);
     dolphin_object.obj.mesh.shadowmap_program = self.shadowmap_program;
-    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_mvp");
+    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
     u.setUniformMatrix(self.shadow_mvp);
     self.dolphin = dolphin_object;
 }
@@ -301,11 +309,13 @@ pub fn renderParallepiped(self: *Dolphin) void {
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
     parallelepiped.parallelepiped.mesh.shadowmap_program = self.shadowmap_program;
     if (self.ground_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\grass.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\grass.jpg") catch null, prog, "f_samp_1") catch {
             self.ground_texture = null;
         };
+        bt.texture_unit = 1;
+        self.ground_texture = bt.*;
     }
-    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_mvp");
+    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
     u.setUniformMatrix(self.shadow_mvp);
     self.parallelepiped = parallelepiped;
 }
