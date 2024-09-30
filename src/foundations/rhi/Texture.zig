@@ -43,7 +43,6 @@ pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width
     c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_MODE, c.GL_COMPARE_REF_TO_TEXTURE);
     c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_FUNC, c.GL_LEQUAL);
     c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32, @intCast(width), @intCast(height));
-    c.glTextureSubImage2D(name, 0, 0, 0, @intCast(width), @intCast(height), c.GL_DEPTH_COMPONENT, c.GL_FLOAT, null);
 
     self.name = name;
 

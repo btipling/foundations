@@ -7,7 +7,7 @@ ground_texture: ?rhi.Texture = null,
 shadowmap_program: u32 = 0,
 shadow_mvp: math.matrix,
 shadow_texture: ?rhi.Texture = null,
-shadow_framebuffer: rhi.Framebuffer,
+shadow_framebuffer: rhi.Framebuffer = undefined,
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
@@ -75,7 +75,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     errdefer lights_buf.deinit();
 
     // Shadow objects
-
     const shadowmap_program = rhi.createProgram();
     errdefer c.glDeleteProgram(shadowmap_program);
 
@@ -96,7 +95,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         var s: rhi.Shader = .{
             .program = shadowmap_program,
             .instance_data = true,
-            .frag_body = matte_frag_shader,
             .fragment_shader = .shadow,
         };
         s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
@@ -110,6 +108,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         .lights = lights_buf,
         .shadowmap_program = shadowmap_program,
         .shadow_framebuffer = shadow_framebuffer,
+        .shadow_texture = shadow_texture,
         .shadow_mvp = generateShadowMatrix(light_dir, ctx),
     };
 
@@ -125,6 +124,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
 pub fn deinit(self: *Dolphin, allocator: std.mem.Allocator) void {
     self.deleteParallepiped();
     self.deleteDolphin();
+    if (self.shadow_texture) |t| {
+        t.deinit();
+    }
     if (self.ground_texture) |gt| {
         gt.deinit();
     }
@@ -157,7 +159,7 @@ fn generateShadowMatrix(light_dir: math.vector.vec4, ctx: scenes.SceneContext) m
 }
 
 pub fn draw(self: *Dolphin, dt: f64) void {
-    self.genShadowMap();
+    // self.genShadowMap();
     self.view_camera.update(dt);
     if (self.ground_texture) |gt| {
         gt.bind();
