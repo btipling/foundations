@@ -38,11 +38,13 @@ pub fn deinit(self: Texture) void {
 pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width: u32, height: u32) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
+    c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32F, @intCast(width), @intCast(height));
+    // const pixels = 0;
+    // c.glTextureSubImage2D(name, 0, 0, 0, @intCast(width), @intCast(height), c.GL_RGBA, c.GL_UNSIGNED_BYTE, &pixels);
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_MODE, c.GL_COMPARE_REF_TO_TEXTURE);
     c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_FUNC, c.GL_LEQUAL);
-    c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32, @intCast(width), @intCast(height));
 
     self.name = name;
 

@@ -19,7 +19,7 @@ pub fn deinit(self: FrameBuffer) void {
     c.glDeleteFramebuffers(1, &self.name);
 }
 
-pub fn setupForShadowMap(self: *FrameBuffer, depth_texture: Texture) void {
+pub fn setupForShadowMap(self: *FrameBuffer, depth_texture: Texture) FrameBufferError!void {
     self.attachDepthTexture(depth_texture);
     const buffers = [_]c.GLenum{c.GL_NONE};
     self.setDrawBuffers(&buffers);
@@ -28,7 +28,7 @@ pub fn setupForShadowMap(self: *FrameBuffer, depth_texture: Texture) void {
     };
 }
 
-pub fn setupForColorRendering(self: *FrameBuffer, color_texture: Texture) void {
+pub fn setupForColorRendering(self: *FrameBuffer, color_texture: Texture) FrameBufferError!void {
     self.attachColorTexture(color_texture);
     const buffers = [_]c.GLenum{c.GL_COLOR_ATTACHMENT0};
     self.setDrawBuffers(&buffers);
@@ -58,11 +58,13 @@ pub fn checkStatus(self: FrameBuffer) FrameBufferError!void {
 
 pub fn bind(self: FrameBuffer) void {
     c.glBindFramebuffer(c.GL_FRAMEBUFFER, self.name);
+    c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
 }
 
 pub fn unbind(_: FrameBuffer) void {
     c.glBindFramebuffer(c.GL_FRAMEBUFFER, 0);
 }
 
+const std = @import("std");
 const c = @import("../c.zig").c;
 const Texture = @import("Texture.zig");

@@ -7,6 +7,7 @@ ground_texture: ?rhi.Texture = null,
 shadowmap_program: u32 = 0,
 shadow_mvp: math.matrix,
 shadow_texture: ?rhi.Texture = null,
+shadow_uniform: rhi.Uniform = undefined,
 shadow_framebuffer: rhi.Framebuffer = undefined,
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
@@ -54,7 +55,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
-    const light_dir: math.vector.vec4 = .{ 0.75, -0.5, -0.5, 0 };
+    const light_dir: math.vector.vec4 = .{ 1, 0, 0, 0 };
     const lights = [_]lighting.Light{
         .{
             .ambient = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
@@ -75,7 +76,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     errdefer lights_buf.deinit();
 
     // Shadow objects
-    const shadow_mvp = generateShadowMatrix(light_dir, ctx);
+    const shadow_mvp = math.matrix.identity();
 
     const shadowmap_program = rhi.createProgram();
     errdefer c.glDeleteProgram(shadowmap_program);
@@ -89,10 +90,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
     }
 
-    {
-        var u: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_shadow_m");
-        u.setUniformMatrix(shadow_mvp);
-    }
+    var shadow_uniform: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_shadow_m");
+    shadow_uniform.setUniformMatrix(shadow_mvp);
 
     var shadow_texture = rhi.Texture.init(ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
     errdefer shadow_texture.deinit();
@@ -106,7 +105,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
 
     var shadow_framebuffer = rhi.Framebuffer.init();
     errdefer shadow_framebuffer.deinit();
-    shadow_framebuffer.attachDepthTexture(shadow_texture);
+    shadow_framebuffer.setupForShadowMap(shadow_texture) catch @panic("unable to setup shadow map framebuffer");
 
     pd.* = .{
         .allocator = allocator,
@@ -118,6 +117,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         .shadow_framebuffer = shadow_framebuffer,
         .shadow_texture = shadow_texture,
         .shadow_mvp = shadow_mvp,
+        .shadow_uniform = shadow_uniform,
     };
 
     pd.renderParallepiped();
@@ -150,19 +150,41 @@ pub fn deinit(self: *Dolphin, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-fn generateShadowMatrix(light_dir: math.vector.vec4, ctx: scenes.SceneContext) math.matrix {
+fn generateShadowMatrix(self: *Dolphin, light_dir: math.vector.vec4, ctx: scenes.SceneContext) math.matrix {
     var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translate(light_dir[0], light_dir[1], light_dir[2]));
-    const a: math.rotation.AxisAngle = .{
+    if (true) {
+        const s = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height));
+        const g: f32 = 1.0 / @tan(ctx.cfg.fovy * 0.5);
+        var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
+        P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
+        return math.matrix.transformMatrix(P, self.view_camera.view_m);
+    }
+    // var light_pos = math.vector.negate(light_dir);
+    // light_pos = math.vector.mul(20, light_pos);
+    const light_pos = math.vector.mul(5, light_dir);
+    m = math.matrix.transformMatrix(m, math.matrix.translate(light_pos[0], light_pos[1], light_pos[2]));
+    const a1: math.rotation.AxisAngle = .{
+        .angle = -std.math.pi / 2.0,
+        .axis = physics.camera.world_right,
+    };
+    var q1 = math.rotation.axisAngleToQuat(a1);
+    q1 = math.vector.normalize(q1);
+    const a2: math.rotation.AxisAngle = .{
         .angle = std.math.pi,
         .axis = physics.camera.world_up,
     };
-    var q = math.rotation.axisAngleToQuat(a);
-    q = math.vector.normalize(q);
+    var q2 = math.rotation.axisAngleToQuat(a2);
+    q2 = math.vector.normalize(q2);
+    var q = math.rotation.multiplyQuaternions(q1, q2);
     q = math.rotation.multiplyQuaternions(light_dir, q);
     m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(q));
     m = math.matrix.cameraInverse(m);
-    const P = math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far);
+    // const P = math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far);
+
+    const s = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height));
+    const g: f32 = 1.0 / @tan(ctx.cfg.fovy * 0.5);
+    var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
+    P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
     return math.matrix.transformMatrix(P, m);
 }
 
@@ -193,13 +215,29 @@ pub fn draw(self: *Dolphin, dt: f64) void {
 }
 
 pub fn genShadowMap(self: *Dolphin) void {
+    c.glEnable(c.GL_DEPTH_TEST);
+    c.glClear(c.GL_DEPTH_BUFFER_BIT);
+    c.glEnable(c.GL_DEPTH_TEST);
+    c.glDepthFunc(c.GL_LEQUAL);
     self.shadow_framebuffer.bind();
+    self.shadow_framebuffer.attachDepthTexture(self.shadow_texture.?);
+    var m = self.generateShadowMatrix(.{ 0, 0, 0, 0 }, self.ctx);
+    self.shadow_uniform.setUniformMatrix(m);
     {
         var o = self.parallelepiped;
         o.parallelepiped.mesh.gen_shadowmap = true;
         const objects: [1]object.object = .{o};
         rhi.drawObjects(objects[0..]);
     }
+
+    m = math.matrix.transformMatrix(m, math.matrix.mc(.{
+        0, 0, -1, 0,
+        1, 0, 0,  0,
+        0, 1, 0,  0,
+        0, 0, 0,  1,
+    }));
+    self.shadow_uniform.setUniformMatrix(m);
+
     {
         var o = self.dolphin;
         o.obj.mesh.gen_shadowmap = true;
@@ -207,6 +245,10 @@ pub fn genShadowMap(self: *Dolphin) void {
         rhi.drawObjects(objects[0..]);
     }
     self.shadow_framebuffer.unbind();
+    c.glEnable(c.GL_DEPTH_TEST);
+    c.glClear(c.GL_DEPTH_BUFFER_BIT);
+    c.glEnable(c.GL_DEPTH_TEST);
+    c.glDepthFunc(c.GL_LEQUAL);
 }
 
 pub fn updateCamera(_: *Dolphin) void {}

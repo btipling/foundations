@@ -307,7 +307,6 @@ pub fn drawMesh(m: Mesh) void {
     if (m.gen_shadowmap) {
         if (m.shadowmap_program == 0) @panic("shadowmap program not set");
         c.glUseProgram(@intCast(m.shadowmap_program));
-        c.glEnable(c.GL_DEPTH_TEST);
     } else {
         c.glUseProgram(@intCast(m.program));
     }
