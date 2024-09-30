@@ -307,7 +307,6 @@ pub fn drawMesh(m: Mesh) void {
     if (m.gen_shadowmap) {
         if (m.shadowmap_program == 0) @panic("shadowmap program not set");
         c.glUseProgram(@intCast(m.shadowmap_program));
-        c.glDrawBuffer(c.GL_NONE);
         c.glEnable(c.GL_DEPTH_TEST);
     } else {
         c.glUseProgram(@intCast(m.program));
@@ -317,9 +316,6 @@ pub fn drawMesh(m: Mesh) void {
         .element => |e| drawElements(m, e),
         .instanced => |i| drawInstances(m, i),
         .norender => {},
-    }
-    if (m.gen_shadowmap) {
-        c.glDrawBuffer(c.GL_FRONT);
     }
     if (!m.cull) {
         c.glEnable(c.GL_CULL_FACE);

@@ -159,7 +159,7 @@ fn generateShadowMatrix(light_dir: math.vector.vec4, ctx: scenes.SceneContext) m
 }
 
 pub fn draw(self: *Dolphin, dt: f64) void {
-    // self.genShadowMap();
+    self.genShadowMap();
     self.view_camera.update(dt);
     if (self.ground_texture) |gt| {
         gt.bind();

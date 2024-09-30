@@ -4,6 +4,7 @@ const FrameBuffer = @This();
 
 pub const FrameBufferError = error{
     FramebufferIncomplete,
+    FramebufferStatusCheckFailure,
 };
 
 pub fn init() FrameBuffer {
@@ -16,6 +17,28 @@ pub fn init() FrameBuffer {
 
 pub fn deinit(self: FrameBuffer) void {
     c.glDeleteFramebuffers(1, &self.name);
+}
+
+pub fn setupForShadowMap(self: *FrameBuffer, depth_texture: Texture) void {
+    self.attachDepthTexture(depth_texture);
+    const buffers = [_]c.GLenum{c.GL_NONE};
+    self.setDrawBuffers(&buffers);
+    self.checkStatus() catch {
+        return FrameBufferError.FramebufferStatusCheckFailure;
+    };
+}
+
+pub fn setupForColorRendering(self: *FrameBuffer, color_texture: Texture) void {
+    self.attachColorTexture(color_texture);
+    const buffers = [_]c.GLenum{c.GL_COLOR_ATTACHMENT0};
+    self.setDrawBuffers(&buffers);
+    self.checkStatus() catch {
+        return FrameBufferError.FramebufferStatusCheckFailure;
+    };
+}
+
+pub fn setDrawBuffers(self: FrameBuffer, buffers: []const c.GLenum) void {
+    c.glNamedFramebufferDrawBuffers(self.name, @intCast(buffers.len), buffers.ptr);
 }
 
 pub fn attachDepthTexture(self: *FrameBuffer, texture: Texture) void {
