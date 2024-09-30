@@ -56,7 +56,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
-    const light_position: math.vector.vec3 = .{ 2.2, 1.1, -3.8 };
+    const light_position: math.vector.vec3 = .{ 7.2, 1.1, -5.8 };
     const light_dir: math.vector.vec3 = math.vector.normalize(light_position);
     const lights = [_]lighting.Light{
         .{
