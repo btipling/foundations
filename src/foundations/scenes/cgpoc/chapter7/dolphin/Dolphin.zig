@@ -8,6 +8,7 @@ shadowmap_program: u32 = 0,
 shadow_mvp: math.matrix,
 shadow_texture: ?rhi.Texture = null,
 shadow_uniform: rhi.Uniform = undefined,
+shadow_x_up: rhi.Uniform = undefined,
 shadow_framebuffer: rhi.Framebuffer = undefined,
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
@@ -55,14 +56,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
-    const light_dir: math.vector.vec4 = .{ 1, 0, 0, 0 };
+    const light_position: math.vector.vec3 = .{ 7.53325, -0.02283, 0.70353 };
+    const light_dir: math.vector.vec3 = math.vector.normalize(light_position);
     const lights = [_]lighting.Light{
         .{
             .ambient = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-            .direction = light_dir,
+            .direction = .{ light_dir[0], light_dir[1], light_dir[2], 0.0 },
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
@@ -76,7 +78,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     errdefer lights_buf.deinit();
 
     // Shadow objects
-    const shadow_mvp = math.matrix.identity();
+    const shadow_mvp = generateShadowMatrix(light_position, light_dir, ctx);
 
     const shadowmap_program = rhi.createProgram();
     errdefer c.glDeleteProgram(shadowmap_program);
@@ -92,6 +94,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
 
     var shadow_uniform: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_shadow_m");
     shadow_uniform.setUniformMatrix(shadow_mvp);
+    var shadow_xup: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_xup_shadow");
+    shadow_xup.setUniformMatrix(shadow_mvp);
 
     var shadow_texture = rhi.Texture.init(ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
     errdefer shadow_texture.deinit();
@@ -118,6 +122,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         .shadow_texture = shadow_texture,
         .shadow_mvp = shadow_mvp,
         .shadow_uniform = shadow_uniform,
+        .shadow_x_up = shadow_xup,
     };
 
     pd.renderParallepiped();
@@ -150,33 +155,22 @@ pub fn deinit(self: *Dolphin, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-fn generateShadowMatrix(self: *Dolphin, light_dir: math.vector.vec4, ctx: scenes.SceneContext) math.matrix {
+fn generateShadowMatrix(light_pos: math.vector.vec3, light_dir: math.vector.vec3, ctx: scenes.SceneContext) math.matrix {
     var m = math.matrix.identity();
-    if (true) {
-        const s = @as(f32, @floatFromInt(ctx.cfg.width)) / @as(f32, @floatFromInt(ctx.cfg.height));
-        const g: f32 = 1.0 / @tan(ctx.cfg.fovy * 0.5);
-        var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
-        P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
-        return math.matrix.transformMatrix(P, self.view_camera.view_m);
-    }
-    // var light_pos = math.vector.negate(light_dir);
-    // light_pos = math.vector.mul(20, light_pos);
-    const light_pos = math.vector.mul(5, light_dir);
     m = math.matrix.transformMatrix(m, math.matrix.translate(light_pos[0], light_pos[1], light_pos[2]));
     const a1: math.rotation.AxisAngle = .{
-        .angle = -std.math.pi / 2.0,
+        .angle = math.vector.angleBetweenVectors(light_dir, physics.camera.world_right),
         .axis = physics.camera.world_right,
     };
     var q1 = math.rotation.axisAngleToQuat(a1);
     q1 = math.vector.normalize(q1);
     const a2: math.rotation.AxisAngle = .{
-        .angle = std.math.pi,
+        .angle = math.vector.angleBetweenVectors(light_dir, physics.camera.world_up),
         .axis = physics.camera.world_up,
     };
     var q2 = math.rotation.axisAngleToQuat(a2);
     q2 = math.vector.normalize(q2);
-    var q = math.rotation.multiplyQuaternions(q1, q2);
-    q = math.rotation.multiplyQuaternions(light_dir, q);
+    const q = math.rotation.multiplyQuaternions(q1, q2);
     m = math.matrix.transformMatrix(m, math.matrix.normalizedQuaternionToMatrix(q));
     m = math.matrix.cameraInverse(m);
     // const P = math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far);
@@ -221,23 +215,21 @@ pub fn genShadowMap(self: *Dolphin) void {
     c.glDepthFunc(c.GL_LEQUAL);
     self.shadow_framebuffer.bind();
     self.shadow_framebuffer.attachDepthTexture(self.shadow_texture.?);
-    var m = self.generateShadowMatrix(.{ 0, 0, 0, 0 }, self.ctx);
-    self.shadow_uniform.setUniformMatrix(m);
+    // const m = self.generateShadowMatrix(.{ 0, 0, 0, 0 }, self.ctx);
+    // self.shadow_uniform.setUniformMatrix(m);
+    self.shadow_x_up.setUniformMatrix(math.matrix.identity());
     {
         var o = self.parallelepiped;
         o.parallelepiped.mesh.gen_shadowmap = true;
         const objects: [1]object.object = .{o};
         rhi.drawObjects(objects[0..]);
     }
-
-    m = math.matrix.transformMatrix(m, math.matrix.mc(.{
+    self.shadow_x_up.setUniformMatrix(math.matrix.transpose(math.matrix.mc(.{
         0, 0, -1, 0,
         1, 0, 0,  0,
         0, 1, 0,  0,
         0, 0, 0,  1,
-    }));
-    self.shadow_uniform.setUniformMatrix(m);
-
+    })));
     {
         var o = self.dolphin;
         o.obj.mesh.gen_shadowmap = true;
