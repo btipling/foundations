@@ -78,6 +78,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     const shadowmap_program = rhi.createProgram();
     errdefer c.glDeleteProgram(shadowmap_program);
 
+    {
+        var s: rhi.Shader = .{
+            .program = shadowmap_program,
+            .instance_data = true,
+            .fragment_shader = .shadow,
+        };
+        s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
+    }
+
     var shadow_texture = rhi.Texture.init(ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
     errdefer shadow_texture.deinit();
     shadow_texture.setupShadow(
@@ -90,15 +99,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     var shadow_framebuffer = rhi.Framebuffer.init();
     errdefer shadow_framebuffer.deinit();
     shadow_framebuffer.attachDepthTexture(shadow_texture);
-
-    {
-        var s: rhi.Shader = .{
-            .program = shadowmap_program,
-            .instance_data = true,
-            .fragment_shader = .shadow,
-        };
-        s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
-    }
 
     pd.* = .{
         .allocator = allocator,
