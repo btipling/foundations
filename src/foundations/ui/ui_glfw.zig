@@ -47,6 +47,11 @@ pub fn createWindow(cfg: *config) !*window {
     c.glfwMakeContextCurrent(win);
     c.glfwSwapInterval(1);
     _ = c.gladLoadGL(c.glfwGetProcAddress);
+    var width: c_int = 0;
+    var height: c_int = 0;
+    c.glfwGetFramebufferSize(win, &width, &height);
+    cfg.fb_width = @intCast(width);
+    cfg.fb_height = @intCast(height);
     return win;
 }
 

@@ -56,7 +56,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
-    const light_position: math.vector.vec3 = .{ 7.53325, -0.02283, 0.70353 };
+    const light_position: math.vector.vec3 = .{ 2.2, 1.1, -3.8 };
     const light_dir: math.vector.vec3 = math.vector.normalize(light_position);
     const lights = [_]lighting.Light{
         .{
@@ -102,10 +102,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     shadow_texture.setupShadow(
         shadowmap_program,
         "f_shadow_texture",
-        ctx.cfg.width,
-        ctx.cfg.height,
+        ctx.cfg.fb_width,
+        ctx.cfg.fb_height,
     ) catch @panic("unable to setup shadow texture");
-    shadow_texture.texture_unit = 2;
 
     var shadow_framebuffer = rhi.Framebuffer.init();
     errdefer shadow_framebuffer.deinit();
@@ -295,6 +294,7 @@ pub fn renderDolphin(self: *Dolphin) void {
     var dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..]);
     dolphin_object.obj.mesh.shadowmap_program = self.shadowmap_program;
     var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
+    self.shadow_texture.?.addUniform(prog, "f_shadow_texture");
     u.setUniformMatrix(self.shadow_mvp);
     self.dolphin = dolphin_object;
 }
@@ -350,6 +350,7 @@ pub fn renderParallepiped(self: *Dolphin) void {
         self.ground_texture = bt.*;
     }
     var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
+    self.shadow_texture.?.addUniform(prog, "f_shadow_texture");
     u.setUniformMatrix(self.shadow_mvp);
     self.parallelepiped = parallelepiped;
 }
