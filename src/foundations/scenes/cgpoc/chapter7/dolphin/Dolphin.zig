@@ -218,8 +218,6 @@ pub fn genShadowMap(self: *Dolphin) void {
     c.glPolygonOffset(2.0, 4.0);
     self.shadow_framebuffer.bind();
     self.shadow_framebuffer.attachDepthTexture(self.shadow_texture.?);
-    // const m = self.generateShadowMatrix(.{ 0, 0, 0, 0 }, self.ctx);
-    // self.shadow_uniform.setUniformMatrix(m);
     self.shadow_x_up.setUniformMatrix(math.matrix.identity());
     {
         var o = self.parallelepiped;
