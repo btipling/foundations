@@ -1,19 +1,28 @@
 allocator: std.mem.Allocator,
 ui_state: ShadowsUI,
-object_1: object.object = .{ .norender = .{} },
-sphere_1: object.object = .{ .norender = .{} },
-sphere_2: object.object = .{ .norender = .{} },
 bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Shadows, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
+
+object_1: object.object = .{ .norender = .{} },
 object_1_m: rhi.Uniform = undefined,
-light_1_position: rhi.Uniform = undefined,
-light_2_position: rhi.Uniform = undefined,
+object_1_light_1_position: rhi.Uniform = undefined,
+object_1_light_2_position: rhi.Uniform = undefined,
+object_1_material_selection: rhi.Uniform = undefined,
+
+object_2: object.object = .{ .norender = .{} },
+object_2_m: rhi.Uniform = undefined,
+object_2_light_1_position: rhi.Uniform = undefined,
+object_2_light_2_position: rhi.Uniform = undefined,
+object_2_material_selection: rhi.Uniform = undefined,
+
+sphere_1: object.object = .{ .norender = .{} },
 sphere_1_matrix: rhi.Uniform = undefined,
+
+sphere_2: object.object = .{ .norender = .{} },
 sphere_2_matrix: rhi.Uniform = undefined,
-material_selection1: rhi.Uniform = undefined,
 
 const Shadows = @This();
 
@@ -112,6 +121,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     pd.renderObject_1();
     errdefer pd.deleteObject_1();
 
+    pd.renderObject_2();
+    errdefer pd.deleteObject_2();
+
     pd.rendersphere_1();
     errdefer pd.deletesphere_1();
 
@@ -124,6 +136,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
 pub fn deinit(self: *Shadows, allocator: std.mem.Allocator) void {
     self.deleteBG();
     self.deleteObject_1();
+    self.deleteObject_2();
     self.deletesphere_1();
     self.deletesphere_2();
     self.view_camera.deinit(allocator);
@@ -206,23 +219,34 @@ pub fn draw(self: *Shadows, dt: f64) void {
     if (self.ui_state.light_1.position_updated) {
         const lp = self.ui_state.light_1.position;
         self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-        self.light_1_position.setUniform3fv(lp);
+        self.object_1_light_1_position.setUniform3fv(lp);
+        self.object_2_light_1_position.setUniform3fv(lp);
         self.ui_state.light_1.position_updated = false;
     }
     if (self.ui_state.light_2.position_updated) {
         const lp = self.ui_state.light_2.position;
         self.sphere_2_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-        self.light_2_position.setUniform3fv(lp);
+        self.object_1_light_2_position.setUniform3fv(lp);
+        self.object_2_light_2_position.setUniform3fv(lp);
         self.ui_state.light_2.position_updated = false;
     }
     if (self.ui_state.object_1.transform_updated) {
         self.object_1_m.setUniformMatrix(getObjectMatrix(self.ui_state.object_1));
         self.ui_state.object_1.transform_updated = false;
     }
+    if (self.ui_state.object_2.transform_updated) {
+        self.object_2_m.setUniformMatrix(getObjectMatrix(self.ui_state.object_2));
+        self.ui_state.object_2.transform_updated = false;
+    }
     if (self.ui_state.object_1.updated) {
         self.deleteObject_1();
         self.renderObject_1();
         self.ui_state.object_1.updated = false;
+    }
+    if (self.ui_state.object_2.updated) {
+        self.deleteObject_2();
+        self.renderObject_2();
+        self.ui_state.object_2.updated = false;
     }
     if (self.ui_state.light_1.updated) {
         self.updateLights();
@@ -244,10 +268,11 @@ pub fn draw(self: *Shadows, dt: f64) void {
         rhi.drawObjects(objects[0..]);
     }
     {
-        const objects: [3]object.object = .{
+        const objects: [4]object.object = .{
             self.sphere_1,
             self.sphere_2,
             self.object_1,
+            self.object_2,
         };
         rhi.drawObjects(objects[0..]);
     }
@@ -301,6 +326,13 @@ pub fn renderBG(self: *Shadows) void {
 pub fn deleteObject_1(self: *Shadows) void {
     const objects: [1]object.object = .{
         self.object_1,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
+pub fn deleteObject_2(self: *Shadows) void {
+    const objects: [1]object.object = .{
+        self.object_2,
     };
     rhi.deleteObjects(objects[0..]);
 }
@@ -461,19 +493,40 @@ pub fn renderObject_1(self: *Shadows) void {
 
     var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
     lp1.setUniform3fv(self.ui_state.light_1.position);
-    self.light_1_position = lp1;
+    self.object_1_light_1_position = lp1;
 
     var lp2: rhi.Uniform = .init(prog, "f_light_2_pos");
     lp2.setUniform3fv(self.ui_state.light_2.position);
-    self.light_2_position = lp2;
+    self.object_1_light_2_position = lp2;
 
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_1.material);
-    self.material_selection1 = msu;
+    self.object_1_material_selection = msu;
 
     var om: rhi.Uniform = .init(prog, "f_object_m");
     om.setUniformMatrix(getObjectMatrix(self.ui_state.object_1));
     self.object_1_m = om;
+}
+
+pub fn renderObject_2(self: *Shadows) void {
+    const prog = rhi.createProgram();
+    self.object_2 = self.renderObject(self.ui_state.object_2, prog);
+
+    var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
+    lp1.setUniform3fv(self.ui_state.light_1.position);
+    self.object_2_light_1_position = lp1;
+
+    var lp2: rhi.Uniform = .init(prog, "f_light_2_pos");
+    lp2.setUniform3fv(self.ui_state.light_2.position);
+    self.object_2_light_2_position = lp2;
+
+    var msu: rhi.Uniform = .init(prog, "f_material_selection");
+    msu.setUniform1ui(self.ui_state.object_2.material);
+    self.object_2_material_selection = msu;
+
+    var om: rhi.Uniform = .init(prog, "f_object_m");
+    om.setUniformMatrix(getObjectMatrix(self.ui_state.object_2));
+    self.object_2_m = om;
 }
 
 pub fn deletesphere_1(self: *Shadows) void {

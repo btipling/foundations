@@ -7,6 +7,11 @@ light_2: lightSetting = .{
 object_1: objectSetting = .{
     .position = .{ 1, -10, 0 },
 },
+object_2: objectSetting = .{
+    .position = .{ 3, -5, 1 },
+    .material = 4,
+    .model = 1,
+},
 current_lights: usize = 0,
 global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1 },
 
@@ -188,6 +193,58 @@ fn drawMaterials(self: *ShadowsUI) void {
         if (c.igSliderFloat("##o1rx", &self.object_1.rotation[0], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
         if (c.igSliderFloat("##o1ry", &self.object_1.rotation[1], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
         if (c.igSliderFloat("##o1rz", &self.object_1.rotation[2], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
+    }
+
+    {
+        c.igNewLine();
+        c.igText("Object 2");
+    }
+    {
+        const preview = materials_list[self.object_2.material];
+        const flags = c.ImGuiComboFlags_PopupAlignLeft | c.ImGuiComboFlags_HeightLargest;
+        const selectable_size = ui.get_helpers().selectableSize();
+        if (c.igBeginCombo("##Materials2", preview, flags)) {
+            for (0..materials_list.len) |i| {
+                const is_selected: bool = i == self.object_2.material;
+                if (c.igSelectable_Bool(materials_list[i], is_selected, 0, selectable_size)) {
+                    self.object_2.material = i;
+                    self.object_2.updated = true;
+                }
+                if (is_selected) {
+                    c.igSetItemDefaultFocus();
+                }
+            }
+            c.igEndCombo();
+        }
+    }
+    {
+        const preview = model_list[self.object_2.model];
+        const flags = c.ImGuiComboFlags_PopupAlignLeft | c.ImGuiComboFlags_HeightLargest;
+        const selectable_size = ui.get_helpers().selectableSize();
+        if (c.igBeginCombo("##Objects2", preview, flags)) {
+            for (0..model_list.len) |i| {
+                const is_selected: bool = i == self.object_2.model;
+                if (c.igSelectable_Bool(model_list[i], is_selected, 0, selectable_size)) {
+                    self.object_2.model = i;
+                    self.object_2.updated = true;
+                }
+                if (is_selected) {
+                    c.igSetItemDefaultFocus();
+                }
+            }
+            c.igEndCombo();
+        }
+    }
+    {
+        c.igPushItemWidth(-1);
+        c.igText("position");
+        if (c.igSliderFloat("##o2tx", &self.object_2.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
+        if (c.igSliderFloat("##o2ty", &self.object_2.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
+        if (c.igSliderFloat("##o2tz", &self.object_2.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
+        c.igText("rotation");
+        if (c.igSliderFloat("##o2rx", &self.object_2.rotation[0], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
+        if (c.igSliderFloat("##o2ry", &self.object_2.rotation[1], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
+        if (c.igSliderFloat("##o2rz", &self.object_2.rotation[2], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
     }
     c.igEnd();
 }
