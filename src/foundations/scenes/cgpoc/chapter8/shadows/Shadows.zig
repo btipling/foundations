@@ -305,15 +305,14 @@ pub fn deleteObject_1(self: *Shadows) void {
     rhi.deleteObjects(objects[0..]);
 }
 
-pub fn renderObject_1(self: *Shadows) void {
-    const prog = rhi.createProgram();
+pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: u32) object.object {
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .lighting,
         };
-        switch (self.ui_state.object_1.model) {
+        switch (obj_setting.model) {
             6 => {
                 s.xup = .wavefront;
             },
@@ -358,7 +357,7 @@ pub fn renderObject_1(self: *Shadows) void {
         i_datas[0] = i_data;
     }
 
-    const object_1: object.object = s: switch (self.ui_state.object_1.model) {
+    const render_object: object.object = s: switch (obj_setting.model) {
         0 => {
             var torus: object.object = .{
                 .torus = object.Torus.init(
@@ -453,8 +452,12 @@ pub fn renderObject_1(self: *Shadows) void {
         },
         else => .{ .norender = .{} },
     };
+    return render_object;
+}
 
-    self.object_1 = object_1;
+pub fn renderObject_1(self: *Shadows) void {
+    const prog = rhi.createProgram();
+    self.object_1 = self.renderObject(self.ui_state.object_1, prog);
 
     var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
     lp1.setUniform3fv(self.ui_state.light_1.position);
