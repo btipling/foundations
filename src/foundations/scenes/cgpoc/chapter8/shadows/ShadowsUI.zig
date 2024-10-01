@@ -177,6 +177,12 @@ fn drawMaterials(self: *ShadowsUI) void {
             c.igEndCombo();
         }
     }
+    {
+        c.igPushItemWidth(-1);
+        if (c.igSliderFloat("##l1x", &self.object_1.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
+        if (c.igSliderFloat("##l1y", &self.object_1.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
+        if (c.igSliderFloat("##l1z", &self.object_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
+    }
     c.igEnd();
 }
 
