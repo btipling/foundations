@@ -4,9 +4,9 @@ light_1: lightSetting = .{
 light_2: lightSetting = .{
     .position = .{ 0.796, -12.688, -1.372 },
 },
-model_updated: bool = false,
-object1_material: usize = 0,
-object1_model: usize = 0,
+object1: objectSetting = .{
+    .position = .{ 1, -10, 0 },
+},
 current_lights: usize = 0,
 global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1 },
 
@@ -15,6 +15,13 @@ pub const lightSetting = struct {
     color: [3]f32 = .{ 1, 1, 1 },
     updated: bool = false,
     position_updated: bool = false,
+};
+
+pub const objectSetting = struct {
+    position: [3]f32 = .{ 0, 0, 0 },
+    material: usize = 0,
+    model: usize = 0,
+    updated: bool = false,
 };
 
 const ShadowsUI = @This();
@@ -44,7 +51,7 @@ fn drawLights(self: *ShadowsUI) void {
         const data: [*c]const [*c]const u8 = items[0..].ptr;
         c.igPushItemWidth(-1);
         if (c.igListBox_Str_arr("##lightslist", @ptrCast(&self.current_lights), data, items.len, -1)) {
-            self.model_updated = true;
+            self.object1.updated = true;
         }
     }
     {
@@ -67,7 +74,7 @@ fn drawLights(self: *ShadowsUI) void {
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color1", @ptrCast(&self.light_1.color), flags)) {
             self.light_1.updated = true;
-            self.model_updated = true;
+            self.object1.updated = true;
         }
     }
     {
@@ -90,7 +97,7 @@ fn drawLights(self: *ShadowsUI) void {
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color2", @ptrCast(&self.light_2.color), flags)) {
             self.light_2.updated = true;
-            self.model_updated = true;
+            self.object1.updated = true;
         }
     }
     c.igEnd();
@@ -134,15 +141,15 @@ fn drawMaterials(self: *ShadowsUI) void {
         c.igText("Object 1");
     }
     {
-        const preview = materials_list[self.object1_material];
+        const preview = materials_list[self.object1.material];
         const flags = c.ImGuiComboFlags_PopupAlignLeft | c.ImGuiComboFlags_HeightLargest;
         const selectable_size = ui.get_helpers().selectableSize();
         if (c.igBeginCombo("##Materials1", preview, flags)) {
             for (0..materials_list.len) |i| {
-                const is_selected: bool = i == self.object1_material;
+                const is_selected: bool = i == self.object1.material;
                 if (c.igSelectable_Bool(materials_list[i], is_selected, 0, selectable_size)) {
-                    self.object1_material = i;
-                    self.model_updated = true;
+                    self.object1.material = i;
+                    self.object1.updated = true;
                 }
                 if (is_selected) {
                     c.igSetItemDefaultFocus();
@@ -152,15 +159,15 @@ fn drawMaterials(self: *ShadowsUI) void {
         }
     }
     {
-        const preview = model_list[self.object1_model];
+        const preview = model_list[self.object1.model];
         const flags = c.ImGuiComboFlags_PopupAlignLeft | c.ImGuiComboFlags_HeightLargest;
         const selectable_size = ui.get_helpers().selectableSize();
         if (c.igBeginCombo("##Objects1", preview, flags)) {
             for (0..model_list.len) |i| {
-                const is_selected: bool = i == self.object1_model;
+                const is_selected: bool = i == self.object1.model;
                 if (c.igSelectable_Bool(model_list[i], is_selected, 0, selectable_size)) {
-                    self.object1_model = i;
-                    self.model_updated = true;
+                    self.object1.model = i;
+                    self.object1.updated = true;
                 }
                 if (is_selected) {
                     c.igSetItemDefaultFocus();

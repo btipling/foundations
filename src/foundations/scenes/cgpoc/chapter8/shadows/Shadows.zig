@@ -207,10 +207,10 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.light_2_position.setUniform3fv(lp);
         self.ui_state.light_2.position_updated = false;
     }
-    if (self.ui_state.model_updated) {
+    if (self.ui_state.object1.updated) {
         self.deleteModel();
         self.renderModel();
-        self.ui_state.model_updated = false;
+        self.ui_state.object1.updated = false;
     }
     if (self.ui_state.light_1.updated) {
         self.updateLights();
@@ -301,7 +301,7 @@ pub fn renderModel(self: *Shadows) void {
             .instance_data = true,
             .fragment_shader = .lighting,
         };
-        switch (self.ui_state.object1_model) {
+        switch (self.ui_state.object1.model) {
             6 => {
                 s.xup = .wavefront;
             },
@@ -335,16 +335,7 @@ pub fn renderModel(self: *Shadows) void {
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
-        var cm = math.matrix.identity();
-        switch (self.ui_state.object1_model) {
-            6 => {
-                cm = math.matrix.transformMatrix(cm, math.matrix.translate(1, -10, 0));
-            },
-            else => {
-                cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -10, -1));
-            },
-        }
-        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
+        const cm = math.matrix.identity();
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
             .t_column1 = cm.columns[1],
@@ -355,7 +346,7 @@ pub fn renderModel(self: *Shadows) void {
         i_datas[0] = i_data;
     }
 
-    const model: object.object = s: switch (self.ui_state.object1_model) {
+    const model: object.object = s: switch (self.ui_state.object1.model) {
         0 => {
             var torus: object.object = .{
                 .torus = object.Torus.init(
@@ -462,7 +453,7 @@ pub fn renderModel(self: *Shadows) void {
     self.light_2_position = lp2;
 
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
-    msu.setUniform1ui(self.ui_state.object1_material);
+    msu.setUniform1ui(self.ui_state.object1.material);
     self.material_selection = msu;
 }
 
