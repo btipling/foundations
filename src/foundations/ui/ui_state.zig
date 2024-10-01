@@ -33,6 +33,7 @@ pub const scene_type = enum(usize) {
     six_shuttle,
     seven_lighting,
     seven_dolphin,
+    eight_shadows,
 };
 
 pub const scenes = union(scene_type) {
@@ -70,6 +71,7 @@ pub const scenes = union(scene_type) {
     six_shuttle: *scenes_list.cgpoc.chapter6.Shuttle,
     seven_lighting: *scenes_list.cgpoc.chapter7.Lighting,
     seven_dolphin: *scenes_list.cgpoc.chapter7.Dolphin,
+    eight_shadows: *scenes_list.cgpoc.chapter8.Shadows,
 };
 
 pub const scene_nav_type = enum {
