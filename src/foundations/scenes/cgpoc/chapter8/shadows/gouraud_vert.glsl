@@ -6,6 +6,10 @@ void main()
 {
     vec3 f_light_1_pos = light_data[0].xyz;
     vec3 f_light_2_pos = light_data[2].xyz;
+
+    vec3 f_light_1_attenuation = light_data[1].xyz;
+    vec3 f_light_2_attenuation = light_data[3].xyz;
+
     mat4 m_matrix = f_object_m * mat4(
         f_t_column0,
         f_t_column1,
@@ -21,19 +25,24 @@ void main()
 
     
     vec3 f_l_dirs[2] = vec3[2](f_light_1_pos, f_light_2_pos);
+    vec3 f_l_at[2] = vec3[2](f_light_1_attenuation, f_light_2_attenuation);
     f_frag_color = vec4(0.0, 0.0, 0.0, 1.0);
     uint num_lights = 2;
     uint i = 0;
     do {
         Light f_l = f_lights[i];
-        vec3 f_L = normalize(f_l_dirs[i] - f_P.xyz);
+        vec3 f_distance_vector = f_l_dirs[i] - f_P.xyz;
+        vec3 f_attenuations = f_l_at[i];
+        float f_d = length(f_distance_vector);
+        float f_attenuation = 1.0/(f_attenuations[0] + f_attenuations[1] * f_d + f_attenuations[2] * f_d * f_d);
+        vec3 f_L = normalize(f_distance_vector);
 
         vec3 f_V = normalize(f_camera_pos.xyz - f_P.xyz);
         vec3 f_R = reflect(-f_L, f_N);
 
-        vec3 f_ambient = ((f_global_ambient * f_m.ambient) + (f_l.ambient * f_m.ambient)).xyz;
-        vec3 f_diffuse = f_l.diffuse.xyz * f_m.diffuse.xyz * max(dot(f_N, f_L), 0.0);
-        vec3 f_specular = f_m.specular.xyz * f_l.specular.xyz * pow(max(dot(f_R, f_V), 0.0), f_m.shininess);
+        vec3 f_ambient = ((f_global_ambient * f_m.ambient) + (f_attenuation * f_l.ambient * f_m.ambient)).xyz;
+        vec3 f_diffuse = f_l.diffuse.xyz * f_m.diffuse.xyz * max(dot(f_N, f_L), 0.0) * f_attenuation;
+        vec3 f_specular = f_m.specular.xyz * f_l.specular.xyz * pow(max(dot(f_R, f_V), 0.0), f_m.shininess) * f_attenuation;
 
         gl_Position =  f_mvp * f_P;
         f_tc = f_texture_coords;
