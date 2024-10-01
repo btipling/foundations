@@ -205,6 +205,13 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.light_2_position.setUniform3fv(lp);
         self.ui_state.light_2.position_updated = false;
     }
+    if (self.ui_state.object_1.transform_updated) {
+        const op = self.ui_state.object_1.position;
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(op[0], op[1], op[2]));
+        self.object_1_m.setUniformMatrix(m);
+        self.ui_state.object_1.transform_updated = false;
+    }
     if (self.ui_state.object_1.updated) {
         self.deleteObject_1();
         self.renderObject_1();
@@ -453,6 +460,11 @@ pub fn renderObject_1(self: *Shadows) void {
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_1.material);
     self.material_selection1 = msu;
+    const op = self.ui_state.object_1.position;
+
+    var om: rhi.Uniform = .init(prog, "f_object_m");
+    om.setUniformMatrix(math.matrix.translate(op[0], op[1], op[2]));
+    self.object_1_m = om;
 }
 
 pub fn deletesphere_1(self: *Shadows) void {

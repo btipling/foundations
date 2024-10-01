@@ -22,6 +22,7 @@ pub const objectSetting = struct {
     material: usize = 0,
     model: usize = 0,
     updated: bool = false,
+    transform_updated: bool = false,
 };
 
 const ShadowsUI = @This();
