@@ -20,13 +20,18 @@ pub const lightSetting = struct {
 const ShadowsUI = @This();
 
 pub fn draw(self: *ShadowsUI) void {
+    self.drawLights();
+    self.drawMaterials();
+}
+
+fn drawLights(self: *ShadowsUI) void {
     var buf: [250]u8 = undefined;
     const vp: *c.ImGuiViewport = c.igGetMainViewport();
     const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
     const size = c.ImVec2_ImVec2_Float(550, 680);
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
-    _ = c.igBegin("Shadows", null, 0);
+    _ = c.igBegin("Light", null, 0);
     {
         const items = [_][*]const u8{
             "Blinn Phong",
@@ -39,53 +44,6 @@ pub fn draw(self: *ShadowsUI) void {
         const data: [*c]const [*c]const u8 = items[0..].ptr;
         c.igPushItemWidth(-1);
         if (c.igListBox_Str_arr("##lightslist", @ptrCast(&self.current_lights), data, items.len, -1)) {
-            self.model_updated = true;
-        }
-    }
-    {
-        const items = [_][*]const u8{
-            "Gold",
-            "Jade",
-            "Pearl",
-            "Silver",
-            "Copper",
-            "Chrome",
-            "Emerald",
-            "Ruby",
-            "Obsidian",
-            "Brass",
-        };
-        c.igNewLine();
-        c.igText("Materials");
-        c.igText("current material: ");
-        c.igSameLine(0, 0);
-        c.igText(items[self.current_material]);
-        const data: [*c]const [*c]const u8 = items[0..].ptr;
-        c.igPushItemWidth(-1);
-        if (c.igListBox_Str_arr("##materialslist", @ptrCast(&self.current_material), data, items.len, -1)) {
-            self.model_updated = true;
-        }
-    }
-    {
-        const items = [_][*]const u8{
-            "Torus",
-            "Parallelepiped",
-            "Sphere",
-            "Cone",
-            "Cylinder",
-            "Pyramid",
-            "Shuttle",
-            "Dolphin Lowpoly",
-            "Dolphin highpoly",
-        };
-        c.igNewLine();
-        c.igText("Model");
-        c.igText("current model: ");
-        c.igSameLine(0, 0);
-        c.igText(items[self.current_model]);
-        const data: [*c]const [*c]const u8 = items[0..].ptr;
-        c.igPushItemWidth(-1);
-        if (c.igListBox_Str_arr("##modelslist", @ptrCast(&self.current_model), data, items.len, -1)) {
             self.model_updated = true;
         }
     }
@@ -135,7 +93,63 @@ pub fn draw(self: *ShadowsUI) void {
             self.model_updated = true;
         }
     }
+    c.igEnd();
+}
 
+fn drawMaterials(self: *ShadowsUI) void {
+    const vp: *c.ImGuiViewport = c.igGetMainViewport();
+    const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);
+    c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
+    const size = c.ImVec2_ImVec2_Float(550, 680);
+    c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
+    _ = c.igBegin("Objects", null, 0);
+    {
+        const items = [_][*]const u8{
+            "Gold",
+            "Jade",
+            "Pearl",
+            "Silver",
+            "Copper",
+            "Chrome",
+            "Emerald",
+            "Ruby",
+            "Obsidian",
+            "Brass",
+        };
+        c.igNewLine();
+        c.igText("Materials");
+        c.igText("current material: ");
+        c.igSameLine(0, 0);
+        c.igText(items[self.current_material]);
+        const data: [*c]const [*c]const u8 = items[0..].ptr;
+        c.igPushItemWidth(-1);
+        if (c.igListBox_Str_arr("##materialslist", @ptrCast(&self.current_material), data, items.len, -1)) {
+            self.model_updated = true;
+        }
+    }
+    {
+        const items = [_][*]const u8{
+            "Torus",
+            "Parallelepiped",
+            "Sphere",
+            "Cone",
+            "Cylinder",
+            "Pyramid",
+            "Shuttle",
+            "Dolphin Lowpoly",
+            "Dolphin highpoly",
+        };
+        c.igNewLine();
+        c.igText("Model");
+        c.igText("current model: ");
+        c.igSameLine(0, 0);
+        c.igText(items[self.current_model]);
+        const data: [*c]const [*c]const u8 = items[0..].ptr;
+        c.igPushItemWidth(-1);
+        if (c.igListBox_Str_arr("##modelslist", @ptrCast(&self.current_model), data, items.len, -1)) {
+            self.model_updated = true;
+        }
+    }
     c.igEnd();
 }
 
