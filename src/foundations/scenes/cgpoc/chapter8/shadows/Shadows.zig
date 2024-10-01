@@ -192,6 +192,16 @@ fn updateLights(self: *Shadows) void {
     self.lights = lights_buf;
 }
 
+fn getObjectMatrix(obj: ShadowsUI.objectSetting) math.matrix {
+    const op = obj.position;
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.translate(op[0], op[1], op[2]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationX(obj.rotation[0]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(obj.rotation[1]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(obj.rotation[2]));
+    return m;
+}
+
 pub fn draw(self: *Shadows, dt: f64) void {
     if (self.ui_state.light_1.position_updated) {
         const lp = self.ui_state.light_1.position;
@@ -206,10 +216,7 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.ui_state.light_2.position_updated = false;
     }
     if (self.ui_state.object_1.transform_updated) {
-        const op = self.ui_state.object_1.position;
-        var m = math.matrix.identity();
-        m = math.matrix.transformMatrix(m, math.matrix.translate(op[0], op[1], op[2]));
-        self.object_1_m.setUniformMatrix(m);
+        self.object_1_m.setUniformMatrix(getObjectMatrix(self.ui_state.object_1));
         self.ui_state.object_1.transform_updated = false;
     }
     if (self.ui_state.object_1.updated) {
@@ -460,10 +467,9 @@ pub fn renderObject_1(self: *Shadows) void {
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_1.material);
     self.material_selection1 = msu;
-    const op = self.ui_state.object_1.position;
 
     var om: rhi.Uniform = .init(prog, "f_object_m");
-    om.setUniformMatrix(math.matrix.translate(op[0], op[1], op[2]));
+    om.setUniformMatrix(getObjectMatrix(self.ui_state.object_1));
     self.object_1_m = om;
 }
 
