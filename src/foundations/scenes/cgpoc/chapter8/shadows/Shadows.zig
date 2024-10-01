@@ -8,14 +8,12 @@ lights: rhi.Buffer,
 
 object_1: object.object = .{ .norender = .{} },
 object_1_m: rhi.Uniform = undefined,
-object_1_light_1_position: rhi.Uniform = undefined,
-object_1_light_2_position: rhi.Uniform = undefined,
+object_1_light_data: rhi.Uniform = undefined,
 object_1_material_selection: rhi.Uniform = undefined,
 
 object_2: object.object = .{ .norender = .{} },
 object_2_m: rhi.Uniform = undefined,
-object_2_light_1_position: rhi.Uniform = undefined,
-object_2_light_2_position: rhi.Uniform = undefined,
+object_2_light_data: rhi.Uniform = undefined,
 object_2_material_selection: rhi.Uniform = undefined,
 
 sphere_1: object.object = .{ .norender = .{} },
@@ -205,30 +203,45 @@ fn updateLights(self: *Shadows) void {
     self.lights = lights_buf;
 }
 
-fn getObjectMatrix(obj: ShadowsUI.objectSetting) math.matrix {
-    const op = obj.position;
+fn getObjectMatrix(object_settings: ShadowsUI.objectSetting) math.matrix {
+    const op = object_settings.position;
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translate(op[0], op[1], op[2]));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationX(obj.rotation[0]));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationY(obj.rotation[1]));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(obj.rotation[2]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationX(object_settings.rotation[0]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(object_settings.rotation[1]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(object_settings.rotation[2]));
     return m;
 }
 
+fn lightDataToMat(self: *Shadows) math.matrix {
+    const l1 = self.ui_state.light_1;
+    const l2 = self.ui_state.light_2;
+    return .{
+        .columns = .{
+            .{ l1.position[0], l1.position[1], l1.position[2], 1 },
+            .{ l1.attenuation[0], l1.attenuation[1], l1.attenuation[2], 1 },
+            .{ l2.position[0], l2.position[1], l2.position[2], 1 },
+            .{ l2.attenuation[0], l2.attenuation[1], l2.attenuation[2], 1 },
+        },
+    };
+}
+
 pub fn draw(self: *Shadows, dt: f64) void {
-    if (self.ui_state.light_1.position_updated) {
+    if (self.ui_state.light_1.data_updated) {
         const lp = self.ui_state.light_1.position;
         self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-        self.object_1_light_1_position.setUniform3fv(lp);
-        self.object_2_light_1_position.setUniform3fv(lp);
-        self.ui_state.light_1.position_updated = false;
+        const m = self.lightDataToMat();
+        self.object_1_light_data.setUniformMatrix(m);
+        self.object_2_light_data.setUniformMatrix(m);
+        self.ui_state.light_1.data_updated = false;
     }
-    if (self.ui_state.light_2.position_updated) {
+    if (self.ui_state.light_2.data_updated) {
         const lp = self.ui_state.light_2.position;
         self.sphere_2_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-        self.object_1_light_2_position.setUniform3fv(lp);
-        self.object_2_light_2_position.setUniform3fv(lp);
-        self.ui_state.light_2.position_updated = false;
+        const m = self.lightDataToMat();
+        self.object_1_light_data.setUniformMatrix(m);
+        self.object_2_light_data.setUniformMatrix(m);
+        self.ui_state.light_2.data_updated = false;
     }
     if (self.ui_state.object_1.transform_updated) {
         self.object_1_m.setUniformMatrix(getObjectMatrix(self.ui_state.object_1));
@@ -491,13 +504,9 @@ pub fn renderObject_1(self: *Shadows) void {
     const prog = rhi.createProgram();
     self.object_1 = self.renderObject(self.ui_state.object_1, prog);
 
-    var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
-    lp1.setUniform3fv(self.ui_state.light_1.position);
-    self.object_1_light_1_position = lp1;
-
-    var lp2: rhi.Uniform = .init(prog, "f_light_2_pos");
-    lp2.setUniform3fv(self.ui_state.light_2.position);
-    self.object_1_light_2_position = lp2;
+    var ld: rhi.Uniform = .init(prog, "light_data");
+    ld.setUniformMatrix(self.lightDataToMat());
+    self.object_1_light_data = ld;
 
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_1.material);
@@ -512,13 +521,9 @@ pub fn renderObject_2(self: *Shadows) void {
     const prog = rhi.createProgram();
     self.object_2 = self.renderObject(self.ui_state.object_2, prog);
 
-    var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
-    lp1.setUniform3fv(self.ui_state.light_1.position);
-    self.object_2_light_1_position = lp1;
-
-    var lp2: rhi.Uniform = .init(prog, "f_light_2_pos");
-    lp2.setUniform3fv(self.ui_state.light_2.position);
-    self.object_2_light_2_position = lp2;
+    var ld: rhi.Uniform = .init(prog, "light_data");
+    ld.setUniformMatrix(self.lightDataToMat());
+    self.object_2_light_data = ld;
 
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_2.material);

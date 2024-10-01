@@ -1,8 +1,10 @@
 light_1: lightSetting = .{
     .position = .{ 0, -11.121, 2.366 },
+    .attenuation = .{ 1, 1, 0 },
 },
 light_2: lightSetting = .{
     .position = .{ 0.796, -12.688, -1.372 },
+    .attenuation = .{ 1, 1, 0 },
 },
 object_1: objectSetting = .{
     .position = .{ 1, -10, 0 },
@@ -17,9 +19,10 @@ global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1 },
 
 pub const lightSetting = struct {
     position: [3]f32 = .{ 0, 0, 0 },
+    attenuation: [3]f32 = .{ 0, 0, 0 },
     color: [3]f32 = .{ 1, 1, 1 },
     updated: bool = false,
-    position_updated: bool = false,
+    data_updated: bool = false,
 };
 
 pub const objectSetting = struct {
@@ -73,10 +76,21 @@ fn drawLights(self: *ShadowsUI) void {
             c.igText(@ptrCast(txt));
         }
         {
+            c.igText("position");
             c.igPushItemWidth(-1);
-            if (c.igSliderFloat("##l1x", &self.light_1.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
-            if (c.igSliderFloat("##l1y", &self.light_1.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
-            if (c.igSliderFloat("##l1z", &self.light_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
+            if (c.igSliderFloat("##l1tx", &self.light_1.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.data_updated = true;
+            if (c.igSliderFloat("##l1ty", &self.light_1.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.data_updated = true;
+            if (c.igSliderFloat("##l1tz", &self.light_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.data_updated = true;
+        }
+        {
+            c.igText("attenuation");
+            c.igPushItemWidth(-1);
+            c.igText("constant");
+            if (c.igSliderFloat("##l1ax", &self.light_1.attenuation[0], 1, 10, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.data_updated = true;
+            c.igText("linear");
+            if (c.igSliderFloat("##l1ay", &self.light_1.attenuation[1], 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.data_updated = true;
+            c.igText("quadratic");
+            if (c.igSliderFloat("##l1az", &self.light_1.attenuation[2], 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.data_updated = true;
         }
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color1", @ptrCast(&self.light_1.color), flags)) {
@@ -97,9 +111,19 @@ fn drawLights(self: *ShadowsUI) void {
         }
         {
             c.igPushItemWidth(-1);
-            if (c.igSliderFloat("##l2x", &self.light_2.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
-            if (c.igSliderFloat("##l2y", &self.light_2.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
-            if (c.igSliderFloat("##l2z", &self.light_2.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.position_updated = true;
+            if (c.igSliderFloat("##l2tx", &self.light_2.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.data_updated = true;
+            if (c.igSliderFloat("##l2ty", &self.light_2.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.data_updated = true;
+            if (c.igSliderFloat("##l2tz", &self.light_2.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.data_updated = true;
+        }
+        {
+            c.igText("attenuation");
+            c.igPushItemWidth(-1);
+            c.igText("constant");
+            if (c.igSliderFloat("##l2ax", &self.light_2.attenuation[0], 1, 10, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.data_updated = true;
+            c.igText("linear");
+            if (c.igSliderFloat("##l2ay", &self.light_2.attenuation[1], 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.data_updated = true;
+            c.igText("quadratic");
+            if (c.igSliderFloat("##l2az", &self.light_2.attenuation[2], 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.light_2.data_updated = true;
         }
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color2", @ptrCast(&self.light_2.color), flags)) {

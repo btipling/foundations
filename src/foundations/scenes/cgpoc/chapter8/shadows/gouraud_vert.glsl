@@ -1,10 +1,11 @@
 uniform uint f_material_selection; 
-uniform vec3 f_light_1_pos;
-uniform vec3 f_light_2_pos;
+uniform mat4 light_data;
 uniform mat4 f_object_m;
 
 void main()
 {
+    vec3 f_light_1_pos = light_data[0].xyz;
+    vec3 f_light_2_pos = light_data[2].xyz;
     mat4 m_matrix = f_object_m * mat4(
         f_t_column0,
         f_t_column1,
