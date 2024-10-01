@@ -102,52 +102,71 @@ fn drawMaterials(self: *ShadowsUI) void {
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
     const size = c.ImVec2_ImVec2_Float(550, 680);
     c.igSetNextWindowSize(size.*, c.ImGuiCond_FirstUseEver);
-    _ = c.igBegin("Objects", null, 0);
+    const window_flags = 0;
+    _ = c.igBegin("Objects", null, window_flags);
+
+    const materials_list = [_][*]const u8{
+        "Gold",
+        "Jade",
+        "Pearl",
+        "Silver",
+        "Copper",
+        "Chrome",
+        "Emerald",
+        "Ruby",
+        "Obsidian",
+        "Brass",
+    };
+    const model_list = [_][*]const u8{
+        "Torus",
+        "Parallelepiped",
+        "Sphere",
+        "Cone",
+        "Cylinder",
+        "Pyramid",
+        "Shuttle",
+        "Dolphin Lowpoly",
+        "Dolphin highpoly",
+    };
+
     {
-        const items = [_][*]const u8{
-            "Gold",
-            "Jade",
-            "Pearl",
-            "Silver",
-            "Copper",
-            "Chrome",
-            "Emerald",
-            "Ruby",
-            "Obsidian",
-            "Brass",
-        };
         c.igNewLine();
-        c.igText("Materials");
-        c.igText("current material: ");
-        c.igSameLine(0, 0);
-        c.igText(items[self.current_material]);
-        const data: [*c]const [*c]const u8 = items[0..].ptr;
-        c.igPushItemWidth(-1);
-        if (c.igListBox_Str_arr("##materialslist", @ptrCast(&self.current_material), data, items.len, -1)) {
-            self.model_updated = true;
+        c.igText("Object 1");
+    }
+    {
+        const preview = materials_list[self.current_material];
+        const flags = c.ImGuiComboFlags_PopupAlignLeft | c.ImGuiComboFlags_HeightLargest;
+        const selectable_size = ui.get_helpers().selectableSize();
+        if (c.igBeginCombo("##Materials1", preview, flags)) {
+            for (0..materials_list.len) |i| {
+                const is_selected: bool = i == self.current_material;
+                if (c.igSelectable_Bool(materials_list[i], is_selected, 0, selectable_size)) {
+                    self.current_material = i;
+                    self.model_updated = true;
+                }
+                if (is_selected) {
+                    c.igSetItemDefaultFocus();
+                }
+            }
+            c.igEndCombo();
         }
     }
     {
-        const items = [_][*]const u8{
-            "Torus",
-            "Parallelepiped",
-            "Sphere",
-            "Cone",
-            "Cylinder",
-            "Pyramid",
-            "Shuttle",
-            "Dolphin Lowpoly",
-            "Dolphin highpoly",
-        };
-        c.igNewLine();
-        c.igText("Model");
-        c.igText("current model: ");
-        c.igSameLine(0, 0);
-        c.igText(items[self.current_model]);
-        const data: [*c]const [*c]const u8 = items[0..].ptr;
-        c.igPushItemWidth(-1);
-        if (c.igListBox_Str_arr("##modelslist", @ptrCast(&self.current_model), data, items.len, -1)) {
-            self.model_updated = true;
+        const preview = model_list[self.current_model];
+        const flags = c.ImGuiComboFlags_PopupAlignLeft | c.ImGuiComboFlags_HeightLargest;
+        const selectable_size = ui.get_helpers().selectableSize();
+        if (c.igBeginCombo("##Objects1", preview, flags)) {
+            for (0..model_list.len) |i| {
+                const is_selected: bool = i == self.current_model;
+                if (c.igSelectable_Bool(model_list[i], is_selected, 0, selectable_size)) {
+                    self.current_model = i;
+                    self.model_updated = true;
+                }
+                if (is_selected) {
+                    c.igSetItemDefaultFocus();
+                }
+            }
+            c.igEndCombo();
         }
     }
     c.igEnd();
@@ -156,3 +175,4 @@ fn drawMaterials(self: *ShadowsUI) void {
 const std = @import("std");
 const c = @import("../../../../c.zig").c;
 const math = @import("../../../../math/math.zig");
+const ui = @import("../../../../ui/ui.zig");
