@@ -5,8 +5,8 @@ light_2: lightSetting = .{
     .position = .{ 0.796, -12.688, -1.372 },
 },
 model_updated: bool = false,
-current_material: usize = 0,
-current_model: usize = 0,
+object1_material: usize = 0,
+object1_model: usize = 0,
 current_lights: usize = 0,
 global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1 },
 
@@ -134,14 +134,14 @@ fn drawMaterials(self: *ShadowsUI) void {
         c.igText("Object 1");
     }
     {
-        const preview = materials_list[self.current_material];
+        const preview = materials_list[self.object1_material];
         const flags = c.ImGuiComboFlags_PopupAlignLeft | c.ImGuiComboFlags_HeightLargest;
         const selectable_size = ui.get_helpers().selectableSize();
         if (c.igBeginCombo("##Materials1", preview, flags)) {
             for (0..materials_list.len) |i| {
-                const is_selected: bool = i == self.current_material;
+                const is_selected: bool = i == self.object1_material;
                 if (c.igSelectable_Bool(materials_list[i], is_selected, 0, selectable_size)) {
-                    self.current_material = i;
+                    self.object1_material = i;
                     self.model_updated = true;
                 }
                 if (is_selected) {
@@ -152,14 +152,14 @@ fn drawMaterials(self: *ShadowsUI) void {
         }
     }
     {
-        const preview = model_list[self.current_model];
+        const preview = model_list[self.object1_model];
         const flags = c.ImGuiComboFlags_PopupAlignLeft | c.ImGuiComboFlags_HeightLargest;
         const selectable_size = ui.get_helpers().selectableSize();
         if (c.igBeginCombo("##Objects1", preview, flags)) {
             for (0..model_list.len) |i| {
-                const is_selected: bool = i == self.current_model;
+                const is_selected: bool = i == self.object1_model;
                 if (c.igSelectable_Bool(model_list[i], is_selected, 0, selectable_size)) {
-                    self.current_model = i;
+                    self.object1_model = i;
                     self.model_updated = true;
                 }
                 if (is_selected) {

@@ -301,7 +301,7 @@ pub fn renderModel(self: *Shadows) void {
             .instance_data = true,
             .fragment_shader = .lighting,
         };
-        switch (self.ui_state.current_model) {
+        switch (self.ui_state.object1_model) {
             6 => {
                 s.xup = .wavefront;
             },
@@ -336,7 +336,7 @@ pub fn renderModel(self: *Shadows) void {
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
-        switch (self.ui_state.current_model) {
+        switch (self.ui_state.object1_model) {
             6 => {
                 cm = math.matrix.transformMatrix(cm, math.matrix.translate(1, -10, 0));
             },
@@ -355,7 +355,7 @@ pub fn renderModel(self: *Shadows) void {
         i_datas[0] = i_data;
     }
 
-    const model: object.object = s: switch (self.ui_state.current_model) {
+    const model: object.object = s: switch (self.ui_state.object1_model) {
         0 => {
             var torus: object.object = .{
                 .torus = object.Torus.init(
@@ -462,7 +462,7 @@ pub fn renderModel(self: *Shadows) void {
     self.light_2_position = lp2;
 
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
-    msu.setUniform1ui(self.ui_state.current_material);
+    msu.setUniform1ui(self.ui_state.object1_material);
     self.material_selection = msu;
 }
 
