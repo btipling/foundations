@@ -105,6 +105,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         ctx.cfg.fb_width,
         ctx.cfg.fb_height,
     ) catch @panic("unable to setup shadow texture");
+    shadow_texture.texture_unit = 4;
 
     var shadow_framebuffer = rhi.Framebuffer.init();
     errdefer shadow_framebuffer.deinit();

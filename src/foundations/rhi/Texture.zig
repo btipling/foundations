@@ -51,7 +51,6 @@ pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_BORDER);
 
     self.name = name;
-    self.texture_unit = 15;
 
     self.uniforms[0] = Uniform.init(program, uniform_name);
     self.num_uniforms += 1;

@@ -736,6 +736,7 @@ fn genShadowmapTexture(self: *Shadows, i: usize) void {
         self.ctx.cfg.fb_width,
         self.ctx.cfg.fb_height,
     ) catch @panic("unable to setup shadow texture");
+    shadow_texture.texture_unit = @intCast(4 + i);
     self.shadowmaps[i] = shadow_texture;
 
     var shadow_framebuffer = rhi.Framebuffer.init();
