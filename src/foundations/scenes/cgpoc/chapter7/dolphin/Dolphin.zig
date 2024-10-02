@@ -136,6 +136,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
 pub fn deinit(self: *Dolphin, allocator: std.mem.Allocator) void {
     self.deleteParallepiped();
     self.deleteDolphin();
+    self.shadow_framebuffer.deinit();
     if (self.shadow_texture) |t| {
         t.deinit();
     }

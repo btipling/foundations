@@ -5,6 +5,12 @@ view_camera: *physics.camera.Camera(*Shadows, physics.Integrator(physics.SmoothD
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
+// Shadows
+shadowmaps: [1]rhi.Texture = undefined,
+shadowmap_program: u32 = 0,
+shadow_uniform: rhi.Uniform = undefined,
+shadow_x_up: rhi.Uniform = undefined,
+shadow_framebuffer: rhi.Framebuffer = undefined,
 
 object_1: object.object = .{ .norender = .{} },
 object_1_m: rhi.Uniform = undefined,
@@ -622,6 +628,41 @@ pub fn rendersphere_2(self: *Shadows) void {
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_2_matrix = sm;
     self.sphere_2 = sphere;
+}
+
+fn setupShadowmaps(self: *Shadows) void {
+    self.shadowmap_program = rhi.createProgram();
+    var shadow_framebuffer = rhi.Framebuffer.init();
+    errdefer shadow_framebuffer.deinit();
+    self.shadow_framebuffer = shadow_framebuffer;
+
+    var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_m");
+    shadow_uniform.setUniformMatrix(math.matrix.identity());
+    self.shadow_uniform = shadow_uniform;
+
+    var shadow_xup: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_xup_shadow");
+    shadow_xup.setUniformMatrix(math.matrix.identity());
+    self.shadow_x_up = shadow_xup;
+}
+
+fn genShadowmapTexture(self: *Shadows, i: usize) void {
+    var buf: [50]u8 = undefined;
+    const b = std.fmt.bufPrint(
+        &buf,
+        "f_shadow_texture{d};\n",
+        .{
+            i,
+        },
+    ) catch @panic("failed create uniform");
+    var shadow_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
+    errdefer shadow_texture.deinit();
+    shadow_texture.setupShadow(
+        self.shadowmap_program,
+        b,
+        self.ctx.cfg.fb_width,
+        self.ctx.cfg.fb_height,
+    ) catch @panic("unable to setup shadow texture");
+    self.shadowmaps[i] = shadow_texture;
 }
 
 const std = @import("std");
