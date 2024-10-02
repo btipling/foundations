@@ -1,4 +1,4 @@
-layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture0;
 layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture1;
 layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture2;
 layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture3;

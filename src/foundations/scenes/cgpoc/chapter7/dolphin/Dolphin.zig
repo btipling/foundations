@@ -101,7 +101,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     errdefer shadow_texture.deinit();
     shadow_texture.setupShadow(
         shadowmap_program,
-        "f_shadow_texture",
+        "f_shadow_texture0",
         ctx.cfg.fb_width,
         ctx.cfg.fb_height,
     ) catch @panic("unable to setup shadow texture");
@@ -297,7 +297,7 @@ pub fn renderDolphin(self: *Dolphin) void {
     var dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..]);
     dolphin_object.obj.mesh.shadowmap_program = self.shadowmap_program;
     var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
-    self.shadow_texture.?.addUniform(prog, "f_shadow_texture");
+    self.shadow_texture.?.addUniform(prog, "f_shadow_texture0");
     u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
         0.5, 0.0, 0.0, 0.0,
         0.0, 0.5, 0.0, 0.0,
@@ -359,7 +359,7 @@ pub fn renderParallepiped(self: *Dolphin) void {
         self.ground_texture = bt.*;
     }
     var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
-    self.shadow_texture.?.addUniform(prog, "f_shadow_texture");
+    self.shadow_texture.?.addUniform(prog, "f_shadow_texture0");
     u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
         0.5, 0.0, 0.0, 0.0,
         0.0, 0.5, 0.0, 0.0,

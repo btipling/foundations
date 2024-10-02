@@ -1,5 +1,5 @@
 
-layout (binding=4) uniform sampler2DShadow f_shadow_texture;
+layout (binding=4) uniform sampler2DShadow f_shadow_texture0;
 layout (binding=5) uniform sampler2DShadow f_shadow_texture1;
 layout (binding=6) uniform sampler2DShadow f_shadow_texture2;
 layout (binding=7) uniform sampler2DShadow f_shadow_texture3;
