@@ -359,8 +359,8 @@ pub fn renderParallepiped(self: *Dolphin) void {
         bt.texture_unit = 1;
         self.ground_texture = bt.*;
     }
-    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
     self.shadow_texture.?.addUniform(prog, "f_shadow_texture0");
+    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
     u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
         0.5, 0.0, 0.0, 0.0,
         0.0, 0.5, 0.0, 0.0,

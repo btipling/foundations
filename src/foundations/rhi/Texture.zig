@@ -1,7 +1,7 @@
 name: c.GLuint = 0,
 texture_unit: c.GLuint = 0,
 handle: c.GLuint64 = 0,
-uniforms: [5]Uniform = undefined,
+uniforms: [100]Uniform = undefined,
 num_uniforms: usize = 0,
 wrap_s: c.GLint = c.GL_CLAMP_TO_EDGE,
 wrap_t: c.GLint = c.GL_CLAMP_TO_EDGE,
@@ -141,6 +141,18 @@ pub fn makeNonResident(self: Texture) void {
     if (self.handle != 0) {
         c.glMakeTextureHandleNonResidentARB(self.handle);
     }
+}
+
+pub fn removeUniform(self: *Texture, program: u32) void {
+    var num_uniforms: usize = 0;
+    var uniforms: [100]Uniform = undefined;
+    for (0..self.num_uniforms) |i| {
+        if (self.uniforms[i].program == program) continue;
+        uniforms[i] = self.uniforms[i];
+        num_uniforms += 1;
+    }
+    self.uniforms = uniforms;
+    self.num_uniforms = num_uniforms;
 }
 
 pub fn addUniform(self: *Texture, program: u32, uniform_name: []const u8) void {

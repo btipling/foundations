@@ -30,6 +30,7 @@ sphere_2_matrix: rhi.Uniform = undefined,
 
 const Shadows = @This();
 
+const shadow_vertex_shader: []const u8 = @embedFile("../../../../shaders/shadow_vert.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
@@ -121,6 +122,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     };
     pd.renderBG();
     errdefer pd.deleteBG();
+
+    pd.setupShadowmaps();
 
     pd.renderObject_1();
     errdefer pd.deleteObject_1();
@@ -233,6 +236,7 @@ fn lightDataToMat(self: *Shadows) math.matrix {
 }
 
 pub fn draw(self: *Shadows, dt: f64) void {
+    self.genShadowMap();
     if (self.ui_state.light_1.data_updated) {
         const lp = self.ui_state.light_1.position;
         self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
@@ -343,15 +347,25 @@ pub fn renderBG(self: *Shadows) void {
 }
 
 pub fn deleteObject_1(self: *Shadows) void {
-    const objects: [1]object.object = .{
-        self.object_1,
-    };
-    rhi.deleteObjects(objects[0..]);
+    self.deleteObject(self.object_1);
 }
 
 pub fn deleteObject_2(self: *Shadows) void {
+    self.deleteObject(self.object_2);
+}
+
+pub fn deleteObject(self: *Shadows, obj: object.object) void {
+    switch (obj) {
+        inline else => |o| {
+            for (0..self.shadowmaps.len) |i| {
+                var t = self.shadowmaps[i];
+                t.removeUniform(o.mesh.program);
+                self.shadowmaps[i] = t;
+            }
+        },
+    }
     const objects: [1]object.object = .{
-        self.object_2,
+        obj,
     };
     rhi.deleteObjects(objects[0..]);
 }
@@ -408,7 +422,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
         i_datas[0] = i_data;
     }
 
-    const render_object: object.object = s: switch (obj_setting.model) {
+    var render_object: object.object = s: switch (obj_setting.model) {
         0 => {
             var torus: object.object = .{
                 .torus = object.Torus.init(
@@ -503,6 +517,31 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
         },
         else => .{ .norender = .{} },
     };
+    switch (render_object) {
+        inline else => |*o| {
+            o.mesh.shadowmap_program = self.shadowmap_program;
+        },
+    }
+    switch (render_object) {
+        inline else => |o| {
+            std.debug.assert(o.mesh.shadowmap_program != 0);
+        },
+    }
+
+    var buf: [50]u8 = undefined;
+    for (0..self.shadowmaps.len) |i| {
+        var t = self.shadowmaps[i];
+        const b = std.fmt.bufPrint(&buf, "f_shadow_texture{d};\n", .{i}) catch @panic("failed create uniform");
+        t.addUniform(prog, b);
+        self.shadowmaps[i] = t;
+    }
+    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
+    u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
+        0.5, 0.0, 0.0, 0.0,
+        0.0, 0.5, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.5, 0.5, 0.0, 1.0,
+    })), math.matrix.identity()));
     return render_object;
 }
 
@@ -632,6 +671,14 @@ pub fn rendersphere_2(self: *Shadows) void {
 
 fn setupShadowmaps(self: *Shadows) void {
     self.shadowmap_program = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = self.shadowmap_program,
+            .instance_data = true,
+            .fragment_shader = .shadow,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
+    }
     var shadow_framebuffer = rhi.Framebuffer.init();
     errdefer shadow_framebuffer.deinit();
     self.shadow_framebuffer = shadow_framebuffer;
@@ -640,20 +687,22 @@ fn setupShadowmaps(self: *Shadows) void {
     shadow_uniform.setUniformMatrix(math.matrix.identity());
     self.shadow_uniform = shadow_uniform;
 
-    var shadow_xup: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_xup_shadow");
-    shadow_xup.setUniformMatrix(math.matrix.identity());
-    self.shadow_x_up = shadow_xup;
+    var shadow_x_up: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_xup_shadow");
+    shadow_x_up.setUniformMatrix(math.matrix.transpose(math.matrix.mc(.{
+        0, 0, -1, 0,
+        1, 0, 0,  0,
+        0, 1, 0,  0,
+        0, 0, 0,  1,
+    })));
+    self.shadow_x_up = shadow_x_up;
+    for (0..self.shadowmaps.len) |i| {
+        self.genShadowmapTexture(i);
+    }
 }
 
 fn genShadowmapTexture(self: *Shadows, i: usize) void {
     var buf: [50]u8 = undefined;
-    const b = std.fmt.bufPrint(
-        &buf,
-        "f_shadow_texture{d};\n",
-        .{
-            i,
-        },
-    ) catch @panic("failed create uniform");
+    const b = std.fmt.bufPrint(&buf, "f_shadow_texture{d};\n", .{i}) catch @panic("failed create uniform");
     var shadow_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
     errdefer shadow_texture.deinit();
     shadow_texture.setupShadow(
@@ -663,6 +712,44 @@ fn genShadowmapTexture(self: *Shadows, i: usize) void {
         self.ctx.cfg.fb_height,
     ) catch @panic("unable to setup shadow texture");
     self.shadowmaps[i] = shadow_texture;
+
+    self.shadow_framebuffer.setupForShadowMap(shadow_texture) catch @panic("unable to setup shadow map framebuffer");
+}
+
+pub fn genShadowMap(self: *Shadows) void {
+    c.glEnable(c.GL_DEPTH_TEST);
+    c.glDepthFunc(c.GL_LEQUAL);
+
+    c.glEnable(c.GL_POLYGON_OFFSET_FILL);
+    c.glPolygonOffset(2.0, 4.0);
+    for (self.shadowmaps, 0..) |shadow_texture, i| {
+        _ = i;
+        _ = shadow_texture;
+        c.glClear(c.GL_DEPTH_BUFFER_BIT);
+
+        self.shadow_framebuffer.bind();
+        {
+            var o1 = self.object_1;
+            var o2 = self.object_2;
+            switch (o1) {
+                inline else => |*o| {
+                    o.mesh.gen_shadowmap = true;
+                },
+            }
+            switch (o2) {
+                inline else => |*o| {
+                    o.mesh.gen_shadowmap = true;
+                },
+            }
+            const objects: [2]object.object = .{ o1, o2 };
+            rhi.drawObjects(objects[0..]);
+        }
+        self.shadow_framebuffer.unbind();
+    }
+    c.glClear(c.GL_DEPTH_BUFFER_BIT);
+    c.glDisable(c.GL_POLYGON_OFFSET_FILL);
+    c.glEnable(c.GL_DEPTH_TEST);
+    c.glDepthFunc(c.GL_LEQUAL);
 }
 
 const std = @import("std");
