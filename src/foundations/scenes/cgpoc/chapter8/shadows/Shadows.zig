@@ -5,32 +5,42 @@ view_camera: *physics.camera.Camera(*Shadows, physics.Integrator(physics.SmoothD
 ctx: scenes.SceneContext,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
+
 // Shadows
-shadowmaps: [1]rhi.Texture = undefined,
+shadowmaps: [num_maps]rhi.Texture = undefined,
 shadowmap_program: u32 = 0,
 shadow_uniform: rhi.Uniform = undefined,
 shadow_x_up: rhi.Uniform = undefined,
-shadow_framebuffer: rhi.Framebuffer = undefined,
+shadow_framebuffers: [num_maps]rhi.Framebuffer = undefined,
+f_shadow_m: rhi.Uniform = undefined,
 
+// Objects
 object_1: object.object = .{ .norender = .{} },
 object_1_m: rhi.Uniform = undefined,
 object_1_light_data: rhi.Uniform = undefined,
 object_1_material_selection: rhi.Uniform = undefined,
+obj_1_m: math.matrix = math.matrix.identity(),
 
 object_2: object.object = .{ .norender = .{} },
 object_2_m: rhi.Uniform = undefined,
 object_2_light_data: rhi.Uniform = undefined,
 object_2_material_selection: rhi.Uniform = undefined,
+obj_2_m: math.matrix = math.matrix.identity(),
 
+// Lights
 sphere_1: object.object = .{ .norender = .{} },
 sphere_1_matrix: rhi.Uniform = undefined,
+light_1_view_ms: [6]math.matrix = undefined,
 
 sphere_2: object.object = .{ .norender = .{} },
 sphere_2_matrix: rhi.Uniform = undefined,
+light_2_view_ms: [6]math.matrix = undefined,
+
+const num_maps: usize = 4;
 
 const Shadows = @This();
 
-const shadow_vertex_shader: []const u8 = @embedFile("../../../../shaders/shadow_vert.glsl");
+const shadow_vertex_shader: []const u8 = @embedFile("shadow_vert.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
@@ -137,6 +147,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     pd.rendersphere_2();
     errdefer pd.deletesphere_2();
 
+    pd.generateLightViewMatrices(pd.ui_state.light_1, 1);
+    pd.generateLightViewMatrices(pd.ui_state.light_2, 2);
+
     return pd;
 }
 
@@ -238,6 +251,7 @@ fn lightDataToMat(self: *Shadows) math.matrix {
 pub fn draw(self: *Shadows, dt: f64) void {
     self.genShadowMap();
     if (self.ui_state.light_1.data_updated) {
+        self.generateLightViewMatrices(self.ui_state.light_1, 1);
         const lp = self.ui_state.light_1.position;
         self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
         const m = self.lightDataToMat();
@@ -246,6 +260,7 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.ui_state.light_1.data_updated = false;
     }
     if (self.ui_state.light_2.data_updated) {
+        self.generateLightViewMatrices(self.ui_state.light_2, 2);
         const lp = self.ui_state.light_2.position;
         self.sphere_2_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
         const m = self.lightDataToMat();
@@ -254,11 +269,13 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.ui_state.light_2.data_updated = false;
     }
     if (self.ui_state.object_1.transform_updated) {
-        self.object_1_m.setUniformMatrix(getObjectMatrix(self.ui_state.object_1));
+        self.obj_1_m = getObjectMatrix(self.ui_state.object_1);
+        self.object_1_m.setUniformMatrix(self.obj_1_m);
         self.ui_state.object_1.transform_updated = false;
     }
     if (self.ui_state.object_2.transform_updated) {
-        self.object_2_m.setUniformMatrix(getObjectMatrix(self.ui_state.object_2));
+        self.obj_2_m = getObjectMatrix(self.ui_state.object_2);
+        self.object_2_m.setUniformMatrix(self.obj_2_m);
         self.ui_state.object_2.transform_updated = false;
     }
     if (self.ui_state.object_1.updated) {
@@ -284,6 +301,10 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.ui_state.light_2.updated = false;
     }
     self.view_camera.update(dt);
+
+    for (self.shadowmaps) |t| {
+        t.bind();
+    }
     {
         const objects: [1]object.object = .{
             self.bg,
@@ -558,7 +579,8 @@ pub fn renderObject_1(self: *Shadows) void {
     self.object_1_material_selection = msu;
 
     var om: rhi.Uniform = .init(prog, "f_object_m");
-    om.setUniformMatrix(getObjectMatrix(self.ui_state.object_1));
+    self.obj_1_m = getObjectMatrix(self.ui_state.object_1);
+    om.setUniformMatrix(self.obj_1_m);
     self.object_1_m = om;
 }
 
@@ -575,7 +597,8 @@ pub fn renderObject_2(self: *Shadows) void {
     self.object_2_material_selection = msu;
 
     var om: rhi.Uniform = .init(prog, "f_object_m");
-    om.setUniformMatrix(getObjectMatrix(self.ui_state.object_2));
+    self.obj_2_m = getObjectMatrix(self.ui_state.object_2);
+    om.setUniformMatrix(self.obj_2_m);
     self.object_2_m = om;
 }
 
@@ -679,13 +702,14 @@ fn setupShadowmaps(self: *Shadows) void {
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
     }
-    var shadow_framebuffer = rhi.Framebuffer.init();
-    errdefer shadow_framebuffer.deinit();
-    self.shadow_framebuffer = shadow_framebuffer;
 
-    var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_m");
+    var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_vp");
     shadow_uniform.setUniformMatrix(math.matrix.identity());
     self.shadow_uniform = shadow_uniform;
+
+    var f_shadow_m: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_m");
+    f_shadow_m.setUniformMatrix(math.matrix.identity());
+    self.f_shadow_m = f_shadow_m;
 
     var shadow_x_up: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_xup_shadow");
     shadow_x_up.setUniformMatrix(math.matrix.transpose(math.matrix.mc(.{
@@ -713,7 +737,11 @@ fn genShadowmapTexture(self: *Shadows, i: usize) void {
     ) catch @panic("unable to setup shadow texture");
     self.shadowmaps[i] = shadow_texture;
 
-    self.shadow_framebuffer.setupForShadowMap(shadow_texture) catch @panic("unable to setup shadow map framebuffer");
+    var shadow_framebuffer = rhi.Framebuffer.init();
+    errdefer shadow_framebuffer.deinit();
+
+    shadow_framebuffer.setupForShadowMap(shadow_texture) catch @panic("unable to setup shadow map framebuffer");
+    self.shadow_framebuffers[i] = shadow_framebuffer;
 }
 
 pub fn genShadowMap(self: *Shadows) void {
@@ -722,34 +750,63 @@ pub fn genShadowMap(self: *Shadows) void {
 
     c.glEnable(c.GL_POLYGON_OFFSET_FILL);
     c.glPolygonOffset(2.0, 4.0);
-    for (self.shadowmaps, 0..) |shadow_texture, i| {
-        _ = i;
-        _ = shadow_texture;
+    for (self.shadowmaps, 0..) |_, i| {
+        self.shadow_framebuffers[i].bind();
+        const sm = self.light_1_view_ms[i];
+        self.shadow_uniform.setUniformMatrix(sm);
         c.glClear(c.GL_DEPTH_BUFFER_BIT);
 
-        self.shadow_framebuffer.bind();
         {
+            self.f_shadow_m.setUniformMatrix(self.obj_1_m);
             var o1 = self.object_1;
-            var o2 = self.object_2;
             switch (o1) {
                 inline else => |*o| {
                     o.mesh.gen_shadowmap = true;
                 },
             }
+            const objects: [1]object.object = .{o1};
+            rhi.drawObjects(objects[0..]);
+        }
+        {
+            self.f_shadow_m.setUniformMatrix(self.obj_2_m);
+            var o2 = self.object_2;
             switch (o2) {
                 inline else => |*o| {
                     o.mesh.gen_shadowmap = true;
                 },
             }
-            const objects: [2]object.object = .{ o1, o2 };
+            const objects: [1]object.object = .{o2};
             rhi.drawObjects(objects[0..]);
         }
-        self.shadow_framebuffer.unbind();
+        self.shadow_framebuffers[i].unbind();
     }
     c.glClear(c.GL_DEPTH_BUFFER_BIT);
     c.glDisable(c.GL_POLYGON_OFFSET_FILL);
     c.glEnable(c.GL_DEPTH_TEST);
     c.glDepthFunc(c.GL_LEQUAL);
+}
+
+fn generateLightViewMatrices(self: *Shadows, light: ShadowsUI.lightSetting, light_num: usize) void {
+    const pos = light.position;
+    // const angle_1: f32 = 0;
+    var angle_2: f32 = 0;
+    for (0..4) |i| {
+        // const i_f: f32 = @floatFromInt(i);
+        angle_2 += std.math.pi / 2.0;
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(pos[0], pos[1], pos[2]));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationX(angle_2));
+        m = math.matrix.cameraInverse(m);
+
+        const s = @as(f32, @floatFromInt(self.ctx.cfg.width)) / @as(f32, @floatFromInt(self.ctx.cfg.height));
+        const g: f32 = 1.0 / @tan(self.ctx.cfg.fovy * 0.5);
+        var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
+        P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
+        m = math.matrix.transformMatrix(P, m);
+        if (light_num == 1) {
+            self.light_1_view_ms[i] = m;
+        }
+    }
 }
 
 const std = @import("std");

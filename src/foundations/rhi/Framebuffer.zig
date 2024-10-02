@@ -45,6 +45,10 @@ pub fn attachDepthTexture(self: *FrameBuffer, texture: Texture) void {
     c.glNamedFramebufferTexture(self.name, c.GL_DEPTH_ATTACHMENT, texture.name, 0);
 }
 
+pub fn detachDepthTexture(self: *FrameBuffer) void {
+    c.glNamedFramebufferTexture(self.name, c.GL_DEPTH_ATTACHMENT, 0, 0);
+}
+
 pub fn attachColorTexture(self: *FrameBuffer, texture: Texture) void {
     c.glNamedFramebufferTexture(self.name, c.GL_COLOR_ATTACHMENT0, texture.name, 0);
 }
