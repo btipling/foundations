@@ -713,12 +713,7 @@ fn setupShadowmaps(self: *Shadows) void {
     self.f_shadow_m = f_shadow_m;
 
     var shadow_x_up: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_xup_shadow");
-    shadow_x_up.setUniformMatrix(math.matrix.transpose(math.matrix.mc(.{
-        0, 0, -1, 0,
-        1, 0, 0,  0,
-        0, 1, 0,  0,
-        0, 0, 0,  1,
-    })));
+    shadow_x_up.setUniformMatrix(math.matrix.transpose(math.matrix.identity()));
     self.shadow_x_up = shadow_x_up;
     for (0..self.shadowmaps.len) |i| {
         self.genShadowmapTexture(i);
