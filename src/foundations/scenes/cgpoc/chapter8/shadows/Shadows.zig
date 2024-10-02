@@ -396,7 +396,8 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .lighting,
+            .shadowmaps = true,
+            .fragment_shader = if (self.shadowmaps[0].disable_bindless == false) .bindless else .texture,
         };
         switch (obj_setting.model) {
             6 => {

@@ -6,6 +6,9 @@ out vec3 fo_light_1_attenuation;
 out vec3 fo_light_2_attenuation;
 uniform mat4 f_object_m;
 
+uniform mat4 f_shadow_m;
+out vec4 fo_shadow_coord;
+
 void main()
 {
     vec3 f_light_1_pos = light_data[0].xyz;
@@ -28,6 +31,7 @@ void main()
     fo_light_1_dir = f_light_1_pos - fo_vert;
     fo_light_2_dir = f_light_2_pos - fo_vert;
 
+    fo_shadow_coord = f_shadow_m * f_main_pos;
     gl_Position =  f_mvp * f_main_pos;
     f_tc = f_texture_coords;
 }
