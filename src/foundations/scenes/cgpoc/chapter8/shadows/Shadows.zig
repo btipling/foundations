@@ -36,7 +36,7 @@ sphere_2: object.object = .{ .norender = .{} },
 sphere_2_matrix: rhi.Uniform = undefined,
 light_2_view_ms: [6]math.matrix = undefined,
 
-const num_maps: usize = 4;
+const num_maps: usize = 12;
 
 const Shadows = @This();
 
@@ -752,8 +752,13 @@ pub fn genShadowMap(self: *Shadows) void {
     c.glPolygonOffset(2.0, 4.0);
     for (self.shadowmaps, 0..) |_, i| {
         self.shadow_framebuffers[i].bind();
-        const sm = self.light_1_view_ms[i];
-        self.shadow_uniform.setUniformMatrix(sm);
+        if (i < 6) {
+            const sm = self.light_1_view_ms[i];
+            self.shadow_uniform.setUniformMatrix(sm);
+        } else {
+            const sm = self.light_2_view_ms[i - 6];
+            self.shadow_uniform.setUniformMatrix(sm);
+        }
         c.glClear(c.GL_DEPTH_BUFFER_BIT);
 
         {
@@ -786,26 +791,45 @@ pub fn genShadowMap(self: *Shadows) void {
     c.glDepthFunc(c.GL_LEQUAL);
 }
 
+fn setLightViewMatrix(self: *Shadows, tm: math.matrix, light_num: usize, i: usize) void {
+    const s = @as(f32, @floatFromInt(self.ctx.cfg.width)) / @as(f32, @floatFromInt(self.ctx.cfg.height));
+    const g: f32 = 1.0 / @tan(self.ctx.cfg.fovy * 0.5);
+    var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
+    P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
+    const m = math.matrix.transformMatrix(P, tm);
+    if (light_num == 1) {
+        self.light_1_view_ms[i] = m;
+    } else {
+        self.light_2_view_ms[i] = m;
+    }
+}
+
 fn generateLightViewMatrices(self: *Shadows, light: ShadowsUI.lightSetting, light_num: usize) void {
     const pos = light.position;
     // const angle_1: f32 = 0;
-    var angle_2: f32 = 0;
+    var angle: f32 = 0;
     for (0..4) |i| {
         // const i_f: f32 = @floatFromInt(i);
-        angle_2 += std.math.pi / 2.0;
+        angle += std.math.pi / 2.0;
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.translate(pos[0], pos[1], pos[2]));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationX(angle_2));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationX(angle));
         m = math.matrix.cameraInverse(m);
-
-        const s = @as(f32, @floatFromInt(self.ctx.cfg.width)) / @as(f32, @floatFromInt(self.ctx.cfg.height));
-        const g: f32 = 1.0 / @tan(self.ctx.cfg.fovy * 0.5);
-        var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
-        P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
-        m = math.matrix.transformMatrix(P, m);
-        if (light_num == 1) {
-            self.light_1_view_ms[i] = m;
-        }
+        self.setLightViewMatrix(m, light_num, i);
+    }
+    {
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(pos[0], pos[1], pos[2]));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi));
+        m = math.matrix.cameraInverse(m);
+        self.setLightViewMatrix(m, light_num, 4);
+    }
+    {
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(pos[0], pos[1], pos[2]));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(-std.math.pi));
+        m = math.matrix.cameraInverse(m);
+        self.setLightViewMatrix(m, light_num, 5);
     }
 }
 
