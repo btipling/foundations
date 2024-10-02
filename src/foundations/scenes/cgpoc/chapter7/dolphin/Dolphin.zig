@@ -324,6 +324,7 @@ pub fn renderParallepiped(self: *Dolphin) void {
             .lighting = .blinn_phong,
             .frag_body = matte_frag_shader,
             .fragment_shader = rhi.Texture.frag_shader(self.ground_texture),
+            .shadowmaps = true,
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
     }

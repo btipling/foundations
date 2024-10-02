@@ -1,0 +1,12 @@
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture1;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture2;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture3;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture4;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture5;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture6;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture7;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture8;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture9;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture10;
+layout (bindless_sampler) uniform sampler2DShadow f_shadow_texture11;

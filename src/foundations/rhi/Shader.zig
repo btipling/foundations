@@ -8,6 +8,7 @@ xup: xup_type = .none,
 lighting: lighting_type = .none,
 frag_body: ?[]const u8 = null,
 program: u32 = 0,
+shadowmaps: bool = false,
 
 const max_frag_partials: usize = 10;
 const max_vertex_partials: usize = 10;
@@ -50,6 +51,8 @@ const vertex_xup_wavefront = @embedFile("../shaders/vertex_xup_wavefront.glsl");
 const lighting_glsl = @embedFile("../shaders/lighting.glsl");
 
 const frag_header = @embedFile("../shaders/frag_header.glsl");
+const frag_bindless_shadowmaps = @embedFile("../shaders/frag_bindless_shadowmaps.glsl");
+const frag_texture_shadowmaps = @embedFile("../shaders/frag_texture_shadowmaps.glsl");
 const frag_bindless_header = @embedFile("../shaders/frag_bindless_header.glsl");
 const frag_texture_header = @embedFile("../shaders/frag_texture_header.glsl");
 const frag_subheader = @embedFile("../shaders/frag_subheader.glsl");
@@ -101,9 +104,17 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     if (self.fragment_shader == .bindless) {
         self.frag_partials[self.num_frag_partials] = frag_bindless_header;
         self.num_frag_partials += 1;
+        if (self.shadowmaps) {
+            self.frag_partials[self.num_frag_partials] = frag_bindless_shadowmaps;
+            self.num_frag_partials += 1;
+        }
     } else if (self.fragment_shader == .texture) {
-        self.frag_partials[self.num_frag_partials] = frag_texture_header;
         self.num_frag_partials += 1;
+        self.frag_partials[self.num_frag_partials] = frag_texture_header;
+        if (self.shadowmaps) {
+            self.frag_partials[self.num_frag_partials] = frag_texture_shadowmaps;
+            self.num_frag_partials += 1;
+        }
     }
     {
         self.frag_partials[self.num_frag_partials] = frag_subheader;
