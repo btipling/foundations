@@ -4,8 +4,19 @@ out vec3 fo_light_1_attenuation;
 out vec3 fo_light_2_attenuation;
 uniform mat4 f_object_m;
 
-uniform mat4 f_shadow_m;
-out vec4 fo_shadow_coord;
+out vec4 fo_light_1_coord_0;
+out vec4 fo_light_1_coord_1;
+out vec4 fo_light_1_coord_2;
+out vec4 fo_light_1_coord_3;
+out vec4 fo_light_1_coord_4;
+out vec4 fo_light_1_coord_5;
+
+out vec4 fo_light_2_coord_0;
+out vec4 fo_light_2_coord_1;
+out vec4 fo_light_2_coord_2;
+out vec4 fo_light_2_coord_3;
+out vec4 fo_light_2_coord_4;
+out vec4 fo_light_2_coord_5;
 
 layout(std140, binding = 1) uniform SceneData
 {
@@ -16,6 +27,7 @@ layout(std140, binding = 1) uniform SceneData
     vec4 light_2_attenuation;
     mat4 light_2_views[6];
 } f_scene_data;
+
 
 void main()
 {
@@ -39,7 +51,20 @@ void main()
     fo_light_1_dir = f_light_1_pos - fo_vert;
     fo_light_2_dir = f_light_2_pos - fo_vert;
 
-    fo_shadow_coord = f_shadow_m * f_main_pos;
+    fo_light_1_coord_0 = f_scene_data.light_1_views[0] * f_main_pos;
+    fo_light_1_coord_1 = f_scene_data.light_1_views[1] * f_main_pos;
+    fo_light_1_coord_2 = f_scene_data.light_1_views[2] * f_main_pos;
+    fo_light_1_coord_3 = f_scene_data.light_1_views[3] * f_main_pos;
+    fo_light_1_coord_4 = f_scene_data.light_1_views[4] * f_main_pos;
+    fo_light_1_coord_5 = f_scene_data.light_1_views[5] * f_main_pos;
+
+    fo_light_2_coord_0 = f_scene_data.light_2_views[0] * f_main_pos;
+    fo_light_2_coord_1 = f_scene_data.light_2_views[1] * f_main_pos;
+    fo_light_2_coord_2 = f_scene_data.light_2_views[2] * f_main_pos;
+    fo_light_2_coord_3 = f_scene_data.light_2_views[3] * f_main_pos;
+    fo_light_2_coord_4 = f_scene_data.light_2_views[4] * f_main_pos;
+    fo_light_2_coord_5 = f_scene_data.light_2_views[5] * f_main_pos;
+
     gl_Position =  f_mvp * f_main_pos;
     f_tc = f_texture_coords;
 }
