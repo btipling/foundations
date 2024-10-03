@@ -99,13 +99,29 @@ pub fn draw(self: *PolygonOffset, dt: f64) void {
         self.ui_state.object_2.updated = false;
     }
     self.view_camera.update(dt);
+
+    c.glEnable(c.GL_POLYGON_OFFSET_FILL);
     {
-        const objects: [2]object.object = .{
+        c.glPolygonOffset(
+            @floatCast(self.ui_state.object_1.polygon_factor),
+            @floatCast(self.ui_state.object_1.polygon_unit),
+        );
+        const objects: [1]object.object = .{
             self.object_1,
+        };
+        rhi.drawObjects(objects[0..]);
+    }
+    {
+        c.glPolygonOffset(
+            @floatCast(self.ui_state.object_2.polygon_factor),
+            @floatCast(self.ui_state.object_2.polygon_unit),
+        );
+        const objects: [1]object.object = .{
             self.object_2,
         };
         rhi.drawObjects(objects[0..]);
     }
+    c.glDisable(c.GL_POLYGON_OFFSET_FILL);
     self.ui_state.draw();
 }
 

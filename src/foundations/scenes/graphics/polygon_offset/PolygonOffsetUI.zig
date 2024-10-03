@@ -12,6 +12,8 @@ pub const objectSetting = struct {
     model: usize = 0,
     updated: bool = false,
     transform_updated: bool = false,
+    polygon_factor: f32 = 0,
+    polygon_unit: f32 = 0,
 };
 
 const ShadowsUI = @This();
@@ -73,6 +75,10 @@ fn drawObjects(self: *ShadowsUI) void {
         if (c.igSliderFloat("##o1rx", &self.object_1.rotation[0], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
         if (c.igSliderFloat("##o1ry", &self.object_1.rotation[1], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
         if (c.igSliderFloat("##o1rz", &self.object_1.rotation[2], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_1.transform_updated = true;
+        c.igText("poylgon offset factor");
+        if (c.igSliderFloat("##o1pof", &self.object_1.polygon_factor, -10000.0, 10000.0, "%.3f", c.ImGuiSliderFlags_None)) {}
+        c.igText("poylgon offset unit");
+        if (c.igSliderFloat("##o1pou", &self.object_1.polygon_unit, -10000.0, 10000.0, "%.3f", c.ImGuiSliderFlags_None)) {}
     }
 
     {
@@ -107,6 +113,10 @@ fn drawObjects(self: *ShadowsUI) void {
         if (c.igSliderFloat("##o2rx", &self.object_2.rotation[0], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
         if (c.igSliderFloat("##o2ry", &self.object_2.rotation[1], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
         if (c.igSliderFloat("##o2rz", &self.object_2.rotation[2], 0, std.math.pi * 2, "%.3f", c.ImGuiSliderFlags_None)) self.object_2.transform_updated = true;
+        c.igText("poylgon offset factor");
+        if (c.igSliderFloat("##o2pof", &self.object_2.polygon_factor, -10000.0, 10000.0, "%.3f", c.ImGuiSliderFlags_None)) {}
+        c.igText("poylgon offset unit");
+        if (c.igSliderFloat("##o2pou", &self.object_2.polygon_unit, -10000.0, 10000.0, "%.3f", c.ImGuiSliderFlags_None)) {}
     }
     c.igEnd();
 }
