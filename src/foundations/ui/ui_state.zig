@@ -57,7 +57,7 @@ pub const scenes = union(scene_type) {
     plane_distance: *scenes_list.math.PlaneDistance,
     frustum_planes: *scenes_list.math.FrustumPlanes,
     // color
-    linear_colorspace: *scenes_list.color.LinearColorspace,
+    linear_colorspace: *scenes_list.graphics.LinearColorspace,
     // CGPOC
     point: *scenes_list.cgpoc.point,
     triangle_animated: *scenes_list.cgpoc.triangle_animated,
