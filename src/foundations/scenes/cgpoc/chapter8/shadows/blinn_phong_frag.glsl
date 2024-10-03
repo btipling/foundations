@@ -42,39 +42,39 @@ vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights,
         vec3 f_diffuse = f_light.diffuse.xyz * f_mat.diffuse.xyz * max(cosTheta, 0.0) * f_attenuation;
         vec3 f_specular = f_mat.specular.xyz * f_light.specular.xyz * pow(max(cosPhi, 0.0), f_mat.shininess * 4.0) * f_attenuation;
 
-        float not_in_shadow = 0.0;
+        float not_in_shadow = 1.0;
         if (i == 0) {
             not_in_shadow = textureProj(f_shadow_texture0, fo_light_1_coord_0);
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture1, fo_light_1_coord_1);
             }
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture2, fo_light_1_coord_2);
             }
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture3, fo_light_1_coord_3);
             }
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture4, fo_light_1_coord_4);
             }
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture5, fo_light_1_coord_5);
             }
         } else {
             not_in_shadow = textureProj(f_shadow_texture6, fo_light_2_coord_0);
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture7, fo_light_2_coord_1);
             }
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture8, fo_light_2_coord_2);
             }
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture9, fo_light_2_coord_3);
             }
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture10, fo_light_2_coord_4);
             }
-            if (not_in_shadow != 1.0) {
+            if (not_in_shadow == 1.0) {
                 not_in_shadow = textureProj(f_shadow_texture11, fo_light_2_coord_5);
             }
         }
