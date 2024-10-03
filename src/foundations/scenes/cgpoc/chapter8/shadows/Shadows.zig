@@ -840,14 +840,14 @@ fn generateLightViewMatrices(self: *Shadows, light: ShadowsUI.lightSetting, ligh
     {
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.translate(pos[0], pos[1], pos[2]));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
         m = math.matrix.cameraInverse(m);
         self.setLightViewMatrix(m, light_num, 4);
     }
     {
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.translate(pos[0], pos[1], pos[2]));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(-std.math.pi));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(-std.math.pi / 2.0));
         m = math.matrix.cameraInverse(m);
         self.setLightViewMatrix(m, light_num, 5);
     }
