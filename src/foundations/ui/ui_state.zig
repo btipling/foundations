@@ -20,6 +20,7 @@ pub const scene_type = enum(usize) {
     frustum_planes,
     // color
     linear_colorspace,
+    polygon_offset,
     // CGPOC
     point,
     triangle_animated,
@@ -58,6 +59,7 @@ pub const scenes = union(scene_type) {
     frustum_planes: *scenes_list.math.FrustumPlanes,
     // color
     linear_colorspace: *scenes_list.graphics.LinearColorspace,
+    polygon_offset: *scenes_list.graphics.PolygonOffset,
     // CGPOC
     point: *scenes_list.cgpoc.point,
     triangle_animated: *scenes_list.cgpoc.triangle_animated,

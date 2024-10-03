@@ -1,8 +1,9 @@
 object_1: objectSetting = .{
-    .position = .{ 0.73, -9.914, 0 },
+    .position = .{ 0.73, -7, 1.00 },
 },
 object_2: objectSetting = .{
-    .position = .{ 1.253, -9.667, -0.729 },
+    .position = .{ 1.253, -6, 4.0 },
+    .rotation = .{ std.math.pi / 2.0, std.math.pi / 2.0, 0 },
 },
 
 pub const objectSetting = struct {

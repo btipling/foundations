@@ -13,7 +13,7 @@ object_2_m: rhi.Uniform = undefined,
 
 const PolygonOffset = @This();
 
-const vertex_shader: []const u8 = @embedFile("ca_vertex.glsl");
+const vertex_shader: []const u8 = @embedFile("po_vertex.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -31,8 +31,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PolygonOffs
         ctx.cfg,
         pd,
         integrator,
-        .{ 1.5, -16, 3 },
-        -(std.math.pi / 8.0),
+        .{ 1.5, -1, 3 },
+        (std.math.pi),
     );
     errdefer cam.deinit(allocator);
 
@@ -80,7 +80,7 @@ fn getObjectMatrix(object_settings: ShadowsUI.objectSetting) math.matrix {
 pub fn draw(self: *PolygonOffset, dt: f64) void {
     if (self.ui_state.object_1.transform_updated) {
         const m = getObjectMatrix(self.ui_state.object_1);
-        self.object_2_m.setUniformMatrix(m);
+        self.object_1_m.setUniformMatrix(m);
         self.ui_state.object_1.transform_updated = false;
     }
     if (self.ui_state.object_2.transform_updated) {
@@ -148,7 +148,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
         i_datas[0] = i_data;
     }
 
-    var render_object: object.object = s: switch (obj_setting.model) {
+    const render_object: object.object = s: switch (obj_setting.model) {
         0 => {
             var torus: object.object = .{
                 .torus = object.Torus.init(
@@ -243,24 +243,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
         },
         else => .{ .norender = .{} },
     };
-    switch (render_object) {
-        inline else => |*o| {
-            o.mesh.shadowmap_program = self.shadowmap_program;
-        },
-    }
-    switch (render_object) {
-        inline else => |o| {
-            std.debug.assert(o.mesh.shadowmap_program != 0);
-        },
-    }
 
-    var buf: [50]u8 = undefined;
-    for (0..self.shadowmaps.len) |i| {
-        var t = self.shadowmaps[i];
-        const b = std.fmt.bufPrint(&buf, "f_shadow_texture{d};\n", .{i}) catch @panic("failed create uniform");
-        t.addUniform(prog, b);
-        self.shadowmaps[i] = t;
-    }
     return render_object;
 }
 
@@ -269,8 +252,8 @@ pub fn renderObject_1(self: *PolygonOffset) void {
     self.object_1 = self.renderObject(self.ui_state.object_1, prog);
 
     var om: rhi.Uniform = .init(prog, "f_object_m");
-    self.obj_1_m = getObjectMatrix(self.ui_state.object_1);
-    om.setUniformMatrix(self.obj_1_m);
+    const m = getObjectMatrix(self.ui_state.object_1);
+    om.setUniformMatrix(m);
     self.object_1_m = om;
 }
 
@@ -279,8 +262,8 @@ pub fn renderObject_2(self: *PolygonOffset) void {
     self.object_2 = self.renderObject(self.ui_state.object_2, prog);
 
     var om: rhi.Uniform = .init(prog, "f_object_m");
-    self.obj_2_m = getObjectMatrix(self.ui_state.object_2);
-    om.setUniformMatrix(self.obj_2_m);
+    const m = getObjectMatrix(self.ui_state.object_2);
+    om.setUniformMatrix(m);
     self.object_2_m = om;
 }
 
