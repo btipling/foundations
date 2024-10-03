@@ -761,7 +761,7 @@ pub fn genShadowMap(self: *Shadows) void {
     c.glDepthFunc(c.GL_LEQUAL);
 
     c.glEnable(c.GL_POLYGON_OFFSET_FILL);
-    c.glPolygonOffset(2.0, 4.0);
+    c.glPolygonOffset(1000.0, 4.0);
     for (self.shadowmaps, 0..) |_, i| {
         self.shadow_framebuffers[i].bind();
         if (i < 6) {
