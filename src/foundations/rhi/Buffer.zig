@@ -6,12 +6,14 @@ pub const buffer_type = enum(usize) {
     materials,
     lights,
     camera,
+    chapter8_shadows,
 };
 
 pub const buffer_data = union(buffer_type) {
     materials: []const lighting.Material,
     lights: []const lighting.Light,
     camera: physics.camera.CameraData,
+    chapter8_shadows: scenes_list.cgpoc.chapter8.Shadows.SceneData,
 };
 
 pub const storage_type = enum(usize) {
@@ -31,16 +33,18 @@ pub fn init(data: buffer_data) Buffer {
         .materials => @sizeOf(lighting.Material),
         .lights => @sizeOf(lighting.Light),
         .camera => @sizeOf(physics.camera.CameraData),
+        .chapter8_shadows => @sizeOf(scenes_list.cgpoc.chapter8.Shadows.SceneData),
     };
     const data_len: usize = switch (data) {
         .materials => |d| d.len,
         .lights => |d| d.len,
-        .camera => 1,
+        else => 1,
     };
     const block_binding_point: storage_binding_point = switch (data) {
         .materials => .{ .ssbo = 0 },
         .lights => .{ .ssbo = 1 },
         .camera => .{ .ubo = 0 },
+        .chapter8_shadows => .{ .ubo = 1 },
     };
     const size = data_len * data_size;
     switch (data) {
@@ -50,7 +54,7 @@ pub fn init(data: buffer_data) Buffer {
         .lights => |d| {
             c.glNamedBufferData(name, @intCast(size), d.ptr, c.GL_STATIC_DRAW);
         },
-        .camera => |d| {
+        else => |d| {
             c.glNamedBufferData(name, @intCast(size), &d, c.GL_DYNAMIC_DRAW);
         },
     }
@@ -93,3 +97,4 @@ pub fn update(self: Buffer, data: buffer_data) void {
 const c = @import("../c.zig").c;
 const lighting = @import("../lighting/lighting.zig");
 const physics = @import("../physics/physics.zig");
+const scenes_list = @import("../scenes/scenes.zig");

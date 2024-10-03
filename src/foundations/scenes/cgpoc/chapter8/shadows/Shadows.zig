@@ -38,6 +38,11 @@ light_2_view_ms: [6]math.matrix = undefined,
 
 const num_maps: usize = 12;
 
+pub const SceneData = struct {
+    light_1_views: [6][16]f32,
+    light_2_views: [6][16]f32,
+};
+
 const Shadows = @This();
 
 const shadow_vertex_shader: []const u8 = @embedFile("shadow_vert.glsl");
