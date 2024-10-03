@@ -587,13 +587,6 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
         t.addUniform(prog, b);
         self.shadowmaps[i] = t;
     }
-    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
-    u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
-        0.5, 0.0, 0.0, 0.0,
-        0.0, 0.5, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.5, 0.5, 0.0, 1.0,
-    })), math.matrix.identity()));
     return render_object;
 }
 
@@ -816,12 +809,18 @@ fn setLightViewMatrix(self: *Shadows, tm: math.matrix, light_num: usize, i: usiz
     var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
     P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
     const m = math.matrix.transformMatrix(P, tm);
+    const light_view = math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
+        0.5, 0.0, 0.0, 0.0,
+        0.0, 0.5, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.5, 0.5, 0.0, 1.0,
+    })), m).array();
     if (light_num == 1) {
         self.light_1_view_ms[i] = m;
-        self.scene_data.light_1_views[i] = m.array();
+        self.scene_data.light_1_views[i] = light_view;
     } else {
         self.light_2_view_ms[i] = m;
-        self.scene_data.light_2_views[i] = m.array();
+        self.scene_data.light_2_views[i] = light_view;
     }
 }
 
