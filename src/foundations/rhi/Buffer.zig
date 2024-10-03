@@ -79,15 +79,20 @@ pub fn update(self: Buffer, data: buffer_data) void {
     // Only camera supports updating at the moment.
     const data_size: usize = switch (data) {
         .camera => @sizeOf(physics.camera.CameraData),
+        .chapter8_shadows => @sizeOf(scenes_list.cgpoc.chapter8.Shadows.SceneData),
         else => 0,
     };
     const data_len: usize = switch (data) {
         .camera => 1,
+        .chapter8_shadows => 1,
         else => 0,
     };
     const size = data_len * data_size;
     switch (data) {
         .camera => |d| {
+            c.glNamedBufferData(self.name, @intCast(size), &d, c.GL_DYNAMIC_DRAW);
+        },
+        .chapter8_shadows => |d| {
             c.glNamedBufferData(self.name, @intCast(size), &d, c.GL_DYNAMIC_DRAW);
         },
         else => {},

@@ -1,5 +1,3 @@
-
-uniform mat4 light_data;
 out vec3 fo_light_1_dir;
 out vec3 fo_light_2_dir;
 out vec3 fo_light_1_attenuation;
@@ -9,13 +7,23 @@ uniform mat4 f_object_m;
 uniform mat4 f_shadow_m;
 out vec4 fo_shadow_coord;
 
+layout(std140, binding = 1) uniform SceneData
+{
+    vec4 light_1_position;
+    vec4 light_1_attenuation;
+    mat4 light_1_views[6];
+    vec4 light_2_position;
+    vec4 light_2_attenuation;
+    mat4 light_2_views[6];
+} f_scene_data;
+
 void main()
 {
-    vec3 f_light_1_pos = light_data[0].xyz;
-    vec3 f_light_2_pos = light_data[2].xyz;
+    vec3 f_light_1_pos = f_scene_data.light_1_position.xyz;
+    vec3 f_light_2_pos = f_scene_data.light_2_position.xyz;
 
-    fo_light_1_attenuation = light_data[1].xyz;
-    fo_light_2_attenuation = light_data[3].xyz;
+    fo_light_1_attenuation = f_scene_data.light_1_attenuation.xyz;
+    fo_light_2_attenuation = f_scene_data.light_2_attenuation.xyz;
 
     mat4 m_matrix = f_object_m * mat4(
         f_t_column0,

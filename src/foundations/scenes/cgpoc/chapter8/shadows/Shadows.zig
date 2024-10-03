@@ -17,13 +17,11 @@ f_shadow_m: rhi.Uniform = undefined,
 // Objects
 object_1: object.object = .{ .norender = .{} },
 object_1_m: rhi.Uniform = undefined,
-object_1_light_data: rhi.Uniform = undefined,
 object_1_material_selection: rhi.Uniform = undefined,
 obj_1_m: math.matrix = math.matrix.identity(),
 
 object_2: object.object = .{ .norender = .{} },
 object_2_m: rhi.Uniform = undefined,
-object_2_light_data: rhi.Uniform = undefined,
 object_2_material_selection: rhi.Uniform = undefined,
 obj_2_m: math.matrix = math.matrix.identity(),
 
@@ -36,11 +34,21 @@ sphere_2: object.object = .{ .norender = .{} },
 sphere_2_matrix: rhi.Uniform = undefined,
 light_2_view_ms: [6]math.matrix = undefined,
 
+scene_data_buffer: rhi.Buffer = undefined,
+scene_data: SceneData = .{},
+
 const num_maps: usize = 12;
 
+const empty_4: [4]f32 = .{ 0, 0, 0, 0 };
+const empty_m: [16]f32 = .{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
 pub const SceneData = struct {
-    light_1_views: [6][16]f32,
-    light_2_views: [6][16]f32,
+    light_1_position: [4]f32 = empty_4,
+    light_1_attenuation: [4]f32 = empty_4,
+    light_1_views: [6][16]f32 = .{ empty_m, empty_m, empty_m, empty_m, empty_m, empty_m },
+    light_2_position: [4]f32 = empty_4,
+    light_2_attenuation: [4]f32 = empty_4,
+    light_2_views: [6][16]f32 = .{ empty_m, empty_m, empty_m, empty_m, empty_m, empty_m },
 };
 
 const Shadows = @This();
@@ -126,6 +134,10 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
+    const sd: rhi.Buffer.buffer_data = .{ .chapter8_shadows = .{} };
+    var scene_data_buffer = rhi.Buffer.init(sd);
+    errdefer scene_data_buffer.deinit();
+
     const ui_state: ShadowsUI = .{};
     pd.* = .{
         .allocator = allocator,
@@ -134,7 +146,11 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
         .ctx = ctx,
         .materials = mats_buf,
         .lights = lights_buf,
+        .scene_data_buffer = scene_data_buffer,
     };
+
+    pd.lightDataToMat();
+
     pd.renderBG();
     errdefer pd.deleteBG();
 
@@ -154,22 +170,29 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
 
     pd.generateLightViewMatrices(pd.ui_state.light_1, 1);
     pd.generateLightViewMatrices(pd.ui_state.light_2, 2);
+    pd.updateSceneData();
 
     return pd;
 }
 
 pub fn deinit(self: *Shadows, allocator: std.mem.Allocator) void {
+    // objects
     self.deleteBG();
     self.deleteObject_1();
     self.deleteObject_2();
     self.deletesphere_1();
     self.deletesphere_2();
+    // camera
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
+    // buffers
+    self.scene_data_buffer.deinit();
+    self.scene_data = undefined;
     self.materials.deinit();
     self.materials = undefined;
     self.lights.deinit();
     self.lights = undefined;
+    // self
     allocator.destroy(self);
 }
 
@@ -240,17 +263,21 @@ fn getObjectMatrix(object_settings: ShadowsUI.objectSetting) math.matrix {
     return m;
 }
 
-fn lightDataToMat(self: *Shadows) math.matrix {
+fn threeToFour(v: [3]f32, w: f32) [4]f32 {
+    return .{ v[0], v[1], v[2], w };
+}
+
+fn lightDataToMat(self: *Shadows) void {
     const l1 = self.ui_state.light_1;
     const l2 = self.ui_state.light_2;
-    return .{
-        .columns = .{
-            .{ l1.position[0], l1.position[1], l1.position[2], 1 },
-            .{ l1.attenuation[0], l1.attenuation[1], l1.attenuation[2], 1 },
-            .{ l2.position[0], l2.position[1], l2.position[2], 1 },
-            .{ l2.attenuation[0], l2.attenuation[1], l2.attenuation[2], 1 },
-        },
-    };
+    self.scene_data.light_1_position = threeToFour(l1.position, 1);
+    self.scene_data.light_1_attenuation = threeToFour(l1.attenuation, 0);
+    self.scene_data.light_2_position = threeToFour(l2.position, 1);
+    self.scene_data.light_2_attenuation = threeToFour(l2.attenuation, 0);
+}
+
+fn updateSceneData(self: *Shadows) void {
+    self.scene_data_buffer.update(.{ .chapter8_shadows = self.scene_data });
 }
 
 pub fn draw(self: *Shadows, dt: f64) void {
@@ -259,18 +286,16 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.generateLightViewMatrices(self.ui_state.light_1, 1);
         const lp = self.ui_state.light_1.position;
         self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-        const m = self.lightDataToMat();
-        self.object_1_light_data.setUniformMatrix(m);
-        self.object_2_light_data.setUniformMatrix(m);
+        self.lightDataToMat();
+        self.updateSceneData();
         self.ui_state.light_1.data_updated = false;
     }
     if (self.ui_state.light_2.data_updated) {
         self.generateLightViewMatrices(self.ui_state.light_2, 2);
         const lp = self.ui_state.light_2.position;
         self.sphere_2_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
-        const m = self.lightDataToMat();
-        self.object_1_light_data.setUniformMatrix(m);
-        self.object_2_light_data.setUniformMatrix(m);
+        self.lightDataToMat();
+        self.updateSceneData();
         self.ui_state.light_2.data_updated = false;
     }
     if (self.ui_state.object_1.transform_updated) {
@@ -576,10 +601,6 @@ pub fn renderObject_1(self: *Shadows) void {
     const prog = rhi.createProgram();
     self.object_1 = self.renderObject(self.ui_state.object_1, prog);
 
-    var ld: rhi.Uniform = .init(prog, "light_data");
-    ld.setUniformMatrix(self.lightDataToMat());
-    self.object_1_light_data = ld;
-
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_1.material);
     self.object_1_material_selection = msu;
@@ -593,10 +614,6 @@ pub fn renderObject_1(self: *Shadows) void {
 pub fn renderObject_2(self: *Shadows) void {
     const prog = rhi.createProgram();
     self.object_2 = self.renderObject(self.ui_state.object_2, prog);
-
-    var ld: rhi.Uniform = .init(prog, "light_data");
-    ld.setUniformMatrix(self.lightDataToMat());
-    self.object_2_light_data = ld;
 
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_2.material);
@@ -801,8 +818,10 @@ fn setLightViewMatrix(self: *Shadows, tm: math.matrix, light_num: usize, i: usiz
     const m = math.matrix.transformMatrix(P, tm);
     if (light_num == 1) {
         self.light_1_view_ms[i] = m;
+        self.scene_data.light_1_views[i] = m.array();
     } else {
         self.light_2_view_ms[i] = m;
+        self.scene_data.light_2_views[i] = m.array();
     }
 }
 
