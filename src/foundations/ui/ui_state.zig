@@ -77,7 +77,7 @@ pub const scenes = union(scene_type) {
 pub const scene_nav_type = enum {
     shape,
     math,
-    color,
+    graphics,
     cgpoc,
 };
 

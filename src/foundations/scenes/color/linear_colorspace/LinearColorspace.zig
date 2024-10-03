@@ -7,7 +7,7 @@ const vertex_shader: []const u8 = @embedFile("lcs_vertex.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
-        .nav_type = .color,
+        .nav_type = .graphics,
         .name = "Linear Colorspace",
     };
 }
