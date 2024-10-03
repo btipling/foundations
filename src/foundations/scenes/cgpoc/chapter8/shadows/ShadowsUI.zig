@@ -1,16 +1,16 @@
 light_1: lightSetting = .{
-    .position = .{ 0.84, -11.541, 0.197 },
+    .position = .{ 0.630, -10.001, 0.057 },
     .attenuation = .{ 1, 1, 0 },
 },
 light_2: lightSetting = .{
-    .position = .{ 1.006, -6.683, 0.657 },
+    .position = .{ 3.456, -9.692, 0.323 },
     .attenuation = .{ 1, 1, 0 },
 },
 object_1: objectSetting = .{
     .position = .{ 0.73, -9.914, 0 },
 },
 object_2: objectSetting = .{
-    .position = .{ 0.215, -8.803, -0.729 },
+    .position = .{ 1.253, -9.667, -0.729 },
     .material = 4,
     .model = 1,
 },
