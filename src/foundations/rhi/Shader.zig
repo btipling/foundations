@@ -109,8 +109,8 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
             self.num_frag_partials += 1;
         }
     } else if (self.fragment_shader == .texture) {
-        self.num_frag_partials += 1;
         self.frag_partials[self.num_frag_partials] = frag_texture_header;
+        self.num_frag_partials += 1;
         if (self.shadowmaps) {
             self.frag_partials[self.num_frag_partials] = frag_texture_shadowmaps;
             self.num_frag_partials += 1;
