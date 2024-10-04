@@ -19,11 +19,13 @@ object_1: object.object = .{ .norender = .{} },
 object_1_m: rhi.Uniform = undefined,
 object_1_material_selection: rhi.Uniform = undefined,
 obj_1_m: math.matrix = math.matrix.identity(),
+obj_1_xup: math.matrix = math.matrix.identity(),
 
 object_2: object.object = .{ .norender = .{} },
 object_2_m: rhi.Uniform = undefined,
 object_2_material_selection: rhi.Uniform = undefined,
 obj_2_m: math.matrix = math.matrix.identity(),
+obj_2_xup: math.matrix = math.matrix.identity(),
 
 // Lights
 sphere_1: object.object = .{ .norender = .{} },
@@ -614,6 +616,20 @@ pub fn renderObject_1(self: *Shadows) void {
     const prog = rhi.createProgram();
     self.object_1 = self.renderObject(self.ui_state.object_1, prog);
 
+    switch (self.object_1) {
+        .obj => {
+            self.obj_1_xup = math.matrix.transpose(math.matrix.mc(.{
+                0, 0, -1, 0,
+                1, 0, 0,  0,
+                0, 1, 0,  0,
+                0, 0, 0,  1,
+            }));
+        },
+        else => {
+            self.obj_1_xup = math.matrix.identity();
+        },
+    }
+
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_1.material);
     self.object_1_material_selection = msu;
@@ -793,6 +809,7 @@ pub fn genShadowMap(self: *Shadows) void {
         c.glClear(c.GL_DEPTH_BUFFER_BIT);
 
         {
+            self.shadow_x_up.setUniformMatrix(self.obj_1_xup);
             c.glPolygonOffset(
                 @floatCast(self.ui_state.object_1.polygon_factor),
                 @floatCast(self.ui_state.object_1.polygon_unit),
@@ -808,6 +825,7 @@ pub fn genShadowMap(self: *Shadows) void {
             rhi.drawObjects(objects[0..]);
         }
         {
+            self.shadow_x_up.setUniformMatrix(self.obj_2_xup);
             c.glPolygonOffset(
                 @floatCast(self.ui_state.object_2.polygon_factor),
                 @floatCast(self.ui_state.object_2.polygon_unit),
