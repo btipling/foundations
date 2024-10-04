@@ -644,6 +644,20 @@ pub fn renderObject_2(self: *Shadows) void {
     const prog = rhi.createProgram();
     self.object_2 = self.renderObject(self.ui_state.object_2, prog);
 
+    switch (self.object_2) {
+        .obj => {
+            self.obj_2_xup = math.matrix.transpose(math.matrix.mc(.{
+                0, 0, -1, 0,
+                1, 0, 0,  0,
+                0, 1, 0,  0,
+                0, 0, 0,  1,
+            }));
+        },
+        else => {
+            self.obj_2_xup = math.matrix.identity();
+        },
+    }
+
     var msu: rhi.Uniform = .init(prog, "f_material_selection");
     msu.setUniform1ui(self.ui_state.object_2.material);
     self.object_2_material_selection = msu;
