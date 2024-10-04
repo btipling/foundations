@@ -602,11 +602,23 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
         },
     }
 
-    var buf: [50]u8 = undefined;
     for (0..self.shadowmaps.len) |i| {
         var t = self.shadowmaps[i];
-        const b = std.fmt.bufPrint(&buf, "f_shadow_texture{d};\n", .{i}) catch @panic("failed create uniform");
-        t.addUniform(prog, b);
+        switch (i) {
+            0 => t.addUniform(prog, "f_shadow_texture0"),
+            1 => t.addUniform(prog, "f_shadow_texture1"),
+            2 => t.addUniform(prog, "f_shadow_texture2"),
+            3 => t.addUniform(prog, "f_shadow_texture3"),
+            4 => t.addUniform(prog, "f_shadow_texture4"),
+            5 => t.addUniform(prog, "f_shadow_texture5"),
+            6 => t.addUniform(prog, "f_shadow_texture6"),
+            7 => t.addUniform(prog, "f_shadow_texture7"),
+            8 => t.addUniform(prog, "f_shadow_texture8"),
+            9 => t.addUniform(prog, "f_shadow_texture9"),
+            10 => t.addUniform(prog, "f_shadow_texture10"),
+            11 => t.addUniform(prog, "f_shadow_texture11"),
+            else => {},
+        }
         self.shadowmaps[i] = t;
     }
     return render_object;

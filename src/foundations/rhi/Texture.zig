@@ -165,7 +165,6 @@ pub fn bind(self: Texture) void {
         return;
     }
     for (0..self.num_uniforms) |i| {
-        std.debug.print("handle? {d}\n", .{self.handle});
         self.uniforms[i].setUniformHandleui64ARB(self.handle);
     }
 }
