@@ -36,6 +36,8 @@ light_2_view_ms: [6]math.matrix = undefined,
 
 scene_data_buffer: rhi.Buffer = undefined,
 scene_data: SceneData = .{},
+should_gen_shadow_map: bool = false,
+generated_shadow_map: bool = false,
 
 const num_maps: usize = 12;
 
@@ -171,6 +173,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     pd.generateLightViewMatrices(pd.ui_state.light_1, 1);
     pd.generateLightViewMatrices(pd.ui_state.light_2, 2);
     pd.updateSceneData();
+    pd.genShadowMap();
 
     return pd;
 }
@@ -281,7 +284,6 @@ fn updateSceneData(self: *Shadows) void {
 }
 
 pub fn draw(self: *Shadows, dt: f64) void {
-    self.genShadowMap();
     if (self.ui_state.light_1.data_updated) {
         self.generateLightViewMatrices(self.ui_state.light_1, 1);
         const lp = self.ui_state.light_1.position;
@@ -289,6 +291,7 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.lightDataToMat();
         self.updateSceneData();
         self.ui_state.light_1.data_updated = false;
+        self.should_gen_shadow_map = true;
     }
     if (self.ui_state.light_2.data_updated) {
         self.generateLightViewMatrices(self.ui_state.light_2, 2);
@@ -297,44 +300,56 @@ pub fn draw(self: *Shadows, dt: f64) void {
         self.lightDataToMat();
         self.updateSceneData();
         self.ui_state.light_2.data_updated = false;
+        self.should_gen_shadow_map = true;
     }
     if (self.ui_state.object_1.transform_updated) {
         self.obj_1_m = getObjectMatrix(self.ui_state.object_1);
         self.object_1_m.setUniformMatrix(self.obj_1_m);
         self.ui_state.object_1.transform_updated = false;
+        self.should_gen_shadow_map = true;
     }
     if (self.ui_state.object_2.transform_updated) {
         self.obj_2_m = getObjectMatrix(self.ui_state.object_2);
         self.object_2_m.setUniformMatrix(self.obj_2_m);
         self.ui_state.object_2.transform_updated = false;
+        self.should_gen_shadow_map = true;
     }
     if (self.ui_state.object_1.updated) {
         self.deleteObject_1();
         self.renderObject_1();
         self.ui_state.object_1.updated = false;
+        self.should_gen_shadow_map = true;
     }
     if (self.ui_state.object_2.updated) {
         self.deleteObject_2();
         self.renderObject_2();
         self.ui_state.object_2.updated = false;
+        self.should_gen_shadow_map = true;
     }
     if (self.ui_state.light_1.updated) {
         self.updateLights();
         self.deletesphere_1();
         self.rendersphere_1();
         self.ui_state.light_1.updated = false;
+        self.should_gen_shadow_map = true;
     }
     if (self.ui_state.light_2.updated) {
         self.updateLights();
         self.deletesphere_2();
         self.rendersphere_2();
         self.ui_state.light_2.updated = false;
+        self.should_gen_shadow_map = true;
+    }
+    if (!self.generated_shadow_map and self.should_gen_shadow_map) {
+        self.genShadowMap();
+        self.should_gen_shadow_map = false;
     }
     self.view_camera.update(dt);
 
     for (self.shadowmaps) |t| {
         t.bind();
     }
+
     {
         const objects: [1]object.object = .{
             self.bg,
@@ -350,7 +365,12 @@ pub fn draw(self: *Shadows, dt: f64) void {
         };
         rhi.drawObjects(objects[0..]);
     }
+    self.generated_shadow_map = false;
     self.ui_state.draw();
+    if (self.should_gen_shadow_map) {
+        self.genShadowMap();
+        self.should_gen_shadow_map = false;
+    }
 }
 
 pub fn updateCamera(_: *Shadows) void {}
@@ -761,7 +781,6 @@ pub fn genShadowMap(self: *Shadows) void {
     c.glDepthFunc(c.GL_LEQUAL);
 
     c.glEnable(c.GL_POLYGON_OFFSET_FILL);
-    c.glPolygonOffset(1000.0, 4.0);
     for (self.shadowmaps, 0..) |_, i| {
         self.shadow_framebuffers[i].bind();
         if (i < 6) {
@@ -774,6 +793,10 @@ pub fn genShadowMap(self: *Shadows) void {
         c.glClear(c.GL_DEPTH_BUFFER_BIT);
 
         {
+            c.glPolygonOffset(
+                @floatCast(self.ui_state.object_1.polygon_factor),
+                @floatCast(self.ui_state.object_1.polygon_unit),
+            );
             self.f_shadow_m.setUniformMatrix(self.obj_1_m);
             var o1 = self.object_1;
             switch (o1) {
@@ -785,6 +808,10 @@ pub fn genShadowMap(self: *Shadows) void {
             rhi.drawObjects(objects[0..]);
         }
         {
+            c.glPolygonOffset(
+                @floatCast(self.ui_state.object_2.polygon_factor),
+                @floatCast(self.ui_state.object_2.polygon_unit),
+            );
             self.f_shadow_m.setUniformMatrix(self.obj_2_m);
             var o2 = self.object_2;
             switch (o2) {

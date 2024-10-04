@@ -20,7 +20,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
         .allocator = allocator,
         .context = ctx,
     };
-    scenes.initScene(ui.ui_state.scene_type.polygon_offset);
+    scenes.initScene(ui.ui_state.scene_type.eight_shadows);
     return scenes;
 }
 
