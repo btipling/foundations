@@ -8,11 +8,15 @@ light_2: lightSetting = .{
 },
 object_1: objectSetting = .{
     .position = .{ 0.73, -9.914, 0 },
+    .polygon_factor = 150,
+    .polygon_unit = 100,
 },
 object_2: objectSetting = .{
     .position = .{ 1.253, -9.667, -0.729 },
     .material = 4,
     .model = 1,
+    .polygon_factor = 150,
+    .polygon_unit = 100,
 },
 current_lights: usize = 0,
 global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1 },
