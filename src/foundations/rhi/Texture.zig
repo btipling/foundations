@@ -147,7 +147,7 @@ pub fn removeUniform(self: *Texture, program: u32) void {
     var uniforms: [100]Uniform = undefined;
     for (0..self.num_uniforms) |i| {
         if (self.uniforms[i].program == program) continue;
-        uniforms[i] = self.uniforms[i];
+        uniforms[num_uniforms] = self.uniforms[i];
         num_uniforms += 1;
     }
     self.uniforms = uniforms;
