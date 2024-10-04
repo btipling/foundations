@@ -1,6 +1,22 @@
 uniform uint f_material_selection; 
 uniform mat4 f_object_m;
 
+out vec4 fo_light_1_coord_0;
+out vec4 fo_light_1_coord_1;
+out vec4 fo_light_1_coord_2;
+out vec4 fo_light_1_coord_3;
+out vec4 fo_light_1_coord_4;
+out vec4 fo_light_1_coord_5;
+
+out vec4 fo_light_2_coord_0;
+out vec4 fo_light_2_coord_1;
+out vec4 fo_light_2_coord_2;
+out vec4 fo_light_2_coord_3;
+out vec4 fo_light_2_coord_4;
+out vec4 fo_light_2_coord_5;
+
+out vec4 fo_all_ambient;
+
 layout(std140, binding = 1) uniform SceneData
 {
     vec4 light_1_position;
@@ -14,6 +30,7 @@ layout(std140, binding = 1) uniform SceneData
 
 void main()
 {
+
     vec3 f_light_1_pos = f_scene_data.light_2_position.xyz;
     vec3 f_light_2_pos = f_scene_data.light_2_position.xyz;
 
@@ -37,8 +54,10 @@ void main()
     vec3 f_l_dirs[2] = vec3[2](f_light_1_pos, f_light_2_pos);
     vec3 f_l_at[2] = vec3[2](f_light_1_attenuation, f_light_2_attenuation);
     f_frag_color = vec4(0.0, 0.0, 0.0, 1.0);
+
     uint num_lights = 2;
     uint i = 0;
+    fo_all_ambient = f_global_ambient * f_m.ambient;
     do {
         Light f_l = f_lights[i];
         vec3 f_distance_vector = f_l_dirs[i] - f_P.xyz;
@@ -59,7 +78,21 @@ void main()
         
         fo_normals = f_N;
         f_frag_color = f_frag_color + vec4((f_ambient + f_diffuse + f_specular), 0.0);
-    
         i += 1;
     } while (i < num_lights);
+    
+
+    fo_light_1_coord_0 = f_scene_data.light_1_views[0] * f_P;
+    fo_light_1_coord_1 = f_scene_data.light_1_views[1] * f_P;
+    fo_light_1_coord_2 = f_scene_data.light_1_views[2] * f_P;
+    fo_light_1_coord_3 = f_scene_data.light_1_views[3] * f_P;
+    fo_light_1_coord_4 = f_scene_data.light_1_views[4] * f_P;
+    fo_light_1_coord_5 = f_scene_data.light_1_views[5] * f_P;
+
+    fo_light_2_coord_0 = f_scene_data.light_2_views[0] * f_P;
+    fo_light_2_coord_1 = f_scene_data.light_2_views[1] * f_P;
+    fo_light_2_coord_2 = f_scene_data.light_2_views[2] * f_P;
+    fo_light_2_coord_3 = f_scene_data.light_2_views[3] * f_P;
+    fo_light_2_coord_4 = f_scene_data.light_2_views[4] * f_P;
+    fo_light_2_coord_5 = f_scene_data.light_2_views[5] * f_P;
 }
