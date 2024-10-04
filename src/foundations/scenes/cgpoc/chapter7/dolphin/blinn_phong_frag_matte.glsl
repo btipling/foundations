@@ -5,7 +5,6 @@ float f_lookup(float f_ox, float f_oy)
 {
     float f_t = textureProj(
         f_shadow_texture0,
-        // fo_shadow_coord);
         fo_shadow_coord + vec4(
             f_ox * 0.0001 * fo_shadow_coord.w,
             f_oy * 0.0001 * fo_shadow_coord.w,
