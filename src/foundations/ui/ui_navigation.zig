@@ -21,8 +21,8 @@ pub fn draw(self: *Nav) void {
             self.navMenuItems(.math);
             c.igEndMenu();
         }
-        if (c.igBeginMenu("Color", true)) {
-            self.navMenuItems(.color);
+        if (c.igBeginMenu("Graphics", true)) {
+            self.navMenuItems(.graphics);
             c.igEndMenu();
         }
         if (c.igBeginMenu("CGPOC", true)) {

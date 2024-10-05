@@ -66,7 +66,7 @@ pub fn beginFrame() void {
     const dims = ui.windowDimensions();
     c.glViewport(0, 0, @intCast(dims[0]), @intCast(dims[1]));
     c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
-    c.glClearColor(0.53, 0.81, 0.98, 1);
+    c.glClearColor(0.23, 0.51, 0.68, 1);
 }
 
 pub fn createProgram() u32 {
@@ -194,19 +194,22 @@ pub fn initEBO(indices: []const u32, vao: u32) u32 {
 }
 
 pub fn drawArrays(program: u32, vao: u32, count: usize) void {
-    c.glUseProgram(@intCast(program));
+    c.glUseProgram(program);
     c.glBindVertexArray(vao);
     c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
 }
 
+pub fn drawArraysMesh(m: Mesh, count: usize) void {
+    c.glBindVertexArray(m.vao);
+    c.glDrawArrays(c.GL_TRIANGLES, 0, @intCast(count));
+}
+
 pub fn drawElements(m: Mesh, element: Mesh.element) void {
-    c.glUseProgram(@intCast(m.program));
     c.glBindVertexArray(m.vao);
     c.glDrawElements(element.primitive, @intCast(element.count), element.format, null);
 }
 
 pub fn drawInstances(m: Mesh, instanced: Mesh.instanced) void {
-    c.glUseProgram(@intCast(m.program));
     c.glBindVertexArray(m.vao);
     c.glDrawElementsInstanced(
         instanced.primitive,
@@ -301,8 +304,14 @@ pub fn drawMesh(m: Mesh) void {
     if (!m.cull) {
         c.glDisable(c.GL_CULL_FACE);
     }
+    if (m.gen_shadowmap) {
+        if (m.shadowmap_program == 0) @panic("shadowmap program not set");
+        c.glUseProgram(@intCast(m.shadowmap_program));
+    } else {
+        c.glUseProgram(@intCast(m.program));
+    }
     switch (m.instance_type) {
-        .array => |a| drawArrays(m.program, m.vao, a.count),
+        .array => |a| drawArraysMesh(m, a.count),
         .element => |e| drawElements(m, e),
         .instanced => |i| drawInstances(m, i),
         .norender => {},
@@ -350,3 +359,4 @@ pub const Uniform = @import("Uniform.zig");
 pub const Texture = @import("Texture.zig");
 pub const Shader = @import("Shader.zig");
 pub const Buffer = @import("Buffer.zig");
+pub const Framebuffer = @import("Framebuffer.zig");

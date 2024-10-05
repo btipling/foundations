@@ -20,6 +20,7 @@ pub const scene_type = enum(usize) {
     frustum_planes,
     // color
     linear_colorspace,
+    polygon_offset,
     // CGPOC
     point,
     triangle_animated,
@@ -33,6 +34,7 @@ pub const scene_type = enum(usize) {
     six_shuttle,
     seven_lighting,
     seven_dolphin,
+    eight_shadows,
 };
 
 pub const scenes = union(scene_type) {
@@ -56,7 +58,8 @@ pub const scenes = union(scene_type) {
     plane_distance: *scenes_list.math.PlaneDistance,
     frustum_planes: *scenes_list.math.FrustumPlanes,
     // color
-    linear_colorspace: *scenes_list.color.LinearColorspace,
+    linear_colorspace: *scenes_list.graphics.LinearColorspace,
+    polygon_offset: *scenes_list.graphics.PolygonOffset,
     // CGPOC
     point: *scenes_list.cgpoc.point,
     triangle_animated: *scenes_list.cgpoc.triangle_animated,
@@ -70,12 +73,13 @@ pub const scenes = union(scene_type) {
     six_shuttle: *scenes_list.cgpoc.chapter6.Shuttle,
     seven_lighting: *scenes_list.cgpoc.chapter7.Lighting,
     seven_dolphin: *scenes_list.cgpoc.chapter7.Dolphin,
+    eight_shadows: *scenes_list.cgpoc.chapter8.Shadows,
 };
 
 pub const scene_nav_type = enum {
     shape,
     math,
-    color,
+    graphics,
     cgpoc,
 };
 

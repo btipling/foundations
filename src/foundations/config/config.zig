@@ -7,6 +7,8 @@ near: f32 = 0.1,
 far: f32 = 500,
 fovy: f32 = std.math.degreesToRadians(70),
 allocator: std.mem.Allocator,
+fb_width: usize = 0,
+fb_height: usize = 0,
 
 const Config = @This();
 

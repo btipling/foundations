@@ -20,7 +20,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
         .allocator = allocator,
         .context = ctx,
     };
-    scenes.initScene(ui.ui_state.scene_type.four_simple_solar_system);
+    scenes.initScene(ui.ui_state.scene_type.eight_shadows);
     return scenes;
 }
 
@@ -80,7 +80,7 @@ const config = @import("../config/config.zig");
 const Args = @import("../Args.zig");
 
 pub const cgpoc = @import("cgpoc/cgpoc.zig");
-pub const color = @import("color/color.zig");
+pub const graphics = @import("graphics/graphics.zig");
 pub const math = @import("math/math.zig");
 pub const shapes = @import("shapes/shapes.zig");
 pub const assets = @import("../assets/assets.zig");

@@ -91,16 +91,32 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
         .ctx = ctx,
     };
     ss.stack[0] = math.matrix.identity();
+
     ss.renderBG();
+    errdefer ss.deleteBG();
+
     ss.renderSun();
+    errdefer ss.deleteSun();
+
     ss.renderEarth();
+    errdefer ss.deleteEarth();
+
     ss.renderMoon();
+    errdefer ss.deleteMoon();
+
     ss.renderShuttle();
+    errdefer ss.deleteShuttle();
+
     ss.initialized = true;
     return ss;
 }
 
 pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
+    self.deleteShuttle();
+    self.deleteBG();
+    self.deleteEarth();
+    self.deleteMoon();
+    self.deleteSun();
     if (self.sun_texture) |st| {
         st.deinit();
     }
@@ -242,6 +258,13 @@ pub fn updateCamera(self: *SimpleSolarSystem) void {
     self.shuttle_uniform.setUniformMatrix(m);
 }
 
+pub fn deleteSun(self: *SimpleSolarSystem) void {
+    const objects: [1]object.object = .{
+        self.sun,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
 pub fn renderSun(self: *SimpleSolarSystem) void {
     self.sun_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     const prog = rhi.createProgram();
@@ -282,6 +305,13 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
     }
     self.sun = sun;
     self.sun_uniform = rhi.Uniform.init(prog, "f_model_transform");
+}
+
+pub fn deleteEarth(self: *SimpleSolarSystem) void {
+    const objects: [1]object.object = .{
+        self.earth,
+    };
+    rhi.deleteObjects(objects[0..]);
 }
 
 pub fn renderEarth(self: *SimpleSolarSystem) void {
@@ -326,6 +356,13 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
     self.earth_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
 
+pub fn deleteMoon(self: *SimpleSolarSystem) void {
+    const objects: [1]object.object = .{
+        self.moon,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
 pub fn renderMoon(self: *SimpleSolarSystem) void {
     self.moon_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     const prog = rhi.createProgram();
@@ -367,6 +404,14 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
     self.moon = moon;
     self.moon_uniform = rhi.Uniform.init(prog, "f_model_transform");
 }
+
+pub fn deleteBG(self: *SimpleSolarSystem) void {
+    const objects: [1]object.object = .{
+        self.bg,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
 pub fn renderBG(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
     {
@@ -400,6 +445,13 @@ pub fn renderBG(self: *SimpleSolarSystem) void {
     };
     bg.instanced_triangle.mesh.cull = false;
     self.bg = bg;
+}
+
+pub fn deleteShuttle(self: *SimpleSolarSystem) void {
+    const objects: [1]object.object = .{
+        self.shuttle,
+    };
+    rhi.deleteObjects(objects[0..]);
 }
 
 pub fn renderShuttle(self: *SimpleSolarSystem) void {

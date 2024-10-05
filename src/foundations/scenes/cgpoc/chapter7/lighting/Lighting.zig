@@ -109,13 +109,25 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
         .lights = lights_buf,
     };
     pd.renderBG();
+    errdefer pd.deleteBG();
+
     pd.renderModel();
+    errdefer pd.deleteModel();
+
     pd.rendersphere_1();
+    errdefer pd.deletesphere_1();
+
     pd.rendersphere_2();
+    errdefer pd.deletesphere_2();
+
     return pd;
 }
 
 pub fn deinit(self: *Lighting, allocator: std.mem.Allocator) void {
+    self.deleteBG();
+    self.deleteModel();
+    self.deletesphere_1();
+    self.deletesphere_2();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     self.materials.deinit();
@@ -231,6 +243,13 @@ pub fn draw(self: *Lighting, dt: f64) void {
 }
 
 pub fn updateCamera(_: *Lighting) void {}
+
+pub fn deleteBG(self: *Lighting) void {
+    const objects: [1]object.object = .{
+        self.bg,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
 
 pub fn renderBG(self: *Lighting) void {
     const prog = rhi.createProgram();

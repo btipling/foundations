@@ -1,7 +1,8 @@
 name: c.GLuint = 0,
 texture_unit: c.GLuint = 0,
 handle: c.GLuint64 = 0,
-uniform: Uniform = undefined,
+uniforms: [100]Uniform = undefined,
+num_uniforms: usize = 0,
 wrap_s: c.GLint = c.GL_CLAMP_TO_EDGE,
 wrap_t: c.GLint = c.GL_CLAMP_TO_EDGE,
 disable_bindless: bool = false,
@@ -33,6 +34,40 @@ pub fn deinit(self: Texture) void {
     if (self.name != 0) {
         c.glDeleteTextures(1, &self.name);
     }
+}
+
+pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width: usize, height: usize) TextureError!void {
+    var name: u32 = undefined;
+    c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
+    c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32, @intCast(width), @intCast(height));
+    c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
+    c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
+    c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_MODE, c.GL_COMPARE_REF_TO_TEXTURE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_FUNC, c.GL_LEQUAL);
+    const borderColor: [4]c.GLfloat = .{ 1.0, 1.0, 1.0, 1.0 }; // Red border color
+    c.glTextureParameterfv(name, c.GL_TEXTURE_BORDER_COLOR, &borderColor);
+
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_BORDER);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_BORDER);
+
+    self.name = name;
+
+    self.uniforms[0] = Uniform.init(program, uniform_name);
+    self.num_uniforms += 1;
+
+    if (self.disable_bindless) {
+        return;
+    }
+    // Generate bindless handle
+    self.handle = c.glGetTextureHandleARB(self.name);
+    if (self.handle == 0) {
+        return TextureError.BindlessHandleCreationFailed;
+    }
+
+    // Make the texture resident
+    c.glMakeTextureHandleResidentARB(self.handle);
+
+    return;
 }
 
 pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: []const u8) TextureError!void {
@@ -83,7 +118,8 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
 
     self.name = name;
 
-    self.uniform = Uniform.init(program, uniform_name);
+    self.uniforms[0] = Uniform.init(program, uniform_name);
+    self.num_uniforms += 1;
 
     if (self.disable_bindless) {
         return;
@@ -106,12 +142,31 @@ pub fn makeNonResident(self: Texture) void {
     }
 }
 
+pub fn removeUniform(self: *Texture, program: u32) void {
+    var num_uniforms: usize = 0;
+    var uniforms: [100]Uniform = undefined;
+    for (0..self.num_uniforms) |i| {
+        if (self.uniforms[i].program == program) continue;
+        uniforms[num_uniforms] = self.uniforms[i];
+        num_uniforms += 1;
+    }
+    self.uniforms = uniforms;
+    self.num_uniforms = num_uniforms;
+}
+
+pub fn addUniform(self: *Texture, program: u32, uniform_name: []const u8) void {
+    self.uniforms[self.num_uniforms] = Uniform.init(program, uniform_name);
+    self.num_uniforms += 1;
+}
+
 pub fn bind(self: Texture) void {
     if (self.disable_bindless) {
         c.glBindTextureUnit(self.texture_unit, self.name);
         return;
     }
-    self.uniform.setUniformHandleui64ARB(self.handle);
+    for (0..self.num_uniforms) |i| {
+        self.uniforms[i].setUniformHandleui64ARB(self.handle);
+    }
 }
 
 const std = @import("std");

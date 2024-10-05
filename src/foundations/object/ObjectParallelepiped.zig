@@ -119,21 +119,25 @@ fn addSurface(
         .position = sp0,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = .{ 0, 1 },
     };
     s_data[offset + 1] = .{
         .position = sp1,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = .{ 0, 0 },
     };
     s_data[offset + 2] = .{
         .position = sp2,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = .{ 1, 1 },
     };
     s_data[offset + 3] = .{
         .position = sp3,
         .color = color.debug_color,
         .normals = n,
+        .texture_coords = .{ 1, 0 },
     };
     return offset + 4;
 }
