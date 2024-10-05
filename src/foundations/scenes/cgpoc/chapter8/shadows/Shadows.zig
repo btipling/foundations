@@ -55,6 +55,14 @@ pub const SceneData = struct {
     light_2_views: [6][16]f32 = .{ empty_m, empty_m, empty_m, empty_m, empty_m, empty_m },
 };
 
+// light views
+// index 0 is z pos
+// index 1 is y neg
+// index 2 is z neg
+// index 3 is y pos
+// index 4 is x pos
+// index 5 is x neg
+
 const Shadows = @This();
 
 const shadow_vertex_shader: []const u8 = @embedFile("shadow_vert.glsl");
