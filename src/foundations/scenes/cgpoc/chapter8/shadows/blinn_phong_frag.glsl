@@ -25,6 +25,13 @@ vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights,
     vec3 f_N = normalize(fo_normals);
 
     vec4 rv = vec4(0.0, 0.0, 0.0, 1.0);
+
+    float f_can_get_light_from_z_pos_0 = dot(f_N, vec3(0, 0, 1));
+    float f_can_get_light_from_y_neg_1 = dot(f_N, vec3(0, -1, 0));
+    float f_can_get_light_from_z_neg_2 = dot(f_N, vec3(0, 0, -1));
+    float f_can_get_light_from_y_pos_3 = dot(f_N, vec3(0, 1, 0));
+    float f_can_get_light_from_x_pos_4 = dot(f_N, vec3(1, 0, 0));
+    float f_can_get_light_from_x_neg_5 = dot(f_N, vec3(-1, 0, 0));
     
     uint i = 0;
     do {
@@ -44,39 +51,64 @@ vec4 f_blinn_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights,
 
         float bias = 0.0;
         float not_in_shadow = 1.0;
+        float normal_offset = 0.5;
         if (i == 0) {
-            not_in_shadow = textureProj(f_shadow_texture0, fo_light_1_z_pos_0, bias);
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture1, fo_light_1_y_neg_1, bias);
+            if (f_can_get_light_from_z_pos_0 < normal_offset) {
+                not_in_shadow = textureProj(f_shadow_texture0, fo_light_1_z_pos_0, bias);
             }
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture2, fo_light_1_z_neg_2, bias);
+            if (f_can_get_light_from_y_neg_1 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture1, fo_light_1_y_neg_1, bias);
+                }
             }
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture3, fo_light_1_y_pos_3, bias);
+            if (f_can_get_light_from_z_neg_2 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture2, fo_light_1_z_neg_2, bias);
+                }
             }
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture4, fo_light_1_x_pos_4, bias);
+            if (f_can_get_light_from_y_pos_3 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture3, fo_light_1_y_pos_3, bias);
+                }
             }
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture5, fo_light_1_x_neg_5, bias);
+            if (f_can_get_light_from_x_pos_4 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture4, fo_light_1_x_pos_4, bias);
+                }
+            }
+            if (f_can_get_light_from_x_neg_5 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture5, fo_light_1_x_neg_5, bias);
+                }
             }
         } else {
-            not_in_shadow = textureProj(f_shadow_texture6, fo_light_2_z_pos_0, bias);
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture7, fo_light_2_y_neg_1, bias);
+            if (f_can_get_light_from_z_pos_0 < normal_offset) {
+                not_in_shadow = textureProj(f_shadow_texture6, fo_light_2_z_pos_0, bias);
             }
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture8, fo_light_2_z_neg_2, bias);
+            if (f_can_get_light_from_y_neg_1 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                   not_in_shadow = textureProj(f_shadow_texture7, fo_light_2_y_neg_1, bias);
+                }
             }
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture9, fo_light_2_y_pos_3, bias);
+            if (f_can_get_light_from_z_neg_2 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture8, fo_light_2_z_neg_2, bias);
+                }
             }
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture10, fo_light_2_x_pos_4, bias);
+            if (f_can_get_light_from_y_pos_3 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture9, fo_light_2_y_pos_3, bias);
+                }
             }
-            if (not_in_shadow == 1.0) {
-                not_in_shadow = textureProj(f_shadow_texture11, fo_light_2_x_neg_5, bias);
+            if (f_can_get_light_from_x_pos_4 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture10, fo_light_2_x_pos_4, bias);
+                }
+            }
+            if (f_can_get_light_from_x_neg_5 < normal_offset) {
+                if (not_in_shadow == 1.0) {
+                    not_in_shadow = textureProj(f_shadow_texture11, fo_light_2_x_neg_5, bias);
+                }
             }
         }
         if (not_in_shadow == 1.0) {
