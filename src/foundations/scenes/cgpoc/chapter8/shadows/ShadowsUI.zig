@@ -1,13 +1,14 @@
 light_1: lightSetting = .{
-    .position = .{ 0.630, -10.001, 0.057 },
+    .position = .{ 1.784, -10.812, 0.057 },
     .attenuation = .{ 1, 1, 0 },
 },
 light_2: lightSetting = .{
-    .position = .{ 3.456, -9.692, 0.323 },
+    .position = .{ 1.776, -10.882, 0.323 },
     .attenuation = .{ 1, 1, 0 },
 },
 object_1: objectSetting = .{
-    .position = .{ 0.73, -9.914, 0 },
+    .position = .{ 1.225, -13.713, -0.083 },
+    .model = 2,
     .polygon_factor = 150,
     .polygon_unit = 100,
 },
