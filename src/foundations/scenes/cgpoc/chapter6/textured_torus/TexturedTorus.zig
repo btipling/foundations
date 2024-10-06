@@ -1,7 +1,9 @@
 allocator: std.mem.Allocator,
 torus: object.object = .{ .norender = .{} },
+cubemap: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*TexturedTorus, physics.Integrator(physics.SmoothDeceleration)),
-brick_texture: ?rhi.Texture,
+brick_texture: ?rhi.Texture = null,
+cubemap_texture: ?rhi.Texture = null,
 ctx: scenes.SceneContext,
 
 const TexturedTorus = @This();
@@ -24,7 +26,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
         ctx.cfg,
         pd,
         integrator,
-        .{ 0, -15, 0 },
+        .{ 0, 0, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -32,9 +34,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
-        .brick_texture = null,
         .ctx = ctx,
     };
+    pd.renderCubemap();
     pd.renderTorus();
     return pd;
 }
@@ -50,8 +52,19 @@ pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *TexturedTorus, dt: f64) void {
     self.view_camera.update(dt);
-    if (self.brick_texture) |et| {
-        et.bind();
+    if (self.brick_texture) |t| {
+        t.bind();
+    }
+    if (self.cubemap_texture) |t| {
+        t.bind();
+    }
+    {
+        const objects: [1]object.object = .{
+            self.cubemap,
+        };
+        c.glFrontFace(c.GL_CCW);
+        rhi.drawObjects(objects[0..]);
+        c.glFrontFace(c.GL_CW);
     }
     {
         const objects: [1]object.object = .{
@@ -78,7 +91,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -5, -5));
         cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
@@ -103,6 +116,52 @@ pub fn renderTorus(self: *TexturedTorus) void {
         };
     }
     self.torus = torus;
+}
+
+pub fn updateCubemapTransform(_: *TexturedTorus, prog: u32) void {
+    const m = math.matrix.translate(0, 0, 0);
+    rhi.setUniformMatrix(prog, "f_cube_transform", m);
+}
+
+pub fn renderCubemap(self: *TexturedTorus) void {
+    const prog = rhi.createProgram();
+    self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = rhi.Texture.frag_shader(self.cubemap_texture),
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(20));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-0.5, -0.5, -0.5));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 1, 0, 0, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    const parallelepiped: object.object = .{
+        .parallelepiped = object.Parallelepiped.initCubemap(
+            prog,
+            i_datas[0..],
+            false,
+        ),
+    };
+    if (self.cubemap_texture) |*bt| {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\lakeIslandSkyBox.jpg") catch null, prog, "f_samp") catch {
+            self.brick_texture = null;
+        };
+    }
+    self.updateCubemapTransform(prog);
+    self.cubemap = parallelepiped;
 }
 
 const std = @import("std");

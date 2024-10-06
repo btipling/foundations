@@ -165,7 +165,7 @@ fn addSurface(
             break :blk .y_neg;
         } else if (math.float.equal_e(
             1.0,
-            math.vector.dotProduct(n, @as(@Vector(3, f32), .{ 0, 0, 1 })),
+            math.vector.dotProduct(n, @as(@Vector(3, f32), .{ 0, 0, -1 })),
         )) {
             break :blk .z_pos;
         } else {
@@ -175,12 +175,12 @@ fn addSurface(
     const tc1: [2]f32 = s: switch (cubemap) {
         true => {
             switch (sn_dir) {
-                .x_pos => break :s .{ 0.25, 1.00 },
-                .x_neg => break :s .{ 0.25, 0.33 },
-                .y_pos => break :s .{ 0.25, 0.66 },
-                .y_neg => break :s .{ 0.75, 0.66 },
-                .z_pos => break :s .{ 0.50, 0.66 },
-                else => break :s .{ 0.00, 0.66 },
+                .x_pos => break :s .{ 0.25, 0.33333333333 },
+                .x_neg => break :s .{ 0.25, 1.00 },
+                .y_pos => break :s .{ 0.25, 0.66666666666 },
+                .y_neg => break :s .{ 0.75, 0.66666666666 },
+                .z_pos => break :s .{ 0.50, 0.66666666666 },
+                else => break :s .{ 0.00, 0.66666666666 },
             }
         },
         false => .{ 0, 1 },
@@ -188,12 +188,12 @@ fn addSurface(
     const tc2: [2]f32 = s: switch (cubemap) {
         true => {
             switch (sn_dir) {
-                .x_pos => break :s .{ 0.25, 0.66 },
-                .x_neg => break :s .{ 0.25, 0.00 },
-                .y_pos => break :s .{ 0.25, 0.33 },
-                .y_neg => break :s .{ 0.75, 0.33 },
-                .z_pos => break :s .{ 0.50, 0.33 },
-                else => break :s .{ 0.00, 0.33 },
+                .x_pos => break :s .{ 0.25, 0.00 },
+                .x_neg => break :s .{ 0.25, 0.66666666666 },
+                .y_pos => break :s .{ 0.25, 0.33333333333 },
+                .y_neg => break :s .{ 0.75, 0.33333333333 },
+                .z_pos => break :s .{ 0.50, 0.33333333333 },
+                else => break :s .{ 0.00, 0.33333333333 },
             }
         },
         false => .{ 0, 0 },
@@ -201,12 +201,12 @@ fn addSurface(
     const tc3: [2]f32 = s: switch (cubemap) {
         true => {
             switch (sn_dir) {
-                .x_pos => break :s .{ 0.50, 1.00 },
-                .x_neg => break :s .{ 0.50, 0.33 },
-                .y_pos => break :s .{ 0.50, 0.66 },
-                .y_neg => break :s .{ 1.00, 0.66 },
-                .z_pos => break :s .{ 0.75, 0.66 },
-                else => break :s .{ 0.25, 0.66 },
+                .x_pos => break :s .{ 0.50, 0.333333333 },
+                .x_neg => break :s .{ 0.50, 1.00 },
+                .y_pos => break :s .{ 0.50, 0.66666666666 },
+                .y_neg => break :s .{ 1.00, 0.66666666666 },
+                .z_pos => break :s .{ 0.75, 0.66666666666 },
+                else => break :s .{ 0.25, 0.66666666666 },
             }
         },
         false => .{ 1, 1 },
@@ -214,12 +214,12 @@ fn addSurface(
     const tc4: [2]f32 = s: switch (cubemap) {
         true => {
             switch (sn_dir) {
-                .x_pos => break :s .{ 0.50, 0.66 },
-                .x_neg => break :s .{ 0.50, 0.00 },
-                .y_pos => break :s .{ 0.50, 0.33 },
-                .y_neg => break :s .{ 1.00, 0.33 },
-                .z_pos => break :s .{ 0.75, 0.33 },
-                else => break :s .{ 0.25, 0.33 },
+                .x_pos => break :s .{ 0.50, 0.00 },
+                .x_neg => break :s .{ 0.50, 0.66666666666 },
+                .y_pos => break :s .{ 0.50, 0.33333333333 },
+                .y_neg => break :s .{ 1.00, 0.33333333333 },
+                .z_pos => break :s .{ 0.75, 0.33333333333 },
+                else => break :s .{ 0.25, 0.33333333333 },
             }
         },
         false => .{ 1, 0 },
