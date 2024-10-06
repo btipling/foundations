@@ -121,6 +121,15 @@ fn addIndicesPerSurface(
     return offset + 6;
 }
 
+const n_dir = enum {
+    x_pos,
+    x_neg,
+    y_pos,
+    y_neg,
+    z_pos,
+    z_neg,
+};
+
 fn addSurface(
     s_data: *[num_vertices]rhi.attributeData,
     sp0: math.vector.vec3,
@@ -130,33 +139,114 @@ fn addSurface(
     offset: usize,
     cubemap: bool,
 ) usize {
-    _ = cubemap;
     const e1 = math.vector.sub(sp0, sp1);
     const e2 = math.vector.sub(sp0, sp2);
     const n = math.vector.normalize(math.vector.crossProduct(e1, e2));
+    const sn_dir: n_dir = blk: {
+        if (math.float.equal_e(
+            1.0,
+            math.vector.dotProduct(n, @as(@Vector(3, f32), .{ 1, 0, 0 })),
+        )) {
+            break :blk .x_pos;
+        } else if (math.float.equal_e(
+            1.0,
+            math.vector.dotProduct(n, @as(@Vector(3, f32), .{ -1, 0, 0 })),
+        )) {
+            break :blk .x_neg;
+        } else if (math.float.equal_e(
+            1.0,
+            math.vector.dotProduct(n, @as(@Vector(3, f32), .{ 0, 1, 0 })),
+        )) {
+            break :blk .y_pos;
+        } else if (math.float.equal_e(
+            1.0,
+            math.vector.dotProduct(n, @as(@Vector(3, f32), .{ 0, -1, 0 })),
+        )) {
+            break :blk .y_neg;
+        } else if (math.float.equal_e(
+            1.0,
+            math.vector.dotProduct(n, @as(@Vector(3, f32), .{ 0, 0, 1 })),
+        )) {
+            break :blk .z_pos;
+        } else {
+            break :blk .z_neg;
+        }
+    };
+    const tc1: [2]f32 = s: switch (cubemap) {
+        true => {
+            switch (sn_dir) {
+                .x_pos => break :s .{ 0.25, 1.00 },
+                .x_neg => break :s .{ 0.25, 0.33 },
+                .y_pos => break :s .{ 0.25, 0.66 },
+                .y_neg => break :s .{ 0.75, 0.66 },
+                .z_pos => break :s .{ 0.50, 0.66 },
+                else => break :s .{ 0.00, 0.66 },
+            }
+        },
+        false => .{ 0, 1 },
+    };
+    const tc2: [2]f32 = s: switch (cubemap) {
+        true => {
+            switch (sn_dir) {
+                .x_pos => break :s .{ 0.25, 0.66 },
+                .x_neg => break :s .{ 0.25, 0.00 },
+                .y_pos => break :s .{ 0.25, 0.33 },
+                .y_neg => break :s .{ 0.75, 0.33 },
+                .z_pos => break :s .{ 0.50, 0.33 },
+                else => break :s .{ 0.00, 0.33 },
+            }
+        },
+        false => .{ 0, 0 },
+    };
+    const tc3: [2]f32 = s: switch (cubemap) {
+        true => {
+            switch (sn_dir) {
+                .x_pos => break :s .{ 0.50, 1.00 },
+                .x_neg => break :s .{ 0.50, 0.33 },
+                .y_pos => break :s .{ 0.50, 0.66 },
+                .y_neg => break :s .{ 1.00, 0.66 },
+                .z_pos => break :s .{ 0.75, 0.66 },
+                else => break :s .{ 0.25, 0.66 },
+            }
+        },
+        false => .{ 1, 1 },
+    };
+    const tc4: [2]f32 = s: switch (cubemap) {
+        true => {
+            switch (sn_dir) {
+                .x_pos => break :s .{ 0.50, 0.66 },
+                .x_neg => break :s .{ 0.50, 0.00 },
+                .y_pos => break :s .{ 0.50, 0.33 },
+                .y_neg => break :s .{ 1.00, 0.33 },
+                .z_pos => break :s .{ 0.75, 0.33 },
+                else => break :s .{ 0.25, 0.33 },
+            }
+        },
+        false => .{ 1, 0 },
+    };
     s_data[offset] = .{
         .position = sp0,
         .color = color.debug_color,
         .normals = n,
-        .texture_coords = .{ 0, 1 },
+        .texture_coords = tc1,
     };
     s_data[offset + 1] = .{
         .position = sp1,
         .color = color.debug_color,
         .normals = n,
-        .texture_coords = .{ 0, 0 },
+        .texture_coords = tc2,
     };
     s_data[offset + 2] = .{
         .position = sp2,
         .color = color.debug_color,
         .normals = n,
-        .texture_coords = .{ 1, 1 },
+        .texture_coords = tc3,
     };
     s_data[offset + 3] = .{
         .position = sp3,
         .color = color.debug_color,
         .normals = n,
-        .texture_coords = .{ 1, 0 },
+        .texture_coords = tc4,
     };
     return offset + 4;
 }
