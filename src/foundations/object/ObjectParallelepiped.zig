@@ -20,7 +20,24 @@ pub fn init(
     instance_data: []rhi.instanceData,
     blend: bool,
 ) Parallelepied {
-    var d = data();
+    return initParallelepiped(program, instance_data, blend, false);
+}
+
+pub fn initCubemap(
+    program: u32,
+    instance_data: []rhi.instanceData,
+    blend: bool,
+) Parallelepied {
+    return initParallelepiped(program, instance_data, blend, true);
+}
+
+fn initParallelepiped(
+    program: u32,
+    instance_data: []rhi.instanceData,
+    blend: bool,
+    cubemap: bool,
+) Parallelepied {
+    var d = data(cubemap);
 
     const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
@@ -50,7 +67,7 @@ pub fn updateInstanceAt(self: Parallelepied, index: usize, instance_data: rhi.in
     rhi.updateInstanceData(self.mesh.buffer, self.vertex_data_size, self.instance_data_stride, index, instance_data);
 }
 
-fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
+fn data(cubemap: bool) struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
     var rv_data: [num_vertices]rhi.attributeData = undefined;
     var indices: [num_indices]u32 = undefined;
     const origin: [3]f32 = .{ 0, 0, 0 };
@@ -65,22 +82,22 @@ fn data() struct { data: [num_vertices]rhi.attributeData, indices: [num_indices]
     var s_os: usize = 0;
     var i_os: usize = 0;
     // front origin_z_pos
-    s_os = addSurface(&rv_data, p0, p1, p3, p4, s_os);
+    s_os = addSurface(&rv_data, p0, p1, p3, p4, s_os, cubemap);
     i_os = addIndicesPerSurface(&indices, 0, 1, 2, 3, i_os);
     // left origin_x_pos
-    s_os = addSurface(&rv_data, p2, p5, p0, p1, s_os);
+    s_os = addSurface(&rv_data, p2, p5, p0, p1, s_os, cubemap);
     i_os = addIndicesPerSurface(&indices, 4, 5, 6, 7, i_os);
     // back y_pos_z_pos
-    s_os = addSurface(&rv_data, p6, p7, p2, p5, s_os);
+    s_os = addSurface(&rv_data, p6, p7, p2, p5, s_os, cubemap);
     i_os = addIndicesPerSurface(&indices, 8, 9, 10, 11, i_os);
     // right z_pos_x_pos
-    s_os = addSurface(&rv_data, p3, p4, p6, p7, s_os);
+    s_os = addSurface(&rv_data, p3, p4, p6, p7, s_os, cubemap);
     i_os = addIndicesPerSurface(&indices, 12, 13, 14, 15, i_os);
     // bottom origin_y_pos
-    s_os = addSurface(&rv_data, p0, p3, p2, p6, s_os);
+    s_os = addSurface(&rv_data, p0, p3, p2, p6, s_os, cubemap);
     i_os = addIndicesPerSurface(&indices, 16, 17, 18, 19, i_os);
     // top x_pos_y_pos
-    _ = addSurface(&rv_data, p4, p1, p7, p5, s_os);
+    _ = addSurface(&rv_data, p4, p1, p7, p5, s_os, cubemap);
     i_os = addIndicesPerSurface(&indices, 20, 21, 22, 23, i_os);
     return .{ .data = rv_data, .indices = indices };
 }
@@ -111,7 +128,9 @@ fn addSurface(
     sp2: math.vector.vec3,
     sp3: math.vector.vec3,
     offset: usize,
+    cubemap: bool,
 ) usize {
+    _ = cubemap;
     const e1 = math.vector.sub(sp0, sp1);
     const e2 = math.vector.sub(sp0, sp2);
     const n = math.vector.normalize(math.vector.crossProduct(e1, e2));
