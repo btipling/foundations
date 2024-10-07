@@ -9,6 +9,7 @@ lighting: lighting_type = .none,
 frag_body: ?[]const u8 = null,
 program: u32 = 0,
 shadowmaps: bool = false,
+cubemap: bool = false,
 
 const max_frag_partials: usize = 10;
 const max_vertex_partials: usize = 10;

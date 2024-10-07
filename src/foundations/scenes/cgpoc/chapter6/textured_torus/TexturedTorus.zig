@@ -163,13 +163,14 @@ pub fn renderCubemap(self: *TexturedTorus) void {
         };
         i_datas[0] = i_data;
     }
-    const parallelepiped: object.object = .{
+    var parallelepiped: object.object = .{
         .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
             false,
         ),
     };
+    parallelepiped.parallelepiped.mesh.linear_colorspace = false;
     // "C:\Users\swart\AppData\Local\foundations_game_engine\textures\cgpoc\cubemaps\AlienWorld\alienWorldSkyBox.jpg"
     // if (self.cubemap_texture) |*bt| {
     //     bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\lakeIslandSkyBox.jpg") catch null, prog, "f_samp") catch {
@@ -177,9 +178,29 @@ pub fn renderCubemap(self: *TexturedTorus) void {
     //     };
     // }
     if (self.cubemap_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\AlienWorld\\alienWorldSkyBox.jpg") catch null, prog, "f_samp") catch {
-            self.brick_texture = null;
-        };
+        if (true) {
+            bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\AlienWorld\\alienWorldSkyBox.jpg") catch null, prog, "f_samp") catch {
+                self.brick_texture = null;
+            };
+        } else {
+            var cm: assets.Cubemap = .{
+                .path = "cgpoc\\cubemaps\\AlienWorld\\cubeMap",
+                .textures_loader = self.ctx.textures_loader,
+            };
+            cm.names[0] = "xp.tif";
+            cm.names[1] = "xn.tif";
+            cm.names[2] = "yp.tif";
+            cm.names[3] = "yn.tif";
+            cm.names[4] = "zp.tif";
+            cm.names[5] = "zn.tif";
+            var images: ?[6]*assets.Image = null;
+            if (cm.loadAll(self.allocator)) {
+                images = cm.images;
+            } else |_| {}
+            bt.setupCubemap(images, prog, "f_cubesamp") catch {
+                self.brick_texture = null;
+            };
+        }
     }
     self.updateCubemapTransform(prog);
     self.cubemap = parallelepiped;
@@ -194,3 +215,4 @@ const object = @import("../../../../object/object.zig");
 const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
+const assets = @import("../../../../assets/assets.zig");
