@@ -95,11 +95,30 @@ fn data(cubemap: bool) struct { data: [num_vertices]rhi.attributeData, indices: 
     i_os = addIndicesPerSurface(&indices, 12, 13, 14, 15, i_os);
     // bottom origin_y_pos
     s_os = addSurface(&rv_data, p0, p3, p2, p6, s_os, cubemap);
-    i_os = addIndicesPerSurface(&indices, 16, 17, 18, 19, i_os);
+    i_os = addIndicesPerSurfaceYZ(&indices, 16, 17, 18, 19, i_os);
     // top x_pos_y_pos
     _ = addSurface(&rv_data, p4, p1, p7, p5, s_os, cubemap);
-    i_os = addIndicesPerSurface(&indices, 20, 21, 22, 23, i_os);
+    i_os = addIndicesPerSurfaceYZ(&indices, 20, 21, 22, 23, i_os);
     return .{ .data = rv_data, .indices = indices };
+}
+
+fn addIndicesPerSurfaceYZ(
+    indices: *[num_indices]u32,
+    far_corner0: u32,
+    shared_0: u32,
+    shared_1: u32,
+    far_corner1: u32,
+    offset: usize,
+) usize {
+    // first surface triangle
+    indices[offset] = far_corner0;
+    indices[offset + 1] = shared_0;
+    indices[offset + 2] = far_corner1;
+    // second surface triangle
+    indices[offset + 3] = far_corner1;
+    indices[offset + 4] = shared_1;
+    indices[offset + 5] = far_corner0;
+    return offset + 6;
 }
 
 fn addIndicesPerSurface(
@@ -112,12 +131,12 @@ fn addIndicesPerSurface(
 ) usize {
     // first surface triangle
     indices[offset] = far_corner0;
-    indices[offset + 2] = shared_1;
     indices[offset + 1] = shared_0;
+    indices[offset + 2] = shared_1;
     // second surface triangle
     indices[offset + 3] = far_corner1;
-    indices[offset + 5] = shared_0;
     indices[offset + 4] = shared_1;
+    indices[offset + 5] = shared_0;
     return offset + 6;
 }
 
@@ -175,8 +194,8 @@ fn addSurface(
     const tc1: [2]f32 = s: switch (cubemap) {
         true => {
             switch (sn_dir) {
-                .x_pos => break :s .{ 0.25, 0.33333333333 },
-                .x_neg => break :s .{ 0.25, 1.00 },
+                .x_pos => break :s .{ 0.2511, 0.0 },
+                .x_neg => break :s .{ 0.50, 1.00 },
                 .y_pos => break :s .{ 0.25, 0.66666666666 },
                 .y_neg => break :s .{ 0.75, 0.66666666666 },
                 .z_pos => break :s .{ 0.50, 0.66666666666 },
@@ -188,12 +207,12 @@ fn addSurface(
     const tc2: [2]f32 = s: switch (cubemap) {
         true => {
             switch (sn_dir) {
-                .x_pos => break :s .{ 0.25, 0.00 },
-                .x_neg => break :s .{ 0.25, 0.66666666666 },
+                .x_pos => break :s .{ 0.50, 0.0 },
+                .x_neg => break :s .{ 0.2511, 1.00 },
                 .y_pos => break :s .{ 0.25, 0.33333333333 },
-                .y_neg => break :s .{ 0.75, 0.33333333333 },
+                .y_neg => break :s .{ 0.75, 0.33433333333 },
                 .z_pos => break :s .{ 0.50, 0.33333333333 },
-                else => break :s .{ 0.00, 0.33333333333 },
+                else => break :s .{ 0.00, 0.333333333 },
             }
         },
         false => .{ 0, 0 },
@@ -201,8 +220,8 @@ fn addSurface(
     const tc3: [2]f32 = s: switch (cubemap) {
         true => {
             switch (sn_dir) {
-                .x_pos => break :s .{ 0.50, 0.333333333 },
-                .x_neg => break :s .{ 0.50, 1.00 },
+                .x_pos => break :s .{ 0.25, 0.33333333333 },
+                .x_neg => break :s .{ 0.50, 0.66666666666 }, //nope
                 .y_pos => break :s .{ 0.50, 0.66666666666 },
                 .y_neg => break :s .{ 1.00, 0.66666666666 },
                 .z_pos => break :s .{ 0.75, 0.66666666666 },
@@ -214,11 +233,11 @@ fn addSurface(
     const tc4: [2]f32 = s: switch (cubemap) {
         true => {
             switch (sn_dir) {
-                .x_pos => break :s .{ 0.50, 0.00 },
-                .x_neg => break :s .{ 0.50, 0.66666666666 },
+                .x_pos => break :s .{ 0.50, 0.333333333 },
+                .x_neg => break :s .{ 0.2511, 0.66666666666 },
                 .y_pos => break :s .{ 0.50, 0.33333333333 },
                 .y_neg => break :s .{ 1.00, 0.33333333333 },
-                .z_pos => break :s .{ 0.75, 0.33333333333 },
+                .z_pos => break :s .{ 0.75, 0.33433333333 },
                 else => break :s .{ 0.25, 0.33333333333 },
             }
         },

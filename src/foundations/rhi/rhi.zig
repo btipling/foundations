@@ -303,6 +303,7 @@ pub fn drawMesh(m: Mesh) void {
         c.glEnable(c.GL_FRAMEBUFFER_SRGB);
     }
     if (m.wire_mesh) {
+        c.glLineWidth(5.0);
         c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
     }
     if (m.blend) {
@@ -335,6 +336,7 @@ pub fn drawMesh(m: Mesh) void {
     }
     if (m.wire_mesh) {
         c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
+        c.glLineWidth(1.0);
     }
 }
 
