@@ -10,6 +10,7 @@ cross: scenery.debug.Cross = undefined,
 const TexturedTorus = @This();
 
 const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
+const cube_map_vert: []const u8 = @embedFile("../../../../shaders/cube_map_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -27,7 +28,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
         ctx.cfg,
         pd,
         integrator,
-        .{ 0, -2, 0 },
+        .{ 0, 0, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -61,15 +62,17 @@ pub fn draw(self: *TexturedTorus, dt: f64) void {
     if (self.cubemap_texture) |t| {
         t.bind();
     }
-    self.cross.draw(dt);
     {
         const objects: [1]object.object = .{
             self.cubemap,
         };
+        c.glDisable(c.GL_DEPTH_TEST);
         c.glFrontFace(c.GL_CCW);
         rhi.drawObjects(objects[0..]);
         c.glFrontFace(c.GL_CW);
+        c.glEnable(c.GL_DEPTH_TEST);
     }
+    self.cross.draw(dt);
     {
         const objects: [1]object.object = .{
             self.torus,
@@ -144,7 +147,7 @@ pub fn renderCubemap(self: *TexturedTorus) void {
             .instance_data = true,
             .fragment_shader = rhi.Texture.frag_shader(self.cubemap_texture),
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_map_vert)[0..]);
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -167,8 +170,14 @@ pub fn renderCubemap(self: *TexturedTorus) void {
             false,
         ),
     };
+    // "C:\Users\swart\AppData\Local\foundations_game_engine\textures\cgpoc\cubemaps\AlienWorld\alienWorldSkyBox.jpg"
+    // if (self.cubemap_texture) |*bt| {
+    //     bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\lakeIslandSkyBox.jpg") catch null, prog, "f_samp") catch {
+    //         self.brick_texture = null;
+    //     };
+    // }
     if (self.cubemap_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\lakeIslandSkyBox.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\AlienWorld\\alienWorldSkyBox.jpg") catch null, prog, "f_samp") catch {
             self.brick_texture = null;
         };
     }
