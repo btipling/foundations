@@ -5,6 +5,7 @@ view_camera: *physics.camera.Camera(*TexturedTorus, physics.Integrator(physics.S
 brick_texture: ?rhi.Texture = null,
 cubemap_texture: ?rhi.Texture = null,
 ctx: scenes.SceneContext,
+cross: scenery.debug.Cross = undefined,
 
 const TexturedTorus = @This();
 
@@ -26,7 +27,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
         ctx.cfg,
         pd,
         integrator,
-        .{ 0, 0, 0 },
+        .{ 0, -2, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -36,6 +37,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
         .view_camera = cam,
         .ctx = ctx,
     };
+    pd.renderDebugCross();
     pd.renderCubemap();
     pd.renderTorus();
     return pd;
@@ -45,6 +47,7 @@ pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
     if (self.brick_texture) |et| {
         et.deinit();
     }
+    self.cross.deinit(allocator);
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -58,6 +61,7 @@ pub fn draw(self: *TexturedTorus, dt: f64) void {
     if (self.cubemap_texture) |t| {
         t.bind();
     }
+    self.cross.draw(dt);
     {
         const objects: [1]object.object = .{
             self.cubemap,
@@ -121,6 +125,14 @@ pub fn renderTorus(self: *TexturedTorus) void {
 pub fn updateCubemapTransform(_: *TexturedTorus, prog: u32) void {
     const m = math.matrix.translate(0, 0, 0);
     rhi.setUniformMatrix(prog, "f_cube_transform", m);
+}
+
+pub fn renderDebugCross(self: *TexturedTorus) void {
+    self.cross = scenery.debug.Cross.init(
+        self.allocator,
+        math.matrix.identity(),
+        5,
+    );
 }
 
 pub fn renderCubemap(self: *TexturedTorus) void {

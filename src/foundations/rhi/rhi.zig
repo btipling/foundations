@@ -228,6 +228,14 @@ pub fn drawPoints(program: u32, vao: u32, count: usize) void {
     c.glPointSize(1.0);
 }
 
+pub fn drawLines(program: u32, vao: u32, count: usize, width: f32) void {
+    c.glUseProgram(@intCast(program));
+    c.glBindVertexArray(vao);
+    c.glLineWidth(@floatCast(width));
+    c.glDrawArrays(c.GL_LINES, 0, @intCast(count));
+    c.glLineWidth(1.0);
+}
+
 pub fn setUniform1f(program: u32, name: []const u8, v: f32) void {
     const location: c.GLint = c.glGetUniformLocation(@intCast(program), @ptrCast(name));
     c.glProgramUniform1f(@intCast(program), location, @floatCast(v));
