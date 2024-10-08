@@ -1,3 +1,11 @@
+out vec3 f_cubemap_f_tc;
+
+mat4 f_cubemap_xup = mat4(
+    vec4(0, 1, 0, 0),
+    vec4(0, 0, 1, 0),
+    vec4(1, 0, 0, 0),
+    vec4(0, 0, 0, 1)
+);
 
 void main()
 {
@@ -15,6 +23,7 @@ void main()
     );
     vec4 f_pos = f_mvp * f_cubemap_t * f_transform * f_xup * vec4(f_position.xyz, 1.0);
     gl_Position = f_pos;
+    f_cubemap_f_tc =  (f_transform * f_cubemap_xup * vec4(f_position.xyz, 1.0)).xyz;
     f_tc = f_texture_coords;
     f_frag_color = f_i_color;
     fo_normals = f_normals;

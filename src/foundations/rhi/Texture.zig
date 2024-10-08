@@ -139,16 +139,14 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
 pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uniform_name: []const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_CUBE_MAP, 1, @ptrCast(&name));
-    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, self.wrap_s);
-    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, self.wrap_t);
-    c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR_MIPMAP_LINEAR);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
     if (images) |imgs| {
         const first_img = imgs[0];
-        const w: f32 = @floatFromInt(first_img.width);
-        const h: f32 = @floatFromInt(first_img.height);
-        const mip_map_levels: c.GLsizei = @intFromFloat(@ceil(@log2(@max(w, h))));
-        c.glTextureStorage2D(name, mip_map_levels, c.GL_RGBA8, @intCast(first_img.width), @intCast(first_img.height));
+        c.glTextureStorage2D(name, 1, c.GL_RGBA8, @intCast(first_img.width), @intCast(first_img.height));
         for (imgs, 0..) |img, i| {
             c.glTextureSubImage3D(
                 name,
@@ -156,10 +154,10 @@ pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uni
                 0,
                 0,
                 @intCast(i),
-                @intCast(img.width),
-                @intCast(img.height),
+                @intCast(first_img.width),
+                @intCast(first_img.height),
                 1,
-                c.GL_RGB,
+                c.GL_RGBA,
                 c.GL_UNSIGNED_BYTE,
                 img.stb_data.ptr,
             );
@@ -167,42 +165,29 @@ pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uni
     } else {
         const magenta_rgba_color = [4]u8{ 255, 0, 255, 255 };
         c.glTextureStorage2D(name, 1, c.GL_RGBA8, 1, 1);
-        c.glTextureSubImage2D(
-            name,
-            0,
-            0,
-            0,
-            1,
-            1,
-            c.GL_RGBA,
-            c.GL_UNSIGNED_BYTE,
-            &magenta_rgba_color,
-        );
+        for (0..6) |i| {
+            c.glTextureSubImage3D(
+                name,
+                0,
+                0,
+                0,
+                @intCast(i),
+                1,
+                1,
+                1,
+                c.GL_RGBA,
+                c.GL_UNSIGNED_BYTE,
+                &magenta_rgba_color,
+            );
+        }
     }
 
-    c.glGenerateTextureMipmap(name);
-    if (c.glfwExtensionSupported("GL_EXT_texture_filter_anisotropic") == 1) {
-        var ansio_setting: f32 = 0;
-        c.glGetFloatv(c.GL_MAX_TEXTURE_MAX_ANISOTROPY, &ansio_setting);
-        c.glTextureParameterf(name, c.GL_TEXTURE_MAX_ANISOTROPY, ansio_setting);
-    }
     self.texture_unit = 16;
     self.name = name;
 
     self.uniforms[0] = Uniform.init(program, uniform_name);
     self.num_uniforms += 1;
-
-    if (self.disable_bindless) {
-        return;
-    }
-    // Generate bindless handle
-    self.handle = c.glGetTextureHandleARB(self.name);
-    if (self.handle == 0) {
-        return TextureError.BindlessHandleCreationFailed;
-    }
-
-    // Make the texture resident
-    c.glMakeTextureHandleResidentARB(self.handle);
+    self.disable_bindless = true;
 
     return;
 }

@@ -19,7 +19,11 @@ pub fn init(self: *Image, _: std.mem.Allocator, data: []u8, file_name: []const u
         &ch,
         @as(c_int, @intCast(rgba_channels)),
     );
-    if (ptr == null) @panic("image loading failed");
+    if (ptr == null) {
+        std.debug.print("{s}\n", .{file_name});
+        @panic("image loading failed");
+    }
+    std.debug.print("num channels: {d} width: {d} height: {d}\n", .{ ch, x, y });
     self.data = data;
     self.file_name = file_name;
     self.width = @as(u32, @intCast(x));

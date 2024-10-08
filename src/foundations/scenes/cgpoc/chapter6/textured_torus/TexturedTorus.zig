@@ -10,7 +10,7 @@ cross: scenery.debug.Cross = undefined,
 const TexturedTorus = @This();
 
 const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
-const cube_map_vert: []const u8 = @embedFile("../../../../shaders/cube_map_vert.glsl");
+const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -144,10 +144,11 @@ pub fn renderCubemap(self: *TexturedTorus) void {
     {
         var s: rhi.Shader = .{
             .program = prog,
+            .cubemap = true,
             .instance_data = true,
-            .fragment_shader = rhi.Texture.frag_shader(self.cubemap_texture),
+            .fragment_shader = .texture,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cube_map_vert)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -171,36 +172,26 @@ pub fn renderCubemap(self: *TexturedTorus) void {
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
-    // "C:\Users\swart\AppData\Local\foundations_game_engine\textures\cgpoc\cubemaps\AlienWorld\alienWorldSkyBox.jpg"
-    // if (self.cubemap_texture) |*bt| {
-    //     bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\lakeIslandSkyBox.jpg") catch null, prog, "f_samp") catch {
-    //         self.brick_texture = null;
-    //     };
-    // }
     if (self.cubemap_texture) |*bt| {
-        if (true) {
-            bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\AlienWorld\\alienWorldSkyBox.jpg") catch null, prog, "f_samp") catch {
-                self.brick_texture = null;
-            };
-        } else {
-            var cm: assets.Cubemap = .{
-                .path = "cgpoc\\cubemaps\\AlienWorld\\cubeMap",
-                .textures_loader = self.ctx.textures_loader,
-            };
-            cm.names[0] = "xp.tif";
-            cm.names[1] = "xn.tif";
-            cm.names[2] = "yp.tif";
-            cm.names[3] = "yn.tif";
-            cm.names[4] = "zp.tif";
-            cm.names[5] = "zn.tif";
-            var images: ?[6]*assets.Image = null;
-            if (cm.loadAll(self.allocator)) {
-                images = cm.images;
-            } else |_| {}
-            bt.setupCubemap(images, prog, "f_cubesamp") catch {
-                self.brick_texture = null;
-            };
+        var cm: assets.Cubemap = .{
+            .path = "cgpoc\\cubemaps\\AlienWorld\\cubeMap",
+            .textures_loader = self.ctx.textures_loader,
+        };
+        cm.names[0] = "xp.png";
+        cm.names[1] = "xn.png";
+        cm.names[2] = "yp.png";
+        cm.names[3] = "yn.png";
+        cm.names[4] = "zp.png";
+        cm.names[5] = "zn.png";
+        var images: ?[6]*assets.Image = null;
+        if (cm.loadAll(self.allocator)) {
+            images = cm.images;
+        } else |_| {
+            std.debug.print("failed to load textures\n", .{});
         }
+        bt.setupCubemap(images, prog, "f_cubesamp") catch {
+            self.brick_texture = null;
+        };
     }
     self.updateCubemapTransform(prog);
     self.cubemap = parallelepiped;
