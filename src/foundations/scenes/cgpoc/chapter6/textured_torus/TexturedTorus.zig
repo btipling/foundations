@@ -45,8 +45,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
 }
 
 pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
-    if (self.brick_texture) |et| {
-        et.deinit();
+    self.deleteCubemap();
+    if (self.brick_texture) |t| {
+        t.deinit();
+    }
+    if (self.cubemap_texture) |t| {
+        t.deinit();
     }
     self.cross.deinit(allocator);
     self.view_camera.deinit(allocator);
@@ -125,17 +129,19 @@ pub fn renderTorus(self: *TexturedTorus) void {
     self.torus = torus;
 }
 
-pub fn updateCubemapTransform(_: *TexturedTorus, prog: u32) void {
-    const m = math.matrix.translate(0, 0, 0);
-    rhi.setUniformMatrix(prog, "f_cube_transform", m);
-}
-
 pub fn renderDebugCross(self: *TexturedTorus) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
         math.matrix.identity(),
         5,
     );
+}
+
+pub fn deleteCubemap(self: *TexturedTorus) void {
+    const objects: [1]object.object = .{
+        self.cubemap,
+    };
+    rhi.deleteObjects(objects[0..]);
 }
 
 pub fn renderCubemap(self: *TexturedTorus) void {
@@ -190,10 +196,9 @@ pub fn renderCubemap(self: *TexturedTorus) void {
             std.debug.print("failed to load textures\n", .{});
         }
         bt.setupCubemap(images, prog, "f_cubesamp") catch {
-            self.brick_texture = null;
+            self.cubemap_texture = null;
         };
     }
-    self.updateCubemapTransform(prog);
     self.cubemap = parallelepiped;
 }
 
