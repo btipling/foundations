@@ -316,7 +316,7 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
         };
     }
     self.sun = sun;
-    self.sun_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.sun_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
 }
 
 pub fn deleteEarth(self: *SimpleSolarSystem) void {
@@ -365,7 +365,7 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
         };
     }
     self.earth = earth;
-    self.earth_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.earth_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
 }
 
 pub fn deleteMoon(self: *SimpleSolarSystem) void {
@@ -414,7 +414,7 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
         };
     }
     self.moon = moon;
-    self.moon_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.moon_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
 }
 
 pub fn deleteCubemap(self: *SimpleSolarSystem) void {
@@ -532,7 +532,7 @@ pub fn renderShuttle(self: *SimpleSolarSystem) void {
         };
     }
     const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
-    self.shuttle_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.shuttle_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
     {
         self.shuttle_uniform.setUniformMatrix(math.matrix.translate(3, 0, 0));
     }

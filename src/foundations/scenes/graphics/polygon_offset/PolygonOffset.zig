@@ -267,7 +267,7 @@ pub fn renderObject_1(self: *PolygonOffset) void {
     const prog = rhi.createProgram();
     self.object_1 = self.renderObject(self.ui_state.object_1, prog);
 
-    var om: rhi.Uniform = .init(prog, "f_object_m");
+    var om: rhi.Uniform = rhi.Uniform.init(prog, "f_object_m") catch @panic("uniform failed");
     const m = getObjectMatrix(self.ui_state.object_1);
     om.setUniformMatrix(m);
     self.object_1_m = om;
@@ -277,7 +277,7 @@ pub fn renderObject_2(self: *PolygonOffset) void {
     const prog = rhi.createProgram();
     self.object_2 = self.renderObject(self.ui_state.object_2, prog);
 
-    var om: rhi.Uniform = .init(prog, "f_object_m");
+    var om: rhi.Uniform = rhi.Uniform.init(prog, "f_object_m") catch @panic("uniform failed");
     const m = getObjectMatrix(self.ui_state.object_2);
     om.setUniformMatrix(m);
     self.object_2_m = om;

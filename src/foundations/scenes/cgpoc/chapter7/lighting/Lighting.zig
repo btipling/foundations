@@ -453,15 +453,15 @@ pub fn renderModel(self: *Lighting) void {
 
     self.model = model;
 
-    var lp1: rhi.Uniform = .init(prog, "f_light_1_pos");
+    var lp1: rhi.Uniform = rhi.Uniform.init(prog, "f_light_1_pos") catch @panic("uniform failed");
     lp1.setUniform3fv(self.ui_state.light_1.position);
     self.light_1_position = lp1;
 
-    var lp2: rhi.Uniform = .init(prog, "f_light_2_pos");
+    var lp2: rhi.Uniform = rhi.Uniform.init(prog, "f_light_2_pos") catch @panic("uniform failed");
     lp2.setUniform3fv(self.ui_state.light_2.position);
     self.light_2_position = lp2;
 
-    var msu: rhi.Uniform = .init(prog, "f_material_selection");
+    var msu: rhi.Uniform = rhi.Uniform.init(prog, "f_material_selection") catch @panic("uniform failed");
     msu.setUniform1ui(self.ui_state.current_material);
     self.material_selection = msu;
 }
@@ -505,7 +505,7 @@ pub fn rendersphere_1(self: *Lighting) void {
         ),
     };
     const lp = self.ui_state.light_1.position;
-    var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
+    var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_1_matrix = sm;
     self.sphere_1 = sphere;
@@ -550,7 +550,7 @@ pub fn rendersphere_2(self: *Lighting) void {
         ),
     };
     const lp = self.ui_state.light_2.position;
-    var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
+    var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_2_matrix = sm;
     self.sphere_2 = sphere;

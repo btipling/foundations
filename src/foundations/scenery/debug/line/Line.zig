@@ -35,7 +35,7 @@ pub fn init(
         .color = color,
     };
     const vao_buf = rhi.attachBuffer(data[0..]);
-    var lm: rhi.Uniform = .init(prog, "f_object_m");
+    var lm: rhi.Uniform = rhi.Uniform.init(prog, "f_object_m") catch @panic("uniform failed");
     lm.setUniformMatrix(m);
     return .{
         .width = width,

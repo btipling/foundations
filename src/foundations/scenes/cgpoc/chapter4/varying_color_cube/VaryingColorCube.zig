@@ -102,7 +102,7 @@ pub fn renderParallepiped(self: *VaryingColorCube) void {
     };
     self.updateParallepipedTransform(prog);
     self.parallelepiped = parallelepiped;
-    self.time_uinform = rhi.Uniform.init(prog, "f_tf");
+    self.time_uinform = rhi.Uniform.init(prog, "f_tf") catch @panic("uniform failed");
 }
 
 const std = @import("std");

@@ -11,6 +11,7 @@ const Texture = @This();
 
 pub const TextureError = error{
     BindlessHandleCreationFailed,
+    UniformCreationFailed,
 };
 
 pub fn frag_shader(tx: ?Texture) Shader.fragment_shader_type {
@@ -36,7 +37,7 @@ pub fn deinit(self: Texture) void {
     }
 }
 
-pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width: usize, height: usize) TextureError!void {
+pub fn setupShadow(self: *Texture, width: usize, height: usize) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
     c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32, @intCast(width), @intCast(height));
@@ -51,9 +52,6 @@ pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_BORDER);
 
     self.name = name;
-
-    self.uniforms[0] = Uniform.init(program, uniform_name);
-    self.num_uniforms += 1;
 
     if (self.disable_bindless) {
         return;
@@ -118,7 +116,9 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
 
     self.name = name;
 
-    self.uniforms[0] = Uniform.init(program, uniform_name);
+    self.uniforms[0] = Uniform.init(program, uniform_name) catch {
+        return TextureError.UniformCreationFailed;
+    };
     self.num_uniforms += 1;
 
     if (self.disable_bindless) {
@@ -182,12 +182,30 @@ pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uni
         }
     }
 
+    if (c.glfwExtensionSupported("GL_EXT_texture_filter_anisotropic") == 1) {
+        var ansio_setting: f32 = 0;
+        c.glGetFloatv(c.GL_MAX_TEXTURE_MAX_ANISOTROPY, &ansio_setting);
+        c.glTextureParameterf(name, c.GL_TEXTURE_MAX_ANISOTROPY, ansio_setting);
+    }
     self.texture_unit = 16;
     self.name = name;
 
-    self.uniforms[0] = Uniform.init(program, uniform_name);
+    self.uniforms[0] = Uniform.init(program, uniform_name) catch {
+        return TextureError.UniformCreationFailed;
+    };
     self.num_uniforms += 1;
-    self.disable_bindless = true;
+
+    if (self.disable_bindless) {
+        return;
+    }
+    // Generate bindless handle
+    self.handle = c.glGetTextureHandleARB(self.name);
+    if (self.handle == 0) {
+        return TextureError.BindlessHandleCreationFailed;
+    }
+
+    // Make the texture resident
+    c.glMakeTextureHandleResidentARB(self.handle);
 
     return;
 }
@@ -210,8 +228,10 @@ pub fn removeUniform(self: *Texture, program: u32) void {
     self.num_uniforms = num_uniforms;
 }
 
-pub fn addUniform(self: *Texture, program: u32, uniform_name: []const u8) void {
-    self.uniforms[self.num_uniforms] = Uniform.init(program, uniform_name);
+pub fn addUniform(self: *Texture, program: u32, uniform_name: []const u8) TextureError!void {
+    self.uniforms[self.num_uniforms] = Uniform.init(program, uniform_name) catch {
+        return TextureError.UniformCreationFailed;
+    };
     self.num_uniforms += 1;
 }
 
