@@ -195,7 +195,7 @@ pub fn renderCubemap(self: *TexturedTorus) void {
         } else |_| {
             std.debug.print("failed to load textures\n", .{});
         }
-        bt.setupCubemap(images, prog, "f_cubesamp") catch {
+        bt.setupCubemap(images, prog, "f_cubemap") catch {
             self.cubemap_texture = null;
         };
     }
