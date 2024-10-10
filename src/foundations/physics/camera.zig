@@ -19,7 +19,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
     return struct {
         allocator: std.mem.Allocator,
         cfg: *const config,
-        camera_matrix: math.matrix = undefined,
+        camera_matrix: math.matrix = math.matrix.identity(),
         camera_pos: math.vector.vec3 = undefined,
         camera_orientation_pitch: math.rotation.Quat = .{ 1, 0, 0, 0 },
         camera_orientation_heading: math.rotation.Quat = .{ 1, 0, 0, 0 },
@@ -39,6 +39,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         aspect_ratio_s: f32 = 0,
         camera_buffer: rhi.Buffer,
         global_ambient: [4]f32,
+        name: []const u8 = "main camera",
 
         const Self = @This();
 
@@ -407,7 +408,9 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         pub fn updateMVP(self: *Self) void {
             self.view_m = math.matrix.cameraInverse(self.camera_matrix);
             self.mvp = math.matrix.transformMatrix(self.persp_m, self.view_m);
-
+            if (!self.emit_matrix) {
+                return;
+            }
             self.camera_buffer.update(.{ .camera = .{
                 .f_mvp = self.mvp.array(),
                 .v_matrix = self.view_m.array(),

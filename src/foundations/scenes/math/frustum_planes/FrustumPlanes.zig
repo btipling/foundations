@@ -13,6 +13,7 @@ sphere_map: [voxel_max]math.vector.vec3 = undefined,
 sphere_visible: [voxel_max]u8 = undefined,
 sphere_transforms: [voxel_max]math.matrix = undefined,
 num_spheres: usize = 0,
+ready: bool = false,
 
 const voxel_dimension: usize = 30;
 const voxel_max = voxel_dimension * voxel_dimension * voxel_dimension;
@@ -52,7 +53,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *FrustumPlan
         std.math.pi * -0.25,
     );
     cam2.emit_matrix = false;
+    cam2.name = "Camera 2";
     cam2.input_inactive = true;
+    cam1.name = "Camera 1";
     errdefer cam1.deinit(allocator);
     const grid = scenery.Grid.init(allocator);
     errdefer grid.deinit();
@@ -69,6 +72,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *FrustumPlan
     };
     pd.renderSphere();
     pd.renderParallepiped();
+    pd.ready = true;
     return pd;
 }
 
@@ -128,6 +132,7 @@ pub fn clipPlaneExtraction(clip_plane: math.vector.vec4) math.geometry.Plane {
 }
 
 pub fn updateCamera(self: *FrustumPlanes) void {
+    if (!self.ready) return;
     const cam = self.view_camera_0;
     const cm = cam.camera_matrix;
 
