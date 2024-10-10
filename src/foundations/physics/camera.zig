@@ -40,6 +40,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         camera_buffer: rhi.Buffer,
         global_ambient: [4]f32,
         name: []const u8 = "main camera",
+        owns_buffer: bool,
 
         const Self = @This();
 
@@ -47,6 +48,20 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             program: u32,
             uniform: []const u8,
         };
+
+        fn initS(cfg: *const config) f32 {
+            return @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
+        }
+
+        fn initG(cfg: *const config) f32 {
+            return 1.0 / @tan(cfg.fovy * 0.5);
+        }
+
+        fn initPerpsective(cfg: *const config) math.matrix {
+            var P = math.matrix.perspectiveProjectionCamera(initG(cfg), initS(cfg), 0.01, 750);
+            P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
+            return P;
+        }
 
         pub fn init(
             allocator: std.mem.Allocator,
@@ -56,13 +71,46 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             pos: math.vector.vec3,
             heading: ?f32,
         ) *Self {
+            const global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1.0 };
+            const P = initPerpsective(cfg);
+            const v_matrix = math.matrix.identity();
+            const cd: rhi.Buffer.buffer_data = .{ .camera = .{
+                .f_mvp = P.array(),
+                .v_matrix = v_matrix.array(),
+                .f_camera_pos = .{ pos[0], pos[1], pos[2], 1 },
+                .f_global_ambient = global_ambient,
+            } };
+            var camera_buffer = rhi.Buffer.init(cd);
+            errdefer camera_buffer.deinit();
+            return initInternal(allocator, cfg, scene, integrator, pos, heading, camera_buffer, false);
+        }
+
+        pub fn initWithBuffer(
+            allocator: std.mem.Allocator,
+            cfg: *const config,
+            scene: T,
+            integrator: IntegratorT,
+            pos: math.vector.vec3,
+            heading: ?f32,
+            camera_buffer: rhi.Buffer,
+        ) *Self {
+            return initInternal(allocator, cfg, scene, integrator, pos, heading, camera_buffer, false);
+        }
+
+        fn initInternal(
+            allocator: std.mem.Allocator,
+            cfg: *const config,
+            scene: T,
+            integrator: IntegratorT,
+            pos: math.vector.vec3,
+            heading: ?f32,
+            camera_buffer: rhi.Buffer,
+            owns_buffer: bool,
+        ) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");
             errdefer allocator.free(cam);
 
-            const s = @as(f32, @floatFromInt(cfg.width)) / @as(f32, @floatFromInt(cfg.height));
-            const g: f32 = 1.0 / @tan(cfg.fovy * 0.5);
-            var P = math.matrix.perspectiveProjectionCamera(g, s, 0.01, 750);
-            P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
+            const P = initPerpsective(cfg);
 
             var camera_heading: math.rotation.Quat = .{ 1, 0, 0, 0 };
             if (heading) |h| {
@@ -80,14 +128,6 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
 
             const v_matrix = math.matrix.identity();
             const mvp = math.matrix.identity();
-            const cd: rhi.Buffer.buffer_data = .{ .camera = .{
-                .f_mvp = P.array(),
-                .v_matrix = v_matrix.array(),
-                .f_camera_pos = .{ pos[0], pos[1], pos[2], 1 },
-                .f_global_ambient = global_ambient,
-            } };
-            var camera_buffer = rhi.Buffer.init(cd);
-            errdefer camera_buffer.deinit();
 
             cam.* = .{
                 .allocator = allocator,
@@ -102,10 +142,11 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .integrator = integrator,
                 .camera_orientation = camera_heading,
                 .camera_orientation_heading = camera_heading,
-                .perspective_plane_distance_g = g,
-                .aspect_ratio_s = s,
+                .perspective_plane_distance_g = initG(cfg),
+                .aspect_ratio_s = initS(cfg),
                 .camera_buffer = camera_buffer,
                 .global_ambient = global_ambient,
+                .owns_buffer = owns_buffer,
             };
             cam.movement = physics.movement.init(cam.camera_pos, 0, .none);
             cam.updateCameraMatrix();
@@ -114,7 +155,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         }
 
         pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
-            self.camera_buffer.deinit();
+            if (self.owns_buffer) self.camera_buffer.deinit();
             self.camera_buffer = undefined;
             allocator.destroy(self);
         }

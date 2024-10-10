@@ -36,7 +36,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *FrustumPlan
     const pd = allocator.create(FrustumPlanes) catch @panic("OOM");
     errdefer allocator.destroy(pd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
-    const cam1 = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).init(
+    const cam0 = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         ctx.cfg,
         pd,
@@ -44,19 +44,20 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *FrustumPlan
         .{ 15, 30, -30 },
         std.math.pi * 0.75,
     );
-    var cam2 = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).init(
+    var cam1 = physics.camera.Camera(*FrustumPlanes, physics.Integrator(physics.SmoothDeceleration)).initWithBuffer(
         allocator,
         ctx.cfg,
         pd,
         integrator,
         .{ 15, -30, 30 },
         std.math.pi * -0.25,
+        cam0.camera_buffer,
     );
-    cam2.emit_matrix = false;
-    cam2.name = "Camera 2";
-    cam2.input_inactive = true;
-    cam1.name = "Camera 1";
-    errdefer cam1.deinit(allocator);
+    cam1.emit_matrix = false;
+    cam1.name = "Camera 2";
+    cam1.input_inactive = true;
+    cam0.name = "Camera 1";
+    errdefer cam0.deinit(allocator);
     const grid = scenery.Grid.init(allocator);
     errdefer grid.deinit();
     const ui_state: FrustumPlanesUI = .{};
@@ -64,8 +65,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *FrustumPlan
     pd.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
-        .view_camera_0 = cam1,
-        .view_camera_1 = cam2,
+        .view_camera_0 = cam0,
+        .view_camera_1 = cam1,
         .grid = grid,
         .voxel_visible = std.mem.zeroes([voxel_max]u8),
         .sphere_visible = std.mem.zeroes([voxel_max]u8),
