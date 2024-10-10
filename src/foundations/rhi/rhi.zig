@@ -66,7 +66,7 @@ pub fn beginFrame() void {
     const dims = ui.windowDimensions();
     c.glViewport(0, 0, @intCast(dims[0]), @intCast(dims[1]));
     c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT);
-    c.glClearColor(0.23, 0.51, 0.68, 1);
+    c.glClearColor(0.023, 0.051, 0.068, 1);
 }
 
 pub fn createProgram() u32 {
