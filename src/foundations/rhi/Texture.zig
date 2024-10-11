@@ -14,6 +14,10 @@ pub const TextureError = error{
     UniformCreationFailed,
 };
 
+pub fn isBindless() bool {
+    return c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1 or c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1;
+}
+
 pub fn frag_shader(tx: ?Texture) Shader.fragment_shader_type {
     if (tx) |t| if (!t.disable_bindless) return .bindless;
     return .texture;
@@ -24,9 +28,7 @@ pub fn init(disable_bindless: bool) TextureError!Texture {
         .disable_bindless = disable_bindless,
     };
 
-    if (c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1 or c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1) {
-        t.disable_bindless = true;
-    }
+    t.disable_bindless = isBindless();
     return t;
 }
 

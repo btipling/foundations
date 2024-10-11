@@ -2,14 +2,14 @@ allocator: std.mem.Allocator,
 torus: object.object = .{ .norender = .{} },
 cubemap: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*TexturedTorus, physics.Integrator(physics.SmoothDeceleration)),
-brick_texture: ?rhi.Texture = null,
 cubemap_texture: ?rhi.Texture = null,
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 
 const TexturedTorus = @This();
 
-const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
+const vertex_shader: []const u8 = @embedFile("torus_vert.glsl");
+const frag_shader: []const u8 = @embedFile("torus_frag.glsl");
 const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -46,9 +46,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
 
 pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
     self.deleteCubemap();
-    if (self.brick_texture) |t| {
-        t.deinit();
-    }
     if (self.cubemap_texture) |t| {
         t.deinit();
     }
@@ -60,9 +57,6 @@ pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *TexturedTorus, dt: f64) void {
     self.view_camera.update(dt);
-    if (self.brick_texture) |t| {
-        t.bind();
-    }
     if (self.cubemap_texture) |t| {
         t.bind();
     }
@@ -89,12 +83,12 @@ pub fn updateCamera(_: *TexturedTorus) void {}
 
 pub fn renderTorus(self: *TexturedTorus) void {
     const prog = rhi.createProgram();
-    self.brick_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = rhi.Texture.frag_shader(self.brick_texture),
+            .fragment_shader = if (rhi.Texture.isBindless()) .bindless else .texture,
+            .frag_body = frag_shader,
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
@@ -120,12 +114,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
             false,
         ),
     };
-    if (self.brick_texture) |*bt| {
-        bt.wrap_s = c.GL_REPEAT;
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null, prog, "f_samp") catch {
-            self.brick_texture = null;
-        };
-    }
+    self.cubemap_texture.?.addUniform(prog, "f_cubemap") catch @panic("uniform failed");
     self.torus = torus;
 }
 
