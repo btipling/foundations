@@ -1,4 +1,11 @@
 
+mat4 f_cubemap_xup = transpose(mat4(
+    vec4(0, 1, 0, 0),
+    vec4(0, 0, 1, 0),
+    vec4(1, 0, 0, 0),
+    vec4(0, 0, 0, 1)
+));
+
 void main()
 {
     mat4 m_matrix = mat4(
@@ -8,10 +15,10 @@ void main()
         f_t_column3
     );
     vec4 f_main_pos = m_matrix * f_xup * vec4(f_position.xyz, 1.0);
-    mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix* f_xup)));
+    mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix * f_xup)));
+
     fo_normals = normalize(f_norm_matrix * f_normals);
-    fo_vert = f_main_pos.xyz;
+    fo_vert =  (f_cubemap_xup * m_matrix * f_xup * vec4(f_position.xyz, 1.0)).xyz;
+    
     gl_Position =  f_mvp * f_main_pos;
-    f_tc = f_texture_coords;
-    f_frag_color = f_i_color;
 }

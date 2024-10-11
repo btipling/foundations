@@ -87,7 +87,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = if (rhi.Texture.isBindless()) .bindless else .texture,
+            .fragment_shader = if (rhi.Texture.disableBindless(self.ctx.args.disable_bindless)) .texture else .bindless,
             .frag_body = frag_shader,
         };
         const partials = [_][]const u8{vertex_shader};
@@ -108,7 +108,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
         i_datas[0] = i_data;
     }
     const torus: object.object = .{
-        .torus = object.Torus.init(
+        .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
             false,
