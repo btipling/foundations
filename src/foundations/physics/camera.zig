@@ -57,7 +57,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             return 1.0 / @tan(cfg.fovy * 0.5);
         }
 
-        fn initPerpsective(cfg: *const config) math.matrix {
+        fn initPerspective(cfg: *const config) math.matrix {
             var P = math.matrix.perspectiveProjectionCamera(initG(cfg), initS(cfg), 0.01, 750);
             P = math.matrix.transformMatrix(P, math.matrix.leftHandedXUpToNDC());
             return P;
@@ -72,7 +72,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             heading: ?f32,
         ) *Self {
             const global_ambient: [4]f32 = .{ 0.7, 0.7, 0.7, 1.0 };
-            const P = initPerpsective(cfg);
+            const P = initPerspective(cfg);
             const v_matrix = math.matrix.identity();
             const cd: rhi.Buffer.buffer_data = .{ .camera = .{
                 .f_mvp = P.array(),
@@ -110,7 +110,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             const cam = allocator.create(Self) catch @panic("OOM");
             errdefer allocator.free(cam);
 
-            const P = initPerpsective(cfg);
+            const P = initPerspective(cfg);
 
             var camera_heading: math.rotation.Quat = .{ 1, 0, 0, 0 };
             if (heading) |h| {
