@@ -16,6 +16,7 @@ pub fn init(
     width: f32,
 ) Line {
     const prog = rhi.createProgram();
+    errdefer c.glDeleteProgram(prog);
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -54,5 +55,6 @@ pub fn draw(self: Line, _: f64) void {
 }
 
 const std = @import("std");
+const c = @import("../../../c.zig").c;
 const rhi = @import("../../../rhi/rhi.zig");
 const math = @import("../../../math/math.zig");
