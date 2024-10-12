@@ -108,7 +108,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
         i_datas[0] = i_data;
     }
     const torus: object.object = .{
-        .parallelepiped = object.Parallelepiped.init(
+        .torus = object.Torus.init(
             prog,
             i_datas[0..],
             false,
