@@ -612,7 +612,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
 
     for (0..self.shadowmaps.len) |i| {
         var t = self.shadowmaps[i];
-        switch (i) {
+        _ = switch (i) {
             0 => t.addUniform(prog, "f_shadow_texture0"),
             1 => t.addUniform(prog, "f_shadow_texture1"),
             2 => t.addUniform(prog, "f_shadow_texture2"),
@@ -626,7 +626,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
             10 => t.addUniform(prog, "f_shadow_texture10"),
             11 => t.addUniform(prog, "f_shadow_texture11"),
             else => {},
-        }
+        } catch @panic("uniform failed");
         self.shadowmaps[i] = t;
     }
     return render_object;
@@ -650,11 +650,11 @@ pub fn renderObject_1(self: *Shadows) void {
         },
     }
 
-    var msu: rhi.Uniform = .init(prog, "f_material_selection");
+    var msu: rhi.Uniform = rhi.Uniform.init(prog, "f_material_selection") catch @panic("uniform failed");
     msu.setUniform1ui(self.ui_state.object_1.material);
     self.object_1_material_selection = msu;
 
-    var om: rhi.Uniform = .init(prog, "f_object_m");
+    var om: rhi.Uniform = rhi.Uniform.init(prog, "f_object_m") catch @panic("uniform failed");
     self.obj_1_m = getObjectMatrix(self.ui_state.object_1);
     om.setUniformMatrix(self.obj_1_m);
     self.object_1_m = om;
@@ -678,11 +678,11 @@ pub fn renderObject_2(self: *Shadows) void {
         },
     }
 
-    var msu: rhi.Uniform = .init(prog, "f_material_selection");
+    var msu: rhi.Uniform = rhi.Uniform.init(prog, "f_material_selection") catch @panic("uniform failed");
     msu.setUniform1ui(self.ui_state.object_2.material);
     self.object_2_material_selection = msu;
 
-    var om: rhi.Uniform = .init(prog, "f_object_m");
+    var om: rhi.Uniform = rhi.Uniform.init(prog, "f_object_m") catch @panic("uniform failed");
     self.obj_2_m = getObjectMatrix(self.ui_state.object_2);
     om.setUniformMatrix(self.obj_2_m);
     self.object_2_m = om;
@@ -727,7 +727,7 @@ pub fn rendersphere_1(self: *Shadows) void {
         ),
     };
     const lp = self.ui_state.light_1.position;
-    var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
+    var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_1_matrix = sm;
     self.sphere_1 = sphere;
@@ -772,7 +772,7 @@ pub fn rendersphere_2(self: *Shadows) void {
         ),
     };
     const lp = self.ui_state.light_2.position;
-    var sm: rhi.Uniform = .init(prog, "f_sphere_matrix");
+    var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_2_matrix = sm;
     self.sphere_2 = sphere;
@@ -789,15 +789,15 @@ fn setupShadowmaps(self: *Shadows) void {
         s.attach(self.allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
     }
 
-    var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_vp");
+    var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_vp") catch @panic("uniform failed");
     shadow_uniform.setUniformMatrix(math.matrix.identity());
     self.shadow_uniform = shadow_uniform;
 
-    var f_shadow_m: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_m");
+    var f_shadow_m: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_m") catch @panic("uniform failed");
     f_shadow_m.setUniformMatrix(math.matrix.identity());
     self.f_shadow_m = f_shadow_m;
 
-    var shadow_x_up: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_xup_shadow");
+    var shadow_x_up: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_xup_shadow") catch @panic("uniform failed");
     shadow_x_up.setUniformMatrix(math.matrix.transpose(math.matrix.identity()));
     self.shadow_x_up = shadow_x_up;
     for (0..self.shadowmaps.len) |i| {
@@ -806,13 +806,9 @@ fn setupShadowmaps(self: *Shadows) void {
 }
 
 fn genShadowmapTexture(self: *Shadows, i: usize) void {
-    var buf: [50]u8 = undefined;
-    const b = std.fmt.bufPrint(&buf, "f_shadow_texture{d};\n", .{i}) catch @panic("failed create uniform");
     var shadow_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
     errdefer shadow_texture.deinit();
     shadow_texture.setupShadow(
-        self.shadowmap_program,
-        b,
         self.ctx.cfg.fb_width,
         self.ctx.cfg.fb_height,
     ) catch @panic("unable to setup shadow texture");

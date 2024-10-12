@@ -87,21 +87,20 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         var s: rhi.Shader = .{
             .program = shadowmap_program,
             .instance_data = true,
+            .shadowmaps = true,
             .fragment_shader = .shadow,
         };
         s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
     }
 
-    var shadow_uniform: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_shadow_m");
+    var shadow_uniform: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_shadow_m") catch @panic("uniform failed");
     shadow_uniform.setUniformMatrix(shadow_mvp);
-    var shadow_xup: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_xup_shadow");
+    var shadow_xup: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_xup_shadow") catch @panic("uniform failed");
     shadow_xup.setUniformMatrix(shadow_mvp);
 
     var shadow_texture = rhi.Texture.init(ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
     errdefer shadow_texture.deinit();
     shadow_texture.setupShadow(
-        shadowmap_program,
-        "f_shadow_texture0",
         ctx.cfg.fb_width,
         ctx.cfg.fb_height,
     ) catch @panic("unable to setup shadow texture");
@@ -298,14 +297,6 @@ pub fn renderDolphin(self: *Dolphin) void {
     }
     var dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..]);
     dolphin_object.obj.mesh.shadowmap_program = self.shadowmap_program;
-    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
-    self.shadow_texture.?.addUniform(prog, "f_shadow_texture0");
-    u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
-        0.5, 0.0, 0.0, 0.0,
-        0.0, 0.5, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.5, 0.5, 0.0, 1.0,
-    })), self.shadow_mvp));
     self.dolphin = dolphin_object;
 }
 
@@ -360,8 +351,8 @@ pub fn renderParallepiped(self: *Dolphin) void {
         bt.texture_unit = 1;
         self.ground_texture = bt.*;
     }
-    self.shadow_texture.?.addUniform(prog, "f_shadow_texture0");
-    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m");
+    self.shadow_texture.?.addUniform(prog, "f_shadow_texture0") catch @panic("uniform failed");
+    var u: rhi.Uniform = rhi.Uniform.init(prog, "f_shadow_m") catch @panic("uniform failed");
     u.setUniformMatrix(math.matrix.transformMatrix(math.matrix.transpose(math.matrix.mc(.{
         0.5, 0.0, 0.0, 0.0,
         0.0, 0.5, 0.0, 0.0,

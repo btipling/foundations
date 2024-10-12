@@ -21,6 +21,7 @@ const plane_origin_point_sphere: usize = 1;
 const plane_cube_point_sphere: usize = 2;
 
 const plane_vertex_shader: []const u8 = @embedFile("plane_vertex.glsl");
+const plane_frag_shader: []const u8 = @embedFile("plane_frag.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 const cube_vertex_shader: []const u8 = @embedFile("cube_vertex.glsl");
 const reflection_vertex_shader: []const u8 = @embedFile("reflection_vertex.glsl");
@@ -254,6 +255,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
             .program = prog,
             .instance_data = true,
             .fragment_shader = .normals,
+            .frag_body = plane_frag_shader,
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(plane_vertex_shader)[0..]);
     }
@@ -276,6 +278,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
         ),
     };
     self.plane_visualization = plane_vis;
+    self.plane_visualization.parallelepiped.mesh.blend = true;
     self.updatePlaneTransform(prog);
 }
 

@@ -11,7 +11,8 @@ stack: [10]math.matrix = undefined,
 current_stack_index: u8 = 0,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
-bg: object.object = .{ .norender = .{} },
+cubemap: object.object = .{ .norender = .{} },
+cubemap_texture: ?rhi.Texture = null,
 sun_texture: ?rhi.Texture = null,
 earth_texture: ?rhi.Texture = null,
 moon_texture: ?rhi.Texture = null,
@@ -28,6 +29,7 @@ const vertex_shader: []const u8 = @embedFile("blinn_phong_vert.glsl");
 const texture_frag_shader: []const u8 = @embedFile("texture_frag.glsl");
 const frag_texture_shader: []const u8 = @embedFile("blinn_phong_texture_frag.glsl");
 const vertex_static_shader: []const u8 = @embedFile("../../../../shaders/i_obj_static_vert.glsl");
+const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -92,8 +94,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
     };
     ss.stack[0] = math.matrix.identity();
 
-    ss.renderBG();
-    errdefer ss.deleteBG();
+    ss.renderCubemap();
+    errdefer ss.deleteCubemap();
 
     ss.renderSun();
     errdefer ss.deleteSun();
@@ -113,7 +115,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
 
 pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
     self.deleteShuttle();
-    self.deleteBG();
+    self.deleteCubemap();
     self.deleteEarth();
     self.deleteMoon();
     self.deleteSun();
@@ -128,6 +130,9 @@ pub fn deinit(self: *SimpleSolarSystem, allocator: std.mem.Allocator) void {
     }
     if (self.shuttle_texture) |st| {
         st.deinit();
+    }
+    if (self.cubemap_texture) |t| {
+        t.deinit();
     }
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
@@ -185,11 +190,18 @@ pub fn draw(self: *SimpleSolarSystem, dt: f64) void {
     self.resetStack();
 
     self.view_camera.update(dt);
+    if (self.cubemap_texture) |t| {
+        t.bind();
+    }
     {
         const objects: [1]object.object = .{
-            self.bg,
+            self.cubemap,
         };
+        c.glDisable(c.GL_DEPTH_TEST);
+        c.glFrontFace(c.GL_CCW);
         rhi.drawObjects(objects[0..]);
+        c.glFrontFace(c.GL_CW);
+        c.glEnable(c.GL_DEPTH_TEST);
     }
     if (self.sun_texture) |st| {
         st.bind();
@@ -304,7 +316,7 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
         };
     }
     self.sun = sun;
-    self.sun_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.sun_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
 }
 
 pub fn deleteEarth(self: *SimpleSolarSystem) void {
@@ -353,7 +365,7 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
         };
     }
     self.earth = earth;
-    self.earth_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.earth_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
 }
 
 pub fn deleteMoon(self: *SimpleSolarSystem) void {
@@ -402,49 +414,72 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
         };
     }
     self.moon = moon;
-    self.moon_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.moon_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
 }
 
-pub fn deleteBG(self: *SimpleSolarSystem) void {
+pub fn deleteCubemap(self: *SimpleSolarSystem) void {
     const objects: [1]object.object = .{
-        self.bg,
+        self.cubemap,
     };
     rhi.deleteObjects(objects[0..]);
 }
 
-pub fn renderBG(self: *SimpleSolarSystem) void {
+pub fn renderCubemap(self: *SimpleSolarSystem) void {
     const prog = rhi.createProgram();
+    self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
             .program = prog,
+            .cubemap = true,
             .instance_data = true,
-            .fragment_shader = .color,
+            .fragment_shader = .texture,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.leftHandedXUpToNDC());
-        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-1, 0.9999, -3));
-        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(6));
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(20));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-0.5, -0.5, -0.5));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
             .t_column1 = cm.columns[1],
             .t_column2 = cm.columns[2],
             .t_column3 = cm.columns[3],
-            .color = .{ 0, 0, 0.0125, 1 },
+            .color = .{ 1, 0, 0, 1 },
         };
         i_datas[0] = i_data;
     }
-    var bg: object.object = .{
-        .instanced_triangle = object.InstancedTriangle.init(
+    var parallelepiped: object.object = .{
+        .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
+            false,
         ),
     };
-    bg.instanced_triangle.mesh.cull = false;
-    self.bg = bg;
+    parallelepiped.parallelepiped.mesh.linear_colorspace = false;
+    if (self.cubemap_texture) |*bt| {
+        var cm: assets.Cubemap = .{
+            .path = "cgpoc\\cubemaps\\milkyway\\cubemap",
+            .textures_loader = self.ctx.textures_loader,
+        };
+        cm.names[0] = "xp.png";
+        cm.names[1] = "xn.png";
+        cm.names[2] = "yp.png";
+        cm.names[3] = "yn.png";
+        cm.names[4] = "zp.png";
+        cm.names[5] = "zn.png";
+        var images: ?[6]*assets.Image = null;
+        if (cm.loadAll(self.allocator)) {
+            images = cm.images;
+        } else |_| {
+            std.debug.print("failed to load textures\n", .{});
+        }
+        bt.setupCubemap(images, prog, "f_cubemap") catch {
+            self.cubemap_texture = null;
+        };
+    }
+    self.cubemap = parallelepiped;
 }
 
 pub fn deleteShuttle(self: *SimpleSolarSystem) void {
@@ -497,7 +532,7 @@ pub fn renderShuttle(self: *SimpleSolarSystem) void {
         };
     }
     const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
-    self.shuttle_uniform = rhi.Uniform.init(prog, "f_model_transform");
+    self.shuttle_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
     {
         self.shuttle_uniform.setUniformMatrix(math.matrix.translate(3, 0, 0));
     }

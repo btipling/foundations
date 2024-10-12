@@ -1,12 +1,16 @@
 allocator: std.mem.Allocator,
 torus: object.object = .{ .norender = .{} },
+cubemap: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*TexturedTorus, physics.Integrator(physics.SmoothDeceleration)),
-brick_texture: ?rhi.Texture,
+cubemap_texture: ?rhi.Texture = null,
 ctx: scenes.SceneContext,
+cross: scenery.debug.Cross = undefined,
 
 const TexturedTorus = @This();
 
-const vertex_shader: []const u8 = @embedFile("../../../../shaders/i_obj_vert.glsl");
+const vertex_shader: []const u8 = @embedFile("torus_vert.glsl");
+const frag_shader: []const u8 = @embedFile("torus_frag.glsl");
+const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -24,25 +28,28 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
         ctx.cfg,
         pd,
         integrator,
-        .{ 0, -15, 0 },
-        0,
+        .{ 2, -3, 4 },
+        -std.math.pi / 2.0,
     );
     errdefer cam.deinit(allocator);
 
     pd.* = .{
         .allocator = allocator,
         .view_camera = cam,
-        .brick_texture = null,
         .ctx = ctx,
     };
+    pd.renderDebugCross();
+    pd.renderCubemap();
     pd.renderTorus();
     return pd;
 }
 
 pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
-    if (self.brick_texture) |et| {
-        et.deinit();
+    self.deleteCubemap();
+    if (self.cubemap_texture) |t| {
+        t.deinit();
     }
+    self.cross.deinit(allocator);
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -50,9 +57,20 @@ pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *TexturedTorus, dt: f64) void {
     self.view_camera.update(dt);
-    if (self.brick_texture) |et| {
-        et.bind();
+    if (self.cubemap_texture) |t| {
+        t.bind();
     }
+    {
+        const objects: [1]object.object = .{
+            self.cubemap,
+        };
+        c.glDisable(c.GL_DEPTH_TEST);
+        c.glFrontFace(c.GL_CCW);
+        rhi.drawObjects(objects[0..]);
+        c.glFrontFace(c.GL_CW);
+        c.glEnable(c.GL_DEPTH_TEST);
+    }
+    self.cross.draw(dt);
     {
         const objects: [1]object.object = .{
             self.torus,
@@ -65,12 +83,12 @@ pub fn updateCamera(_: *TexturedTorus) void {}
 
 pub fn renderTorus(self: *TexturedTorus) void {
     const prog = rhi.createProgram();
-    self.brick_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = rhi.Texture.frag_shader(self.brick_texture),
+            .fragment_shader = if (rhi.Texture.disableBindless(self.ctx.args.disable_bindless)) .texture else .bindless,
+            .frag_body = frag_shader,
         };
         const partials = [_][]const u8{vertex_shader};
         s.attach(self.allocator, @ptrCast(partials[0..]));
@@ -78,7 +96,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
     var i_datas: [1]rhi.instanceData = undefined;
     {
         var cm = math.matrix.identity();
-        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -5, -5));
         cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(2));
         const i_data: rhi.instanceData = .{
             .t_column0 = cm.columns[0],
@@ -96,13 +114,82 @@ pub fn renderTorus(self: *TexturedTorus) void {
             false,
         ),
     };
-    if (self.brick_texture) |*bt| {
-        bt.wrap_s = c.GL_REPEAT;
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null, prog, "f_samp") catch {
-            self.brick_texture = null;
+    self.torus = torus;
+    if (self.cubemap_texture == null) return;
+    self.cubemap_texture.?.addUniform(prog, "f_cubemap") catch @panic("uniform failed");
+}
+
+pub fn renderDebugCross(self: *TexturedTorus) void {
+    self.cross = scenery.debug.Cross.init(
+        self.allocator,
+        math.matrix.identity(),
+        5,
+    );
+}
+
+pub fn deleteCubemap(self: *TexturedTorus) void {
+    const objects: [1]object.object = .{
+        self.cubemap,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
+pub fn renderCubemap(self: *TexturedTorus) void {
+    const prog = rhi.createProgram();
+    self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .cubemap = true,
+            .instance_data = true,
+            .fragment_shader = .texture,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(20));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-0.5, -0.5, -0.5));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 1, 0, 0, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    var parallelepiped: object.object = .{
+        .parallelepiped = object.Parallelepiped.initCubemap(
+            prog,
+            i_datas[0..],
+            false,
+        ),
+    };
+    parallelepiped.parallelepiped.mesh.linear_colorspace = false;
+    if (self.cubemap_texture) |*bt| {
+        var cm: assets.Cubemap = .{
+            .path = "cgpoc\\cubemaps\\AlienWorld\\cubeMap",
+            .textures_loader = self.ctx.textures_loader,
+        };
+        cm.names[0] = "xp.png";
+        cm.names[1] = "xn.png";
+        cm.names[2] = "yp.png";
+        cm.names[3] = "yn.png";
+        cm.names[4] = "zp.png";
+        cm.names[5] = "zn.png";
+        var images: ?[6]*assets.Image = null;
+        if (cm.loadAll(self.allocator)) {
+            images = cm.images;
+        } else |_| {
+            std.debug.print("failed to load textures\n", .{});
+        }
+        bt.setupCubemap(images, prog, "f_cubemap") catch {
+            self.cubemap_texture = null;
         };
     }
-    self.torus = torus;
+    self.cubemap = parallelepiped;
 }
 
 const std = @import("std");
@@ -114,3 +201,4 @@ const object = @import("../../../../object/object.zig");
 const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
+const assets = @import("../../../../assets/assets.zig");

@@ -9,6 +9,7 @@ lighting: lighting_type = .none,
 frag_body: ?[]const u8 = null,
 program: u32 = 0,
 shadowmaps: bool = false,
+cubemap: bool = false,
 
 const max_frag_partials: usize = 10;
 const max_vertex_partials: usize = 10;
@@ -59,6 +60,7 @@ const frag_subheader = @embedFile("../shaders/frag_subheader.glsl");
 const frag_color = @embedFile("../shaders/frag_color.glsl");
 const frag_normals = @embedFile("../shaders/frag_normals.glsl");
 const frag_texture = @embedFile("../shaders/frag_texture.glsl");
+const frag_cubemap = @embedFile("../shaders/frag_cubemap.glsl");
 const frag_bindless = @embedFile("../shaders/frag_bindless.glsl");
 const frag_shadow = @embedFile("../shaders/shadow_frag.glsl");
 
@@ -131,7 +133,7 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
         const frag_body = switch (self.fragment_shader) {
             .color => frag_color,
             .normals => frag_normals,
-            .texture => frag_texture,
+            .texture => if (self.cubemap) frag_cubemap else frag_texture,
             .bindless => frag_bindless,
             .lighting => switch (self.lighting) {
                 .gauraud => frag_color,

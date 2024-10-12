@@ -11,7 +11,13 @@ const Texture = @This();
 
 pub const TextureError = error{
     BindlessHandleCreationFailed,
+    UniformCreationFailed,
 };
+
+pub fn disableBindless(disable_bindless: bool) bool {
+    if (disable_bindless) return true;
+    return c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1;
+}
 
 pub fn frag_shader(tx: ?Texture) Shader.fragment_shader_type {
     if (tx) |t| if (!t.disable_bindless) return .bindless;
@@ -19,13 +25,10 @@ pub fn frag_shader(tx: ?Texture) Shader.fragment_shader_type {
 }
 
 pub fn init(disable_bindless: bool) TextureError!Texture {
-    var t: Texture = .{
-        .disable_bindless = disable_bindless,
+    const t: Texture = .{
+        .disable_bindless = disableBindless(disable_bindless),
     };
 
-    if (c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1 or c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1) {
-        t.disable_bindless = true;
-    }
     return t;
 }
 
@@ -36,7 +39,7 @@ pub fn deinit(self: Texture) void {
     }
 }
 
-pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width: usize, height: usize) TextureError!void {
+pub fn setupShadow(self: *Texture, width: usize, height: usize) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
     c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32, @intCast(width), @intCast(height));
@@ -44,16 +47,13 @@ pub fn setupShadow(self: *Texture, program: u32, uniform_name: []const u8, width
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_MODE, c.GL_COMPARE_REF_TO_TEXTURE);
     c.glTextureParameteri(name, c.GL_TEXTURE_COMPARE_FUNC, c.GL_LEQUAL);
-    const borderColor: [4]c.GLfloat = .{ 1.0, 1.0, 1.0, 1.0 }; // Red border color
+    const borderColor: [4]c.GLfloat = .{ 1.0, 1.0, 1.0, 1.0 };
     c.glTextureParameterfv(name, c.GL_TEXTURE_BORDER_COLOR, &borderColor);
 
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_BORDER);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_BORDER);
 
     self.name = name;
-
-    self.uniforms[0] = Uniform.init(program, uniform_name);
-    self.num_uniforms += 1;
 
     if (self.disable_bindless) {
         return;
@@ -118,7 +118,83 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
 
     self.name = name;
 
-    self.uniforms[0] = Uniform.init(program, uniform_name);
+    self.uniforms[0] = Uniform.init(program, uniform_name) catch {
+        return TextureError.UniformCreationFailed;
+    };
+    self.num_uniforms += 1;
+
+    if (self.disable_bindless) {
+        return;
+    }
+    // Generate bindless handle
+    self.handle = c.glGetTextureHandleARB(self.name);
+    if (self.handle == 0) {
+        return TextureError.BindlessHandleCreationFailed;
+    }
+
+    // Make the texture resident
+    c.glMakeTextureHandleResidentARB(self.handle);
+
+    return;
+}
+
+pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uniform_name: []const u8) TextureError!void {
+    var name: u32 = undefined;
+    c.glCreateTextures(c.GL_TEXTURE_CUBE_MAP, 1, @ptrCast(&name));
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
+    c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
+    if (images) |imgs| {
+        const first_img = imgs[0];
+        c.glTextureStorage2D(name, 1, c.GL_RGBA8, @intCast(first_img.width), @intCast(first_img.height));
+        for (imgs, 0..) |img, i| {
+            c.glTextureSubImage3D(
+                name,
+                0,
+                0,
+                0,
+                @intCast(i),
+                @intCast(first_img.width),
+                @intCast(first_img.height),
+                1,
+                c.GL_RGBA,
+                c.GL_UNSIGNED_BYTE,
+                img.stb_data.ptr,
+            );
+        }
+    } else {
+        const magenta_rgba_color = [4]u8{ 255, 0, 255, 255 };
+        c.glTextureStorage2D(name, 1, c.GL_RGBA8, 1, 1);
+        for (0..6) |i| {
+            c.glTextureSubImage3D(
+                name,
+                0,
+                0,
+                0,
+                @intCast(i),
+                1,
+                1,
+                1,
+                c.GL_RGBA,
+                c.GL_UNSIGNED_BYTE,
+                &magenta_rgba_color,
+            );
+        }
+    }
+
+    if (c.glfwExtensionSupported("GL_EXT_texture_filter_anisotropic") == 1) {
+        var ansio_setting: f32 = 0;
+        c.glGetFloatv(c.GL_MAX_TEXTURE_MAX_ANISOTROPY, &ansio_setting);
+        c.glTextureParameterf(name, c.GL_TEXTURE_MAX_ANISOTROPY, ansio_setting);
+    }
+    self.texture_unit = 16;
+    self.name = name;
+
+    self.uniforms[0] = Uniform.init(program, uniform_name) catch {
+        return TextureError.UniformCreationFailed;
+    };
     self.num_uniforms += 1;
 
     if (self.disable_bindless) {
@@ -154,8 +230,10 @@ pub fn removeUniform(self: *Texture, program: u32) void {
     self.num_uniforms = num_uniforms;
 }
 
-pub fn addUniform(self: *Texture, program: u32, uniform_name: []const u8) void {
-    self.uniforms[self.num_uniforms] = Uniform.init(program, uniform_name);
+pub fn addUniform(self: *Texture, program: u32, uniform_name: []const u8) TextureError!void {
+    self.uniforms[self.num_uniforms] = Uniform.init(program, uniform_name) catch {
+        return TextureError.UniformCreationFailed;
+    };
     self.num_uniforms += 1;
 }
 
