@@ -22,18 +22,11 @@ programming and build a game engine.
 * <https://essentialmath.com/book.htm>
 * <https://www.gamemath.com/>
 
-![image](https://github.com/btipling/foundations/assets/249641/fa81b05d-8297-4008-ab14-8f7df06f385b)
+![Torus](https://github.com/user-attachments/assets/2ed06912-4b29-423d-b78c-4dcf87fa5812)
 
-![image](https://github.com/user-attachments/assets/0e29c0df-91f9-4b6f-a3dd-9212225a576e)
+![Solar System](https://github.com/user-attachments/assets/34e66724-25fc-43bb-82a0-7180ddd8d8d4)
 
-
-
-
-![image](https://github.com/user-attachments/assets/13f13301-8e89-42f6-827a-a140e8707108)
-
-![image](https://github.com/user-attachments/assets/629025f8-6f5f-4bc9-bb6e-6844005a2130)
-
-![image](https://github.com/user-attachments/assets/2ed06912-4b29-423d-b78c-4dcf87fa5812)
+![Shadows](https://github.com/user-attachments/assets/629025f8-6f5f-4bc9-bb6e-6844005a2130)
 
 ## Note
 
