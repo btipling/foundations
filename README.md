@@ -30,6 +30,8 @@ programming and build a game engine.
 
 ![image](https://github.com/user-attachments/assets/629025f8-6f5f-4bc9-bb6e-6844005a2130)
 
+![image](https://github.com/user-attachments/assets/2ed06912-4b29-423d-b78c-4dcf87fa5812)
+
 ## Note
 
 The textures and models from the book I use in the CGPOC section may be copyrighted and thus they aren't included and won't load.
