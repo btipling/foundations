@@ -25,12 +25,11 @@ pub fn frag_shader(tx: ?Texture) Shader.fragment_shader_type {
 }
 
 pub fn init(disable_bindless: bool) TextureError!Texture {
-    var t: Texture = .{
+    const t: Texture = .{
         .disable_bindless = disableBindless(disable_bindless),
     };
 
-    t.disable_bindless =
-        return t;
+    return t;
 }
 
 pub fn deinit(self: Texture) void {
