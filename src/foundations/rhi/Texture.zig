@@ -16,7 +16,7 @@ pub const TextureError = error{
 
 pub fn disableBindless(disable_bindless: bool) bool {
     if (disable_bindless) return true;
-    return c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1 or c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1;
+    return c.glfwExtensionSupported("GL_ARB_bindless_texture") != 1;
 }
 
 pub fn frag_shader(tx: ?Texture) Shader.fragment_shader_type {
