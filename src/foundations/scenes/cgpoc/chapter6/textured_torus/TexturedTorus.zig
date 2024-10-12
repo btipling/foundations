@@ -114,8 +114,9 @@ pub fn renderTorus(self: *TexturedTorus) void {
             false,
         ),
     };
-    self.cubemap_texture.?.addUniform(prog, "f_cubemap") catch @panic("uniform failed");
     self.torus = torus;
+    if (self.cubemap_texture == null) return;
+    self.cubemap_texture.?.addUniform(prog, "f_cubemap") catch @panic("uniform failed");
 }
 
 pub fn renderDebugCross(self: *TexturedTorus) void {
