@@ -16,7 +16,7 @@ void main()
     fo_vert = f_main_pos.xyz;
     fo_normal = normalize(f_norm_matrix * f_normal);
     f_tc = f_texture_coords;
-    f_frag_color = f_i_color;
+    f_frag_color = vec4(f_moon_light_pos.xyz, 1.0);
     fo_tangent = m_matrix * f_tangent;
     fo_lightdir = f_moon_light_pos.xyz;
     gl_Position = f_mvp * f_main_pos;

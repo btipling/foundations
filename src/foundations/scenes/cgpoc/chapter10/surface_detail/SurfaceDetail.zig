@@ -119,11 +119,6 @@ pub fn deinit(self: *SurfaceDetail, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *SurfaceDetail, dt: f64) void {
     if (self.ui_state.light_updated) {
-        std.debug.print("LIGHT UPDATED, ({d}, {d}, {d})\n", .{
-            self.ui_state.light_position[0],
-            self.ui_state.light_position[1],
-            self.ui_state.light_position[2],
-        });
         self.moon_light_pos.setUniform3fv(self.ui_state.light_position);
         self.earth_light_pos.setUniform3fv(self.ui_state.light_position);
         self.ui_state.light_updated = false;
