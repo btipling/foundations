@@ -15,7 +15,7 @@ void main()
     Light f_l = f_lights[0];
 
     vec4 f_P = m_matrix * vec4(f_position.xyz, 1.0);
-    vec3 f_N = normalize(f_norm_matrix * f_normals);
+    vec3 f_N = normalize(f_norm_matrix * f_normal);
     vec3 f_L = normalize(f_light_pos - f_P.xyz);
 
     vec3 f_V = normalize(-v_matrix[3].xyz - f_P.xyz);
@@ -28,6 +28,6 @@ void main()
     gl_Position =  f_mvp * f_P;
     f_tc = f_texture_coords;
     
-    fo_normals = f_N;
+    fo_normal = f_N;
     f_frag_color = vec4((f_ambient + f_diffuse + f_specular), 1.0);
 }

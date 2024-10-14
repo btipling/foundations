@@ -1,5 +1,5 @@
 const app_name: []const u8 = "foundations_game_engine";
-pub const max_file_size: usize = 4096 << 11;
+pub const max_file_size: usize = 4096 << 12;
 
 pub const LoaderError = error{
     FileNotFound,

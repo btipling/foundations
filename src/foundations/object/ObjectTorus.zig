@@ -68,10 +68,10 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         tv = math.matrix.transformVector(m, tv);
         const t_tangent: math.vector.vec3 = .{ tv[0], tv[1], tv[2] };
         const s_tangent: math.vector.vec3 = .{ 0, 1, 0 };
-        const normals = math.vector.normalize(math.vector.crossProduct(t_tangent, s_tangent));
+        const normal = math.vector.normalize(math.vector.crossProduct(t_tangent, s_tangent));
         attribute_data[i] = .{
             .position = vertex,
-            .normals = normals,
+            .normal = normal,
             .texture_coords = texture_coords,
         };
     }
@@ -95,13 +95,13 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             // TODO: support tangents in vertex attributes
             // s and t tangents need to be created here
 
-            const n = ad.normals;
+            const n = ad.normal;
             var n1: math.vector.vec4 = .{ n[0], n[1], n[2], 0 };
             n1 = math.matrix.transformVector(m, n1);
-            const normals: math.vector.vec3 = .{ n1[0], n1[1], n1[2] };
+            const normal: math.vector.vec3 = .{ n1[0], n1[1], n1[2] };
             attribute_data[index] = .{
                 .position = vertex,
-                .normals = math.vector.normalize(normals),
+                .normal = math.vector.normalize(normal),
                 .texture_coords = texture_coords,
             };
         }

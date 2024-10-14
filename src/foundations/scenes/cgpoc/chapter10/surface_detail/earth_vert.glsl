@@ -1,8 +1,5 @@
 
-uniform vec3 f_light_1_pos;
-uniform vec3 f_light_2_pos;
-out vec3 fo_light_1_dir;
-out vec3 fo_light_2_dir;
+layout(location = 4242) uniform vec3 f_earth_light_pos;
 
 void main()
 {
@@ -13,13 +10,13 @@ void main()
         f_t_column3
     );
     mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix* f_xup)));
-
     vec4 f_main_pos = m_matrix * f_xup * vec4(f_position.xyz, 1.0);
+    
     fo_vert = f_main_pos.xyz;
     fo_normal = normalize(f_norm_matrix * f_normal);
-    fo_light_1_dir = f_light_1_pos - fo_vert;
-    fo_light_2_dir = f_light_2_pos - fo_vert;
-
-    gl_Position =  f_mvp * f_main_pos;
     f_tc = f_texture_coords;
+    f_frag_color = f_i_color;
+    fo_tangent = m_matrix * f_tangent;
+    fo_lightdir = f_earth_light_pos.xyz;
+    gl_Position = f_mvp * f_main_pos;
 }

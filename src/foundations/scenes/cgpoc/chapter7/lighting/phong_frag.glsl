@@ -7,7 +7,7 @@ vec4 f_phong_lighting(Material f_mat, Light f_lights[10], uint num_lights, vec4 
     num_lights = min(num_lights, 10u);
     
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
-    vec3 f_N = normalize(fo_normals);
+    vec3 f_N = normalize(fo_normal);
 
     vec4 rv = vec4(0.0, 0.0, 0.0, 1.0);
 

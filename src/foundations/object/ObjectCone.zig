@@ -50,17 +50,17 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         const tri = math.geometry.Triangle.init(p0, p1, p2);
         attribute_data[offset + 0] = .{
             .position = tri.p0,
-            .normals = tri.normal,
+            .normal  = tri.normal,
         };
         indices[offset + 0] = uoffset + 0;
         attribute_data[uoffset + 1] = .{
             .position = tri.p1,
-            .normals = tri.normal,
+            .normal  = tri.normal,
         };
         indices[offset + 1] = uoffset + 1;
         attribute_data[uoffset + 2] = .{
             .position = tri.p2,
-            .normals = tri.normal,
+            .normal  = tri.normal,
         };
         indices[offset + 2] = uoffset + 2;
         offset += 3;

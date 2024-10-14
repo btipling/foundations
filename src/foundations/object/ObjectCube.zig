@@ -59,7 +59,7 @@ pub const default_positions: [36][3]f32 = .{
     .{ -1, 1, -1 },
 };
 
-pub const normals: [36][3]f32 = .{
+pub const normal: [36][3]f32 = .{
     // z pos
     .{ 0, 0, 1 },
     .{ 0, 0, 1 },
@@ -120,7 +120,7 @@ pub fn init(
         data[i] = .{
             .position = positions[i],
             .color = color,
-            .normals = normals[i],
+            .normal = normal[i],
         };
     }
     const vao_buf = rhi.attachBuffer(data[0..]);

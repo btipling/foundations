@@ -15,6 +15,10 @@ pub fn init(prog: u32, name: []const u8) UniformError!Uniform {
         std.log.warn("Uniform creation failed for {s}\n", .{name});
         return UniformError.UniformErrorCreationFailed;
     }
+    return initWithLoc(prog, loc);
+}
+
+pub fn initWithLoc(prog: u32, loc: c.GLint) UniformError!Uniform {
     return .{
         .program = prog,
         .location = loc,

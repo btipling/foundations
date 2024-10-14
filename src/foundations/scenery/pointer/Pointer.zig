@@ -45,7 +45,7 @@ pub fn renderCylinder(self: *Pointer) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .normals,
+            .fragment_shader = .normal,
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(pointer_vertex_shader)[0..]);
     }
@@ -78,7 +78,7 @@ pub fn renderCone(self: *Pointer) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .normals,
+            .fragment_shader = .normal,
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(pointer_vertex_shader)[0..]);
     }

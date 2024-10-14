@@ -11,5 +11,5 @@ void main()
     gl_Position = f_pos;
     f_tc = f_texture_coords;
     f_frag_color = f_i_color;
-    fo_normals = f_normals;
+    fo_normal = f_normal;
 }

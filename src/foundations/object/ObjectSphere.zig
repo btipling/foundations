@@ -3,20 +3,33 @@ vertex_data_size: usize,
 instance_data_stride: usize,
 
 const Sphere = @This();
-const precision: usize = 48;
-const precision_f: f32 = @floatFromInt(precision);
-const num_vertices = (precision + 1) * (precision + 1);
-const num_indices = precision * precision * 6;
+const default_precision: usize = 48;
+const max_precision: usize = 250;
+const max_num_vertices = (max_precision + 1) * (max_precision + 1);
+const max_num_indices = max_precision * max_precision * 6;
 
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
     wireframe: bool,
 ) Sphere {
-    var d = data();
+    return initWithPrecision(program, instance_data, wireframe, default_precision);
+}
 
-    const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data);
-    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
+pub fn initWithPrecision(
+    program: u32,
+    instance_data: []rhi.instanceData,
+    wireframe: bool,
+    precision: usize,
+) Sphere {
+    const num_vertices = (precision + 1) * (precision + 1);
+    const num_indices = precision * precision * 6;
+    var attribute_data: [max_num_vertices]rhi.attributeData = undefined;
+    var indices: [max_num_indices]u32 = undefined;
+    data(&attribute_data, &indices, precision);
+
+    const vao_buf = rhi.attachInstancedBuffer(attribute_data[0..num_vertices], instance_data);
+    const ebo = rhi.initEBO(@ptrCast(indices[0..num_indices]), vao_buf.vao);
     return .{
         .mesh = .{
             .program = program,
@@ -42,11 +55,9 @@ pub fn updateInstanceAt(self: Sphere, index: usize, instance_data: rhi.instanceD
     rhi.updateInstanceData(self.mesh.buffer, self.vertex_data_size, self.instance_data_stride, index, instance_data);
 }
 
-fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [num_indices]u32 } {
-    var attribute_data: [num_vertices]rhi.attributeData = undefined;
-    var indices: [num_indices]u32 = undefined;
-
+fn data(attribute_data: []rhi.attributeData, indices: []u32, precision: usize) void {
     const p_index: usize = precision + 1;
+    const precision_f: f32 = @floatFromInt(precision);
 
     for (0..p_index) |i| {
         const i_f: f32 = @floatFromInt(i);
@@ -60,21 +71,25 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
             const pos: [3]f32 = .{ x, y, z };
             const index: usize = i * p_index + j;
 
-            //TODO: support tangents in vertex attributes
-            // calculate tangent vector
-            var tangent: [3]f32 = undefined;
+            const normal: math.vector.vec3 = .{ x, y, z };
+            var tangent: [4]f32 = undefined;
             if ((math.float.equal_e(x, 1.0) and math.float.equal_e(y, 0.0) and math.float.equal_e(z, 0.0)) or
                 (math.float.equal_e(x, -1.0) and math.float.equal_e(y, 0.0) and math.float.equal_e(z, 0.0)))
             {
-                tangent = .{ 0, -1, 0 };
+                tangent = .{ 0, -1, 0, 1 };
             } else {
-                tangent = .{ 1, 0, 0 };
+                const up: math.vector.vec3 = .{ 1, 0, 0 };
+                // const forward: math.vector.vec3 = .{ 0, 1, 0 };
+                const t: math.vector.vec3 = math.vector.normalize(math.vector.crossProduct(up, normal));
+                const w: f32 = if (math.vector.dotProduct(math.vector.crossProduct(normal, t), up) < 0) -1 else 1;
+                tangent = .{ t[0], t[1], t[2], w };
             }
 
             attribute_data[index] = .{
                 .position = pos,
-                .normals = .{ x, y, z },
+                .normal = math.vector.normalize(normal),
                 .texture_coords = .{ 1.0 - j_f / precision_f, 1.0 - i_f / precision_f },
+                .tangent = tangent,
             };
         }
     }
@@ -110,7 +125,7 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         }
     }
 
-    return .{ .attribute_data = attribute_data, .indices = indices };
+    return;
 }
 
 const std = @import("std");
