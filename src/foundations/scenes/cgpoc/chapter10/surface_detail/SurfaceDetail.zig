@@ -304,7 +304,7 @@ pub fn renderMoon(self: *SurfaceDetail) void {
         };
     }
     if (self.moon_texture) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\moon.jpg") catch null, prog, "f_samp_1") catch {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\moonbump4kRGB.jpg") catch null, prog, "f_samp_1") catch {
             self.moon_texture = null;
         };
     }
@@ -326,6 +326,8 @@ pub fn renderEarth(self: *SurfaceDetail) void {
     self.earth_normal_map.?.texture_unit = 2;
     self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.earth_texture.?.texture_unit = 3;
+    self.earth_height_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.earth_height_map.?.texture_unit = 17;
     var earth_height_map = earth_bindless_shader;
     if (rhi.Texture.disableBindless(self.ctx.args.disable_bindless)) {
         earth_height_map = earth_texture_shader;
@@ -368,8 +370,13 @@ pub fn renderEarth(self: *SurfaceDetail) void {
             self.earth_normal_map = null;
         };
     }
-    if (self.earth_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_samp_3") catch {
+    if (self.earth_texture) |*t| {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_samp_3") catch {
+            self.earth_texture = null;
+        };
+    }
+    if (self.earth_height_map) |*t| {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\earthspec1kNEG.jpg") catch null, prog, "f_earth_heightmap") catch {
             self.earth_texture = null;
         };
     }

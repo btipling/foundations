@@ -1,2 +1,2 @@
 
-layout(bindless_sampler) uniform sampler2D f_earth_heightmapp;
+layout(bindless_sampler) uniform sampler2D f_earth_heightmap;
