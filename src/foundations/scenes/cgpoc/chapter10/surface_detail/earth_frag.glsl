@@ -1,17 +1,11 @@
-mat4 f_cubemap_xup = (mat4(
-    vec4(0, 1, 0, 0),
-    vec4(0, 0, 1, 0),
-    vec4(1, 0, 0, 0),
-    vec4(0, 0, 0, 1)
-));
 
 vec3 f_calc_new_normal() {
     vec3 f_n_normal = normalize(fo_normal);
     vec3 f_n_tangent = normalize(fo_tangent.xyz);
-    f_n_tangent = normalize(f_n_tangent - dot(f_n_tangent, f_n_normal) * f_n_normal);
-    vec3 f_n_bitangent = fo_tangent.w * cross(f_n_tangent, f_n_normal);
+    // f_n_tangent = normalize(f_n_tangent - dot(f_n_tangent, f_n_normal) * f_n_normal);
+    vec3 f_n_bitangent = normalize(fo_tangent.w * cross(f_n_tangent, f_n_normal));
     mat3 f_n_tbn = mat3(f_n_tangent, f_n_bitangent, f_n_normal);
-    vec3 f_n_map_normal = (f_cubemap_xup * vec4(texture(f_samp_2, f_tc).xyz, 1.0)).xyz;
+    vec3 f_n_map_normal = (vec4(texture(f_samp_2, f_tc).xyz, 1.0)).xyz;
     f_n_map_normal = f_n_map_normal * 2.0 - 1.0;
     vec3 f_n_new_normal = f_n_tbn * f_n_map_normal;
     f_n_new_normal = normalize(f_n_new_normal);

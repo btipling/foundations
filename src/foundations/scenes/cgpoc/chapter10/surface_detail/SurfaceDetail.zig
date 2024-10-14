@@ -15,6 +15,7 @@ cubemap: object.object = .{ .norender = .{} },
 cubemap_texture: ?rhi.Texture = null,
 cross: scenery.debug.Cross = undefined,
 sphere: object.object = .{ .norender = .{} },
+sphere_matrix: rhi.Uniform = undefined,
 moon_light_pos: rhi.Uniform = undefined,
 earth_light_pos: rhi.Uniform = undefined,
 
@@ -29,6 +30,7 @@ const moon_frag_shader: []const u8 = @embedFile("moon_frag.glsl");
 const earth_vertex_shader: []const u8 = @embedFile("earth_vert.glsl");
 const earth_frag_shader: []const u8 = @embedFile("earth_frag.glsl");
 const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
+const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -46,8 +48,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
         ctx.cfg,
         sd,
         integrator,
-        .{ 3, -15, 0 },
-        0,
+        .{ 2, 4, -2 },
+        std.math.pi,
     );
     errdefer cam.deinit(allocator);
     cam.global_ambient = .{ 0.025, 0.025, 0.025, 1.0 };
@@ -98,6 +100,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
     sd.renderDebugCross();
     errdefer sd.deleteDebugCross();
 
+    sd.renderSphere();
+    errdefer sd.deleteSphere();
+
     return sd;
 }
 
@@ -114,6 +119,7 @@ pub fn deinit(self: *SurfaceDetail, allocator: std.mem.Allocator) void {
     self.deleteMoon();
     self.deleteEarth();
     self.deleteCubemap();
+    self.deleteSphere();
     allocator.destroy(self);
 }
 
@@ -121,6 +127,8 @@ pub fn draw(self: *SurfaceDetail, dt: f64) void {
     if (self.ui_state.light_updated) {
         self.moon_light_pos.setUniform3fv(self.ui_state.light_position);
         self.earth_light_pos.setUniform3fv(self.ui_state.light_position);
+        const lp = self.ui_state.light_position;
+        self.sphere_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
         self.ui_state.light_updated = false;
     }
     self.view_camera.update(dt);
@@ -158,6 +166,12 @@ pub fn draw(self: *SurfaceDetail, dt: f64) void {
     {
         const objects: [1]object.object = .{
             self.earth,
+        };
+        rhi.drawObjects(objects[0..]);
+    }
+    {
+        const objects: [1]object.object = .{
+            self.sphere,
         };
         rhi.drawObjects(objects[0..]);
     }
@@ -361,6 +375,46 @@ pub fn renderDebugCross(self: *SurfaceDetail) void {
         math.matrix.translate(0, 0, 5),
         5,
     );
+}
+
+pub fn deleteSphere(self: *SurfaceDetail) void {
+    const objects: [1]object.object = .{
+        self.sphere,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
+pub fn renderSphere(self: *SurfaceDetail) void {
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    const m = math.matrix.uniformScale(0.125);
+    i_datas[0] = .{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = .{ 1, 1, 1, 1 },
+    };
+    const sphere: object.object = .{
+        .sphere = object.Sphere.init(
+            prog,
+            i_datas[0..],
+            false,
+        ),
+    };
+    const lp = self.ui_state.light_position;
+    var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
+    sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
+    self.sphere_matrix = sm;
+    self.sphere = sphere;
 }
 
 const std = @import("std");
