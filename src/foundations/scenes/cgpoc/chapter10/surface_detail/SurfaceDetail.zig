@@ -170,6 +170,9 @@ pub fn draw(self: *SurfaceDetail, dt: f64) void {
     if (self.earth_texture) |t| {
         t.bind();
     }
+    if (self.earth_height_map) |t| {
+        t.bind();
+    }
     {
         const objects: [1]object.object = .{
             self.earth,
@@ -377,7 +380,7 @@ pub fn renderEarth(self: *SurfaceDetail) void {
     }
     if (self.earth_height_map) |*t| {
         t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\earthspec1kNEG.jpg") catch null, prog, "f_earth_heightmap") catch {
-            self.earth_texture = null;
+            self.earth_height_map = null;
         };
     }
     self.earth_light_pos = rhi.Uniform.init(prog, "f_earth_light_pos") catch @panic("failed to load earthlight uniform");
