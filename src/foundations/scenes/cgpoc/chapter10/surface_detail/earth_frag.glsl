@@ -26,7 +26,6 @@ void main()
     vec3 f_N = f_calc_new_normal();
     Light f_light = f_lights[0];
     Material f_mat = f_materials[0];
-    float f_d = length(fo_lightdir.xyz);
 
     vec3 f_L = normalize(fo_lightdir.xyz);
     vec3 f_H = normalize(f_L + f_V).xyz;
