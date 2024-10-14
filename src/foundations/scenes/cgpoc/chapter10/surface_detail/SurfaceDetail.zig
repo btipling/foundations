@@ -31,6 +31,8 @@ const earth_vertex_shader: []const u8 = @embedFile("earth_vert.glsl");
 const earth_frag_shader: []const u8 = @embedFile("earth_frag.glsl");
 const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
+const earth_texture_shader: []const u8 = @embedFile("earth_vert_texture.glsl");
+const earth_bindless_shader: []const u8 = @embedFile("earth_vert_bindless.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -43,6 +45,11 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
     const sd = allocator.create(SurfaceDetail) catch @panic("OOM");
     errdefer allocator.destroy(sd);
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
+    var max_texture_units: c.GLint = 0;
+    c.glGetIntegerv(c.GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
+    if (max_texture_units < 17) {
+        std.log.warn("not enough texture units: {d}, required: 17\n", .{max_texture_units});
+    }
     var cam = physics.camera.Camera(*SurfaceDetail, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         ctx.cfg,
@@ -319,15 +326,21 @@ pub fn renderEarth(self: *SurfaceDetail) void {
     self.earth_normal_map.?.texture_unit = 2;
     self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.earth_texture.?.texture_unit = 3;
+    var earth_height_map = earth_bindless_shader;
+    if (rhi.Texture.disableBindless(self.ctx.args.disable_bindless)) {
+        earth_height_map = earth_texture_shader;
+    }
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .lighting = .blinn_phong,
             .frag_body = earth_frag_shader,
+            .bindless_vertex = true,
             .fragment_shader = rhi.Texture.frag_shader(self.earth_texture),
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(earth_vertex_shader)[0..]);
+        const vert_shaders = [_][]const u8{ earth_height_map, earth_vertex_shader };
+        s.attach(self.allocator, vert_shaders[0..]);
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
