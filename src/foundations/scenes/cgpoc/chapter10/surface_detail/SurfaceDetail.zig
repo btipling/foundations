@@ -248,6 +248,7 @@ pub fn renderMoon(self: *SurfaceDetail) void {
     const prog = rhi.createProgram();
     self.moon_normal_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.moon_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.moon_texture.?.texture_unit = 1;
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -282,12 +283,12 @@ pub fn renderMoon(self: *SurfaceDetail) void {
         ),
     };
     if (self.moon_normal_map) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\moonNORMAL.jpg") catch null, prog, "f_samp_1") catch {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\moonNORMAL.jpg") catch null, prog, "f_samp") catch {
             self.moon_normal_map = null;
         };
     }
     if (self.moon_texture) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\moon.jpg") catch null, prog, "f_samp_2") catch {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\moon.jpg") catch null, prog, "f_samp_1") catch {
             self.moon_texture = null;
         };
     }
@@ -306,7 +307,9 @@ pub fn deleteEarth(self: *SurfaceDetail) void {
 pub fn renderEarth(self: *SurfaceDetail) void {
     const prog = rhi.createProgram();
     self.earth_normal_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.earth_normal_map.?.texture_unit = 2;
     self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.earth_texture.?.texture_unit = 3;
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -339,12 +342,12 @@ pub fn renderEarth(self: *SurfaceDetail) void {
         ),
     };
     if (self.earth_normal_map) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\earthspec1kNORMAL.jpg") catch null, prog, "f_samp_1") catch {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\earthspec1kNORMAL.jpg") catch null, prog, "f_samp_2") catch {
             self.earth_normal_map = null;
         };
     }
     if (self.earth_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_samp_2") catch {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_samp_3") catch {
             self.earth_texture = null;
         };
     }

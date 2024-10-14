@@ -11,7 +11,7 @@ vec3 f_calc_new_normal() {
     f_n_tangent = normalize(f_n_tangent - dot(f_n_tangent, f_n_normal) * f_n_normal);
     vec3 f_n_bitangent = fo_tangent.w * cross(f_n_tangent, f_n_normal);
     mat3 f_n_tbn = mat3(f_n_tangent, f_n_bitangent, f_n_normal);
-    vec3 f_n_map_normal = (f_cubemap_xup * vec4(texture(f_samp_1, f_tc).xyz, 1.0)).xyz;
+    vec3 f_n_map_normal = (f_cubemap_xup * vec4(texture(f_samp_2, f_tc).xyz, 1.0)).xyz;
     f_n_map_normal = f_n_map_normal * 2.0 - 1.0;
     vec3 f_n_new_normal = f_n_tbn * f_n_map_normal;
     f_n_new_normal = normalize(f_n_new_normal);
@@ -21,7 +21,7 @@ vec3 f_calc_new_normal() {
 void main()
 {
     
-    vec4 f_texture_color = texture(f_samp_2, f_tc);
+    vec4 f_texture_color = texture(f_samp_3, f_tc);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     vec3 f_N = f_calc_new_normal();
     Light f_light = f_lights[0];
