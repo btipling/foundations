@@ -119,6 +119,11 @@ pub fn deinit(self: *SurfaceDetail, allocator: std.mem.Allocator) void {
 
 pub fn draw(self: *SurfaceDetail, dt: f64) void {
     if (self.ui_state.light_updated) {
+        std.debug.print("LIGHT UPDATED, ({d}, {d}, {d})\n", .{
+            self.ui_state.light_position[0],
+            self.ui_state.light_position[1],
+            self.ui_state.light_position[2],
+        });
         self.moon_light_pos.setUniform3fv(self.ui_state.light_position);
         self.earth_light_pos.setUniform3fv(self.ui_state.light_position);
         self.ui_state.light_updated = false;
@@ -286,8 +291,8 @@ pub fn renderMoon(self: *SurfaceDetail) void {
             self.moon_texture = null;
         };
     }
-    self.moon_light_pos = rhi.Uniform.initWithLoc(prog, 1337) catch @panic("failed to load moonlight uniform");
-    self.moon_light_pos.setUniform3fv(.{ 0, 0, 0 });
+    self.moon_light_pos = rhi.Uniform.init(prog, "f_moon_light_pos") catch @panic("uniform failed");
+    self.moon_light_pos.setUniform3fv(.{ 3, 2, 1 });
     self.moon = sphere;
 }
 
@@ -344,7 +349,7 @@ pub fn renderEarth(self: *SurfaceDetail) void {
         };
     }
     self.earth_light_pos = rhi.Uniform.initWithLoc(prog, 4242) catch @panic("failed to load earthlight uniform");
-    self.earth_light_pos.setUniform3fv(.{ 0, 0, 0 });
+    self.earth_light_pos.setUniform3fv(.{ 1, 2, 3 });
     self.earth = earth;
 }
 

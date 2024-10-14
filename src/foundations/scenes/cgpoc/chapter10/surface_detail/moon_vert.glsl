@@ -1,6 +1,6 @@
 
 
-layout(location = 1337) uniform vec3 f_moon_light_pos;
+uniform vec3 f_moon_light_pos;
 
 void main()
 {

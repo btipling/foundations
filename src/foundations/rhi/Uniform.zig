@@ -12,8 +12,8 @@ pub const empty: Uniform = .{ .program = 0, .location = 0 };
 pub fn init(prog: u32, name: []const u8) UniformError!Uniform {
     const loc: c.GLint = c.glGetUniformLocation(@intCast(prog), @ptrCast(name));
     if (loc < 0) {
-        std.log.warn("Uniform creation failed for {s}\n", .{name});
-        return UniformError.UniformErrorCreationFailed;
+        std.log.warn("Uniform creation failed for {s} {d}\n", .{ name, prog });
+        // return UniformError.UniformErrorCreationFailed;
     }
     return initWithLoc(prog, loc);
 }
