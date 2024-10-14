@@ -76,12 +76,11 @@ fn data(attribute_data: []rhi.attributeData, indices: []u32, precision: usize) v
             if ((math.float.equal_e(x, 1.0) and math.float.equal_e(y, 0.0) and math.float.equal_e(z, 0.0)) or
                 (math.float.equal_e(x, -1.0) and math.float.equal_e(y, 0.0) and math.float.equal_e(z, 0.0)))
             {
-                tangent = .{ 0, -1, 0, 1 };
+                tangent = .{ 0, 1, 0, 1 };
             } else {
-                const up: math.vector.vec3 = .{ 1, 0, 0 };
-                // const forward: math.vector.vec3 = .{ 0, 1, 0 };
+                const up: math.vector.vec3 = .{ -1, 0, 0 };
                 const t: math.vector.vec3 = math.vector.normalize(math.vector.crossProduct(up, normal));
-                const w: f32 = if (math.vector.dotProduct(math.vector.crossProduct(normal, t), up) < 0) -1 else 1;
+                const w: f32 = if (math.vector.dotProduct(math.vector.crossProduct(normal, t), up) < 0) 1 else -1;
                 tangent = .{ t[0], t[1], t[2], w };
             }
 
