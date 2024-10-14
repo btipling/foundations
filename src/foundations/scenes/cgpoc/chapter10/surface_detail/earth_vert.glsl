@@ -1,5 +1,5 @@
 
-layout(location = 4242) uniform vec3 f_earth_light_pos;
+uniform vec3 f_earth_light_pos;
 
 void main()
 {

@@ -351,7 +351,7 @@ pub fn renderEarth(self: *SurfaceDetail) void {
             self.earth_texture = null;
         };
     }
-    self.earth_light_pos = rhi.Uniform.initWithLoc(prog, 4242) catch @panic("failed to load earthlight uniform");
+    self.earth_light_pos = rhi.Uniform.init(prog, "f_earth_light_pos") catch @panic("failed to load earthlight uniform");
     self.earth_light_pos.setUniform3fv(.{ 1, 2, 3 });
     self.earth = earth;
 }
