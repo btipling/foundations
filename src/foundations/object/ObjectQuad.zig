@@ -81,7 +81,7 @@ pub fn initInstanced(
         rhi_data[i] = .{
             .position = positions[i],
             .color = .{ 1, 0, 1, 1 },
-            .normals = .{ 1, 0, 0 },
+            .normal = .{ 1, 0, 0 },
         };
     }
     const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data);

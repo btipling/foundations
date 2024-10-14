@@ -115,19 +115,19 @@ fn addSurface(
     s_data[offset] = .{
         .position = sp0,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = texture_coords[0],
     };
     s_data[offset + 1] = .{
         .position = sp1,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = texture_coords[1],
     };
     s_data[offset + 2] = .{
         .position = sp2,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = texture_coords[2],
     };
     return offset + 3;
@@ -167,25 +167,25 @@ fn addBottomSurface(
     s_data[offset] = .{
         .position = sp0,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = texture_coords[0],
     };
     s_data[offset + 1] = .{
         .position = sp1,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = texture_coords[1],
     };
     s_data[offset + 2] = .{
         .position = sp2,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = texture_coords[2],
     };
     s_data[offset + 3] = .{
         .position = sp3,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = texture_coords[3],
     };
     return offset + 4;

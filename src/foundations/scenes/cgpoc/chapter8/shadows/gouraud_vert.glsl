@@ -48,7 +48,7 @@ void main()
     Material f_m = f_materials[f_material_selection];
 
     vec4 f_P = m_matrix * f_xup * vec4(f_position.xyz, 1.0);
-    vec3 f_N = normalize(f_norm_matrix * f_normals);
+    vec3 f_N = normalize(f_norm_matrix * f_normal);
 
     
     vec3 f_l_dirs[2] = vec3[2](f_light_1_pos, f_light_2_pos);
@@ -76,7 +76,7 @@ void main()
         gl_Position =  f_mvp * f_P;
         f_tc = f_texture_coords;
         
-        fo_normals = f_N;
+        fo_normal = f_N;
         f_frag_color = f_frag_color + vec4((f_ambient + f_diffuse + f_specular), 0.0);
         i += 1;
     } while (i < num_lights);

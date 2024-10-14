@@ -13,7 +13,7 @@ void main()
 
     vec4 f_main_pos = m_matrix * vec4(f_position.xyz, 1.0);
     fo_vert = f_main_pos.xyz;
-    fo_normals = normalize(f_norm_matrix * f_normals);
+    fo_normal = normalize(f_norm_matrix * f_normal);
     fo_lightdir = f_light_pos - fo_vert;
 
     gl_Position =  f_mvp * f_main_pos;

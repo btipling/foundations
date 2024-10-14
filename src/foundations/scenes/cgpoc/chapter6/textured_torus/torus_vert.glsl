@@ -17,7 +17,7 @@ void main()
     vec4 f_main_pos = m_matrix * f_xup * vec4(f_position.xyz, 1.0);
     mat3 f_norm_matrix = transpose(inverse(mat3(f_cubemap_xup * m_matrix * f_xup)));
 
-    fo_normals = normalize(f_norm_matrix * f_normals);
+    fo_normal = normalize(f_norm_matrix * f_normal);
     fo_vert =  (f_cubemap_xup * f_main_pos).xyz;
     
     gl_Position =  f_mvp * f_main_pos;

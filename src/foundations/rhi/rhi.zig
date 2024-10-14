@@ -83,8 +83,9 @@ pub fn createVAO() u32 {
 pub const attributeData = struct {
     position: [3]f32,
     color: [4]f32 = .{ 1, 0, 1, 1 },
-    normals: [3]f32 = .{ 1, 1, 1 },
+    normal: [3]f32 = .{ 1, 1, 1 },
     texture_coords: [2]f32 = .{ 0, 0 },
+    tangent: [4]f32 = .{ 0, 0, 0, 0 },
 };
 
 pub const instanceData = struct {

@@ -90,7 +90,7 @@ pub fn renderCube(self: *LookAt) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = false,
-            .fragment_shader = .normals,
+            .fragment_shader = .normal,
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
     }

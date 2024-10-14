@@ -19,7 +19,7 @@ void main()
     Light f_light = f_lights[0];
     vec4 f_texture_color = texture(f_samp_1, f_tc);
 
-    vec3 f_N = normalize(fo_normals);
+    vec3 f_N = normalize(fo_normal);
     
     vec3 f_L = normalize(f_light.direction.xyz);
 
@@ -37,7 +37,7 @@ void main()
     vec3 f_ambient = (f_global_ambient + f_light.ambient).xyz;
     vec3 f_diffuse = f_light.diffuse.xyz * max(cosTheta, 0.0);
 
-    if (fo_normals[0] < 0.01 && fo_normals[1] > 0.99) {
+    if (fo_normal[0] < 0.01 && fo_normal[1] > 0.99) {
         f_shadow_factor = 1.0;
     }
 

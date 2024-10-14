@@ -2,7 +2,7 @@ data: []u8 = undefined,
 file_name: []const u8 = undefined,
 vertices: [max_vertices][3]f32 = undefined,
 texture_coordinates: [max_vertices][2]f32 = undefined,
-normals: [max_vertices][3]f32 = undefined,
+normal: [max_vertices][3]f32 = undefined,
 num_vertices: usize = 0,
 indicies: [max_indicies][3][3]usize = undefined,
 num_indicies: usize = 0,
@@ -39,7 +39,7 @@ pub fn init(self: *Obj, _: std.mem.Allocator, data: []u8, file_name: []const u8)
                         const x: f32 = std.fmt.parseFloat(f32, nit.next() orelse "") catch @panic("invalid float");
                         const y: f32 = std.fmt.parseFloat(f32, nit.next() orelse "") catch @panic("invalid float");
                         const z: f32 = std.fmt.parseFloat(f32, nit.next() orelse "") catch @panic("invalid float");
-                        self.normals[n_index] = .{ x, y, z };
+                        self.normal[n_index] = .{ x, y, z };
                         n_index += 1;
                     },
                     else => {
@@ -80,7 +80,7 @@ pub fn toObject(self: *Obj, prog: u32, i_datas: []rhi.instanceData) object.objec
             const p = self.vertices[index_data[j][0]];
             attribute_data[current_index] = .{
                 .position = p,
-                .normals = self.normals[index_data[j][2]],
+                .normal = self.normal[index_data[j][2]],
                 .texture_coords = self.texture_coordinates[index_data[j][1]],
             };
             indices[current_index] = @intCast(current_index);

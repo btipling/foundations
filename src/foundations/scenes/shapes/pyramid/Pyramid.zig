@@ -54,7 +54,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Pyramid {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .normals,
+            .fragment_shader = .normal,
         };
         s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
     }

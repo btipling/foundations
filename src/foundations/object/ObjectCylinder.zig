@@ -6,7 +6,7 @@ const Cylinder = @This();
 
 const num_sides = 160;
 const num_vertices: usize = 4 * num_sides;
-const num_indices: usize = 6 * num_sides; // because normals
+const num_indices: usize = 6 * num_sides; // because normal
 
 pub fn init(
     program: u32,
@@ -114,22 +114,22 @@ fn addSurface(
     s_data[offset] = .{
         .position = sp0,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
     };
     s_data[offset + 1] = .{
         .position = sp1,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
     };
     s_data[offset + 2] = .{
         .position = sp2,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
     };
     s_data[offset + 3] = .{
         .position = sp3,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
     };
     return offset + 4;
 }

@@ -57,7 +57,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistan
         var s: rhi.Shader = .{
             .program = reflection_program,
             .instance_data = false,
-            .fragment_shader = .normals,
+            .fragment_shader = .normal,
         };
         s.attach(allocator, rhi.Shader.single_vertex(reflection_vertex_shader)[0..]);
     }
@@ -254,7 +254,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .normals,
+            .fragment_shader = .normal,
             .frag_body = plane_frag_shader,
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(plane_vertex_shader)[0..]);
@@ -288,7 +288,7 @@ pub fn renderSphere(self: *PlaneDistance) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .normals,
+            .fragment_shader = .normal,
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
     }
@@ -340,7 +340,7 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .fragment_shader = .normals,
+            .fragment_shader = .normal,
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
     }
@@ -407,19 +407,19 @@ fn triangleFromCubeSurfacePartial(self: *PlaneDistance, program: u32, vindex0: u
         n0 = math.vector.normalize(math.vector.vec4ToVec3(math.matrix.transformVector(
             rmi,
             math.vector.vec3ToVec4Vector(
-                self.parallelepiped.parallelepiped.attribute_data[index0].normals,
+                self.parallelepiped.parallelepiped.attribute_data[index0].normal,
             ),
         )));
         n1 = math.vector.normalize(math.vector.vec4ToVec3(math.matrix.transformVector(
             rmi,
             math.vector.vec3ToVec4Vector(
-                self.parallelepiped.parallelepiped.attribute_data[index1].normals,
+                self.parallelepiped.parallelepiped.attribute_data[index1].normal,
             ),
         )));
         n2 = math.vector.normalize(math.vector.vec4ToVec3(math.matrix.transformVector(
             rmi,
             math.vector.vec3ToVec4Vector(
-                self.parallelepiped.parallelepiped.attribute_data[index2].normals,
+                self.parallelepiped.parallelepiped.attribute_data[index2].normal,
             ),
         )));
     }

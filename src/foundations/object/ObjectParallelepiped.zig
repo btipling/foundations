@@ -7,7 +7,7 @@ indices: [num_indices]u32,
 const Parallelepied = @This();
 
 const num_vertices: usize = 24;
-const num_indices: usize = 36; // because normals
+const num_indices: usize = 36; // because normal
 
 pub const pp: math.geometry.Parallelepiped = .{
     .v0 = .{ 1, 0, 0 },
@@ -246,25 +246,25 @@ fn addSurface(
     s_data[offset] = .{
         .position = sp0,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = tc1,
     };
     s_data[offset + 1] = .{
         .position = sp1,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = tc2,
     };
     s_data[offset + 2] = .{
         .position = sp2,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = tc3,
     };
     s_data[offset + 3] = .{
         .position = sp3,
         .color = color.debug_color,
-        .normals = n,
+        .normal = n,
         .texture_coords = tc4,
     };
     return offset + 4;
