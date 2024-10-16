@@ -181,7 +181,7 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     return;
 }
 
-fn attachToProgram(self: Shader, shader: c.GLenum, source: []const u8) void {
+pub fn attachToProgram(self: Shader, shader: c.GLenum, source: []const u8) void {
     c.glShaderSource(shader, 1, &[_][*c]const u8{source.ptr}, null);
     c.glCompileShader(shader);
 
@@ -197,7 +197,7 @@ fn attachToProgram(self: Shader, shader: c.GLenum, source: []const u8) void {
     c.glAttachShader(@intCast(self.program), shader);
 }
 
-fn link(self: Shader) void {
+pub fn link(self: Shader) void {
     c.glLinkProgram(@intCast(self.program));
     var success: c.GLint = 0;
     c.glGetProgramiv(@intCast(self.program), c.GL_LINK_STATUS, &success);
