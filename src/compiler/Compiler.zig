@@ -32,6 +32,8 @@ pub fn run(self: *Compiler) !void {
 
     const source_file: *File = try File.init(self.allocator, self.ctx, self.args.source_file);
     defer source_file.deinit(self.allocator);
+    try source_file.read(self.allocator);
+    if (source_file.bytes) |bytes| std.debug.print("numbytes: {d}\n", .{bytes.len});
 }
 
 pub fn deinit(self: *Compiler) void {
