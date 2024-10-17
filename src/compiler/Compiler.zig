@@ -34,6 +34,13 @@ pub fn run(self: *Compiler) !void {
     defer source_file.deinit(self.allocator);
     try source_file.read(self.allocator);
     if (source_file.bytes) |bytes| std.debug.print("numbytes: {d}\n", .{bytes.len});
+
+    var parser: *Parser = try Parser.init(self.allocator, source_file);
+    defer parser.deinit(self.allocator);
+
+    try parser.parse(self.allocator);
+
+    parser.debug();
 }
 
 pub fn deinit(self: *Compiler) void {
@@ -44,3 +51,4 @@ pub fn deinit(self: *Compiler) void {
 const std = @import("std");
 const Args = @import("Args.zig");
 const File = @import("File.zig");
+const Parser = @import("Parser.zig");
