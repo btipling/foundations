@@ -4,10 +4,10 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
 
-    const c: *Compiler = Compiler.init(gpa.allocator());
+    const c: *Compiler = try Compiler.init(gpa.allocator());
     defer c.deinit();
 
-    c.run();
+    try c.run();
 
     std.debug.print("Compiler finished.\n", .{});
 }
