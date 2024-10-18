@@ -10,5 +10,5 @@ That's it. Will likely do more later. I just needed for the shader madness to en
 ## Running
 
 ```bash
-zig build fssc -- --source .\src\foundations\scenes\cgpoc\chapter10\surface_detail\earth_frag.glsl --name earth_frag_improved --output .\src\foundations\scenes\cgpoc\chapter10\surface_detail\
+zig build fssc -- --source .\src\foundations\scenes\cgpoc\chapter10\surface_detail\earth_frag.glsl --name earth_frag_improved.glsl --output .\src\foundations\scenes\cgpoc\chapter10\surface_detail\
 ```

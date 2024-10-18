@@ -1,3 +1,4 @@
+#version 460 core
 
 //#include "src/foundations/shaders/f_calc_new_normal.glsl"
 
