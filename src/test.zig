@@ -7,6 +7,7 @@ pub fn main() !void {
     _ = math.geometry.Plane;
     _ = math.interpolation;
     _ = config.parser;
+    _ = CompilerParser;
 }
 
 test {
@@ -16,3 +17,4 @@ test {
 const std = @import("std");
 const math = @import("foundations/math/math.zig");
 const config = @import("foundations/config/config.zig");
+const CompilerParser = @import("compiler/Parser.zig");
