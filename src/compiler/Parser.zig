@@ -9,6 +9,21 @@ pub const Include = struct {
     line: usize = 0,
 };
 
+pub const IncludeIterator = struct {
+    includes: [max_includes]Include = undefined,
+    num_includes: usize = 0,
+    current: usize = 0,
+    pub fn next(self: *IncludeIterator) ?Include {
+        if (self.current == self.num_includes) return null;
+        const rv = self.includes[self.current];
+        self.current += 1;
+        return rv;
+    }
+    pub fn reset(self: *IncludeIterator) void {
+        self.current = 0;
+    }
+};
+
 const ParserError = error{
     NoFileError,
 };
@@ -67,11 +82,18 @@ pub fn deinit(self: *Parser, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
+pub fn iterator(self: *const Parser) IncludeIterator {
+    return .{
+        .includes = self.includes,
+        .num_includes = self.num_includes,
+    };
+}
+
 test parse {
     const allocator = std.testing.allocator;
     var file: File = .{
         .path = "src/compiler/test/source.glsl",
-        .bytes = @embedFile("./test/source.glsl"),
+        .bytes = @embedFile("test/source.glsl"),
     };
     const f = &file;
     var p = try init(allocator, f);
