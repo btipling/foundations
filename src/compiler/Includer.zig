@@ -101,11 +101,9 @@ test include {
         .cwd = "C:\\Users\\swart\\projects\\foundations\\",
         .args = &args,
     };
-    var file: File = .{
-        .path = "src/compiler/test/source.glsl",
-        .bytes = @embedFile("test/source.glsl"),
-    };
-    const f = &file;
+    var f = try File.initWithEmbed(allocator, @embedFile("test/source.glsl"));
+    defer f.deinit(allocator);
+
     var p = try Parser.init(allocator, f);
     defer p.deinit(allocator);
 

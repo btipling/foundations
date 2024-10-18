@@ -91,11 +91,8 @@ pub fn iterator(self: *const Parser) IncludeIterator {
 
 test parse {
     const allocator = std.testing.allocator;
-    var file: File = .{
-        .path = "src/compiler/test/source.glsl",
-        .bytes = @embedFile("test/source.glsl"),
-    };
-    const f = &file;
+    var f = try File.initWithEmbed(allocator, @embedFile("test/source.glsl"));
+    defer f.deinit(allocator);
     var p = try init(allocator, f);
     defer p.deinit(allocator);
 
