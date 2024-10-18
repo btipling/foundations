@@ -48,6 +48,8 @@ pub fn fetch(self: *Includer, allocator: std.mem.Allocator, ctx: Compiler.Ctx) !
         if (self.included_files.contains(inc.path)) continue;
         const f = try File.init(allocator, ctx, inc.path);
         errdefer f.deinit(allocator);
+        try f.read(allocator);
+        std.log.info("adding include `{s}`\n", .{inc.path});
         try self.included_files.put(allocator, inc.path, f);
     }
 }

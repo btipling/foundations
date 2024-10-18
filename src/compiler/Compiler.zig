@@ -41,6 +41,13 @@ pub fn run(self: *Compiler) !void {
     try parser.parse(self.allocator);
 
     parser.debug();
+
+    var inc = try Includer.init(self.allocator, source_file, self.ctx, parser);
+    defer inc.deinit(self.allocator);
+
+    try inc.fetch(self.allocator, self.ctx);
+    try inc.include(self.allocator);
+    try inc.output_file.write(self.allocator);
 }
 
 pub fn deinit(self: *Compiler) void {
@@ -52,3 +59,4 @@ const std = @import("std");
 const Args = @import("Args.zig");
 const File = @import("File.zig");
 const Parser = @import("Parser.zig");
+const Includer = @import("Includer.zig");
