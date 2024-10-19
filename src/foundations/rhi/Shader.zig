@@ -43,6 +43,8 @@ pub inline fn single_vertex(vertex_shader: []const u8) [1][]const u8 {
     return [_][]const u8{vertex_shader};
 }
 
+pub const ShaderData = struct { source: []const u8, shader_type: c.GLenum };
+
 const Shader = @This();
 
 const vertex_header = @embedFile("../shaders/vertex_header.glsl");
@@ -168,11 +170,14 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     }
     const frag = std.mem.concat(allocator, u8, self.frag_partials[0..self.num_frag_partials]) catch @panic("OOM");
     defer allocator.free(frag);
-    const shaders = [_]struct { source: []const u8, shader_type: c.GLenum }{
+    const shaders = [_]ShaderData{
         .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
         .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
     };
+    self.attachAndLinkAll(allocator, shaders[0..]);
+}
 
+pub fn attachAndLinkAll(self: Shader, allocator: std.mem.Allocator, shaders: []const ShaderData) void {
     var i: usize = 0;
     while (i < shaders.len) : (i += 1) {
         const source: [:0]u8 = std.mem.concatWithSentinel(allocator, u8, &[_][]const u8{shaders[i].source}, 0) catch @panic("OOM");
