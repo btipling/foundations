@@ -8,5 +8,11 @@ void main(void)
 {
     float u = gl_TessCoord.x;
     float v = gl_TessCoord.y;
-    gl_Position = f_mvp * vec4(u, 0, v, 1.0);
+    mat4 f_scale = mat4(
+        2.0, 0.0, 0.0, 0.0,
+        0.0, 2.0, 0.0, 0.0,
+        0.0, 0.0, 2.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    );
+    gl_Position = f_mvp * f_scale * vec4(0, v, u, 1.0);
 }

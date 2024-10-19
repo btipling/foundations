@@ -92,7 +92,7 @@ pub fn deleteCross(self: *BasicTessellator) void {
 pub fn renderDebugCross(self: *BasicTessellator) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
-        math.matrix.translate(0, 0, 0),
+        math.matrix.translate(0, -0.025, -0.025),
         5,
     );
 }
