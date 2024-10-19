@@ -3,13 +3,10 @@ ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
 
-point_program: u32 = undefined,
-point_vao: u32 = undefined,
-point_x: f32 = 0,
-point_inc: f32 = 0.01,
-
 grid_program: u32 = undefined,
 grid_vao: u32 = undefined,
+grid_m: math.matrix = math.matrix.identity(),
+grid_u: rhi.Uniform = undefined,
 
 const BasicTessellator = @This();
 
@@ -41,9 +38,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BasicTessel
         .allocator = allocator,
     };
 
-    bt.renderPoint();
-    errdefer bt.deletePoint();
-
     bt.renderGrid();
     errdefer bt.deleteGrid();
 
@@ -56,7 +50,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BasicTessel
 pub fn deinit(self: *BasicTessellator, allocator: std.mem.Allocator) void {
     self.deleteCross();
     self.deleteGrid();
-    self.deletePoint();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -66,19 +59,6 @@ pub fn updateCamera(_: *BasicTessellator) void {}
 
 pub fn draw(self: *BasicTessellator, dt: f64) void {
     self.view_camera.update(dt);
-    {
-        rhi.drawPoints(self.point_program, self.point_vao, 1);
-    }
-    {
-        self.point_x += self.point_inc;
-        if (self.point_x >= 1) {
-            self.point_inc = -self.point_inc;
-        }
-        if (self.point_x < -1) {
-            self.point_inc = -self.point_inc;
-        }
-        rhi.setUniform1f(self.point_program, "f_offset", self.point_x);
-    }
     {
         rhi.runTessalation(self.grid_program, 1);
     }
@@ -96,33 +76,6 @@ pub fn renderDebugCross(self: *BasicTessellator) void {
         5,
     );
 }
-
-pub fn deletePoint(self: *BasicTessellator) void {
-    rhi.deletePrimitive(self.point_program, self.point_vao, 0);
-}
-
-pub fn renderPoint(self: *BasicTessellator) void {
-    const prog = rhi.createProgram();
-    const vao = rhi.createVAO();
-
-    const point_vert = Compiler.runWithBytes(self.allocator, @embedFile("point_vert.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(point_vert);
-    const point_frag = Compiler.runWithBytes(self.allocator, @embedFile("point_frag.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(point_frag);
-
-    const shaders = [_]rhi.Shader.ShaderData{
-        .{ .source = point_vert, .shader_type = c.GL_VERTEX_SHADER },
-        .{ .source = point_frag, .shader_type = c.GL_FRAGMENT_SHADER },
-    };
-
-    const s: rhi.Shader = .{
-        .program = prog,
-    };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
-    self.point_program = prog;
-    self.point_vao = vao;
-}
-
 pub fn deleteGrid(self: *BasicTessellator) void {
     rhi.deletePrimitive(self.grid_program, self.grid_vao, 0);
 }
@@ -151,6 +104,12 @@ pub fn renderGrid(self: *BasicTessellator) void {
         .program = prog,
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0, 5));
+    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(10));
+    var u = rhi.Uniform.init(prog, "f_grid_m") catch @panic("uniform");
+    u.setUniformMatrix(m);
+    self.grid_u = u;
     self.grid_program = prog;
     self.grid_vao = vao;
 }
