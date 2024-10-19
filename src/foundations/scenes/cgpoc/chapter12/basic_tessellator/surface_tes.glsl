@@ -5,6 +5,8 @@
 uniform mat4 f_grid_m;
 
 layout (quads, equal_spacing, ccw) in;
+in vec2 f_tc_tcs[];
+out vec2 f_tc_tes;
 
 void main(void)
 {
@@ -45,4 +47,8 @@ void main(void)
       + bu3 * (bv0*p30 + bv1*p31 + bv2*p32 + bv3*p33);
     
     gl_Position = f_mvp * f_grid_m * vec4(f_op.y, f_op.z, f_op.x, 1.0);
+
+    vec2 f_tc1 = mix(f_tc_tcs[0], f_tc_tcs[3], gl_TessCoord.x);
+    vec2 f_tc2 = mix(f_tc_tcs[12], f_tc_tcs[15], gl_TessCoord.x);
+    f_tc_tes = mix(f_tc2, f_tc1, gl_TessCoord.y);
 }

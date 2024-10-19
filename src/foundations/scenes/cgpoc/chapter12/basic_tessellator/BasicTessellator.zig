@@ -12,6 +12,7 @@ surface_program: u32 = undefined,
 surface_vao: u32 = undefined,
 surface_m: math.matrix = math.matrix.identity(),
 surface_u: rhi.Uniform = undefined,
+surface_t: ?rhi.Texture = null,
 
 const BasicTessellator = @This();
 
@@ -68,7 +69,12 @@ pub fn updateCamera(_: *BasicTessellator) void {}
 pub fn draw(self: *BasicTessellator, dt: f64) void {
     self.view_camera.update(dt);
     {
+        c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
         rhi.runTessalation(self.grid_program, 1);
+        c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
+    }
+    if (self.surface_t) |t| {
+        t.bind();
     }
     {
         rhi.runTessalation(self.surface_program, 16);
@@ -134,9 +140,18 @@ pub fn renderSurface(self: *BasicTessellator) void {
     const prog = rhi.createProgram();
     const vao = rhi.createVAO();
 
+    self.surface_t = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.surface_t.?.texture_unit = 2;
+
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
+    const frag_bindings = [_]usize{2};
     const surface_vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(surface_vert);
-    const surface_frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_frag.glsl")) catch @panic("shader compiler");
+    var surface_frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_frag.glsl")) catch @panic("shader compiler");
+    surface_frag = if (!disable_bindless) surface_frag else rhi.Shader.disableBindless(
+        surface_frag,
+        frag_bindings[0..],
+    ) catch @panic("bindless");
     defer self.allocator.free(surface_frag);
     const surface_tcs = Compiler.runWithBytes(self.allocator, @embedFile("surface_tcs.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(surface_tcs);
@@ -154,6 +169,13 @@ pub fn renderSurface(self: *BasicTessellator) void {
         .program = prog,
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
+
+    if (self.surface_t) |*t| {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_tiles.jpg") catch null, prog, "f_samp_2") catch {
+            self.surface_t = null;
+        };
+    }
+
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0, -15));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(10));
