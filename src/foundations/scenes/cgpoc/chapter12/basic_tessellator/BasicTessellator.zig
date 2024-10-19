@@ -134,20 +134,20 @@ pub fn renderSurface(self: *BasicTessellator) void {
     const prog = rhi.createProgram();
     const vao = rhi.createVAO();
 
-    const grid_vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(grid_vert);
-    const grid_frag = Compiler.runWithBytes(self.allocator, @embedFile("grid_frag.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(grid_frag);
-    const grid_tcs = Compiler.runWithBytes(self.allocator, @embedFile("grid_tcs.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(grid_tcs);
-    const grid_tes = Compiler.runWithBytes(self.allocator, @embedFile("grid_tes.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(grid_tes);
+    const surface_vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_vert.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(surface_vert);
+    const surface_frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_frag.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(surface_frag);
+    const surface_tcs = Compiler.runWithBytes(self.allocator, @embedFile("surface_tcs.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(surface_tcs);
+    const surface_tes = Compiler.runWithBytes(self.allocator, @embedFile("surface_tes.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(surface_tes);
 
     const shaders = [_]rhi.Shader.ShaderData{
-        .{ .source = grid_vert, .shader_type = c.GL_VERTEX_SHADER },
-        .{ .source = grid_frag, .shader_type = c.GL_FRAGMENT_SHADER },
-        .{ .source = grid_tcs, .shader_type = c.GL_TESS_CONTROL_SHADER },
-        .{ .source = grid_tes, .shader_type = c.GL_TESS_EVALUATION_SHADER },
+        .{ .source = surface_vert, .shader_type = c.GL_VERTEX_SHADER },
+        .{ .source = surface_frag, .shader_type = c.GL_FRAGMENT_SHADER },
+        .{ .source = surface_tcs, .shader_type = c.GL_TESS_CONTROL_SHADER },
+        .{ .source = surface_tes, .shader_type = c.GL_TESS_EVALUATION_SHADER },
     };
 
     const s: rhi.Shader = .{
