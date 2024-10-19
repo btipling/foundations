@@ -18,7 +18,7 @@ sphere: object.object = .{ .norender = .{} },
 sphere_matrix: rhi.Uniform = undefined,
 moon_light_pos: rhi.Uniform = undefined,
 earth_light_pos: rhi.Uniform = undefined,
-earth_frag_out: []const u8 = undefined,
+earth_frag: []const u8 = undefined,
 
 const SurfaceDetail = @This();
 
@@ -29,7 +29,6 @@ const mats = [_]lighting.Material{
 const moon_vertex_shader: []const u8 = @embedFile("moon_vert.glsl");
 const moon_frag_shader: []const u8 = @embedFile("moon_frag.glsl");
 const earth_vertex_shader: []const u8 = @embedFile("earth_vert.glsl");
-const earth_frag_shader: []const u8 = @embedFile("earth_frag.glsl");
 const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 const earth_texture_shader: []const u8 = @embedFile("earth_vert_texture.glsl");
@@ -86,19 +85,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
-    var cwd_buf: [1000]u8 = undefined;
-    var args: Compiler.Args = .{
-        .source_file = "earth_frag_out.glsl",
-        .output_path = "out",
-        .file_name = "earth_frag_out.out.glsl",
-    };
-    const earth_ctx: Compiler.Ctx = .{
-        .cwd = std.fs.cwd().realpath(".", &cwd_buf) catch @panic("no cwd"),
-        .args = &args,
-    };
-    const earth_frag_out = Compiler.runWithBytes(allocator, earth_ctx, earth_frag_shader) catch @panic("shader compiler");
-    std.debug.print("'{s}'", .{earth_frag_out});
-
     const ui_state: SurfaceDetailUI = .{};
     sd.* = .{
         .ui_state = ui_state,
@@ -107,7 +93,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
         .ctx = ctx,
         .lights = lights_buf,
         .materials = mats_buf,
-        .earth_frag_out = earth_frag_out,
+        .earth_frag = Compiler.runWithBytes(allocator, @embedFile("earth_frag.glsl")) catch @panic("shader compiler"),
     };
 
     sd.renderCubemap();
@@ -132,7 +118,7 @@ pub fn deinit(self: *SurfaceDetail, allocator: std.mem.Allocator) void {
     if (self.moon_normal_map) |et| {
         et.deinit();
     }
-    self.allocator.free(self.earth_frag_out);
+    self.allocator.free(self.earth_frag);
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     self.materials.deinit();
@@ -355,7 +341,7 @@ pub fn renderEarth(self: *SurfaceDetail) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .frag_body = self.earth_frag_out,
+            .frag_body = self.earth_frag,
             .bindless_vertex = true,
             .fragment_shader = .disabled,
         };

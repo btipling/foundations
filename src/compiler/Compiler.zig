@@ -55,7 +55,19 @@ pub fn run(self: *Compiler) !void {
 }
 
 // Caller owns returned bytes.
-pub fn runWithBytes(allocator: std.mem.Allocator, ctx: Ctx, in: []const u8) ![]const u8 {
+pub fn runWithBytes(
+    allocator: std.mem.Allocator,
+    in: []const u8,
+) ![]const u8 {
+    var args: Compiler.Args = .{
+        .source_file = "sourc.glsl",
+        .output_path = "out",
+        .file_name = "shader.out.glsl",
+    };
+    const ctx: Compiler.Ctx = .{
+        .cwd = std.fs.cwd().realpath(".", &cwd_buf) catch @panic("no cwd"),
+        .args = &args,
+    };
     const source_file: *File = try File.initWithEmbed(allocator, in);
     defer source_file.deinit(allocator);
 
