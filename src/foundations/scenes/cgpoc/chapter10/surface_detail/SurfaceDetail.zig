@@ -30,10 +30,6 @@ const moon_frag_shader: []const u8 = @embedFile("moon_frag.glsl");
 const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
-const earth_texture_shader: []const u8 = @embedFile("earth_vert_texture.glsl");
-const earth_bindless_shader: []const u8 = @embedFile("earth_vert_bindless.glsl");
-const earth_vertex_shader = @embedFile("earth_vert.glsl");
-
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,

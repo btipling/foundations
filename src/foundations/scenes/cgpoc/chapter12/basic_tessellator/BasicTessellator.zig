@@ -12,8 +12,6 @@ inc: f32 = 0.01,
 
 const BasicTessellator = @This();
 
-const vertex_shader: []const u8 = @embedFile("vertex.glsl");
-
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
@@ -35,16 +33,24 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BasicTessel
         0,
     );
     errdefer cam.deinit(allocator);
+
     const prog = rhi.createProgram();
     const vao = rhi.createVAO();
-    {
-        var s: rhi.Shader = .{
-            .program = prog,
-            .instance_data = false,
-            .fragment_shader = .color,
-        };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
-    }
+
+    const point_vert = Compiler.runWithBytes(allocator, @embedFile("point_vert.glsl")) catch @panic("shader compiler");
+    defer allocator.free(point_vert);
+    const point_frag = Compiler.runWithBytes(allocator, @embedFile("point_frag.glsl")) catch @panic("shader compiler");
+    defer allocator.free(point_frag);
+
+    const shaders = [_]rhi.Shader.ShaderData{
+        .{ .source = point_vert, .shader_type = c.GL_VERTEX_SHADER },
+        .{ .source = point_frag, .shader_type = c.GL_FRAGMENT_SHADER },
+    };
+
+    const s: rhi.Shader = .{
+        .program = prog,
+    };
+    s.attachAndLinkAll(allocator, shaders[0..]);
 
     bt.* = .{
         .view_camera = cam,
@@ -56,11 +62,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BasicTessel
         .allocator = allocator,
     };
 
-    
-
     bt.renderDebugCross();
     errdefer bt.deleteDebugCross();
-    
+
     return bt;
 }
 
@@ -101,9 +105,11 @@ pub fn renderDebugCross(self: *BasicTessellator) void {
 }
 
 const std = @import("std");
+const c = @import("../../../../c.zig").c;
 const rhi = @import("../../../../rhi/rhi.zig");
 const ui = @import("../../../../ui/ui.zig");
 const scenes = @import("../../../scenes.zig");
 const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
+const Compiler = @import("../../../../../compiler/Compiler.zig");

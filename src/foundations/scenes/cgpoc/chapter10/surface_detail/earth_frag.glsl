@@ -20,12 +20,7 @@ layout(bindless_sampler) uniform samplerCube f_cubemap;
 
 out vec4 fo_frag_color;
 
-in vec2 f_tc;
-in vec4 f_frag_color;
-in vec3 fo_normal;
-in vec3 fo_vert;
-in vec3 fo_lightdir;
-in vec4 fo_tangent;
+//#include "src/foundations/shaders/frag_ins.glsl"
 
 //#include "src/foundations/shaders/material.glsl"
 //#include "src/foundations/shaders/light.glsl"

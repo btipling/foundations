@@ -23,12 +23,8 @@ layout (location = 9) in vec4 f_i_color;
 
 uniform mat4 f_model_transform;
 
-out vec2 f_tc;
-out vec4 f_frag_color;
-out vec3 fo_normal;
-out vec3 fo_vert;
-out vec3 fo_lightdir;
-out vec4 fo_tangent;
+
+//#include "src/foundations/shaders/vertex_outs.glsl"
 
 layout(bindless_sampler) uniform sampler2D f_earth_heightmap;
 

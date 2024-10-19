@@ -1,5 +1,6 @@
+program: u32,
 fragment_shader: fragment_shader_type = .custom,
-instance_data: bool,
+instance_data: bool = true,
 vertex_partials: [max_vertex_partials][]const u8 = undefined,
 num_vertex_partials: usize = 0,
 frag_partials: [max_frag_partials][]const u8 = undefined,
@@ -7,10 +8,14 @@ num_frag_partials: usize = 0,
 xup: xup_type = .none,
 lighting: lighting_type = .none,
 frag_body: ?[]const u8 = null,
-program: u32 = 0,
 shadowmaps: bool = false,
 cubemap: bool = false,
 bindless_vertex: bool = false,
+
+const ShaderErr = error{
+    ShaderCompileFailed,
+    LinkError,
+};
 
 const max_frag_partials: usize = 15;
 const max_vertex_partials: usize = 15;
@@ -185,13 +190,19 @@ pub fn attachAndLinkAll(self: Shader, allocator: std.mem.Allocator, shaders: []c
 
         const shader = c.glCreateShader(shaders[i].shader_type);
 
-        self.attachToProgram(shader, source);
+        self.attachToProgram(shader, source) catch {
+            for (shaders) |s| std.debug.print("\n\n{s}\n\n", .{s.source});
+            @panic("attach shader failure");
+        };
     }
-    self.link();
+    self.link() catch {
+        for (shaders) |s| std.debug.print("\n\n{s}\n\n", .{s.source});
+        @panic("link failure");
+    };
     return;
 }
 
-pub fn attachToProgram(self: Shader, shader: c.GLenum, source: []const u8) void {
+pub fn attachToProgram(self: Shader, shader: c.GLenum, source: []const u8) ShaderErr!void {
     c.glShaderSource(shader, 1, &[_][*c]const u8{source.ptr}, null);
     c.glCompileShader(shader);
 
@@ -202,12 +213,13 @@ pub fn attachToProgram(self: Shader, shader: c.GLenum, source: []const u8) void 
         var logSize: c.GLsizei = 0;
         c.glGetShaderInfoLog(shader, @intCast(log_len), &logSize, @ptrCast(&infoLog));
         const len: usize = @intCast(logSize);
-        std.debug.panic("ERROR::SHADER::COMPILATION_FAILED\n{s}\n{s}\n", .{ infoLog[0..len], source });
+        std.debug.print("ERROR::SHADER::COMPILATION_FAILED\n{s}\n{s}\n", .{ infoLog[0..len], source });
+        return ShaderErr.ShaderCompileFailed;
     }
     c.glAttachShader(@intCast(self.program), shader);
 }
 
-pub fn link(self: Shader) void {
+pub fn link(self: Shader) ShaderErr!void {
     c.glLinkProgram(@intCast(self.program));
     var success: c.GLint = 0;
     c.glGetProgramiv(@intCast(self.program), c.GL_LINK_STATUS, &success);
@@ -216,7 +228,8 @@ pub fn link(self: Shader) void {
         var logSize: c.GLsizei = 0;
         c.glGetProgramInfoLog(@intCast(self.program), @intCast(log_len), &logSize, @ptrCast(&infoLog));
         const len: usize = @intCast(logSize);
-        std.debug.panic("ERROR::PROGRAM::LINKING_FAILED\n{s}\n", .{infoLog[0..len]});
+        std.debug.print("ERROR::PROGRAM::LINKING_FAILED\n{s}\n", .{infoLog[0..len]});
+        return ShaderErr.LinkError;
     }
 }
 
