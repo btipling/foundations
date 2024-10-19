@@ -71,7 +71,7 @@ pub fn draw(self: *BasicTessellator, dt: f64) void {
         rhi.runTessalation(self.grid_program, 1);
     }
     {
-        rhi.runTessalation(self.surface_program, 1);
+        rhi.runTessalation(self.surface_program, 16);
     }
     self.cross.draw(dt);
 }
