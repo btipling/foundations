@@ -58,7 +58,7 @@ pub fn run(self: *Compiler) !void {
 pub fn runWithBytes(
     allocator: std.mem.Allocator,
     in: []const u8,
-) ![]const u8 {
+) ![]u8 {
     var args: Compiler.Args = .{
         .source_file = "sourc.glsl",
         .output_path = "out",

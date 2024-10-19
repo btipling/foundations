@@ -217,5 +217,46 @@ pub fn link(self: Shader) void {
     }
 }
 
+const needle: []const u8 = "layout(bindless_sampler)";
+const needle_len: usize = needle.len;
+
+pub fn disableBindless(
+    bytes: []u8,
+    locations: []const usize,
+) ![]u8 {
+    var buf: [50]u8 = undefined;
+    var loc: usize = 0;
+
+    var i: usize = 0;
+    while (i < bytes.len or loc == locations.len) {
+        if (bytes[i] != '\n') {
+            i += 1;
+            continue;
+        }
+        var j: usize = i;
+        while (j < bytes.len or loc == locations.len) {
+            if (bytes[j] != '\n') {
+                j += 1;
+                continue;
+            }
+            const line = bytes[i..j];
+            var zeroed = " " ** needle_len;
+            var replacement_buf: [needle_len]u8 = undefined;
+            @memcpy(&replacement_buf, zeroed[0..]);
+            if (line.len < needle_len) continue;
+            if (!std.mem.eql(u8, line[0..needle_len], needle)) continue;
+            const replacement = try std.fmt.bufPrint(
+                &buf,
+                "layout(binding={d})",
+                .{locations[loc]},
+            );
+            @memcpy(replacement_buf[0..replacement.len], replacement[0..replacement.len]);
+            @memcpy(bytes[i..needle_len], replacement_buf[0..]);
+            loc += 1;
+        }
+    }
+    return bytes;
+}
+
 const std = @import("std");
 const c = @import("../c.zig").c;

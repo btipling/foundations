@@ -328,7 +328,7 @@ pub fn deleteEarth(self: *SurfaceDetail) void {
     rhi.deleteObjects(objects[0..]);
 }
 
-pub fn renderEarth(self: *SurfaceDetail, vert: []const u8, frag: []const u8) void {
+pub fn renderEarth(self: *SurfaceDetail, vert: []u8, frag: []u8) void {
     const prog = rhi.createProgram();
     self.earth_normal_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.earth_normal_map.?.texture_unit = 2;
@@ -336,15 +336,23 @@ pub fn renderEarth(self: *SurfaceDetail, vert: []const u8, frag: []const u8) voi
     self.earth_texture.?.texture_unit = 3;
     self.earth_height_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.earth_height_map.?.texture_unit = 17;
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
+    const frag_bindings = [_]usize{ 2, 3, 17 };
+    const vert_bindings = [_]usize{17};
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .frag_body = frag,
-            .bindless_vertex = true,
+            .frag_body = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+                frag,
+                frag_bindings[0..],
+            ) catch @panic("bindless"),
+            .bindless_vertex = !disable_bindless,
             .fragment_shader = .disabled,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vert)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(
+            if (!disable_bindless) vert else rhi.Shader.disableBindless(vert, vert_bindings[0..]) catch @panic("bindless"),
+        )[0..]);
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
