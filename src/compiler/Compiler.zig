@@ -3,6 +3,10 @@ ctx: Ctx,
 
 const Compiler = @This();
 
+const CompilerError = error{
+    NoOutputError,
+};
+
 var cwd_buf: [1000]u8 = undefined;
 
 pub const Ctx = struct {
@@ -50,13 +54,32 @@ pub fn run(self: *Compiler) !void {
     try inc.output_file.write(self.allocator);
 }
 
+// Caller owns returned bytes.
+pub fn runWithBytes(allocator: std.mem.Allocator, ctx: Ctx, in: []const u8) ![]const u8 {
+    const source_file: *File = try File.initWithEmbed(allocator, in);
+    defer source_file.deinit(allocator);
+
+    var parser: *Parser = try Parser.init(allocator, source_file);
+    defer parser.deinit(allocator);
+
+    try parser.parse(allocator);
+
+    var inc = try Includer.init(allocator, source_file, ctx, parser);
+    defer inc.deinit(allocator);
+
+    try inc.fetch(allocator, ctx);
+    try inc.include(allocator);
+    const bytes = inc.output_file.bytes orelse return CompilerError.NoOutputError;
+    return try allocator.dupe(u8, bytes);
+}
+
 pub fn deinit(self: *Compiler) void {
     self.ctx.args.deinit(self.allocator);
     self.allocator.destroy(self);
 }
 
 const std = @import("std");
-const Args = @import("Args.zig");
+pub const Args = @import("Args.zig");
 const File = @import("File.zig");
 const Parser = @import("Parser.zig");
 const Includer = @import("Includer.zig");

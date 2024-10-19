@@ -1,5 +1,25 @@
 #version 460 core
+#extension GL_ARB_bindless_texture : require
 
+layout(bindless_sampler) uniform sampler2D f_samp;
+layout(bindless_sampler) uniform sampler2D f_samp_1;
+layout(bindless_sampler) uniform sampler2D f_samp_2;
+layout(bindless_sampler) uniform sampler2D f_samp_3;
+layout(bindless_sampler) uniform samplerCube f_cubemap;
+
+//#include "src/foundations/shaders/camera.glsl"
+
+out vec4 fo_frag_color;
+
+in vec2 f_tc;
+in vec4 f_frag_color;
+in vec3 fo_normal;
+in vec3 fo_vert;
+in vec3 fo_lightdir;
+in vec4 fo_tangent;
+
+//#include "src/foundations/shaders/material.glsl"
+//#include "src/foundations/shaders/light.glsl"
 //#include "src/foundations/shaders/f_calc_new_normal.glsl"
 
 void main()

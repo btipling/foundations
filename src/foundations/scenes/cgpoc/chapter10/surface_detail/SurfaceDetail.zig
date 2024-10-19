@@ -18,6 +18,7 @@ sphere: object.object = .{ .norender = .{} },
 sphere_matrix: rhi.Uniform = undefined,
 moon_light_pos: rhi.Uniform = undefined,
 earth_light_pos: rhi.Uniform = undefined,
+earth_frag_out: []const u8 = undefined,
 
 const SurfaceDetail = @This();
 
@@ -85,6 +86,19 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
+    var cwd_buf: [1000]u8 = undefined;
+    var args: Compiler.Args = .{
+        .source_file = "earth_frag_out.glsl",
+        .output_path = "out",
+        .file_name = "earth_frag_out.out.glsl",
+    };
+    const earth_ctx: Compiler.Ctx = .{
+        .cwd = std.fs.cwd().realpath(".", &cwd_buf) catch @panic("no cwd"),
+        .args = &args,
+    };
+    const earth_frag_out = Compiler.runWithBytes(allocator, earth_ctx, earth_frag_shader) catch @panic("shader compiler");
+    std.debug.print("'{s}'", .{earth_frag_out});
+
     const ui_state: SurfaceDetailUI = .{};
     sd.* = .{
         .ui_state = ui_state,
@@ -93,6 +107,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
         .ctx = ctx,
         .lights = lights_buf,
         .materials = mats_buf,
+        .earth_frag_out = earth_frag_out,
     };
 
     sd.renderCubemap();
@@ -117,6 +132,7 @@ pub fn deinit(self: *SurfaceDetail, allocator: std.mem.Allocator) void {
     if (self.moon_normal_map) |et| {
         et.deinit();
     }
+    self.allocator.free(self.earth_frag_out);
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     self.materials.deinit();
@@ -339,10 +355,9 @@ pub fn renderEarth(self: *SurfaceDetail) void {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .lighting = .blinn_phong,
-            .frag_body = earth_frag_shader,
+            .frag_body = self.earth_frag_out,
             .bindless_vertex = true,
-            .fragment_shader = rhi.Texture.frag_shader(self.earth_texture),
+            .fragment_shader = .disabled,
         };
         const vert_shaders = [_][]const u8{ earth_height_map, earth_vertex_shader };
         s.attach(self.allocator, vert_shaders[0..]);
@@ -452,3 +467,4 @@ const scenery = @import("../../../../scenery/scenery.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
 const SurfaceDetailUI = @import("SurfaceDetailUI.zig");
+const Compiler = @import("../../../../../compiler/Compiler.zig");

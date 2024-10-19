@@ -24,6 +24,7 @@ pub const fragment_shader_type = enum(usize) {
     lighting,
     shadow,
     custom,
+    disabled,
 };
 
 pub const lighting_type = enum(usize) {
@@ -111,32 +112,34 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     const vertex = std.mem.concat(allocator, u8, self.vertex_partials[0..self.num_vertex_partials]) catch @panic("OOM");
     defer allocator.free(vertex);
 
-    {
-        self.frag_partials[self.num_frag_partials] = frag_header;
-        self.num_frag_partials += 1;
-    }
-    if (self.fragment_shader == .bindless) {
-        self.frag_partials[self.num_frag_partials] = frag_bindless_header;
-        self.num_frag_partials += 1;
-        if (self.shadowmaps) {
-            self.frag_partials[self.num_frag_partials] = frag_bindless_shadowmaps;
+    if (self.fragment_shader != .disabled) {
+        {
+            self.frag_partials[self.num_frag_partials] = frag_header;
             self.num_frag_partials += 1;
         }
-    } else if (self.fragment_shader == .texture) {
-        self.frag_partials[self.num_frag_partials] = frag_texture_header;
-        self.num_frag_partials += 1;
-        if (self.shadowmaps) {
-            self.frag_partials[self.num_frag_partials] = frag_texture_shadowmaps;
+        if (self.fragment_shader == .bindless) {
+            self.frag_partials[self.num_frag_partials] = frag_bindless_header;
+            self.num_frag_partials += 1;
+            if (self.shadowmaps) {
+                self.frag_partials[self.num_frag_partials] = frag_bindless_shadowmaps;
+                self.num_frag_partials += 1;
+            }
+        } else if (self.fragment_shader == .texture) {
+            self.frag_partials[self.num_frag_partials] = frag_texture_header;
+            self.num_frag_partials += 1;
+            if (self.shadowmaps) {
+                self.frag_partials[self.num_frag_partials] = frag_texture_shadowmaps;
+                self.num_frag_partials += 1;
+            }
+        }
+        {
+            self.frag_partials[self.num_frag_partials] = frag_subheader;
             self.num_frag_partials += 1;
         }
-    }
-    {
-        self.frag_partials[self.num_frag_partials] = frag_subheader;
-        self.num_frag_partials += 1;
-    }
-    if (self.lighting != .none) {
-        self.frag_partials[self.num_frag_partials] = lighting_glsl;
-        self.num_frag_partials += 1;
+        if (self.lighting != .none) {
+            self.frag_partials[self.num_frag_partials] = lighting_glsl;
+            self.num_frag_partials += 1;
+        }
     }
     if (self.frag_body) |frag_body| {
         self.frag_partials[self.num_frag_partials] = frag_body;
@@ -154,6 +157,7 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
             },
             .shadow => frag_shadow,
             .custom => null,
+            .disabled => null,
         };
         if (frag_body) |fb| {
             self.frag_partials[self.num_frag_partials] = fb;
