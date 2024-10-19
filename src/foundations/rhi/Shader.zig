@@ -73,37 +73,39 @@ const frag_phong_lighting = @embedFile("../shaders/frag_phong_lighting.glsl");
 const frag_blinn_phong_lighting = @embedFile("../shaders/frag_blinn_phong_lighting.glsl");
 
 pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []const []const u8) void {
-    {
-        self.vertex_partials[self.num_vertex_partials] = vertex_header;
-        self.num_vertex_partials += 1;
-    }
-    if (self.bindless_vertex) {
-        self.vertex_partials[self.num_vertex_partials] = vertex_bindless_header;
-        self.num_vertex_partials += 1;
-    }
-    {
-        self.vertex_partials[self.num_vertex_partials] = vertex_attrib_header;
-        self.num_vertex_partials += 1;
-    }
-    {
-        self.vertex_partials[self.num_vertex_partials] = vertex_subheader;
-        self.num_vertex_partials += 1;
-    }
-    {
-        const xup = switch (self.xup) {
-            .wavefront => vertex_xup_wavefront,
-            else => vertex_xup,
-        };
-        self.vertex_partials[self.num_vertex_partials] = xup;
-        self.num_vertex_partials += 1;
-    }
-    if (self.instance_data) {
-        self.vertex_partials[self.num_vertex_partials] = vertex_attrib_i_data;
-        self.num_vertex_partials += 1;
-    }
-    if (self.lighting != .none) {
-        self.vertex_partials[self.num_vertex_partials] = lighting_glsl;
-        self.num_vertex_partials += 1;
+    if (self.fragment_shader != .disabled) {
+        {
+            self.vertex_partials[self.num_vertex_partials] = vertex_header;
+            self.num_vertex_partials += 1;
+        }
+        if (self.bindless_vertex) {
+            self.vertex_partials[self.num_vertex_partials] = vertex_bindless_header;
+            self.num_vertex_partials += 1;
+        }
+        {
+            self.vertex_partials[self.num_vertex_partials] = vertex_attrib_header;
+            self.num_vertex_partials += 1;
+        }
+        {
+            self.vertex_partials[self.num_vertex_partials] = vertex_subheader;
+            self.num_vertex_partials += 1;
+        }
+        {
+            const xup = switch (self.xup) {
+                .wavefront => vertex_xup_wavefront,
+                else => vertex_xup,
+            };
+            self.vertex_partials[self.num_vertex_partials] = xup;
+            self.num_vertex_partials += 1;
+        }
+        if (self.instance_data) {
+            self.vertex_partials[self.num_vertex_partials] = vertex_attrib_i_data;
+            self.num_vertex_partials += 1;
+        }
+        if (self.lighting != .none) {
+            self.vertex_partials[self.num_vertex_partials] = lighting_glsl;
+            self.num_vertex_partials += 1;
+        }
     }
     for (vertex_partials) |partial| {
         self.vertex_partials[self.num_vertex_partials] = partial;
@@ -166,7 +168,8 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     }
     const frag = std.mem.concat(allocator, u8, self.frag_partials[0..self.num_frag_partials]) catch @panic("OOM");
     defer allocator.free(frag);
-
+    std.debug.print("\n\n{s}\n\n", .{vertex});
+    std.debug.print("\n\n{s}\n\n", .{frag});
     const shaders = [_]struct { source: []const u8, shader_type: c.GLenum }{
         .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
         .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },

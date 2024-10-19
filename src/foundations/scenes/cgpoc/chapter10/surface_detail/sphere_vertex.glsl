@@ -1,4 +1,6 @@
 
+// ********* SPHERE VERTEX SHADER *********
+
 uniform mat4 f_sphere_matrix;
 
 void main()

@@ -1,3 +1,6 @@
+
+// ********* MOON FRAG SHADER *********
+
 vec3 f_calc_new_normal() {
     vec3 f_n_normal = normalize(fo_normal);
     vec3 f_n_tangent = normalize(fo_tangent.xyz);
