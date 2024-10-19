@@ -8,8 +8,8 @@ point_vao: u32 = undefined,
 point_x: f32 = 0,
 point_inc: f32 = 0.01,
 
-tess_program: u32 = undefined,
-tess_vao: u32 = undefined,
+grid_program: u32 = undefined,
+grid_vao: u32 = undefined,
 
 const BasicTessellator = @This();
 
@@ -44,6 +44,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BasicTessel
     bt.renderPoint();
     errdefer bt.deletePoint();
 
+    bt.renderGrid();
+    errdefer bt.deleteGrid();
+
     bt.renderDebugCross();
     errdefer bt.deleteDebugCross();
 
@@ -52,6 +55,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BasicTessel
 
 pub fn deinit(self: *BasicTessellator, allocator: std.mem.Allocator) void {
     self.deleteCross();
+    self.deleteGrid();
     self.deletePoint();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
@@ -63,6 +67,9 @@ pub fn updateCamera(_: *BasicTessellator) void {}
 pub fn draw(self: *BasicTessellator, dt: f64) void {
     self.view_camera.update(dt);
     {
+        rhi.drawPoints(self.grid_program, self.grid_vao, 1);
+    }
+    {
         self.point_x += self.point_inc;
         if (self.point_x >= 1) {
             self.point_inc = -self.point_inc;
@@ -71,7 +78,7 @@ pub fn draw(self: *BasicTessellator, dt: f64) void {
             self.point_inc = -self.point_inc;
         }
         rhi.setUniform1f(self.point_program, "f_offset", self.point_x);
-        rhi.drawPoints(self.point_program, self.point_vao, 1);
+        rhi.runTessalation(self.grid_program, 1);
     }
     self.cross.draw(dt);
 }
@@ -112,6 +119,38 @@ pub fn renderPoint(self: *BasicTessellator) void {
     s.attachAndLinkAll(self.allocator, shaders[0..]);
     self.point_program = prog;
     self.point_vao = vao;
+}
+
+pub fn deleteGrid(self: *BasicTessellator) void {
+    rhi.deletePrimitive(self.grid_program, self.grid_vao, 0);
+}
+
+pub fn renderGrid(self: *BasicTessellator) void {
+    const prog = rhi.createProgram();
+    const vao = rhi.createVAO();
+
+    const grid_vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(grid_vert);
+    const grid_frag = Compiler.runWithBytes(self.allocator, @embedFile("grid_frag.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(grid_frag);
+    const grid_tcs = Compiler.runWithBytes(self.allocator, @embedFile("grid_tcs.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(grid_tcs);
+    const grid_tes = Compiler.runWithBytes(self.allocator, @embedFile("grid_tes.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(grid_tes);
+
+    const shaders = [_]rhi.Shader.ShaderData{
+        .{ .source = grid_vert, .shader_type = c.GL_VERTEX_SHADER },
+        .{ .source = grid_frag, .shader_type = c.GL_FRAGMENT_SHADER },
+        .{ .source = grid_tcs, .shader_type = c.GL_TESS_CONTROL_SHADER },
+        .{ .source = grid_tes, .shader_type = c.GL_TESS_EVALUATION_SHADER },
+    };
+
+    const s: rhi.Shader = .{
+        .program = prog,
+    };
+    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    self.grid_program = prog;
+    self.grid_vao = vao;
 }
 
 const std = @import("std");

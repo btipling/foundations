@@ -1,5 +1,7 @@
 #version 460
 
+layout(vertices = 1) out;
+
 void main(void)
 {
     gl_TessLevelOuter[0] = 6;

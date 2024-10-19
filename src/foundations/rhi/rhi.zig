@@ -229,6 +229,14 @@ pub fn drawPoints(program: u32, vao: u32, count: usize) void {
     c.glPointSize(1.0);
 }
 
+pub fn runTessalation(program: u32, count: usize) void {
+    c.glUseProgram(@intCast(program));
+    c.glPatchParameteri(c.GL_PATCH_VERTICES, @intCast(count));
+    c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
+    c.glDrawArrays(c.GL_PATCHES, 0, @intCast(count));
+    c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
+}
+
 pub fn drawLines(program: u32, vao: u32, count: usize, width: f32) void {
     c.glUseProgram(@intCast(program));
     c.glBindVertexArray(vao);
