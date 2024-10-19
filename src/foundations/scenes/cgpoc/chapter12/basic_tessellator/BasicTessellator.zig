@@ -67,7 +67,7 @@ pub fn updateCamera(_: *BasicTessellator) void {}
 pub fn draw(self: *BasicTessellator, dt: f64) void {
     self.view_camera.update(dt);
     {
-        rhi.drawPoints(self.grid_program, self.grid_vao, 1);
+        rhi.drawPoints(self.point_program, self.point_vao, 1);
     }
     {
         self.point_x += self.point_inc;
@@ -78,6 +78,8 @@ pub fn draw(self: *BasicTessellator, dt: f64) void {
             self.point_inc = -self.point_inc;
         }
         rhi.setUniform1f(self.point_program, "f_offset", self.point_x);
+    }
+    {
         rhi.runTessalation(self.grid_program, 1);
     }
     self.cross.draw(dt);
