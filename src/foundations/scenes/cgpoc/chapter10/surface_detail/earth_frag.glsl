@@ -7,6 +7,15 @@ layout(bindless_sampler) uniform sampler2D f_samp_2;
 layout(bindless_sampler) uniform sampler2D f_samp_3;
 layout(bindless_sampler) uniform samplerCube f_cubemap;
 
+
+/*******************************************/
+/*******************************************/
+/*******************************************/
+/*******************  EARTH FRAG ***********/
+/*******************************************/
+/*******************************************/
+/*******************************************/
+
 //#include "src/foundations/shaders/camera.glsl"
 
 out vec4 fo_frag_color;

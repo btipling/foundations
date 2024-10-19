@@ -335,10 +335,10 @@ pub fn renderEarth(self: *SurfaceDetail, vert: []u8, frag: []u8) void {
     self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.earth_texture.?.texture_unit = 3;
     self.earth_height_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
-    self.earth_height_map.?.texture_unit = 17;
+    self.earth_height_map.?.texture_unit = 16;
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
-    const frag_bindings = [_]usize{ 2, 3, 17 };
-    const vert_bindings = [_]usize{17};
+    const frag_bindings = [_]usize{ 0, 1, 2, 3, 16 };
+    const vert_bindings = [_]usize{16};
     {
         var s: rhi.Shader = .{
             .program = prog,

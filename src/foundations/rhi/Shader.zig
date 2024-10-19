@@ -168,8 +168,6 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
     }
     const frag = std.mem.concat(allocator, u8, self.frag_partials[0..self.num_frag_partials]) catch @panic("OOM");
     defer allocator.free(frag);
-    std.debug.print("\n\n{s}\n\n", .{vertex});
-    std.debug.print("\n\n{s}\n\n", .{frag});
     const shaders = [_]struct { source: []const u8, shader_type: c.GLenum }{
         .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
         .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
@@ -228,32 +226,46 @@ pub fn disableBindless(
     var loc: usize = 0;
 
     var i: usize = 0;
-    while (i < bytes.len or loc == locations.len) {
+    var line_num: usize = 0;
+    while (i < bytes.len) {
+        if (loc >= locations.len) break;
         if (bytes[i] != '\n') {
             i += 1;
             continue;
         }
-        var j: usize = i;
-        while (j < bytes.len or loc == locations.len) {
+        line_num += 1;
+        const line_start = i + 1;
+        var j: usize = line_start + 1;
+        while (j < bytes.len) {
+            if (loc >= locations.len) break;
             if (bytes[j] != '\n') {
                 j += 1;
                 continue;
             }
-            const line = bytes[i..j];
+            if (line_num == 1) {
+                // comment out extension header
+                bytes[line_start] = '/';
+                bytes[line_start + 1] = '/';
+            }
+            if (line_start + needle_len > bytes.len) break;
+            const line = bytes[line_start..j];
             var zeroed = " " ** needle_len;
             var replacement_buf: [needle_len]u8 = undefined;
             @memcpy(&replacement_buf, zeroed[0..]);
-            if (line.len < needle_len) continue;
-            if (!std.mem.eql(u8, line[0..needle_len], needle)) continue;
+            if (line.len < needle_len) break;
+            if (!std.mem.eql(u8, line[0..needle_len], needle)) break;
             const replacement = try std.fmt.bufPrint(
                 &buf,
                 "layout(binding={d})",
                 .{locations[loc]},
             );
             @memcpy(replacement_buf[0..replacement.len], replacement[0..replacement.len]);
-            @memcpy(bytes[i..needle_len], replacement_buf[0..]);
+            @memcpy(bytes[line_start .. line_start + needle_len], replacement_buf[0..]);
             loc += 1;
+            j += 1;
+            break;
         }
+        i += 1;
     }
     return bytes;
 }
