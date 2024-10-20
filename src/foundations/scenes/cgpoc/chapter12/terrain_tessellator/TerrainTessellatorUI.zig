@@ -1,5 +1,5 @@
 light_1: lightSetting = .{
-    .position = .{ 5, 0, 0 },
+    .position = .{ 0, 0, 0 },
 },
 rotation: rotationSetting = .{
     .rotation = .{ 0, 0, 0 },
@@ -42,9 +42,9 @@ pub fn draw(self: *TerrainTessellatorUI) void {
         }
         {
             c.igPushItemWidth(-1);
-            if (c.igSliderFloat("##l1x", &self.light_1.position[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
-            if (c.igSliderFloat("##l1y", &self.light_1.position[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
-            if (c.igSliderFloat("##l1z", &self.light_1.position[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
+            if (c.igSliderFloat("##l1x", &self.light_1.position[0], -50, 50, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
+            if (c.igSliderFloat("##l1y", &self.light_1.position[1], -50, 50, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
+            if (c.igSliderFloat("##l1z", &self.light_1.position[2], -50, 50, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.position_updated = true;
         }
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color1", @ptrCast(&self.light_1.color), flags)) {

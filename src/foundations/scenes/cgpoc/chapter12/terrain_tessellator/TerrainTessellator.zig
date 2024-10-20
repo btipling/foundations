@@ -166,7 +166,7 @@ pub fn deleteCross(self: *TerrainTessallator) void {
 pub fn renderDebugCross(self: *TerrainTessallator) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
-        math.matrix.translate(0, -0.025, -0.025),
+        math.matrix.translate(2, 0, 0),
         5,
     );
 }
@@ -269,7 +269,7 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
     }
     {
         var m = math.matrix.identity();
-        m = math.matrix.transformMatrix(m, math.matrix.translate(-2, 50, 0));
+        m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0, 0));
         m = math.matrix.transformMatrix(m, math.matrix.scale(25, 100, 100));
         var u = rhi.Uniform.init(prog, "f_terrain_m") catch @panic("uniform");
         u.setUniformMatrix(m);
