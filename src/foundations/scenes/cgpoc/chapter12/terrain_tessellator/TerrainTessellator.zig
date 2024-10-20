@@ -2,6 +2,7 @@ view_camera: *physics.camera.Camera(*TerrainTessallator, physics.Integrator(phys
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
+ui_state: TerrainTesselatorUI,
 
 terrain_program: u32 = undefined,
 terrain_vao: u32 = undefined,
@@ -11,7 +12,30 @@ terrain_t_map: ?rhi.Texture = null,
 terrain_t_tex: ?rhi.Texture = null,
 terrain_t_nor: ?rhi.Texture = null,
 
+sphere_1: object.object = .{ .norender = .{} },
+light_1_position: rhi.Uniform = undefined,
+sphere_1_matrix: rhi.Uniform = undefined,
+normals_matrix: rhi.Uniform = undefined,
+
+materials: rhi.Buffer,
+lights: rhi.Buffer,
+
 const TerrainTessallator = @This();
+
+const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
+
+const mats = [_]lighting.Material{
+    lighting.materials.Gold,
+    lighting.materials.Jade,
+    lighting.materials.Pearl,
+    lighting.materials.Silver,
+    lighting.materials.Copper,
+    lighting.materials.Chrome,
+    lighting.materials.Emerald,
+    lighting.materials.Ruby,
+    lighting.materials.Obsidian,
+    lighting.materials.Brass,
+};
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -35,11 +59,41 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
     );
     errdefer cam.deinit(allocator);
 
+    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
+    var mats_buf = rhi.Buffer.init(bd);
+    errdefer mats_buf.deinit();
+
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+    };
+    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
+    var lights_buf = rhi.Buffer.init(ld);
+    errdefer lights_buf.deinit();
+
+    const ui_state: TerrainTesselatorUI = .{};
     tt.* = .{
+        .ui_state = ui_state,
         .view_camera = cam,
         .ctx = ctx,
         .allocator = allocator,
+        .materials = mats_buf,
+        .lights = lights_buf,
     };
+
+    tt.rendersphere_1();
+    errdefer tt.deletesphere_1();
 
     tt.renderTerrain();
     errdefer tt.deleteTerrain();
@@ -61,7 +115,34 @@ pub fn deinit(self: *TerrainTessallator, allocator: std.mem.Allocator) void {
 pub fn updateCamera(_: *TerrainTessallator) void {}
 
 pub fn draw(self: *TerrainTessallator, dt: f64) void {
+    if (self.ui_state.light_1.position_updated) {
+        const lp = self.ui_state.light_1.position;
+        self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
+        self.light_1_position.setUniform3fv(lp);
+        self.ui_state.light_1.position_updated = false;
+    }
+    if (self.ui_state.rotation.updated) {
+        const rot = self.ui_state.rotation.rotation;
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.rotationX(rot[0]));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationY(rot[1]));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(rot[2]));
+        self.normals_matrix.setUniformMatrix(m);
+        self.ui_state.rotation.updated = false;
+    }
+    if (self.ui_state.light_1.updated) {
+        self.updateLights();
+        self.deletesphere_1();
+        self.rendersphere_1();
+        self.ui_state.light_1.updated = false;
+    }
     self.view_camera.update(dt);
+    {
+        const objects: [1]object.object = .{
+            self.sphere_1,
+        };
+        rhi.drawObjects(objects[0..]);
+    }
     if (self.terrain_t_tex) |t| {
         t.bind();
     }
@@ -75,6 +156,7 @@ pub fn draw(self: *TerrainTessallator, dt: f64) void {
         rhi.runTessalationInstanced(self.terrain_program, 4, 64 * 64);
     }
     self.cross.draw(dt);
+    self.ui_state.draw();
 }
 
 pub fn deleteCross(self: *TerrainTessallator) void {
@@ -91,6 +173,40 @@ pub fn renderDebugCross(self: *TerrainTessallator) void {
 
 pub fn deleteTerrain(self: *TerrainTessallator) void {
     rhi.deletePrimitive(self.terrain_program, self.terrain_vao, 0);
+}
+
+fn updateLights(self: *TerrainTessallator) void {
+    const ambient_factor: f32 = 0.1;
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{
+                self.ui_state.light_1.color[0] * ambient_factor,
+                self.ui_state.light_1.color[1] * ambient_factor,
+                self.ui_state.light_1.color[2] * ambient_factor,
+                1.0,
+            },
+            .diffuse = [4]f32{
+                self.ui_state.light_1.color[0],
+                self.ui_state.light_1.color[1],
+                self.ui_state.light_1.color[2],
+                1.0,
+            },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+    };
+    self.lights.deinit();
+    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
+    var lights_buf = rhi.Buffer.init(ld);
+    errdefer lights_buf.deinit();
+    self.lights = lights_buf;
 }
 
 pub fn renderTerrain(self: *TerrainTessallator) void {
@@ -151,15 +267,72 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
             self.terrain_t_nor = null;
         };
     }
-
-    var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translate(-2, 50, 0));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(25, 100, 100));
-    var u = rhi.Uniform.init(prog, "f_terrain_m") catch @panic("uniform");
-    u.setUniformMatrix(m);
-    self.terrain_u = u;
+    {
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.translate(-2, 50, 0));
+        m = math.matrix.transformMatrix(m, math.matrix.scale(25, 100, 100));
+        var u = rhi.Uniform.init(prog, "f_terrain_m") catch @panic("uniform");
+        u.setUniformMatrix(m);
+        self.terrain_u = u;
+    }
+    {
+        const m = math.matrix.identity();
+        var u = rhi.Uniform.init(prog, "f_normal_rot_m") catch @panic("uniform");
+        u.setUniformMatrix(m);
+        self.normals_matrix = u;
+    }
+    {
+        var lp1: rhi.Uniform = rhi.Uniform.init(prog, "f_light_1_pos") catch .{ .program = prog, .location = 0 };
+        lp1.setUniform3fv(self.ui_state.light_1.position);
+        self.light_1_position = lp1;
+    }
     self.terrain_program = prog;
     self.terrain_vao = vao;
+}
+
+pub fn deletesphere_1(self: *TerrainTessallator) void {
+    const objects: [1]object.object = .{
+        self.sphere_1,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
+pub fn rendersphere_1(self: *TerrainTessallator) void {
+    const prog = rhi.createProgram();
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .instance_data = true,
+            .fragment_shader = .color,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    const m = math.matrix.uniformScale(0.125);
+    i_datas[0] = .{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = .{
+            self.ui_state.light_1.color[0],
+            self.ui_state.light_1.color[1],
+            self.ui_state.light_1.color[2],
+            1,
+        },
+    };
+    const sphere: object.object = .{
+        .sphere = object.Sphere.init(
+            prog,
+            i_datas[0..],
+            false,
+        ),
+    };
+    const lp = self.ui_state.light_1.position;
+    var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
+    sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
+    self.sphere_1_matrix = sm;
+    self.sphere_1 = sphere;
 }
 
 const std = @import("std");
@@ -171,3 +344,6 @@ const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
 const Compiler = @import("../../../../../compiler/Compiler.zig");
+const object = @import("../../../../object/object.zig");
+const lighting = @import("../../../../lighting/lighting.zig");
+const TerrainTesselatorUI = @import("TerrainTessellatorUI.zig");

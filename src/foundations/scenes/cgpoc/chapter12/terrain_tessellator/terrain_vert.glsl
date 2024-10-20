@@ -2,6 +2,8 @@
 
 //#include "src/foundations/shaders/vertex_outs.glsl"
 
+uniform vec3 f_light_1_pos;
+
 void main(void) { 
     vec2 f_patch_tex_coords[] = vec2[](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));
 

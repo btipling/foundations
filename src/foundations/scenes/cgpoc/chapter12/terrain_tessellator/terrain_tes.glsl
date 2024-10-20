@@ -4,6 +4,7 @@
 //#include "src/foundations/shaders/camera.glsl"
 
 uniform mat4 f_terrain_m;
+uniform mat4 f_normal_rot_m;
 layout(bindless_sampler) uniform sampler2D f_height_samp;
 layout(bindless_sampler) uniform sampler2D f_normal_samp;
 
@@ -24,5 +25,5 @@ void main(void)
     gl_Position = f_mvp * f_terrain_m * vec4(f_tp.y, -f_tp.z, f_tp.x, 1.0);
     f_tc_tes = f_tc_out;
     vec3 f_ns = normalize(texture(f_normal_samp, f_tc_out).xyz * 2.0 - 1.0);
-    f_normal_tes = vec3(f_ns.x, f_ns.y, f_ns.z);
+    f_normal_tes = (f_normal_rot_m * vec4(f_ns.x, f_ns.y, f_ns.z, 1.0)).xyz;
 }
