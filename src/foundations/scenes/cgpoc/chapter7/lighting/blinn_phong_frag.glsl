@@ -37,6 +37,5 @@ void main()
     f_ls[0].direction = vec4(fo_light_1_dir, 0.0);
     f_ls[1] = f_lights[1];
     f_ls[1].direction = vec4(fo_light_2_dir, 0.0);
-    // fo_frag_color = f_blinn_phong_lighting(f_m, f_ls, 2, f_global_ambient);
-    fo_frag_color = vec4(normalize(fo_normal.xyz), 1.0) * 0.5 + 0.5;
+    fo_frag_color = f_blinn_phong_lighting(f_m, f_ls, 2, f_global_ambient);
 }
