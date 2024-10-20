@@ -51,7 +51,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BasicTessel
     errdefer bt.deleteSurface();
 
     bt.renderDebugCross();
-    errdefer bt.deleteDebugCross();
+    errdefer bt.deleteCross();
 
     return bt;
 }
@@ -59,6 +59,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *BasicTessel
 pub fn deinit(self: *BasicTessellator, allocator: std.mem.Allocator) void {
     self.deleteCross();
     self.deleteGrid();
+    self.deleteSurface();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -133,7 +134,7 @@ pub fn renderGrid(self: *BasicTessellator) void {
 }
 
 pub fn deleteSurface(self: *BasicTessellator) void {
-    rhi.deletePrimitive(self.grid_program, self.grid_vao, 0);
+    rhi.deletePrimitive(self.surface_program, self.surface_vao, 0);
 }
 
 pub fn renderSurface(self: *BasicTessellator) void {
