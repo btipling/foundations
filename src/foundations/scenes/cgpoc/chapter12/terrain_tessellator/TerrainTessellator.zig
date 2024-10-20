@@ -65,7 +65,7 @@ pub fn draw(self: *TerrainTessallator, dt: f64) void {
         t.bind();
     }
     {
-        rhi.runTessalation(self.terrain_program, 1);
+        rhi.runTessalationInstanced(self.terrain_program, 4, 64 * 64);
     }
     self.cross.draw(dt);
 }
@@ -127,8 +127,8 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
     }
 
     var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translate(-3, 5, 0));
-    m = math.matrix.transformMatrix(m, math.matrix.uniformScale(10));
+    m = math.matrix.transformMatrix(m, math.matrix.translate(-2, 50, 0));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(25, 100, 100));
     var u = rhi.Uniform.init(prog, "f_terrain_m") catch @panic("uniform");
     u.setUniformMatrix(m);
     self.terrain_u = u;

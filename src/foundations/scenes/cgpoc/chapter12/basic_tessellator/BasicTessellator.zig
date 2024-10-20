@@ -71,14 +71,14 @@ pub fn draw(self: *BasicTessellator, dt: f64) void {
     self.view_camera.update(dt);
     {
         c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
-        rhi.runTessalation(self.grid_program, 1);
+        rhi.runTessalation(self.grid_program, 1, 1);
         c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
     }
     if (self.surface_t) |t| {
         t.bind();
     }
     {
-        rhi.runTessalation(self.surface_program, 16);
+        rhi.runTessalation(self.surface_program, 16, 16);
     }
     self.cross.draw(dt);
 }
