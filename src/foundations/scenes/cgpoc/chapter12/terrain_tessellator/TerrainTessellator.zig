@@ -15,7 +15,7 @@ const TerrainTessallator = @This();
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
-        .name = "Basic Tessellator",
+        .name = "Terrain Tessellator",
     };
 }
 
@@ -65,7 +65,7 @@ pub fn draw(self: *TerrainTessallator, dt: f64) void {
         t.bind();
     }
     {
-        rhi.runTessalation(self.terrain_program, 16);
+        rhi.runTessalation(self.terrain_program, 1);
     }
     self.cross.draw(dt);
 }
@@ -121,7 +121,7 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
     s.attachAndLinkAll(self.allocator, shaders[0..]);
 
     if (self.terrain_t_tex) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_tiles.jpg") catch null, prog, "f_samp_2") catch {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_map.jpg") catch null, prog, "f_terrain_samp") catch {
             self.terrain_t_tex = null;
         };
     }

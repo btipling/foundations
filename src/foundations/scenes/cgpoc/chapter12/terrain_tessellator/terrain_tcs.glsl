@@ -1,8 +1,6 @@
 #version 460
 
-in vec2 f_tc[];
-out vec2 f_tc_tcs[];
-layout(vertices = 16) out;
+layout(vertices = 1) out;
 
 void main(void)
 {
@@ -15,6 +13,4 @@ void main(void)
         gl_TessLevelInner[0] = f_TL;
         gl_TessLevelInner[1] = f_TL;
     }
-    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
-    f_tc_tcs[gl_InvocationID] = f_tc[gl_InvocationID];
 }

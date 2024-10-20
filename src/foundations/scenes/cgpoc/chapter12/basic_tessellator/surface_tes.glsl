@@ -46,7 +46,7 @@ void main(void)
       + bu2 * (bv0*p20 + bv1*p21 + bv2*p22 + bv3*p23)
       + bu3 * (bv0*p30 + bv1*p31 + bv2*p32 + bv3*p33);
     
-    gl_Position = f_mvp * f_grid_m * vec4(f_op.y, f_op.z, f_op.x, 1.0);
+    gl_Position = f_mvp * f_grid_m * vec4(f_op.y, -f_op.z, f_op.x, 1.0);
 
     vec2 f_tc1 = mix(f_tc_tcs[0], f_tc_tcs[3], gl_TessCoord.x);
     vec2 f_tc2 = mix(f_tc_tcs[12], f_tc_tcs[15], gl_TessCoord.x);
