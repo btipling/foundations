@@ -229,7 +229,7 @@ pub fn drawPoints(program: u32, vao: u32, count: usize) void {
     c.glPointSize(1.0);
 }
 
-pub fn runTessalation(program: u32, patch_size: usize, count: usize) void {
+pub fn runTesselation(program: u32, patch_size: usize, count: usize) void {
     c.glUseProgram(@intCast(program));
     c.glPatchParameteri(c.GL_PATCH_VERTICES, @intCast(patch_size));
 
@@ -240,7 +240,7 @@ pub fn runTessalation(program: u32, patch_size: usize, count: usize) void {
     c.glLineWidth(1.0);
 }
 
-pub fn runTessalationInstanced(program: u32, patch_size: usize, count: usize) void {
+pub fn runTesselationInstanced(program: u32, patch_size: usize, count: usize) void {
     c.glUseProgram(@intCast(program));
     c.glPatchParameteri(c.GL_PATCH_VERTICES, @intCast(patch_size));
 

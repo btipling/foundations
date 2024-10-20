@@ -1,4 +1,4 @@
-view_camera: *physics.camera.Camera(*TerrainTessallator, physics.Integrator(physics.SmoothDeceleration)),
+view_camera: *physics.camera.Camera(*TerrainTessellator, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
@@ -20,7 +20,7 @@ normals_matrix: rhi.Uniform = undefined,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 
-const TerrainTessallator = @This();
+const TerrainTessellator = @This();
 
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
@@ -44,12 +44,12 @@ pub fn navType() ui.ui_state.scene_nav_info {
     };
 }
 
-pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTessallator {
-    const tt = allocator.create(TerrainTessallator) catch @panic("OOM");
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTessellator {
+    const tt = allocator.create(TerrainTessellator) catch @panic("OOM");
     errdefer allocator.destroy(tt);
 
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
-    var cam = physics.camera.Camera(*TerrainTessallator, physics.Integrator(physics.SmoothDeceleration)).init(
+    var cam = physics.camera.Camera(*TerrainTessellator, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         ctx.cfg,
         tt,
@@ -104,7 +104,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
     return tt;
 }
 
-pub fn deinit(self: *TerrainTessallator, allocator: std.mem.Allocator) void {
+pub fn deinit(self: *TerrainTessellator, allocator: std.mem.Allocator) void {
     self.deleteCross();
     self.deleteTerrain();
     self.view_camera.deinit(allocator);
@@ -112,9 +112,9 @@ pub fn deinit(self: *TerrainTessallator, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn updateCamera(_: *TerrainTessallator) void {}
+pub fn updateCamera(_: *TerrainTessellator) void {}
 
-pub fn draw(self: *TerrainTessallator, dt: f64) void {
+pub fn draw(self: *TerrainTessellator, dt: f64) void {
     if (self.ui_state.light_1.position_updated) {
         const lp = self.ui_state.light_1.position;
         self.sphere_1_matrix.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
@@ -148,7 +148,7 @@ pub fn draw(self: *TerrainTessallator, dt: f64) void {
             c.glLineWidth(5.0);
             c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
         }
-        rhi.runTessalationInstanced(self.terrain_program, 4, 64 * 64);
+        rhi.runTesselationInstanced(self.terrain_program, 4, 64 * 64);
         if (self.ui_state.wire_frame) {
             c.glLineWidth(1.0);
             c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
@@ -158,11 +158,11 @@ pub fn draw(self: *TerrainTessallator, dt: f64) void {
     self.ui_state.draw();
 }
 
-pub fn deleteCross(self: *TerrainTessallator) void {
+pub fn deleteCross(self: *TerrainTessellator) void {
     self.cross.deinit(self.allocator);
 }
 
-pub fn renderDebugCross(self: *TerrainTessallator) void {
+pub fn renderDebugCross(self: *TerrainTessellator) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
         math.matrix.translate(5, 50, 50),
@@ -170,11 +170,11 @@ pub fn renderDebugCross(self: *TerrainTessallator) void {
     );
 }
 
-pub fn deleteTerrain(self: *TerrainTessallator) void {
+pub fn deleteTerrain(self: *TerrainTessellator) void {
     rhi.deletePrimitive(self.terrain_program, self.terrain_vao, 0);
 }
 
-fn updateLights(self: *TerrainTessallator) void {
+fn updateLights(self: *TerrainTessellator) void {
     const ambient_factor: f32 = 0.1;
     const lights = [_]lighting.Light{
         .{
@@ -208,7 +208,7 @@ fn updateLights(self: *TerrainTessallator) void {
     self.lights = lights_buf;
 }
 
-pub fn renderTerrain(self: *TerrainTessallator) void {
+pub fn renderTerrain(self: *TerrainTessellator) void {
     const prog = rhi.createProgram();
     const vao = rhi.createVAO();
 
@@ -289,14 +289,14 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
     self.terrain_vao = vao;
 }
 
-pub fn deletesphere_1(self: *TerrainTessallator) void {
+pub fn deletesphere_1(self: *TerrainTessellator) void {
     const objects: [1]object.object = .{
         self.sphere_1,
     };
     rhi.deleteObjects(objects[0..]);
 }
 
-pub fn rendersphere_1(self: *TerrainTessallator) void {
+pub fn rendersphere_1(self: *TerrainTessellator) void {
     const prog = rhi.createProgram();
     {
         var s: rhi.Shader = .{
