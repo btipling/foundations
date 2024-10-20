@@ -47,11 +47,11 @@ pub fn draw(self: *TerrainTessellatorUI) void {
         {
             c.igPushItemWidth(-1);
             c.igText("Constant");
-            if (c.igSliderFloat("##a1x", &self.light_1.attenuation_constant, 1, 5, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
+            if (c.igSliderFloat("##a1x", &self.light_1.attenuation_constant, 0.001, 1, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
             c.igText("Linear");
-            if (c.igSliderFloat("##a1y", &self.light_1.attenuation_linear, 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
+            if (c.igSliderFloat("##a1y", &self.light_1.attenuation_linear, 0, 0.1, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
             c.igText("Quadratic");
-            if (c.igSliderFloat("##a1z", &self.light_1.attenuation_quadratic, 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
+            if (c.igSliderFloat("##a1z", &self.light_1.attenuation_quadratic, 0, 0.1, "%.3f", c.ImGuiSliderFlags_None)) self.light_1.updated = true;
         }
         const flags = c.ImGuiColorEditFlags_NoInputs | c.ImGuiColorEditFlags_NoLabel;
         if (c.igColorEdit3("##Color1", @ptrCast(&self.light_1.color), flags)) {
