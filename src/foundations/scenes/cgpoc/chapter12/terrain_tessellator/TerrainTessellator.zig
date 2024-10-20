@@ -144,7 +144,15 @@ pub fn draw(self: *TerrainTessallator, dt: f64) void {
         t.bind();
     }
     {
+        if (self.ui_state.wire_frame) {
+            c.glLineWidth(5.0);
+            c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
+        }
         rhi.runTessalationInstanced(self.terrain_program, 4, 64 * 64);
+        if (self.ui_state.wire_frame) {
+            c.glLineWidth(1.0);
+            c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
+        }
     }
     self.cross.draw(dt);
     self.ui_state.draw();

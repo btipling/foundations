@@ -3,6 +3,7 @@ light_1: lightSetting = .{
     .attenuation_constant = 1.0,
 },
 global_ambient: [4]f32 = .{ 0.01, 0.01, 0.01, 1 },
+wire_frame: bool = false,
 
 pub const lightSetting = struct {
     position: [3]f32 = .{ 0, 0, 0 },
@@ -56,6 +57,7 @@ pub fn draw(self: *TerrainTessellatorUI) void {
         if (c.igColorEdit3("##Color1", @ptrCast(&self.light_1.color), flags)) {
             self.light_1.updated = true;
         }
+        if (c.igCheckbox("wireframe", &self.wire_frame)) {}
     }
 
     c.igEnd();
