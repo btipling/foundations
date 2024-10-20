@@ -9,6 +9,7 @@ terrain_m: math.matrix = math.matrix.identity(),
 terrain_u: rhi.Uniform = undefined,
 terrain_t_map: ?rhi.Texture = null,
 terrain_t_tex: ?rhi.Texture = null,
+terrain_t_nor: ?rhi.Texture = null,
 
 const TerrainTessallator = @This();
 
@@ -64,6 +65,12 @@ pub fn draw(self: *TerrainTessallator, dt: f64) void {
     if (self.terrain_t_tex) |t| {
         t.bind();
     }
+    if (self.terrain_t_map) |t| {
+        t.bind();
+    }
+    if (self.terrain_t_nor) |t| {
+        t.bind();
+    }
     {
         rhi.runTessalationInstanced(self.terrain_program, 4, 64 * 64);
     }
@@ -92,21 +99,30 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
 
     self.terrain_t_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.terrain_t_tex.?.texture_unit = 2;
+    self.terrain_t_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.terrain_t_map.?.texture_unit = 3;
+    self.terrain_t_nor = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.terrain_t_nor.?.texture_unit = 4;
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
     const frag_bindings = [_]usize{2};
+    const tes_bindings = [_]usize{ 3, 4 };
     const terrain_vert = Compiler.runWithBytes(self.allocator, @embedFile("terrain_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(terrain_vert);
     var terrain_frag = Compiler.runWithBytes(self.allocator, @embedFile("terrain_frag.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(terrain_frag);
     terrain_frag = if (!disable_bindless) terrain_frag else rhi.Shader.disableBindless(
         terrain_frag,
         frag_bindings[0..],
     ) catch @panic("bindless");
-    defer self.allocator.free(terrain_frag);
     const terrain_tcs = Compiler.runWithBytes(self.allocator, @embedFile("terrain_tcs.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(terrain_tcs);
-    const terrain_tes = Compiler.runWithBytes(self.allocator, @embedFile("terrain_tes.glsl")) catch @panic("shader compiler");
+    var terrain_tes = Compiler.runWithBytes(self.allocator, @embedFile("terrain_tes.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(terrain_tes);
+    terrain_tes = if (!disable_bindless) terrain_tes else rhi.Shader.disableBindless(
+        terrain_tes,
+        tes_bindings[0..],
+    ) catch @panic("bindless");
 
     const shaders = [_]rhi.Shader.ShaderData{
         .{ .source = terrain_vert, .shader_type = c.GL_VERTEX_SHADER },
@@ -123,6 +139,16 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
     if (self.terrain_t_tex) |*t| {
         t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_map.jpg") catch null, prog, "f_terrain_samp") catch {
             self.terrain_t_tex = null;
+        };
+    }
+    if (self.terrain_t_map) |*t| {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_bump.jpg") catch null, prog, "f_height_samp") catch {
+            self.terrain_t_map = null;
+        };
+    }
+    if (self.terrain_t_nor) |*t| {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_normal.jpg") catch null, prog, "f_normal_samp") catch {
+            self.terrain_t_nor = null;
         };
     }
 
