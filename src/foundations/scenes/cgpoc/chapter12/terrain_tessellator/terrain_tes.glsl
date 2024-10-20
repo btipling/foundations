@@ -29,5 +29,5 @@ void main(void)
     f_tc_tes = f_tc_out;
     vec3 f_ns = normalize(texture(f_normal_samp, f_tc_out).xyz * 2.0 - 1.0);
     f_ns = transpose(inverse(mat3(f_terrain_m))) * f_ns;
-    f_normal_tes = (f_normal_rot_m * vec4(f_ns.x, -f_ns.y, f_ns.z, 1.0)).xyz;
+    f_normal_tes = (f_normal_rot_m * vec4(f_ns.z, f_ns.y, f_ns.x, 1.0)).xyz;
 }

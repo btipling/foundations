@@ -74,7 +74,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
             .exponent = 0.0,
             .attenuation_constant = 1.0,
             .attenuation_linear = 0.0,
-            .attenuation_quadratic = 0.0,
+            .attenuation_quadratic = 1.0,
             .light_kind = .positional,
         },
     };
@@ -198,7 +198,7 @@ fn updateLights(self: *TerrainTessallator) void {
             .exponent = 0.0,
             .attenuation_constant = 1.0,
             .attenuation_linear = 0.0,
-            .attenuation_quadratic = 0.0,
+            .attenuation_quadratic = 1.0,
             .light_kind = .positional,
         },
     };
