@@ -25,15 +25,15 @@ const TerrainTessallator = @This();
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 
 const mats = [_]lighting.Material{
+    lighting.materials.Obsidian,
+    lighting.materials.Silver,
     lighting.materials.Gold,
     lighting.materials.Jade,
     lighting.materials.Pearl,
-    lighting.materials.Silver,
     lighting.materials.Copper,
     lighting.materials.Chrome,
     lighting.materials.Emerald,
     lighting.materials.Ruby,
-    lighting.materials.Obsidian,
     lighting.materials.Brass,
 };
 
@@ -74,7 +74,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
             .exponent = 0.0,
             .attenuation_constant = 1.0,
             .attenuation_linear = 0.0,
-            .attenuation_quadratic = 1.0,
+            .attenuation_quadratic = 0.0,
             .light_kind = .positional,
         },
     };
@@ -121,15 +121,6 @@ pub fn draw(self: *TerrainTessallator, dt: f64) void {
         self.light_1_position.setUniform3fv(lp);
         self.ui_state.light_1.position_updated = false;
     }
-    if (self.ui_state.rotation.updated) {
-        const rot = self.ui_state.rotation.rotation;
-        var m = math.matrix.identity();
-        m = math.matrix.transformMatrix(m, math.matrix.rotationX(rot[0]));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationY(rot[1]));
-        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(rot[2]));
-        self.normals_matrix.setUniformMatrix(m);
-        self.ui_state.rotation.updated = false;
-    }
     if (self.ui_state.light_1.updated) {
         self.updateLights();
         self.deletesphere_1();
@@ -166,7 +157,7 @@ pub fn deleteCross(self: *TerrainTessallator) void {
 pub fn renderDebugCross(self: *TerrainTessallator) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
-        math.matrix.translate(2, 0, 0),
+        math.matrix.translate(5, 50, 50),
         5,
     );
 }
@@ -196,9 +187,9 @@ fn updateLights(self: *TerrainTessallator) void {
             .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
             .cutoff = 0.0,
             .exponent = 0.0,
-            .attenuation_constant = 1.0,
-            .attenuation_linear = 0.0,
-            .attenuation_quadratic = 1.0,
+            .attenuation_constant = self.ui_state.light_1.attenuation_constant,
+            .attenuation_linear = self.ui_state.light_1.attenuation_linear,
+            .attenuation_quadratic = self.ui_state.light_1.attenuation_quadratic,
             .light_kind = .positional,
         },
     };
@@ -221,8 +212,8 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
     self.terrain_t_nor.?.texture_unit = 4;
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
-    const frag_bindings = [_]usize{2};
-    const tes_bindings = [_]usize{ 3, 4 };
+    const frag_bindings = [_]usize{ 2, 4 };
+    const tes_bindings = [_]usize{3};
     const terrain_vert = Compiler.runWithBytes(self.allocator, @embedFile("terrain_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(terrain_vert);
     var terrain_frag = Compiler.runWithBytes(self.allocator, @embedFile("terrain_frag.glsl")) catch @panic("shader compiler");
@@ -270,7 +261,7 @@ pub fn renderTerrain(self: *TerrainTessallator) void {
     {
         var m = math.matrix.identity();
         m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0, 0));
-        m = math.matrix.transformMatrix(m, math.matrix.scale(25, 100, 100));
+        m = math.matrix.transformMatrix(m, math.matrix.uniformScale(100));
         var u = rhi.Uniform.init(prog, "f_terrain_m") catch @panic("uniform");
         u.setUniformMatrix(m);
         self.terrain_u = u;
