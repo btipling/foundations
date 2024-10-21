@@ -37,6 +37,7 @@ pub const scene_type = enum(usize) {
     ten_surface_detail,
     twelve_basic_tessellator,
     twelve_terrain_tessellator,
+    twelve_lod_tessellator,
 };
 
 pub const scenes = union(scene_type) {
@@ -78,6 +79,7 @@ pub const scenes = union(scene_type) {
     ten_surface_detail: *scenes_list.cgpoc.chapter10.SurfaceDetail,
     twelve_basic_tessellator: *scenes_list.cgpoc.chapter12.BasicTessellator,
     twelve_terrain_tessellator: *scenes_list.cgpoc.chapter12.TerrainTessellator,
+    twelve_lod_tessellator: *scenes_list.cgpoc.chapter12.LodTessellator,
 };
 
 pub const scene_nav_type = enum {
