@@ -15,7 +15,6 @@ terrain_t_nor: ?rhi.Texture = null,
 sphere_1: object.object = .{ .norender = .{} },
 light_1_position: rhi.Uniform = undefined,
 sphere_1_matrix: rhi.Uniform = undefined,
-normals_matrix: rhi.Uniform = undefined,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
@@ -107,6 +106,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
 pub fn deinit(self: *TerrainTessellator, allocator: std.mem.Allocator) void {
     self.deleteCross();
     self.deleteTerrain();
+    self.deletesphere_1();
+    self.lights.deinit();
+    self.materials.deinit();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -273,12 +275,6 @@ pub fn renderTerrain(self: *TerrainTessellator) void {
         var u = rhi.Uniform.init(prog, "f_terrain_m") catch @panic("uniform");
         u.setUniformMatrix(m);
         self.terrain_u = u;
-    }
-    {
-        const m = math.matrix.identity();
-        var u = rhi.Uniform.init(prog, "f_normal_rot_m") catch @panic("uniform");
-        u.setUniformMatrix(m);
-        self.normals_matrix = u;
     }
     {
         var lp1: rhi.Uniform = rhi.Uniform.init(prog, "f_light_1_pos") catch .{ .program = prog, .location = 0 };
