@@ -2,6 +2,7 @@ view_camera: *physics.camera.Camera(*LodTessellator, physics.Integrator(physics.
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
+ui_state: LodTessellatorUI = undefined,
 
 terrain_program: u32 = undefined,
 terrain_vao: u32 = undefined,
@@ -34,10 +35,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LodTessella
     );
     errdefer cam.deinit(allocator);
 
+    const ui_state: LodTessellatorUI = .{};
     tt.* = .{
         .view_camera = cam,
         .ctx = ctx,
         .allocator = allocator,
+        .ui_state = ui_state,
     };
 
     tt.renderTerrain();
@@ -69,12 +72,17 @@ pub fn draw(self: *LodTessellator, dt: f64) void {
     }
     {
         c.glLineWidth(5.0);
-        // c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
-        rhi.runTesselationInstanced(self.terrain_program, 4, 64 * 64);
+        if (self.ui_state.wire_frame) {
+            c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
+        }
+        rhi.runTesselationInstanced(self.terrain_program, 4, 128 * 128);
         c.glLineWidth(1.0);
-        // c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
+        if (self.ui_state.wire_frame) {
+            c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
+        }
     }
     self.cross.draw(dt);
+    self.ui_state.draw();
 }
 
 pub fn deleteCross(self: *LodTessellator) void {
@@ -165,3 +173,4 @@ const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
 const Compiler = @import("../../../../../compiler/Compiler.zig");
+const LodTessellatorUI = @import("LodTessellatorUI.zig");

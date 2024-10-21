@@ -13,7 +13,7 @@ out vec2 f_tc_tcs[];
 
 void main(void)
 {
-    float f_sub_divs = 32.0;
+    float f_sub_divs = 100.0;
     if (gl_InvocationID == 0) {
         float f_distance = distance(f_terrain_m * f_lod_xup[gl_InvocationID], f_camera_pos);
         float f_TL = max(1.0, min(64.0, f_sub_divs / f_distance));

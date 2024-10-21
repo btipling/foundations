@@ -12,11 +12,11 @@ out vec2 f_tc_tes;
 
 void main(void)
 {
-    float f_s = f_tc_tcs[0].x + (gl_TessCoord.x) / 64.0;
-    float f_t = f_tc_tcs[0].y + (1.0 - gl_TessCoord.y)/ 64.0;
+    float f_s = f_tc_tcs[0].x + (gl_TessCoord.x) / 128.0;
+    float f_t = f_tc_tcs[0].y + (1.0 - gl_TessCoord.y)/ 128.0;
     vec2 f_tc_out = vec2(f_s, f_t);
-    vec4 f_tp = vec4(gl_in[0].gl_Position.x + gl_TessCoord.x / 64.0, 0.0,
-                     gl_in[0].gl_Position.z + gl_TessCoord.y / 64.0, 1.0);
+    vec4 f_tp = vec4(gl_in[0].gl_Position.x + gl_TessCoord.x / 128.0, 0.0,
+                     gl_in[0].gl_Position.z + gl_TessCoord.y / 128.0, 1.0);
     
     f_tp.y += (texture(f_height_samp, f_tc_out).r) / 60.0;
     
