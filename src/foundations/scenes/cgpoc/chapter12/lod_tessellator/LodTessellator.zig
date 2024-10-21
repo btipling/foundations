@@ -69,10 +69,10 @@ pub fn draw(self: *LodTessellator, dt: f64) void {
     }
     {
         c.glLineWidth(5.0);
-        c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
+        // c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
         rhi.runTesselationInstanced(self.terrain_program, 4, 64 * 64);
         c.glLineWidth(1.0);
-        c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
+        // c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
     }
     self.cross.draw(dt);
 }
