@@ -16,6 +16,7 @@ material_selection: rhi.Uniform = undefined,
 model_prog_index: ?usize = null,
 sphere_1_prog_index: ?usize = null,
 sphere_2_prog_index: ?usize = null,
+cross: scenery.debug.Cross = undefined,
 
 const Lighting = @This();
 
@@ -119,6 +120,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
 
     pd.rendersphere_2();
     errdefer pd.deletesphere_2();
+
+    pd.renderDebugCross();
+    errdefer pd.deleteCross();
 
     return pd;
 }
@@ -239,6 +243,7 @@ pub fn draw(self: *Lighting, dt: f64) void {
         };
         rhi.drawObjects(objects[0..]);
     }
+    self.cross.draw(dt);
     self.ui_state.draw();
 }
 
@@ -554,6 +559,18 @@ pub fn rendersphere_2(self: *Lighting) void {
     sm.setUniformMatrix(math.matrix.translate(lp[0], lp[1], lp[2]));
     self.sphere_2_matrix = sm;
     self.sphere_2 = sphere;
+}
+
+pub fn deleteCross(self: *Lighting) void {
+    self.cross.deinit(self.allocator);
+}
+
+pub fn renderDebugCross(self: *Lighting) void {
+    self.cross = scenery.debug.Cross.init(
+        self.allocator,
+        math.matrix.translate(0, -0.025, -0.025),
+        5,
+    );
 }
 
 const std = @import("std");

@@ -27,12 +27,8 @@ const mats = [_]lighting.Material{
 
 const moon_vertex_shader: []const u8 = @embedFile("moon_vert.glsl");
 const moon_frag_shader: []const u8 = @embedFile("moon_frag.glsl");
-const earth_vertex_shader: []const u8 = @embedFile("earth_vert.glsl");
-const earth_frag_shader: []const u8 = @embedFile("earth_frag.glsl");
 const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
-const earth_texture_shader: []const u8 = @embedFile("earth_vert_texture.glsl");
-const earth_bindless_shader: []const u8 = @embedFile("earth_vert_bindless.glsl");
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -101,7 +97,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
     sd.renderMoon();
     errdefer sd.deleteMoon();
 
-    sd.renderEarth();
+    const earth_vert = Compiler.runWithBytes(allocator, @embedFile("earth_vert.glsl")) catch @panic("shader compiler");
+    defer allocator.free(earth_vert);
+    const earth_frag = Compiler.runWithBytes(allocator, @embedFile("earth_frag.glsl")) catch @panic("shader compiler");
+    defer allocator.free(earth_frag);
+
+    sd.renderEarth(earth_vert, earth_frag);
     errdefer sd.deleteEarth();
 
     sd.renderDebugCross();
@@ -323,29 +324,31 @@ pub fn deleteEarth(self: *SurfaceDetail) void {
     rhi.deleteObjects(objects[0..]);
 }
 
-pub fn renderEarth(self: *SurfaceDetail) void {
+pub fn renderEarth(self: *SurfaceDetail, vert: []u8, frag: []u8) void {
     const prog = rhi.createProgram();
     self.earth_normal_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.earth_normal_map.?.texture_unit = 2;
     self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.earth_texture.?.texture_unit = 3;
     self.earth_height_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
-    self.earth_height_map.?.texture_unit = 17;
-    var earth_height_map = earth_bindless_shader;
-    if (rhi.Texture.disableBindless(self.ctx.args.disable_bindless)) {
-        earth_height_map = earth_texture_shader;
-    }
+    self.earth_height_map.?.texture_unit = 16;
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
+    const frag_bindings = [_]usize{ 0, 1, 2, 3, 16 };
+    const vert_bindings = [_]usize{16};
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
-            .lighting = .blinn_phong,
-            .frag_body = earth_frag_shader,
-            .bindless_vertex = true,
-            .fragment_shader = rhi.Texture.frag_shader(self.earth_texture),
+            .frag_body = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+                frag,
+                frag_bindings[0..],
+            ) catch @panic("bindless"),
+            .bindless_vertex = !disable_bindless,
+            .fragment_shader = .disabled,
         };
-        const vert_shaders = [_][]const u8{ earth_height_map, earth_vertex_shader };
-        s.attach(self.allocator, vert_shaders[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(
+            if (!disable_bindless) vert else rhi.Shader.disableBindless(vert, vert_bindings[0..]) catch @panic("bindless"),
+        )[0..]);
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -452,3 +455,4 @@ const scenery = @import("../../../../scenery/scenery.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
 const SurfaceDetailUI = @import("SurfaceDetailUI.zig");
+const Compiler = @import("../../../../../compiler/Compiler.zig");

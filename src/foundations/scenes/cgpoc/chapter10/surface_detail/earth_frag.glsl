@@ -1,15 +1,30 @@
+#version 460 core
+#extension GL_ARB_bindless_texture : require
 
-vec3 f_calc_new_normal() {
-    vec3 f_n_normal = normalize(fo_normal);
-    vec3 f_n_tangent = normalize(fo_tangent.xyz);
-    vec3 f_n_bitangent = fo_tangent.w * normalize(cross(f_n_tangent, f_n_normal));
-    mat3 f_n_tbn = mat3(f_n_tangent, f_n_bitangent, f_n_normal);
-    vec3 f_n_map_normal = (vec4(texture(f_samp_2, f_tc).xyz, 1.0)).xyz;
-    f_n_map_normal = f_n_map_normal * 2.0 - 1.0;
-    vec3 f_n_new_normal = f_n_tbn * f_n_map_normal;
-    f_n_new_normal = normalize(f_n_new_normal);
-    return f_n_new_normal; 
-}
+layout(bindless_sampler) uniform sampler2D f_samp;
+layout(bindless_sampler) uniform sampler2D f_samp_1;
+layout(bindless_sampler) uniform sampler2D f_samp_2;
+layout(bindless_sampler) uniform sampler2D f_samp_3;
+layout(bindless_sampler) uniform samplerCube f_cubemap;
+
+
+/*******************************************/
+/*******************************************/
+/*******************************************/
+/*******************  EARTH FRAG ***********/
+/*******************************************/
+/*******************************************/
+/*******************************************/
+
+//#include "src/foundations/shaders/camera.glsl"
+
+out vec4 fo_frag_color;
+
+//#include "src/foundations/shaders/frag_ins.glsl"
+
+//#include "src/foundations/shaders/material.glsl"
+//#include "src/foundations/shaders/light.glsl"
+//#include "src/foundations/shaders/f_calc_new_normal.glsl"
 
 void main()
 {

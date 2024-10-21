@@ -41,6 +41,8 @@ scene_data: SceneData = .{},
 should_gen_shadow_map: bool = false,
 generated_shadow_map: bool = false,
 
+cross: scenery.debug.Cross = undefined,
+
 const num_maps: usize = 12;
 
 const empty_4: [4]f32 = .{ 0, 0, 0, 0 };
@@ -180,6 +182,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     pd.rendersphere_2();
     errdefer pd.deletesphere_2();
 
+    pd.renderDebugCross();
+    errdefer pd.deleteCross();
+
     pd.generateLightViewMatrices(pd.ui_state.light_1, 1);
     pd.generateLightViewMatrices(pd.ui_state.light_2, 2);
     pd.updateSceneData();
@@ -190,6 +195,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
 
 pub fn deinit(self: *Shadows, allocator: std.mem.Allocator) void {
     // objects
+    self.deleteCross();
     self.deleteBG();
     self.deleteObject_1();
     self.deleteObject_2();
@@ -376,6 +382,7 @@ pub fn draw(self: *Shadows, dt: f64) void {
         rhi.drawObjects(objects[0..]);
     }
     self.generated_shadow_map = false;
+    self.cross.draw(dt);
     self.ui_state.draw();
     if (self.should_gen_shadow_map) {
         self.genShadowMap();
@@ -926,6 +933,18 @@ fn generateLightViewMatrices(self: *Shadows, light: ShadowsUI.lightSetting, ligh
         m = math.matrix.cameraInverse(m);
         self.setLightViewMatrix(m, light_num, 5);
     }
+}
+
+pub fn deleteCross(self: *Shadows) void {
+    self.cross.deinit(self.allocator);
+}
+
+pub fn renderDebugCross(self: *Shadows) void {
+    self.cross = scenery.debug.Cross.init(
+        self.allocator,
+        math.matrix.translate(0, -0.025, -0.025),
+        5,
+    );
 }
 
 const std = @import("std");

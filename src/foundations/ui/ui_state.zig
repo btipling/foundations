@@ -35,6 +35,9 @@ pub const scene_type = enum(usize) {
     seven_dolphin,
     eight_shadows,
     ten_surface_detail,
+    twelve_basic_tessellator,
+    twelve_terrain_tessellator,
+    twelve_lod_tessellator,
 };
 
 pub const scenes = union(scene_type) {
@@ -74,6 +77,9 @@ pub const scenes = union(scene_type) {
     seven_dolphin: *scenes_list.cgpoc.chapter7.Dolphin,
     eight_shadows: *scenes_list.cgpoc.chapter8.Shadows,
     ten_surface_detail: *scenes_list.cgpoc.chapter10.SurfaceDetail,
+    twelve_basic_tessellator: *scenes_list.cgpoc.chapter12.BasicTessellator,
+    twelve_terrain_tessellator: *scenes_list.cgpoc.chapter12.TerrainTessellator,
+    twelve_lod_tessellator: *scenes_list.cgpoc.chapter12.LodTessellator,
 };
 
 pub const scene_nav_type = enum {

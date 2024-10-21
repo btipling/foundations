@@ -1,4 +1,5 @@
 
+// ********* MOON VERTEX SHADER *********
 
 uniform vec3 f_moon_light_pos;
 
