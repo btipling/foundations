@@ -16,7 +16,7 @@ void main(void)
     float f_sub_divs = 100.0;
     if (gl_InvocationID == 0) {
         float f_distance = distance(f_terrain_m * f_lod_xup[gl_InvocationID], f_camera_pos);
-        float f_TL = max(1.0, min(64.0, f_sub_divs / f_distance));
+        float f_TL = max(1.0, min(32.0, f_sub_divs / f_distance));
         gl_TessLevelOuter[0] = f_TL;
         gl_TessLevelOuter[1] = f_TL;
         gl_TessLevelOuter[2] = f_TL;

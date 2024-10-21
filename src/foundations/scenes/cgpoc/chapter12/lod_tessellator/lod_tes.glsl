@@ -6,7 +6,7 @@
 uniform mat4 f_terrain_m;
 layout(bindless_sampler) uniform sampler2D f_height_samp;
 
-layout (quads, equal_spacing, ccw) in;
+layout (quads, equal_spacing, cw) in;
 in vec2 f_tc_tcs[];
 out vec2 f_tc_tes;
 
