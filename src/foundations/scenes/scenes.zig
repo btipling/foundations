@@ -20,7 +20,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
         .allocator = allocator,
         .context = ctx,
     };
-    scenes.initScene(ui.ui_state.scene_type.twelve_lod_tessellator);
+    scenes.initScene(ui.ui_state.scene_type.thirteen_torus_geometry);
     return scenes;
 }
 

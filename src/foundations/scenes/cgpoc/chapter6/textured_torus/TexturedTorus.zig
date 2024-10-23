@@ -38,18 +38,26 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TexturedTor
         .view_camera = cam,
         .ctx = ctx,
     };
+
     pd.renderDebugCross();
+    errdefer pd.deleteCross();
+
     pd.renderCubemap();
+    errdefer pd.deleteCubemap();
+
     pd.renderTorus();
+    errdefer pd.deleteTorus();
+
     return pd;
 }
 
 pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
+    self.deleteTorus();
     self.deleteCubemap();
     if (self.cubemap_texture) |t| {
         t.deinit();
     }
-    self.cross.deinit(allocator);
+    self.deleteCross();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -80,6 +88,13 @@ pub fn draw(self: *TexturedTorus, dt: f64) void {
 }
 
 pub fn updateCamera(_: *TexturedTorus) void {}
+
+pub fn deleteTorus(self: *TexturedTorus) void {
+    const objects: [1]object.object = .{
+        self.torus,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
 
 pub fn renderTorus(self: *TexturedTorus) void {
     const prog = rhi.createProgram();
@@ -117,6 +132,10 @@ pub fn renderTorus(self: *TexturedTorus) void {
     self.torus = torus;
     if (self.cubemap_texture == null) return;
     self.cubemap_texture.?.addUniform(prog, "f_cubemap") catch @panic("uniform failed");
+}
+
+pub fn deleteCross(self: *TexturedTorus) void {
+    self.cross.deinit(self.allocator);
 }
 
 pub fn renderDebugCross(self: *TexturedTorus) void {
