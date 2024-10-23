@@ -140,7 +140,7 @@ pub fn deleteInflated(self: *TorusGeometry) void {
 }
 
 pub fn renderInflated(self: *TorusGeometry) void {
-    const m = math.matrix.translate(-2.5, 0, 0);
+    const m = math.matrix.translate(-1.5, 0, 0);
     self.inflated_torus = self.renderTorus(@embedFile("inflated_geo.glsl"), m);
 }
 

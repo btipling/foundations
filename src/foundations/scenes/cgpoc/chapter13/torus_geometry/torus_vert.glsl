@@ -16,6 +16,10 @@ layout (location = 9) in vec4 f_i_color;
 
 //#include "src/foundations/shaders/vertex_outs.glsl"
 
+out vec4 fo_t_column0;
+out vec4 fo_t_column1;
+out vec4 fo_t_column2;
+out vec4 fo_t_column3;
 
 out vec3 fo_light;
 
@@ -28,6 +32,11 @@ void main()
         f_t_column3
     );
     Light f_light = f_lights[0];
+    
+    fo_t_column0 = f_t_column0;
+    fo_t_column1 = f_t_column1;
+    fo_t_column2 = f_t_column2;
+    fo_t_column3 = f_t_column3;
 
     mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
     vec4 f_main_pos = m_matrix * vec4(f_position.xyz, 1.0);
