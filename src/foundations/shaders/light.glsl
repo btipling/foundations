@@ -15,10 +15,6 @@ struct Light {
     float padding_2; // Explicit padding
 };
 
-layout(std430, binding = 0) buffer MaterialBuffer {
-    Material f_materials[];
-};
-
 layout(std430, binding = 1) buffer LightBuffer {
     Light f_lights[];
 };
