@@ -140,7 +140,7 @@ pub fn deleteInflated(self: *TorusGeometry) void {
 }
 
 pub fn renderInflated(self: *TorusGeometry) void {
-    const m = math.matrix.translate(-1.5, 0, 0);
+    const m = math.matrix.translate(-0.5, 0, 0);
     self.inflated_torus = self.renderTorus(@embedFile("inflated_geo.glsl"), m);
 }
 
@@ -149,7 +149,7 @@ pub fn deleteAdd(self: *TorusGeometry) void {
 }
 
 pub fn renderAdd(self: *TorusGeometry) void {
-    const m = math.matrix.translate(0, -2.5, -2.5);
+    const m = math.matrix.translate(0, -1, -1);
     self.add_torus = self.renderTorus(@embedFile("add_geo.glsl"), m);
 }
 
@@ -158,7 +158,7 @@ pub fn deleteDel(self: *TorusGeometry) void {
 }
 
 pub fn renderDel(self: *TorusGeometry) void {
-    const m = math.matrix.translate(0, 2.5, -2.5);
+    const m = math.matrix.translate(0, 1, -1);
     self.del_torus = self.renderTorus(@embedFile("del_geo.glsl"), m);
 }
 
@@ -167,7 +167,7 @@ pub fn deleteChange(self: *TorusGeometry) void {
 }
 
 pub fn renderChange(self: *TorusGeometry) void {
-    const m = math.matrix.translate(0, -2.5, 2.5);
+    const m = math.matrix.translate(0, -1, 1);
     self.change_torus = self.renderTorus(@embedFile("change_geo.glsl"), m);
 }
 
@@ -176,7 +176,7 @@ pub fn deleteExplode(self: *TorusGeometry) void {
 }
 
 pub fn renderExplode(self: *TorusGeometry) void {
-    const m = math.matrix.translate(0, 2.5, 2.5);
+    const m = math.matrix.translate(0, 1, 1);
     self.expode_torus = self.renderTorus(@embedFile("explode_geo.glsl"), m);
 }
 
