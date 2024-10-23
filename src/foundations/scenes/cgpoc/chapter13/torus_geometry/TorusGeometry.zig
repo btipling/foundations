@@ -227,6 +227,7 @@ pub fn renderTorus(self: *TorusGeometry, geo_shader: []const u8, m: math.matrix)
         ),
     };
     torus.torus.mesh.linear_colorspace = false;
+    torus.torus.mesh.cull = false;
     return torus;
 }
 
