@@ -9,11 +9,6 @@ in vec3 fo_vert[];
 in vec3 fo_light[];
 in vec4 f_frag_color[];
 
-in vec4 fo_t_column0[];
-in vec4 fo_t_column1[];
-in vec4 fo_t_column2[];
-in vec4 fo_t_column3[];
-
 out vec3 f_normal_g;
 out vec3 fo_vert_g;
 out vec3 fo_light_g;
@@ -24,21 +19,34 @@ layout (triangle_strip, max_vertices=3) out;
 void main (void)
 {
     mat4 face_cam = mat4(transpose(mat3(v_matrix)));
-    for (int i=0; i < 3; i++)
-    {
-        mat4 m_matrix = face_cam * mat4(
-            fo_t_column0[i],
-            fo_t_column1[i],
-            fo_t_column2[i],
-            fo_t_column3[i]
-        );
-        mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
-        f_normal_g = normalize(f_norm_matrix * fo_normal[i]);
-        fo_vert_g = fo_vert[i];
-        fo_light_g = fo_light[i];
-        fo_frag_color_g = f_frag_color[i];
-        gl_Position = f_mvp * m_matrix * vec4(fo_vert[i], 1.0);
-        EmitVertex();
-    }
+
+    vec3 p0 = vec3(0.0, 0.0, 0.0);
+    vec3 p1 = vec3(0.0, 0.0, 1.0);
+    vec3 p2 = vec3(1.0, 0.0, 0.0);
+    mat4 m_matrix = face_cam;
+    mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
+    vec3 emit_norm = normalize(f_norm_matrix * fo_normal[0]);
+
+    f_normal_g = emit_norm;
+    fo_vert_g = p0;
+    fo_light_g = fo_light[0];
+    fo_frag_color_g = f_frag_color[0];
+    gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
+    EmitVertex();
+
+    f_normal_g = emit_norm;
+    fo_vert_g = p1;
+    fo_light_g = fo_light[0];
+    fo_frag_color_g = f_frag_color[0];
+    gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
+    EmitVertex();
+    
+    f_normal_g = emit_norm;
+    fo_vert_g = p2;
+    fo_light_g = fo_light[0];
+    fo_frag_color_g = f_frag_color[0];
+    gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
+    EmitVertex();
+
     EndPrimitive();
 }
