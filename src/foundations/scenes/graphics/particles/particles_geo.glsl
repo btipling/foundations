@@ -14,15 +14,17 @@ out vec3 fo_vert_g;
 out vec3 fo_light_g;
 out vec4 fo_frag_color_g;
 
-layout (triangle_strip, max_vertices=3) out;
+layout (triangle_strip, max_vertices=4) out;
 
 void main (void)
 {
     mat4 face_cam = mat4(transpose(mat3(v_matrix)));
 
-    vec3 p0 = vec3(0.0, 0.0, 0.0);
-    vec3 p1 = vec3(0.0, 0.0, 1.0);
-    vec3 p2 = vec3(1.0, 0.0, 0.0);
+    float f_scale = 0.5;
+    vec3 p0 = vec3(0.0, 0.0, 0.0) * f_scale;
+    vec3 p1 = vec3(0.0, 0.0, 1.0) * f_scale;
+    vec3 p2 = vec3(1.0, 0.0, 0.0) * f_scale;
+    vec3 p3 = vec3(1.0, 0.0, 1.0) * f_scale;
     mat4 m_matrix = face_cam;
     mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
     vec3 emit_norm = normalize(f_norm_matrix * fo_normal[0]);
@@ -43,6 +45,13 @@ void main (void)
     
     f_normal_g = emit_norm;
     fo_vert_g = p2;
+    fo_light_g = fo_light[0];
+    fo_frag_color_g = f_frag_color[0];
+    gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
+    EmitVertex();
+
+    f_normal_g = emit_norm;
+    fo_vert_g = p3;
     fo_light_g = fo_light[0];
     fo_frag_color_g = f_frag_color[0];
     gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
