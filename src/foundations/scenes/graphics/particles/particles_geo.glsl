@@ -23,9 +23,10 @@ layout (triangle_strip, max_vertices=3) out;
 
 void main (void)
 {
+    mat4 face_cam = mat4(transpose(mat3(v_matrix)));
     for (int i=0; i < 3; i++)
     {
-        mat4 m_matrix = mat4(
+        mat4 m_matrix = face_cam * mat4(
             fo_t_column0[i],
             fo_t_column1[i],
             fo_t_column2[i],

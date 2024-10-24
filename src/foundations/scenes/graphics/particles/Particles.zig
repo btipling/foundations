@@ -110,7 +110,9 @@ pub fn draw(self: *Particles, dt: f64) void {
         const objects: [1]object.object = .{
             self.particles,
         };
+        c.glDisable(c.GL_CULL_FACE);
         rhi.drawObjects(objects[0..]);
+        c.glEnable(c.GL_CULL_FACE);
     }
     self.cross.draw(dt);
 }
@@ -203,7 +205,7 @@ pub fn renderParticles(self: *Particles) void {
 
     var i_datas: [1]rhi.instanceData = undefined;
     {
-        const m = math.matrix.translate(0, 2.5, 2.5);
+        const m = math.matrix.identity();
         const i_data: rhi.instanceData = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
@@ -213,14 +215,13 @@ pub fn renderParticles(self: *Particles) void {
         };
         i_datas[0] = i_data;
     }
-    const torus: object.object = .{
-        .torus = object.Torus.init(
+    const it: object.object = .{
+        .instanced_triangle = object.InstancedTriangle.init(
             prog,
             i_datas[0..],
-            false,
         ),
     };
-    self.particles = torus;
+    self.particles = it;
 }
 
 pub fn deleteSphere(self: *Particles) void {
