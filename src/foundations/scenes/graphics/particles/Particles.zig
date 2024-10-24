@@ -76,7 +76,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
             .color = .{ 1, 0, 1, 1 },
         },
         .{
-            .ts = .{ 2, 5, 1, 0.1 },
+            .ts = .{ 2, 0, 1.5, 0.1 },
             .color = .{ 0, 1, 1, 1 },
         },
     };
