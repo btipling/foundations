@@ -8,12 +8,17 @@ sphere_matrix: rhi.Uniform = undefined,
 sphere_color: rhi.Uniform = undefined,
 
 particles: object.object = .{ .norender = .{} },
+particles_data: rhi.Uniform = undefined,
+particles_count: usize = 0,
+particles_list: [max_num_particles]rhi.Buffer.ParticlesData = undefined,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
+particles_buffer: rhi.Buffer,
 
 const Particles = @This();
 
+const max_num_particles = 1_000;
 const sphere_vert: []const u8 = @embedFile("sphere_vert.glsl");
 
 const mats = [_]lighting.Material{
@@ -65,13 +70,26 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
+    const particles = [_]rhi.Buffer.ParticlesData{
+        .{
+            .ts = .{ 2, 0, 1, 1 },
+            .color = .{ 1, 0, 1, 1 },
+        },
+    };
+    const pd: rhi.Buffer.buffer_data = .{ .particles = particles[0..] };
+    var particles_buf = rhi.Buffer.init(pd);
+    errdefer particles_buf.deinit();
+
     pr.* = .{
         .view_camera = cam,
         .ctx = ctx,
         .allocator = allocator,
         .materials = mats_buf,
         .lights = lights_buf,
+        .particles_buffer = particles_buf,
     };
+    pr.particles_list[0] = particles[0];
+    pr.particles_count = 1;
 
     pr.renderParticles();
     errdefer pr.deleteParticles();
@@ -90,6 +108,7 @@ pub fn deinit(self: *Particles, allocator: std.mem.Allocator) void {
     self.deleteSphere();
     self.lights.deinit();
     self.materials.deinit();
+    self.particles_buffer.deinit();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -221,6 +240,9 @@ pub fn renderParticles(self: *Particles) void {
             i_datas[0..],
         ),
     };
+    var pd: rhi.Uniform = rhi.Uniform.init(prog, "f_particles_data") catch @panic("uniform failed");
+    pd.setUniform1i(self.particles_count);
+    self.particles_data = pd;
     self.particles = it;
 }
 

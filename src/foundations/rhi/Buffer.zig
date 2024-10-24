@@ -7,6 +7,7 @@ pub const buffer_type = enum(usize) {
     lights,
     camera,
     chapter8_shadows,
+    particles,
 };
 
 pub const buffer_data = union(buffer_type) {
@@ -14,6 +15,12 @@ pub const buffer_data = union(buffer_type) {
     lights: []const lighting.Light,
     camera: physics.camera.CameraData,
     chapter8_shadows: scenes_list.cgpoc.chapter8.Shadows.SceneData,
+    particles: []const ParticlesData,
+};
+
+pub const ParticlesData = struct {
+    ts: [4]f32 = .{ 0, 0, 0, 0 },
+    color: [4]f32 = .{ 1, 0, 1, 1 },
 };
 
 pub const storage_type = enum(usize) {
@@ -34,15 +41,18 @@ pub fn init(data: buffer_data) Buffer {
         .lights => @sizeOf(lighting.Light),
         .camera => @sizeOf(physics.camera.CameraData),
         .chapter8_shadows => @sizeOf(scenes_list.cgpoc.chapter8.Shadows.SceneData),
+        .particles => @sizeOf(ParticlesData),
     };
     const data_len: usize = switch (data) {
         .materials => |d| d.len,
         .lights => |d| d.len,
+        .particles => |d| d.len,
         else => 1,
     };
     const block_binding_point: storage_binding_point = switch (data) {
         .materials => .{ .ssbo = 0 },
         .lights => .{ .ssbo = 1 },
+        .particles => .{ .ssbo = 2 },
         .camera => .{ .ubo = 0 },
         .chapter8_shadows => .{ .ubo = 1 },
     };
@@ -76,15 +86,16 @@ pub fn deinit(self: Buffer) void {
 }
 
 pub fn update(self: Buffer, data: buffer_data) void {
-    // Only camera supports updating at the moment.
     const data_size: usize = switch (data) {
         .camera => @sizeOf(physics.camera.CameraData),
         .chapter8_shadows => @sizeOf(scenes_list.cgpoc.chapter8.Shadows.SceneData),
+        .particles => @sizeOf(ParticlesData),
         else => 0,
     };
     const data_len: usize = switch (data) {
         .camera => 1,
         .chapter8_shadows => 1,
+        .particles => |d| d.len,
         else => 0,
     };
     const size = data_len * data_size;
