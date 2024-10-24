@@ -18,7 +18,7 @@ particles_buffer: rhi.Buffer,
 
 const Particles = @This();
 
-const max_num_particles = 60;
+const max_num_particles = 15;
 const sphere_vert: []const u8 = @embedFile("sphere_vert.glsl");
 
 const mats = [_]lighting.Material{
@@ -189,12 +189,23 @@ fn animateSphere(self: *Particles, dt: f64) void {
 }
 
 pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: math.vector.vec4) void {
-    if (self.particles_count >= max_num_particles) return;
-    self.particles_list[self.particles_count] = .{
-        .ts = .{ pos[0], pos[1], pos[2], 0.5 },
-        .color = color,
-    };
-    self.particles_count += 1;
+    if (self.particles_count >= max_num_particles) {
+        var new_pl: [max_num_particles]rhi.Buffer.ParticlesData = undefined;
+        for (0..max_num_particles - 1) |i| {
+            new_pl[i] = self.particles_list[i + 1];
+        }
+        new_pl[max_num_particles - 1] = .{
+            .ts = .{ pos[0], pos[1], pos[2], 0.5 },
+            .color = color,
+        };
+        self.particles_list = new_pl;
+    } else {
+        self.particles_list[self.particles_count] = .{
+            .ts = .{ pos[0], pos[1], pos[2], 0.5 },
+            .color = color,
+        };
+        self.particles_count += 1;
+    }
     const pd: rhi.Buffer.buffer_data = .{ .particles = self.particles_list[0..self.particles_count] };
     self.particles_buffer.update(pd);
     self.particles_data.setUniform1i(self.particles_count);
