@@ -27,12 +27,12 @@ out vec3 fo_vert_g;
 out vec3 fo_light_g;
 out vec4 fo_frag_color_g;
 
-layout (triangle_strip, max_vertices=4000) out;
+layout (triangle_strip, max_vertices=60) out;
 
 void main (void)
 {
     
-    for (int i=0; i < 2; i++)
+    for (int i=0; i < f_particles_data; i++)
     {
         Particle f_cur_p = f_particles[i];
         vec3 f_part_tr = f_cur_p.tr.xyz;

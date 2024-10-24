@@ -18,7 +18,7 @@ particles_buffer: rhi.Buffer,
 
 const Particles = @This();
 
-const max_num_particles = 1_000;
+const max_num_particles = 60;
 const sphere_vert: []const u8 = @embedFile("sphere_vert.glsl");
 
 const mats = [_]lighting.Material{
@@ -185,6 +185,19 @@ fn animateSphere(self: *Particles, dt: f64) void {
 
     const sphere_color = math.interpolation.linear(t, colors[0..], times[0..]);
     self.sphere_color.setUniform4fv(sphere_color);
+    self.updateParticlesBuffer(sp, sphere_color);
+}
+
+pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: math.vector.vec4) void {
+    if (self.particles_count >= max_num_particles) return;
+    self.particles_list[self.particles_count] = .{
+        .ts = .{ pos[0], pos[1], pos[2], 0.5 },
+        .color = color,
+    };
+    self.particles_count += 1;
+    const pd: rhi.Buffer.buffer_data = .{ .particles = self.particles_list[0..self.particles_count] };
+    self.particles_buffer.update(pd);
+    self.particles_data.setUniform1i(self.particles_count);
 }
 
 pub fn deleteCross(self: *Particles) void {
