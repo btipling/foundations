@@ -37,7 +37,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         ctx.cfg,
         pr,
         integrator,
-        .{ 2, -10, 0 },
+        .{ 0, 0, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -116,19 +116,25 @@ pub fn draw(self: *Particles, dt: f64) void {
 }
 
 fn animateSphere(self: *Particles, dt: f64) void {
-    const t: f64 = @mod(dt, 2.0);
-    var positions: [3]math.vector.vec4 = undefined;
-    var tangents: [3]math.vector.vec4 = undefined;
-    var times: [3]f32 = undefined;
+    const t: f64 = @mod(dt, 4.0);
+    var positions: [5]math.vector.vec4 = undefined;
+    var tangents: [5]math.vector.vec4 = undefined;
+    var times: [5]f32 = undefined;
     positions[0] = .{ 1, 5, 0, 1 };
-    positions[1] = .{ 1, 5, 5, 1 };
-    positions[2] = .{ 1, 5, 0, 1 };
-    tangents[0] = .{ 0, 0, 0, 1 };
-    tangents[1] = .{ 0, 0, 0, 1 };
-    tangents[2] = .{ 0, 0, 0, 1 };
+    positions[1] = .{ 2.5, 5, 5, 1 };
+    positions[2] = .{ 0, -5, -5, 1 };
+    positions[3] = .{ -1.5, 5, -5, 1 };
+    positions[4] = .{ 1, 5, 0, 1 };
+    tangents[0] = .{ 5, 0, 5, 1 };
+    tangents[1] = .{ 5, 0, 0, 1 };
+    tangents[2] = .{ 0, 5, 0, 1 };
+    tangents[3] = .{ 0, 0, 5, 1 };
+    tangents[4] = .{ 0, 0, 5, 1 };
     times[0] = 0;
     times[1] = 1;
     times[2] = 2;
+    times[3] = 3;
+    times[4] = 4;
     const sp = math.interpolation.hermiteCurve(@floatCast(t), positions[0..], tangents[0..], times[0..]);
     self.sphere_position = sp;
     self.sphere_matrix.setUniformMatrix(math.matrix.translate(sp[0], sp[1], sp[2]));
