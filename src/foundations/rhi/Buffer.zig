@@ -64,6 +64,9 @@ pub fn init(data: buffer_data) Buffer {
         .lights => |d| {
             c.glNamedBufferData(name, @intCast(size), d.ptr, c.GL_STATIC_DRAW);
         },
+        .particles => |d| {
+            c.glNamedBufferData(name, @intCast(size), d.ptr, c.GL_DYNAMIC_DRAW);
+        },
         else => |d| {
             c.glNamedBufferData(name, @intCast(size), &d, c.GL_DYNAMIC_DRAW);
         },
@@ -105,6 +108,9 @@ pub fn update(self: Buffer, data: buffer_data) void {
         },
         .chapter8_shadows => |d| {
             c.glNamedBufferData(self.name, @intCast(size), &d, c.GL_DYNAMIC_DRAW);
+        },
+        .particles => |d| {
+            c.glNamedBufferData(self.name, @intCast(size), d.ptr, c.GL_DYNAMIC_DRAW);
         },
         else => {},
     }

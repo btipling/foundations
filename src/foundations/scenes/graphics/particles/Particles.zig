@@ -72,8 +72,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
 
     const particles = [_]rhi.Buffer.ParticlesData{
         .{
-            .ts = .{ 2, 0, 1, 1 },
+            .ts = .{ 2, 0, 1, 0.5 },
             .color = .{ 1, 0, 1, 1 },
+        },
+        .{
+            .ts = .{ 2, 5, 1, 0.5 },
+            .color = .{ 0, 1, 1, 1 },
         },
     };
     const pd: rhi.Buffer.buffer_data = .{ .particles = particles[0..] };
@@ -89,7 +93,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         .particles_buffer = particles_buf,
     };
     pr.particles_list[0] = particles[0];
-    pr.particles_count = 1;
+    pr.particles_list[1] = particles[1];
+    pr.particles_count = 2;
 
     pr.renderParticles();
     errdefer pr.deleteParticles();
