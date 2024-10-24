@@ -116,25 +116,33 @@ pub fn draw(self: *Particles, dt: f64) void {
 }
 
 fn animateSphere(self: *Particles, dt: f64) void {
-    const t: f64 = @mod(dt, 4.0);
-    var positions: [5]math.vector.vec4 = undefined;
-    var tangents: [5]math.vector.vec4 = undefined;
-    var times: [5]f32 = undefined;
-    positions[0] = .{ 1, 5, 0, 1 };
-    positions[1] = .{ 2.5, 5, 5, 1 };
-    positions[2] = .{ 0, -5, -5, 1 };
-    positions[3] = .{ -1.5, 5, -5, 1 };
-    positions[4] = .{ 1, 5, 0, 1 };
+    const t: f64 = @mod(dt, 6.0);
+    var positions: [7]math.vector.vec4 = undefined;
+    var tangents: [7]math.vector.vec4 = undefined;
+    var times: [7]f32 = undefined;
+    // zig fmt: off
+    positions[0] = .{  5,    0,    0, 1 };
+    positions[1] = .{  5,    5,    0, 1 };
+    positions[2] = .{  5,    5,    5, 1 };
+    positions[3] = .{  0,    5,    5, 1 };
+    positions[4] = .{  0,    0,    5, 1 };
+    positions[5] = .{  0,    0,    0, 1 };
+    positions[6] = .{  5,    0,    0, 1 };
     tangents[0] = .{ 5, 0, 5, 1 };
     tangents[1] = .{ 5, 0, 0, 1 };
     tangents[2] = .{ 0, 5, 0, 1 };
-    tangents[3] = .{ 0, 0, 5, 1 };
-    tangents[4] = .{ 0, 0, 5, 1 };
+    tangents[3] = .{ 0, 5, 0, 1 };
+    tangents[4] = .{ 0, 5, 0, 1 };
+    tangents[5] = .{ 0, 0, 5, 1 };
+    tangents[6] = .{ 0, 0, 5, 1 };
+    // zig fmt: on
     times[0] = 0;
     times[1] = 1;
     times[2] = 2;
     times[3] = 3;
     times[4] = 4;
+    times[5] = 5;
+    times[6] = 6;
     const sp = math.interpolation.hermiteCurve(@floatCast(t), positions[0..], tangents[0..], times[0..]);
     self.sphere_position = sp;
     self.sphere_matrix.setUniformMatrix(math.matrix.translate(sp[0], sp[1], sp[2]));
