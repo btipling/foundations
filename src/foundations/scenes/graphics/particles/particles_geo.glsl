@@ -37,7 +37,7 @@ void main (void)
         0.0, 0.0, 1.0, 0.0,
         f_cur_p.tr.x, f_cur_p.tr.y, f_cur_p.tr.z, 1.0
     );
-    float f_scale = 0.5;
+    float f_scale = f_cur_p.tr.w;
     vec3 p0 = vec3(0.0, 0.0, 0.0) * f_scale;
     vec3 p1 = vec3(0.0, 0.0, 1.0) * f_scale;
     vec3 p2 = vec3(1.0, 0.0, 0.0) * f_scale;
@@ -49,28 +49,28 @@ void main (void)
     f_normal_g = emit_norm;
     fo_vert_g = p0;
     fo_light_g = fo_light[0];
-    fo_frag_color_g = f_frag_color[0];
+    fo_frag_color_g = f_cur_p.color;
     gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
     EmitVertex();
 
     f_normal_g = emit_norm;
     fo_vert_g = p1;
     fo_light_g = fo_light[0];
-    fo_frag_color_g = f_frag_color[0];
+    fo_frag_color_g = f_cur_p.color;
     gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
     EmitVertex();
     
     f_normal_g = emit_norm;
     fo_vert_g = p2;
     fo_light_g = fo_light[0];
-    fo_frag_color_g = f_frag_color[0];
+    fo_frag_color_g = f_cur_p.color;
     gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
     EmitVertex();
 
     f_normal_g = emit_norm;
     fo_vert_g = p3;
     fo_light_g = fo_light[0];
-    fo_frag_color_g = f_frag_color[0];
+    fo_frag_color_g = f_cur_p.color;
     gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
     EmitVertex();
 
