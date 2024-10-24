@@ -17,6 +17,7 @@ layout (location = 9) in vec4 f_i_color;
 //#include "src/foundations/shaders/vertex_outs.glsl"
 
 uniform mat4 f_sphere_matrix;
+uniform vec4 f_sphere_color;
 
 out vec3 fo_light;
 
@@ -36,6 +37,6 @@ void main()
     fo_vert = f_main_pos.xyz;
     fo_normal = normalize(f_norm_matrix * f_normal);
     f_tc = f_texture_coords;
-    f_frag_color = f_i_color;
+    f_frag_color = f_sphere_color;
     gl_Position = f_mvp * f_main_pos;
 }

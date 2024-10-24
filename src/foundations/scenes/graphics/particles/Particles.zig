@@ -5,7 +5,7 @@ allocator: std.mem.Allocator = undefined,
 
 sphere: object.object = .{ .norender = .{} },
 sphere_matrix: rhi.Uniform = undefined,
-sphere_position: math.vector.vec4 = .{ 1, 5, 0, 1 },
+sphere_color: rhi.Uniform = undefined,
 
 particles: object.object = .{ .norender = .{} },
 
@@ -116,9 +116,11 @@ pub fn draw(self: *Particles, dt: f64) void {
 }
 
 fn animateSphere(self: *Particles, dt: f64) void {
-    const t: f64 = @mod(dt / 2, 6.0);
+    const dtf: f32 = @floatCast(dt);
+    const t: f32 = @mod(dtf / 2, 6.0);
     var positions: [7]math.vector.vec4 = undefined;
     var tangents: [7]math.vector.vec4 = undefined;
+    var colors: [7]math.vector.vec4 = undefined;
     var times: [7]f32 = undefined;
     // zig fmt: off
     positions[0] = .{  5,    0,    0, 1 };
@@ -136,6 +138,14 @@ fn animateSphere(self: *Particles, dt: f64) void {
     tangents[5] = .{ 0, 0, 15, 1 };
     tangents[6] = .{ 0, 0, 5, 1 };
     // zig fmt: on
+
+    colors[0] = .{ 1.0, 0.278, 0.698, 1 };
+    colors[1] = .{ 0, 1.0, 0.698, 1 };
+    colors[2] = .{ 1.0, 0.655, 0.149, 1 };
+    colors[3] = .{ 0.392, 0.867, 0.090, 1 };
+    colors[4] = .{ 0.0, 0.690, 1.0, 1 };
+    colors[5] = .{ 0.702, 0.533, 1.0, 1 };
+    colors[6] = .{ 1.0, 0.278, 0.698, 1 };
     times[0] = 0;
     times[1] = 1;
     times[2] = 2;
@@ -143,9 +153,12 @@ fn animateSphere(self: *Particles, dt: f64) void {
     times[4] = 4;
     times[5] = 5;
     times[6] = 6;
-    const sp = math.interpolation.hermiteCurve(@floatCast(t), positions[0..], tangents[0..], times[0..]);
-    self.sphere_position = sp;
+
+    const sp = math.interpolation.hermiteCurve(t, positions[0..], tangents[0..], times[0..]);
     self.sphere_matrix.setUniformMatrix(math.matrix.translate(sp[0], sp[1], sp[2]));
+
+    const sphere_color = math.interpolation.linear(t, colors[0..], times[0..]);
+    self.sphere_color.setUniform4fv(sphere_color);
 }
 
 pub fn deleteCross(self: *Particles) void {
@@ -253,10 +266,12 @@ pub fn renderSphere(self: *Particles) void {
         ),
     };
     sphere.sphere.mesh.linear_colorspace = false;
-    const sp = self.sphere_position;
     var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
-    sm.setUniformMatrix(math.matrix.translate(sp[0], sp[1], sp[2]));
+    sm.setUniformMatrix(math.matrix.translate(1, 5, 0));
     self.sphere_matrix = sm;
+    var sc: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_color") catch @panic("uniform failed");
+    sc.setUniform4fv(.{ 1, 1, 1, 1 });
+    self.sphere_color = sc;
     self.sphere = sphere;
 }
 
