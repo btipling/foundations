@@ -31,7 +31,7 @@ void main()
     Light f_light = f_lights[0];
 
     mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
-    vec4 f_main_pos = m_matrix * vec4(f_position.xyz, 1.0);
+    vec4 f_main_pos = f_sphere_matrix * m_matrix * vec4(f_position.xyz, 1.0);
     fo_light = f_light.direction.xyz;
     fo_vert = f_main_pos.xyz;
     fo_normal = normalize(f_norm_matrix * f_normal);

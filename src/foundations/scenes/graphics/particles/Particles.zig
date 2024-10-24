@@ -5,7 +5,7 @@ allocator: std.mem.Allocator = undefined,
 
 sphere: object.object = .{ .norender = .{} },
 sphere_matrix: rhi.Uniform = undefined,
-sphere_position: math.vector.vec4 = .{ 0, 0, 0, 0 },
+sphere_position: math.vector.vec4 = .{ 1, 5, 0, 1 },
 
 particles: object.object = .{ .norender = .{} },
 
@@ -98,6 +98,7 @@ pub fn deinit(self: *Particles, allocator: std.mem.Allocator) void {
 pub fn updateCamera(_: *Particles) void {}
 
 pub fn draw(self: *Particles, dt: f64) void {
+    self.animateSphere(dt);
     self.view_camera.update(dt);
     {
         const objects: [1]object.object = .{
@@ -112,6 +113,21 @@ pub fn draw(self: *Particles, dt: f64) void {
         rhi.drawObjects(objects[0..]);
     }
     self.cross.draw(dt);
+}
+
+fn animateSphere(self: *Particles, dt: f64) void {
+    const t: f64 = @mod(dt, 2.0);
+    var positions: [3]math.vector.vec4 = undefined;
+    var times: [3]f32 = undefined;
+    positions[0] = .{ 1, 5, 0, 1 };
+    positions[1] = .{ 1, 5, 5, 1 };
+    positions[2] = .{ 1, 5, 0, 1 };
+    times[0] = 0;
+    times[1] = 1;
+    times[2] = 2;
+    const sp = math.interpolation.linear(@floatCast(t), positions[0..], times[0..]);
+    self.sphere_position = sp;
+    self.sphere_matrix.setUniformMatrix(math.matrix.translate(sp[0], sp[1], sp[2]));
 }
 
 pub fn deleteCross(self: *Particles) void {
