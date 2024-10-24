@@ -213,14 +213,13 @@ pub fn renderParticles(self: *Particles) void {
         };
         i_datas[0] = i_data;
     }
-    var torus: object.object = .{
+    const torus: object.object = .{
         .torus = object.Torus.init(
             prog,
             i_datas[0..],
             false,
         ),
     };
-    torus.torus.mesh.linear_colorspace = false;
     self.particles = torus;
 }
 
@@ -258,14 +257,13 @@ pub fn renderSphere(self: *Particles) void {
         .t_column3 = m.columns[3],
         .color = .{ 1, 0, 1, 1 },
     };
-    var sphere: object.object = .{
+    const sphere: object.object = .{
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
             false,
         ),
     };
-    sphere.sphere.mesh.linear_colorspace = false;
     var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
     sm.setUniformMatrix(math.matrix.translate(1, 5, 0));
     self.sphere_matrix = sm;
