@@ -193,15 +193,16 @@ pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: mat
         var new_pl: [max_num_particles]rhi.Buffer.ParticlesData = undefined;
         for (0..max_num_particles - 1) |i| {
             new_pl[i] = self.particles_list[i + 1];
+            new_pl[i].ts[3] -= 0.01;
         }
         new_pl[max_num_particles - 1] = .{
-            .ts = .{ pos[0], pos[1], pos[2], 0.5 },
+            .ts = .{ pos[0], pos[1], pos[2], 0.15 },
             .color = color,
         };
         self.particles_list = new_pl;
     } else {
         self.particles_list[self.particles_count] = .{
-            .ts = .{ pos[0], pos[1], pos[2], 0.5 },
+            .ts = .{ pos[0], pos[1], pos[2], 0.15 },
             .color = color,
         };
         self.particles_count += 1;

@@ -36,19 +36,25 @@ void main (void)
     {
         Particle f_cur_p = f_particles[i];
         vec3 f_part_tr = f_cur_p.tr.xyz;
-        mat4 face_cam = mat4(transpose(mat3(v_matrix)));
+        mat4 f_p_rot = mat4(transpose(mat3(v_matrix)));
+        float f_scale = f_cur_p.tr.w;
         mat4 f_p_translate = mat4(
             1.0, 0.0, 0.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 1.0, 0.0,
             f_part_tr.x, f_part_tr.y, f_part_tr.z, 1.0
         );
-        float f_scale = f_cur_p.tr.w;
-        vec3 p0 = vec3(0.0, 0.0, 0.0) * f_scale;
-        vec3 p1 = vec3(0.0, 0.0, 1.0) * f_scale;
-        vec3 p2 = vec3(1.0, 0.0, 0.0) * f_scale;
-        vec3 p3 = vec3(1.0, 0.0, 1.0) * f_scale;
-        mat4 m_matrix = face_cam * f_p_translate;
+        mat4 f_p_scale = mat4(
+            f_scale, 0.0, 0.0, 0.0,
+            0.0, f_scale, 0.0, 0.0,
+            0.0, 0.0, f_scale, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        );
+        vec3 p0 = vec3(0.0, 0.0, 0.0);
+        vec3 p1 = vec3(0.0, 0.0, 1.0);
+        vec3 p2 = vec3(1.0, 0.0, 0.0);
+        vec3 p3 = vec3(1.0, 0.0, 1.0);
+        mat4 m_matrix = f_p_translate * f_p_rot * f_p_scale;
         mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
         vec3 emit_norm = normalize(f_norm_matrix * fo_normal[0]);
 
