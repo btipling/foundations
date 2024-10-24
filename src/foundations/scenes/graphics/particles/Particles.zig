@@ -116,7 +116,7 @@ pub fn draw(self: *Particles, dt: f64) void {
 }
 
 fn animateSphere(self: *Particles, dt: f64) void {
-    const t: f64 = @mod(dt, 6.0);
+    const t: f64 = @mod(dt / 2, 6.0);
     var positions: [7]math.vector.vec4 = undefined;
     var tangents: [7]math.vector.vec4 = undefined;
     var times: [7]f32 = undefined;
@@ -128,12 +128,12 @@ fn animateSphere(self: *Particles, dt: f64) void {
     positions[4] = .{  0,    0,    5, 1 };
     positions[5] = .{  0,    0,    0, 1 };
     positions[6] = .{  5,    0,    0, 1 };
-    tangents[0] = .{ 5, 0, 5, 1 };
-    tangents[1] = .{ 5, 0, 0, 1 };
-    tangents[2] = .{ 0, 5, 0, 1 };
-    tangents[3] = .{ 0, 5, 0, 1 };
-    tangents[4] = .{ 0, 5, 0, 1 };
-    tangents[5] = .{ 0, 0, 5, 1 };
+    tangents[0] = .{ 15, 0, 5, 1 };
+    tangents[1] = .{ 15, 0, 0, 1 };
+    tangents[2] = .{ 0, 25, 0, 1 };
+    tangents[3] = .{ 0, 15, 0, 1 };
+    tangents[4] = .{ 0, 25, 0, 1 };
+    tangents[5] = .{ 0, 0, 15, 1 };
     tangents[6] = .{ 0, 0, 5, 1 };
     // zig fmt: on
     times[0] = 0;
