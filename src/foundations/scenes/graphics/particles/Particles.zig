@@ -4,6 +4,11 @@ cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
 rand: std.Random.DefaultPrng = undefined,
 
+cur_x_rand_dir: f32 = 0,
+cur_y_rand_dir: f32 = 0,
+cur_z_rand_dir: f32 = 0,
+prev_mod: f32 = 0,
+
 sphere: object.object = .{ .norender = .{} },
 sphere_matrix: rhi.Uniform = undefined,
 sphere_color: rhi.Uniform = undefined,
@@ -154,25 +159,31 @@ pub fn draw(self: *Particles, dt: f64) void {
 fn animateSphere(self: *Particles, dt: f64) void {
     const dtf: f32 = @floatCast(dt);
     const t: f32 = @mod(dtf / 2, 6.0);
+    if (self.prev_mod == 0 or t < self.prev_mod) {
+        self.cur_x_rand_dir = self.rand.random().float(f32) * 12.9898;
+        self.cur_y_rand_dir = self.rand.random().float(f32) * 78.233;
+        self.cur_z_rand_dir = self.rand.random().float(f32) * 43.758;
+    }
+    self.prev_mod = t;
     var positions: [7]math.vector.vec4 = undefined;
     var tangents: [7]math.vector.vec4 = undefined;
     var colors: [7]math.vector.vec4 = undefined;
     var times: [7]f32 = undefined;
     // zig fmt: off
-    positions[0] = .{  15,    0,    0, 1 };
-    positions[1] = .{  15,    15,    0, 1 };
-    positions[2] = .{  15,    15,    15, 1 };
-    positions[3] = .{  0,    15,    15, 1 };
-    positions[4] = .{  0,    0,    15, 1 };
-    positions[5] = .{  0,    0,    0, 1 };
-    positions[6] = .{  15,    0,    0, 1 };
+    positions[0] = .{  5 + self.cur_x_rand_dir,     self.cur_y_rand_dir,        self.cur_z_rand_dir, 1 };
+    positions[1] = .{  5 + self.cur_x_rand_dir,     5 + self.cur_y_rand_dir,    self.cur_z_rand_dir, 1 };
+    positions[2] = .{  5 + self.cur_x_rand_dir,     5 + self.cur_y_rand_dir,    5 + self.cur_z_rand_dir, 1 };
+    positions[3] = .{  self.cur_x_rand_dir,         5 + self.cur_y_rand_dir,    5 + self.cur_z_rand_dir, 1 };
+    positions[4] = .{  self.cur_x_rand_dir,         self.cur_y_rand_dir,        5 + self.cur_z_rand_dir, 1 };
+    positions[5] = .{  self.cur_x_rand_dir,         self.cur_y_rand_dir,        self.cur_z_rand_dir, 1 };
+    positions[6] = .{  5 + self.cur_x_rand_dir,     self.cur_y_rand_dir,        self.cur_z_rand_dir, 1 };
     tangents[0] = .{ 15, 0, 5, 1 };
     tangents[1] = .{ 15, 0, 0, 1 };
     tangents[2] = .{ 0, 25, 0, 1 };
     tangents[3] = .{ 0, 15, 0, 1 };
     tangents[4] = .{ 0, 25, 0, 1 };
     tangents[5] = .{ 0, 0, 15, 1 };
-    tangents[6] = .{ 0, 0, 5, 1 };
+    tangents[6] = .{ 0, 0,  5, 1 };
     // zig fmt: on
 
     colors[0] = .{ 1.0, 0.278, 0.698, 1 };
