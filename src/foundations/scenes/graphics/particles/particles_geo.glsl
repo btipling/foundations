@@ -1,6 +1,6 @@
 #version 460
 
-layout (triangles) in;
+layout (points) in;
 
 //#include "src/foundations/shaders/camera.glsl"
 
