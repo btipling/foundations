@@ -21,6 +21,7 @@ const Particles = @This();
 
 const max_num_particles: usize = 1000;
 const max_num_particles_f: f32 = @floatFromInt(max_num_particles);
+const particle_per_frame: usize = 1;
 
 const sphere_vert: []const u8 = @embedFile("sphere_vert.glsl");
 
@@ -198,36 +199,43 @@ fn animateSphere(self: *Particles, dt: f64) void {
 }
 
 pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: math.vector.vec4) void {
-    const rand_value = self.rand.random().float(f32);
     if (self.particles_count >= max_num_particles) {
         var new_pl: [max_num_particles]rhi.Buffer.ParticlesData = undefined;
-        for (0..self.particles_count - 1) |i| {
+        for (0..self.particles_count - particle_per_frame) |i| {
             const scale_change = 0.15 / max_num_particles_f;
-            const vert_change = scale_change * 10;
+            const vert_change = scale_change * 100;
             new_pl[i] = self.particles_list[i + 1];
             new_pl[i].ts[0] -= vert_change * new_pl[i].color[3];
             new_pl[i].ts[3] += scale_change;
         }
-        new_pl[max_num_particles - 1] = .{
-            .ts = .{ pos[0], pos[1], pos[2], 0.05 },
-            .color = .{ color[0], color[1], color[2], rand_value },
-        };
+        for (0..particle_per_frame) |i| {
+            const rand_value = self.rand.random().float(f32);
+            const i_offset = particle_per_frame - i;
+            new_pl[max_num_particles - i_offset] = .{
+                .ts = .{ pos[0], pos[1], pos[2], 0.05 },
+                .color = .{ color[0], color[1], color[2], rand_value },
+            };
+        }
         self.particles_list = new_pl;
     } else {
         var new_pl: [max_num_particles]rhi.Buffer.ParticlesData = undefined;
         for (0..self.particles_count) |i| {
             const scale_change = 0.15 / max_num_particles_f;
-            const vert_change = scale_change * 10;
+            const vert_change = scale_change * 100;
             new_pl[i] = self.particles_list[i + 1];
             new_pl[i].ts[0] -= vert_change * new_pl[i].color[3];
             new_pl[i].ts[3] += scale_change;
         }
-        self.particles_list = new_pl;
-        self.particles_list[self.particles_count] = .{
-            .ts = .{ pos[0], pos[1], pos[2], 0.05 },
-            .color = .{ color[0], color[1], color[2], rand_value },
-        };
-        self.particles_count += 1;
+        for (0..particle_per_frame) |_| {
+            const rand_value = self.rand.random().float(f32);
+            self.particles_list = new_pl;
+            self.particles_list[self.particles_count] = .{
+                .ts = .{ pos[0], pos[1], pos[2], 0.05 },
+                .color = .{ color[0], color[1], color[2], rand_value },
+            };
+            self.particles_count += 1;
+            if (self.particles_count >= max_num_particles) break;
+        }
     }
     const pd: rhi.Buffer.buffer_data = .{ .particles = self.particles_list[0..self.particles_count] };
     self.particles_buffer.update(pd);
