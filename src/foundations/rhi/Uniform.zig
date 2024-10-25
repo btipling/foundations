@@ -29,6 +29,10 @@ pub fn setUniformMatrix(self: Uniform, m: math.matrix) void {
     c.glProgramUniformMatrix4fv(@intCast(self.program), self.location, 1, c.GL_FALSE, &v);
 }
 
+pub fn setUniform1i(self: Uniform, v: usize) void {
+    c.glProgramUniform1i(@intCast(self.program), self.location, @intCast(v));
+}
+
 pub fn setUniform1f(self: Uniform, v: f32) void {
     c.glProgramUniform1f(@intCast(self.program), self.location, @floatCast(v));
 }

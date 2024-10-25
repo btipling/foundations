@@ -18,9 +18,10 @@ pub const scene_type = enum(usize) {
     look_at,
     plane_distance,
     frustum_planes,
-    // color
+    // graphics
     linear_colorspace,
     polygon_offset,
+    particles,
     // CGPOC
     point,
     triangle_animated,
@@ -38,6 +39,7 @@ pub const scene_type = enum(usize) {
     twelve_basic_tessellator,
     twelve_terrain_tessellator,
     twelve_lod_tessellator,
+    thirteen_torus_geometry,
 };
 
 pub const scenes = union(scene_type) {
@@ -60,9 +62,10 @@ pub const scenes = union(scene_type) {
     look_at: *scenes_list.math.LookAt,
     plane_distance: *scenes_list.math.PlaneDistance,
     frustum_planes: *scenes_list.math.FrustumPlanes,
-    // color
+    // graphics
     linear_colorspace: *scenes_list.graphics.LinearColorspace,
     polygon_offset: *scenes_list.graphics.PolygonOffset,
+    particles: *scenes_list.graphics.Particles,
     // CGPOC
     point: *scenes_list.cgpoc.point,
     triangle_animated: *scenes_list.cgpoc.triangle_animated,
@@ -80,6 +83,7 @@ pub const scenes = union(scene_type) {
     twelve_basic_tessellator: *scenes_list.cgpoc.chapter12.BasicTessellator,
     twelve_terrain_tessellator: *scenes_list.cgpoc.chapter12.TerrainTessellator,
     twelve_lod_tessellator: *scenes_list.cgpoc.chapter12.LodTessellator,
+    thirteen_torus_geometry: *scenes_list.cgpoc.chapter13.TorusGeometry,
 };
 
 pub const scene_nav_type = enum {
