@@ -68,4 +68,3 @@ Copyright (c) 2017 Sean Barrett
 MIT License
 Copyright 2020 Riccardo Scalco
 https://github.com/riccardoscalco/glsl-pcg-prng/
-

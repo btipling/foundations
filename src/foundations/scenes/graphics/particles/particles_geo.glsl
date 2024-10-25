@@ -4,8 +4,6 @@ layout (points) in;
 
 //#include "src/foundations/shaders/camera.glsl"
 
-//#include "src/foundations/shaders/rand.glsl"
-
 
 struct Particle {
     vec4 tr;
@@ -40,18 +38,19 @@ void main (void)
 
 
         Particle f_cur_p = f_particles[fo_instance_id[0]];
-        
-        float rx = prng(vec2(f_cur_p.color.w + float(i), 0.0));  // x offset
-        float ry = prng(vec2(f_cur_p.color.w + float(i), 1.0));  // y offset
+
+        float seed = f_cur_p.color.w;
+        float rx = fract(seed * 12.9898);
+        float ry = fract(seed * 78.233);
         
         // Now rx and ry are in 0-1 range
         vec2 offset = vec2(rx * 2.0 - 1.0, ry * 2.0 - 1.0); // convert to -1 to 1 range
         vec3 f_part_tr = f_cur_p.tr.xyz;
-        f_part_tr.z = f_part_tr.z + offset.x;
-        f_part_tr.x = f_part_tr.x + offset.y;
+        f_part_tr.z = f_part_tr.z + rx;
+        f_part_tr.x = f_part_tr.x + ry;
 
         mat4 f_p_rot = mat4(transpose(mat3(v_matrix)));
-        float f_scale = f_cur_p.tr.w * f_cur_p.color.w;
+        float f_scale = f_cur_p.tr.w;
         vec4 f_p_color = vec4(f_cur_p.color.x, f_cur_p.color.y, f_cur_p.color.z, 1.0);
         mat4 f_p_translate = mat4(
             1.0, 0.0, 0.0, 0.0,
