@@ -40,8 +40,8 @@ const mats = [_]lighting.Material{
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
-        .nav_type = .cgpoc,
-        .name = "Torus Geometry",
+        .nav_type = .graphics,
+        .name = "Particles",
     };
 }
 
@@ -181,9 +181,9 @@ fn animateSphere(self: *Particles, dt: f64) void {
     const dtf: f32 = @floatCast(dt);
     const t: f32 = @mod(dtf / 2, 6.0);
     if (self.prev_mod == 0 or t < self.prev_mod) {
-        self.cur_x_rand_dir = self.rand.random().float(f32) * 1.29898;
-        self.cur_y_rand_dir = self.rand.random().float(f32) * 7.8233;
-        self.cur_z_rand_dir = self.rand.random().float(f32) * 4.3758;
+        self.cur_x_rand_dir = self.rand.random().float(f32) * 12.9898 / 2.0;
+        self.cur_y_rand_dir = self.rand.random().float(f32) * 78.233 / 2.0;
+        self.cur_z_rand_dir = self.rand.random().float(f32) * 43.758 / 2.0;
     }
     self.prev_mod = t;
     var positions: [7]math.vector.vec4 = undefined;
