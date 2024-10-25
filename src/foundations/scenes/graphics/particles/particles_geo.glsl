@@ -40,8 +40,8 @@ void main (void)
         Particle f_cur_p = f_particles[fo_instance_id[0]];
 
         float seed = f_cur_p.color.w;
-        float rx = fract(seed * 0.129898);
-        float ry = fract(seed * 0.78233);
+        float rx = fract(seed * 0.0129898);
+        float ry = fract(seed * 0.078233);
         
         // Now rx and ry are in 0-1 range
         vec2 offset = vec2(rx * 2.0 - 1.0, ry * 2.0 - 1.0); // convert to -1 to 1 range

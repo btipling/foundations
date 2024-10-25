@@ -51,8 +51,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         ctx.cfg,
         pr,
         integrator,
-        .{ 0, 0, 0 },
-        0,
+        .{ -2, 15, 25 },
+        std.math.pi + 1.0,
     );
     errdefer cam.deinit(allocator);
 
@@ -160,9 +160,9 @@ fn animateSphere(self: *Particles, dt: f64) void {
     const dtf: f32 = @floatCast(dt);
     const t: f32 = @mod(dtf / 2, 6.0);
     if (self.prev_mod == 0 or t < self.prev_mod) {
-        self.cur_x_rand_dir = self.rand.random().float(f32) * 12.9898;
-        self.cur_y_rand_dir = self.rand.random().float(f32) * 78.233;
-        self.cur_z_rand_dir = self.rand.random().float(f32) * 43.758;
+        self.cur_x_rand_dir = self.rand.random().float(f32) * 1.29898;
+        self.cur_y_rand_dir = self.rand.random().float(f32) * 7.8233;
+        self.cur_z_rand_dir = self.rand.random().float(f32) * 4.3758;
     }
     self.prev_mod = t;
     var positions: [7]math.vector.vec4 = undefined;
