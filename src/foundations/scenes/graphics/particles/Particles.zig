@@ -22,6 +22,9 @@ materials: rhi.Buffer,
 lights: rhi.Buffer,
 particles_buffer: rhi.Buffer,
 
+cubemap: object.object = .{ .norender = .{} },
+cubemap_texture: ?rhi.Texture = null,
+
 const Particles = @This();
 
 const max_num_particles: usize = 1000;
@@ -29,6 +32,7 @@ const max_num_particles_f: f32 = @floatFromInt(max_num_particles);
 const particle_per_frame: usize = 1;
 
 const sphere_vert: []const u8 = @embedFile("sphere_vert.glsl");
+const cubemap_vert: []const u8 = @embedFile("../../../shaders/cubemap_vert.glsl");
 
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
@@ -114,6 +118,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
     pr.renderParticles();
     errdefer pr.deleteParticles();
 
+    pr.renderCubemap();
+    errdefer pr.deleteCubemap();
+
     pr.renderSphere();
     errdefer pr.renderSphere();
 
@@ -125,6 +132,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
 
 pub fn deinit(self: *Particles, allocator: std.mem.Allocator) void {
     self.deleteCross();
+    self.deleteCubemap();
     self.deleteSphere();
     self.lights.deinit();
     self.materials.deinit();
@@ -139,6 +147,19 @@ pub fn updateCamera(_: *Particles) void {}
 pub fn draw(self: *Particles, dt: f64) void {
     self.animateSphere(dt);
     self.view_camera.update(dt);
+    if (self.cubemap_texture) |t| {
+        t.bind();
+    }
+    {
+        const objects: [1]object.object = .{
+            self.cubemap,
+        };
+        c.glDisable(c.GL_DEPTH_TEST);
+        c.glFrontFace(c.GL_CCW);
+        rhi.drawObjects(objects[0..]);
+        c.glFrontFace(c.GL_CW);
+        c.glEnable(c.GL_DEPTH_TEST);
+    }
     {
         const objects: [1]object.object = .{
             self.sphere,
@@ -364,6 +385,71 @@ pub fn renderSphere(self: *Particles) void {
     self.sphere = sphere;
 }
 
+pub fn deleteCubemap(self: *Particles) void {
+    const objects: [1]object.object = .{
+        self.cubemap,
+    };
+    rhi.deleteObjects(objects[0..]);
+}
+
+pub fn renderCubemap(self: *Particles) void {
+    const prog = rhi.createProgram();
+    self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .cubemap = true,
+            .instance_data = true,
+            .fragment_shader = .texture,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(20));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-0.5, -0.5, -0.5));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 1, 0, 0, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    var parallelepiped: object.object = .{
+        .parallelepiped = object.Parallelepiped.initCubemap(
+            prog,
+            i_datas[0..],
+            false,
+        ),
+    };
+    parallelepiped.parallelepiped.mesh.linear_colorspace = false;
+    if (self.cubemap_texture) |*bt| {
+        var cm: assets.Cubemap = .{
+            .path = "cgpoc\\cubemaps\\milkyway\\cubeMap",
+            .textures_loader = self.ctx.textures_loader,
+        };
+        cm.names[0] = "xp.png";
+        cm.names[1] = "xn.png";
+        cm.names[2] = "yp.png";
+        cm.names[3] = "yn.png";
+        cm.names[4] = "zp.png";
+        cm.names[5] = "zn.png";
+        var images: ?[6]*assets.Image = null;
+        if (cm.loadAll(self.allocator)) {
+            images = cm.images;
+        } else |_| {
+            std.debug.print("failed to load textures\n", .{});
+        }
+        bt.setupCubemap(images, prog, "f_cubemap") catch {
+            self.cubemap_texture = null;
+        };
+    }
+    self.cubemap = parallelepiped;
+}
+
 const std = @import("std");
 const c = @import("../../../c.zig").c;
 const rhi = @import("../../../rhi/rhi.zig");
@@ -375,3 +461,4 @@ const scenery = @import("../../../scenery/scenery.zig");
 const Compiler = @import("../../../../compiler/Compiler.zig");
 const object = @import("../../../object/object.zig");
 const lighting = @import("../../../lighting/lighting.zig");
+const assets = @import("../../../assets/assets.zig");
