@@ -11,10 +11,7 @@ layout (location = 4) in vec4 f_tangent;
 
 //#include "src/foundations/shaders/vertex_outs.glsl"
 
-out vec4 fo_t_column0;
-out vec4 fo_t_column1;
-out vec4 fo_t_column2;
-out vec4 fo_t_column3;
+flat out int fo_instance_id;
 
 out vec3 fo_light;
 
@@ -22,6 +19,7 @@ void main()
 {
     Light f_light = f_lights[0];
 
+    fo_instance_id = gl_InstanceID;
     vec4 f_main_pos = vec4(f_position.xyz, 1.0);
     fo_light = f_light.direction.xyz;
     fo_vert = f_main_pos.xyz;

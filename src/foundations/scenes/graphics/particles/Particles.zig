@@ -268,7 +268,7 @@ pub fn renderParticles(self: *Particles) void {
         i_datas[0] = i_data;
     }
     const points: object.object = .{
-        .points = object.Points.init(prog, 1),
+        .points = object.Points.init(prog, 15),
     };
     var pd: rhi.Uniform = rhi.Uniform.init(prog, "f_particles_data") catch @panic("uniform failed");
     pd.setUniform1i(self.particles_count);

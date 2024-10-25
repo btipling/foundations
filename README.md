@@ -62,3 +62,10 @@ Copyright (c) 2006-2018 Camilla Löwy <elmindreda@glfw.org>
 
 MIT License
 Copyright (c) 2017 Sean Barrett
+
+### PNC GLSL
+
+MIT License
+Copyright 2020 Riccardo Scalco
+https://github.com/riccardoscalco/glsl-pcg-prng/
+
