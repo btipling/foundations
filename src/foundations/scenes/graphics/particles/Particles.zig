@@ -159,13 +159,13 @@ fn animateSphere(self: *Particles, dt: f64) void {
     var colors: [7]math.vector.vec4 = undefined;
     var times: [7]f32 = undefined;
     // zig fmt: off
-    positions[0] = .{  5,    0,    0, 1 };
-    positions[1] = .{  5,    5,    0, 1 };
-    positions[2] = .{  5,    5,    5, 1 };
-    positions[3] = .{  0,    5,    5, 1 };
-    positions[4] = .{  0,    0,    5, 1 };
+    positions[0] = .{  15,    0,    0, 1 };
+    positions[1] = .{  15,    15,    0, 1 };
+    positions[2] = .{  15,    15,    15, 1 };
+    positions[3] = .{  0,    15,    15, 1 };
+    positions[4] = .{  0,    0,    15, 1 };
     positions[5] = .{  0,    0,    0, 1 };
-    positions[6] = .{  5,    0,    0, 1 };
+    positions[6] = .{  15,    0,    0, 1 };
     tangents[0] = .{ 15, 0, 5, 1 };
     tangents[1] = .{ 15, 0, 0, 1 };
     tangents[2] = .{ 0, 25, 0, 1 };
