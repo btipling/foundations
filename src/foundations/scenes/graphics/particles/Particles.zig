@@ -2,6 +2,7 @@ view_camera: *physics.camera.Camera(*Particles, physics.Integrator(physics.Smoot
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
+rand: std.Random = undefined,
 
 sphere: object.object = .{ .norender = .{} },
 sphere_matrix: rhi.Uniform = undefined,
@@ -84,6 +85,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
     var particles_buf = rhi.Buffer.init(pd);
     errdefer particles_buf.deinit();
 
+    var rand = std.Random.Xoshiro256.init(@intCast(std.time.microTimestamp()));
     pr.* = .{
         .view_camera = cam,
         .ctx = ctx,
@@ -91,6 +93,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         .materials = mats_buf,
         .lights = lights_buf,
         .particles_buffer = particles_buf,
+        .rand = rand.random(),
     };
     pr.particles_list[0] = particles[0];
     pr.particles_list[1] = particles[1];
@@ -203,7 +206,7 @@ pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: mat
     } else {
         self.particles_list[self.particles_count] = .{
             .ts = .{ pos[0], pos[1], pos[2], 0.15 },
-            .color = color,
+            .color = .{ color[0], color[1], color[2], self.rand.float(f32) },
         };
         self.particles_count += 1;
     }

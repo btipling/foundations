@@ -37,7 +37,8 @@ void main (void)
         Particle f_cur_p = f_particles[i];
         vec3 f_part_tr = f_cur_p.tr.xyz;
         mat4 f_p_rot = mat4(transpose(mat3(v_matrix)));
-        float f_scale = f_cur_p.tr.w;
+        float f_scale = f_cur_p.tr.w * f_cur_p.color.w;
+        vec4 f_p_color = vec4(f_cur_p.color.x, f_cur_p.color.y, f_cur_p.color.z, 1.0);
         mat4 f_p_translate = mat4(
             1.0, 0.0, 0.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
@@ -50,10 +51,10 @@ void main (void)
             0.0, 0.0, f_scale, 0.0,
             0.0, 0.0, 0.0, 1.0
         );
-        vec3 p0 = vec3(0.0, 0.0, 0.0);
-        vec3 p1 = vec3(0.0, 0.0, 1.0);
-        vec3 p2 = vec3(1.0, 0.0, 0.0);
-        vec3 p3 = vec3(1.0, 0.0, 1.0);
+        vec3 p0 = vec3(-0.5, 0.0,-0.5);
+        vec3 p1 = vec3(-0.5, 0.0, 0.5);
+        vec3 p2 = vec3(0.5, 0.0, -0.5);
+        vec3 p3 = vec3(0.5, 0.0, 0.5);
         mat4 m_matrix = f_p_translate * f_p_rot * f_p_scale;
         mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
         vec3 emit_norm = normalize(f_norm_matrix * fo_normal[0]);
@@ -61,28 +62,28 @@ void main (void)
         f_normal_g = emit_norm;
         fo_vert_g = p0;
         fo_light_g = fo_light[0];
-        fo_frag_color_g = f_cur_p.color;
+        fo_frag_color_g = f_p_color;
         gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
         EmitVertex();
 
         f_normal_g = emit_norm;
         fo_vert_g = p1;
         fo_light_g = fo_light[0];
-        fo_frag_color_g = f_cur_p.color;
+        fo_frag_color_g = f_p_color;
         gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
         EmitVertex();
         
         f_normal_g = emit_norm;
         fo_vert_g = p2;
         fo_light_g = fo_light[0];
-        fo_frag_color_g = f_cur_p.color;
+        fo_frag_color_g = f_p_color;
         gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
         EmitVertex();
 
         f_normal_g = emit_norm;
         fo_vert_g = p3;
         fo_light_g = fo_light[0];
-        fo_frag_color_g = f_cur_p.color;
+        fo_frag_color_g = f_p_color;
         gl_Position = f_mvp * m_matrix * vec4(fo_vert_g, 1.0);
         EmitVertex();
 
