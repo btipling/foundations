@@ -91,12 +91,12 @@ test multiplyQuaternions {
     try std.testing.expect(float.equal(c_e[3], c_r[3], 0.0001));
 }
 
-pub inline fn identityQuat() Quat {
+pub fn identityQuat() Quat {
     return .{ 1, 0, 0, 0 };
 }
 
 // AKA as the conjugate
-pub inline fn inverseNormalizedQuat(q: Quat) Quat {
+pub fn inverseNormalizedQuat(q: Quat) Quat {
     return .{ q[0], -q[1], -q[2], -q[3] };
 }
 

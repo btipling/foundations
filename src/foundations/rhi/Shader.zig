@@ -44,7 +44,7 @@ pub const xup_type = enum(usize) {
     wavefront,
 };
 
-pub inline fn single_vertex(vertex_shader: []const u8) [1][]const u8 {
+pub fn single_vertex(vertex_shader: []const u8) [1][]const u8 {
     return [_][]const u8{vertex_shader};
 }
 
