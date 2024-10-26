@@ -15,7 +15,11 @@ const Blend = @This();
 const num_bobbles: usize = 2;
 
 const mats = [_]lighting.Material{
-    lighting.materials.Silver,
+    lighting.materials.GlassyPastelBlue,
+    lighting.materials.GlassyPastelLavender,
+    lighting.materials.GlassyPastelLemon,
+    lighting.materials.GlassyPastelMint,
+    lighting.materials.GlassyPastelPink,
 };
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -46,10 +50,10 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Blend {
 
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
-            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 0.01 },
+            .diffuse = [4]f32{ 0.1, 0.1, 0.1, 0.01 },
+            .specular = [4]f32{ 0.1, 0.1, 0.1, 0.01 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 0.05 },
             .direction = [4]f32{ 5, -1.0, -0.3, 0.0 },
             .cutoff = 0.0,
             .exponent = 0.0,
@@ -101,10 +105,12 @@ pub fn draw(self: *Blend, dt: f64) void {
     {
         rhi.drawHorizon(self.sphere);
     }
-    {
-        rhi.drawObject(self.bobble);
-    }
     self.cross.draw(dt);
+    {
+        c.glDisable(c.GL_DEPTH_TEST);
+        rhi.drawObject(self.bobble);
+        c.glEnable(c.GL_DEPTH_TEST);
+    }
 }
 
 fn deleteCross(self: *Blend) void {
@@ -172,7 +178,7 @@ fn renderBobbles(self: *Blend) void {
     s.attachAndLinkAll(self.allocator, shaders[0..]);
     var i_datas: [num_bobbles]rhi.instanceData = undefined;
     for (0..num_bobbles) |i| {
-        const m = math.matrix.translate(0, @floatFromInt(i * 3), 0);
+        const m = math.matrix.translate(1, @floatFromInt(i * 3), 3);
         i_datas[i] = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
@@ -182,7 +188,9 @@ fn renderBobbles(self: *Blend) void {
         };
     }
 
-    self.bobble = .{ .sphere = object.Sphere.init(prog, i_datas[0..], false) };
+    var bobble = .{ .sphere = object.Sphere.init(prog, i_datas[0..], false) };
+    bobble.sphere.mesh.blend = true;
+    self.bobble = bobble;
 }
 
 const std = @import("std");
