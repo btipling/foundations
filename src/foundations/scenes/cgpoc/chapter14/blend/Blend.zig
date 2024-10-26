@@ -12,7 +12,7 @@ lights: rhi.Buffer,
 
 const Blend = @This();
 
-const num_bobbles: usize = 2;
+const num_bobbles: usize = 2 * 2;
 
 const mats = [_]lighting.Material{
     lighting.materials.GlassyPastelBlue,
@@ -147,7 +147,7 @@ fn renderSphere(self: *Blend) void {
         .t_column1 = m.columns[1],
         .t_column2 = m.columns[2],
         .t_column3 = m.columns[3],
-        .color = .{ 0.07, 0.08, 0.09, 1 },
+        .color = .{ 0.007, 0.008, 0.009, 1 },
     }};
     const sphere: object.object = .{
         .sphere = object.Sphere.init(
@@ -190,6 +190,7 @@ fn renderBobbles(self: *Blend) void {
 
     var bobble = .{ .sphere = object.Sphere.init(prog, i_datas[0..], false) };
     bobble.sphere.mesh.blend = true;
+    bobble.sphere.mesh.cull = false;
     self.bobble = bobble;
 }
 

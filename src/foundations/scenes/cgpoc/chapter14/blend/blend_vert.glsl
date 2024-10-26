@@ -23,7 +23,7 @@ out vec4 fo_t_column3;
 
 out vec3 fo_light;
 out vec3 f_view_p;
-flat out int fo_instance_id;
+flat out float fo_instance_id;
 
 void main()
 {
@@ -51,5 +51,5 @@ void main()
     f_tc = f_texture_coords;
     f_frag_color = f_i_color;
     gl_Position = f_mvp * f_main_pos;
-    fo_instance_id = gl_InstanceID;
+    fo_instance_id = float(gl_InstanceID);
 }
