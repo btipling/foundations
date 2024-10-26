@@ -16,6 +16,8 @@ layout (location = 9) in vec4 f_i_color;
 
 //#include "src/foundations/shaders/vertex_outs.glsl"
 
+//#include "src/foundations/shaders/vertex_xup_wavefront.glsl"
+
 out vec4 fo_t_column0;
 out vec4 fo_t_column1;
 out vec4 fo_t_column2;
@@ -30,7 +32,7 @@ void main()
         f_t_column1,
         f_t_column2,
         f_t_column3
-    );
+    ) * f_xup;
     Light f_light = f_lights[0];
     
     fo_t_column0 = f_t_column0;
