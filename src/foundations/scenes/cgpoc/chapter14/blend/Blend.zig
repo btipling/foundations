@@ -6,6 +6,7 @@ allocator: std.mem.Allocator = undefined,
 sphere: object.object = .{ .norender = .{} },
 
 bobble: object.object = .{ .norender = .{} },
+bobble_positions: [num_bobbles]math.vector.vec3 = undefined,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
@@ -74,6 +75,10 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Blend {
         .materials = mats_buf,
         .lights = lights_buf,
     };
+
+    for (0..num_bobbles) |i| {
+        blend.bobble_positions[i] = .{ 1, @as(f32, @floatFromInt(i * 3)) - 20.0, 0 };
+    }
 
     blend.renderDebugCross();
     errdefer blend.deleteCross();
@@ -178,7 +183,7 @@ fn renderBobbles(self: *Blend) void {
     s.attachAndLinkAll(self.allocator, shaders[0..]);
     var i_datas: [num_bobbles]rhi.instanceData = undefined;
     for (0..num_bobbles) |i| {
-        const m = math.matrix.translate(1, @as(f32, @floatFromInt(i * 3)) - 20.0, 0);
+        const m = math.matrix.translateVec(self.bobble_positions[i]);
         i_datas[i] = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],

@@ -125,6 +125,10 @@ pub fn uniformScale(s: f32) matrix {
     return scale(s, s, s);
 }
 
+pub fn translateVec(v: anytype) matrix {
+    return translate(v[0], v[1], v[2]);
+}
+
 pub fn translate(x: f32, y: f32, z: f32) matrix {
     return mc(.{
         1, 0, 0, x,
