@@ -40,6 +40,7 @@ pub const scene_type = enum(usize) {
     twelve_terrain_tessellator,
     twelve_lod_tessellator,
     thirteen_torus_geometry,
+    fourteen_fog,
 };
 
 pub const scenes = union(scene_type) {
@@ -84,6 +85,7 @@ pub const scenes = union(scene_type) {
     twelve_terrain_tessellator: *scenes_list.cgpoc.chapter12.TerrainTessellator,
     twelve_lod_tessellator: *scenes_list.cgpoc.chapter12.LodTessellator,
     thirteen_torus_geometry: *scenes_list.cgpoc.chapter13.TorusGeometry,
+    fourteen_fog: *scenes_list.cgpoc.chapter14.Fog,
 };
 
 pub const scene_nav_type = enum {

@@ -9,3 +9,4 @@ pub const chapter8 = @import("chapter8/chapter8.zig");
 pub const chapter10 = @import("chapter10/chapter10.zig");
 pub const chapter12 = @import("chapter12/chapter12.zig");
 pub const chapter13 = @import("chapter13/chapter13.zig");
+pub const chapter14 = @import("chapter14/chapter14.zig");
