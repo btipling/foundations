@@ -12,7 +12,7 @@ lights: rhi.Buffer,
 
 const Blend = @This();
 
-const num_bobbles: usize = 2 * 2;
+const num_bobbles: usize = 5;
 
 const mats = [_]lighting.Material{
     lighting.materials.GlassyPastelBlue,
@@ -39,7 +39,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Blend {
         ctx.cfg,
         blend,
         integrator,
-        .{ 2, -10, 0 },
+        .{ 1, -25, 0 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -178,7 +178,7 @@ fn renderBobbles(self: *Blend) void {
     s.attachAndLinkAll(self.allocator, shaders[0..]);
     var i_datas: [num_bobbles]rhi.instanceData = undefined;
     for (0..num_bobbles) |i| {
-        const m = math.matrix.translate(1, @floatFromInt(i * 3), 3);
+        const m = math.matrix.translate(1, @as(f32, @floatFromInt(i * 3)) - 20.0, 0);
         i_datas[i] = .{
             .t_column0 = m.columns[0],
             .t_column1 = m.columns[1],
