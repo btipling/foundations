@@ -6,6 +6,7 @@ allocator: std.mem.Allocator = undefined,
 sphere: object.object = .{ .norender = .{} },
 
 grid: object.object = .{ .norender = .{} },
+grid_t_tex: ?rhi.Texture = null,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
@@ -84,6 +85,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Fog {
 pub fn deinit(self: *Fog, allocator: std.mem.Allocator) void {
     rhi.deleteObject(self.grid);
     rhi.deleteObject(self.sphere);
+    if (self.grid_t_tex) |t| t.deinit();
     self.deleteCross();
     self.lights.deinit();
     self.materials.deinit();
@@ -98,6 +100,9 @@ pub fn draw(self: *Fog, dt: f64) void {
     self.view_camera.update(dt);
     {
         rhi.drawHorizon(self.sphere);
+    }
+    if (self.grid_t_tex) |t| {
+        t.bind();
     }
     {
         rhi.drawObject(self.grid);
@@ -152,6 +157,8 @@ fn renderSphere(self: *Fog) void {
 }
 
 fn renderGrid(self: *Fog) void {
+    self.grid_t_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.grid_t_tex.?.texture_unit = 2;
     var grid_model: *assets.Obj = undefined;
     if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
         grid_model = o;
@@ -160,18 +167,18 @@ fn renderGrid(self: *Fog) void {
     }
     const prog = rhi.createProgram();
 
-    // const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
-    // const frag_bindings = [_]usize{ 2, 4 };
-    // const tes_bindings = [_]usize{3};
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
+    const frag_bindings = [_]usize{2};
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
-    const frag = Compiler.runWithBytes(self.allocator, @embedFile("grid_frag.glsl")) catch @panic("shader compiler");
+
+    var frag = Compiler.runWithBytes(self.allocator, @embedFile("grid_frag.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(frag);
-    // terrain_tes = if (!disable_bindless) terrain_tes else rhi.Shader.disableBindless(
-    //     terrain_tes,
-    //     tes_bindings[0..],
-    // ) catch @panic("bindless");
+    frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+        frag,
+        frag_bindings[0..],
+    ) catch @panic("bindless");
 
     const shaders = [_]rhi.Shader.ShaderData{
         .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
@@ -190,6 +197,13 @@ fn renderGrid(self: *Fog) void {
         .color = .{ 1, 0, 1, 1 },
     }};
     const grid_obj: object.object = grid_model.toObject(prog, i_datas[0..]);
+
+    if (self.grid_t_tex) |*t| {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-albedo.png") catch null, prog, "f_grid_samp") catch {
+            std.debug.print("no texture?", .{});
+            self.grid_t_tex = null;
+        };
+    }
     self.grid = grid_obj;
 }
 

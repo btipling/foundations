@@ -107,6 +107,9 @@ pub fn deinit(self: *TerrainTessellator, allocator: std.mem.Allocator) void {
     self.deleteCross();
     self.deleteTerrain();
     self.deletesphere_1();
+    if (self.terrain_t_map) |t| t.deinit();
+    if (self.terrain_t_tex) |t| t.deinit();
+    if (self.terrain_t_nor) |t| t.deinit();
     self.lights.deinit();
     self.materials.deinit();
     self.view_camera.deinit(allocator);
