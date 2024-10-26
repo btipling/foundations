@@ -151,14 +151,7 @@ pub fn draw(self: *Particles, dt: f64) void {
         t.bind();
     }
     {
-        const objects: [1]object.object = .{
-            self.cubemap,
-        };
-        c.glDisable(c.GL_DEPTH_TEST);
-        c.glFrontFace(c.GL_CCW);
-        rhi.drawObjects(objects[0..]);
-        c.glFrontFace(c.GL_CW);
-        c.glEnable(c.GL_DEPTH_TEST);
+        rhi.drawHorizon(self.cubemap);
     }
     {
         const objects: [1]object.object = .{

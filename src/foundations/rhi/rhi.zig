@@ -312,6 +312,20 @@ pub fn deleteMeshVao(m: Mesh) void {
     if (m.buffer != 0) c.glDeleteBuffers(1, @ptrCast(&m.buffer));
 }
 
+pub fn drawHorizon(obj: object.object) void {
+    c.glDisable(c.GL_DEPTH_TEST);
+    c.glFrontFace(c.GL_CCW);
+    drawObject(obj);
+    c.glFrontFace(c.GL_CW);
+    c.glEnable(c.GL_DEPTH_TEST);
+}
+
+pub fn drawObject(obj: object.object) void {
+    switch (obj) {
+        inline else => |o| drawMesh(o.mesh),
+    }
+}
+
 pub fn drawObjects(objects: []const object.object) void {
     var i: usize = 0;
     while (i < objects.len) : (i += 1) {
@@ -360,6 +374,12 @@ pub fn drawMesh(m: Mesh) void {
     if (m.wire_mesh) {
         c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_FILL);
         c.glLineWidth(1.0);
+    }
+}
+
+pub fn deleteObject(obj: object.object) void {
+    switch (obj) {
+        inline else => |o| deleteMesh(o.mesh),
     }
 }
 
