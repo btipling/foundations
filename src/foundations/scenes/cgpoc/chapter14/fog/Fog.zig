@@ -213,7 +213,8 @@ fn renderGrid(self: *Fog) void {
         .t_column3 = m.columns[3],
         .color = .{ 1, 0, 1, 1 },
     }};
-    const grid_obj: object.object = grid_model.toObject(prog, i_datas[0..]);
+    var grid_obj: object.object = grid_model.toObject(prog, i_datas[0..]);
+    grid_obj.obj.mesh.linear_colorspace = true;
 
     if (self.grid_t_tex) |*t| {
         t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-albedo.png") catch null, prog, "f_grid_samp") catch {

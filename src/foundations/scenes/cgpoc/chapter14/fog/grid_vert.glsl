@@ -27,6 +27,7 @@ out vec4 fo_t_column2;
 out vec4 fo_t_column3;
 
 out vec3 fo_light;
+out vec3 f_view_p;
 
 void main()
 {
@@ -47,6 +48,7 @@ void main()
     float h_pos = texture(f_height_samp, f_texture_coords).r * 0.5;
     vec4 f_pos = vec4(f_position.xyz, 1.0) + vec4(f_normal * h_pos, 1.0);
     vec4 f_main_pos = m_matrix * f_pos;
+    f_view_p = (v_matrix * f_main_pos).xyz;
 
     fo_light = f_light.direction.xyz;
     fo_vert = f_main_pos.xyz;
