@@ -5,6 +5,8 @@ allocator: std.mem.Allocator = undefined,
 
 sphere: object.object = .{ .norender = .{} },
 
+grid: object.object = .{ .norender = .{} },
+
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 
@@ -73,10 +75,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Fog {
     fog.renderSphere();
     errdefer rhi.deleteObject(fog.sphere);
 
+    fog.renderGrid();
+    errdefer rhi.deleteObject(fog.grid);
+
     return fog;
 }
 
 pub fn deinit(self: *Fog, allocator: std.mem.Allocator) void {
+    rhi.deleteObject(self.grid);
     rhi.deleteObject(self.sphere);
     self.deleteCross();
     self.lights.deinit();
@@ -92,6 +98,9 @@ pub fn draw(self: *Fog, dt: f64) void {
     self.view_camera.update(dt);
     {
         rhi.drawHorizon(self.sphere);
+    }
+    {
+        rhi.drawObject(self.grid);
     }
     self.cross.draw(dt);
 }
@@ -143,38 +152,45 @@ fn renderSphere(self: *Fog) void {
 }
 
 fn renderGrid(self: *Fog) void {
+    var grid_model: *assets.Obj = undefined;
+    if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
+        grid_model = o;
+    } else {
+        return;
+    }
     const prog = rhi.createProgram();
 
-    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
-    const frag_bindings = [_]usize{ 2, 4 };
-    const tes_bindings = [_]usize{3};
-    const terrain_vert = Compiler.runWithBytes(self.allocator, @embedFile("terrain_vert.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(terrain_vert);
-    var terrain_frag = Compiler.runWithBytes(self.allocator, @embedFile("terrain_frag.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(terrain_frag);
-    terrain_frag = if (!disable_bindless) terrain_frag else rhi.Shader.disableBindless(
-        terrain_frag,
-        frag_bindings[0..],
-    ) catch @panic("bindless");
-    const terrain_tcs = Compiler.runWithBytes(self.allocator, @embedFile("terrain_tcs.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(terrain_tcs);
-    var terrain_tes = Compiler.runWithBytes(self.allocator, @embedFile("terrain_tes.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(terrain_tes);
-    terrain_tes = if (!disable_bindless) terrain_tes else rhi.Shader.disableBindless(
-        terrain_tes,
-        tes_bindings[0..],
-    ) catch @panic("bindless");
+    // const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
+    // const frag_bindings = [_]usize{ 2, 4 };
+    // const tes_bindings = [_]usize{3};
+
+    const vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(vert);
+    const frag = Compiler.runWithBytes(self.allocator, @embedFile("grid_frag.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(frag);
+    // terrain_tes = if (!disable_bindless) terrain_tes else rhi.Shader.disableBindless(
+    //     terrain_tes,
+    //     tes_bindings[0..],
+    // ) catch @panic("bindless");
 
     const shaders = [_]rhi.Shader.ShaderData{
-        .{ .source = terrain_vert, .shader_type = c.GL_VERTEX_SHADER },
-        .{ .source = terrain_frag, .shader_type = c.GL_FRAGMENT_SHADER },
-        .{ .source = terrain_tcs, .shader_type = c.GL_TESS_CONTROL_SHADER },
-        .{ .source = terrain_tes, .shader_type = c.GL_TESS_EVALUATION_SHADER },
+        .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
+        .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
     };
     const s: rhi.Shader = .{
         .program = prog,
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
+    const m = math.matrix.uniformScale(1);
+    var i_datas: [1]rhi.instanceData = .{.{
+        .t_column0 = m.columns[0],
+        .t_column1 = m.columns[1],
+        .t_column2 = m.columns[2],
+        .t_column3 = m.columns[3],
+        .color = .{ 1, 0, 1, 1 },
+    }};
+    const grid_obj: object.object = grid_model.toObject(prog, i_datas[0..]);
+    self.grid = grid_obj;
 }
 
 const std = @import("std");
@@ -188,3 +204,4 @@ const scenery = @import("../../../../scenery/scenery.zig");
 const Compiler = @import("../../../../../compiler/Compiler.zig");
 const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
+const assets = @import("../../../../assets/assets.zig");
