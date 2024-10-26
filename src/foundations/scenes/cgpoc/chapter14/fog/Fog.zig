@@ -51,7 +51,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Fog {
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-            .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
+            .direction = [4]f32{ 5, -1.0, -0.3, 0.0 },
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
@@ -205,7 +205,7 @@ fn renderGrid(self: *Fog) void {
         .program = prog,
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
-    const m = math.matrix.uniformScale(100);
+    const m = math.matrix.uniformScale(500);
     var i_datas: [1]rhi.instanceData = .{.{
         .t_column0 = m.columns[0],
         .t_column1 = m.columns[1],

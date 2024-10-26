@@ -44,7 +44,7 @@ void main()
     fo_t_column3 = f_t_column3;
 
     mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
-    float h_pos = texture(f_height_samp, f_texture_coords).r * 0.025;
+    float h_pos = texture(f_height_samp, f_texture_coords).r * 0.5;
     vec4 f_pos = vec4(f_position.xyz, 1.0) + vec4(f_normal * h_pos, 1.0);
     vec4 f_main_pos = m_matrix * f_pos;
 
