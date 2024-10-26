@@ -91,6 +91,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Blend {
     errdefer rhi.deleteObject(blend.bobble);
 
     blend.ready = true;
+    blend.sortBobbles();
 
     return blend;
 }
@@ -107,6 +108,10 @@ pub fn deinit(self: *Blend, allocator: std.mem.Allocator) void {
 }
 
 pub fn updateCamera(self: *Blend) void {
+    self.sortBobbles();
+}
+
+fn sortBobbles(self: *Blend) void {
     const SortData = struct {
         position: math.vector.vec3,
         distance: f32,
@@ -125,16 +130,8 @@ pub fn updateCamera(self: *Blend) void {
             .instance = i,
         };
     }
-    // for (0..num_bobbles) |i| {
-    //     const d = distances[i];
-    //     std.debug.print("before: {d} {d:.3}\n", .{ d.instance, d.distance });
-    // }
     std.mem.sort(SortData, distances[0..], {}, SortData.sort);
     std.debug.print("\n", .{});
-    // for (0..num_bobbles) |i| {
-    //     const d = distances[i];
-    //     std.debug.print("after: {d} {d:.3}\n", .{ d.instance, d.distance });
-    // }
     for (0..num_bobbles) |i| {
         const d = distances[i];
         const m = math.matrix.translateVec(d.position);
