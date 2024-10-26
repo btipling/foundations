@@ -7,6 +7,8 @@ sphere: object.object = .{ .norender = .{} },
 
 grid: object.object = .{ .norender = .{} },
 grid_t_tex: ?rhi.Texture = null,
+grid_t_hig: ?rhi.Texture = null,
+grid_t_nor: ?rhi.Texture = null,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
@@ -14,7 +16,7 @@ lights: rhi.Buffer,
 const Fog = @This();
 
 const mats = [_]lighting.Material{
-    lighting.materials.Gold,
+    lighting.materials.Silver,
 };
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -104,6 +106,12 @@ pub fn draw(self: *Fog, dt: f64) void {
     if (self.grid_t_tex) |t| {
         t.bind();
     }
+    if (self.grid_t_hig) |t| {
+        t.bind();
+    }
+    if (self.grid_t_nor) |t| {
+        t.bind();
+    }
     {
         rhi.drawObject(self.grid);
     }
@@ -159,6 +167,10 @@ fn renderSphere(self: *Fog) void {
 fn renderGrid(self: *Fog) void {
     self.grid_t_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.grid_t_tex.?.texture_unit = 2;
+    self.grid_t_hig = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.grid_t_hig.?.texture_unit = 3;
+    self.grid_t_nor = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.grid_t_nor.?.texture_unit = 4;
     var grid_model: *assets.Obj = undefined;
     if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
         grid_model = o;
@@ -168,10 +180,15 @@ fn renderGrid(self: *Fog) void {
     const prog = rhi.createProgram();
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
-    const frag_bindings = [_]usize{2};
+    const frag_bindings = [_]usize{ 2, 4 };
+    const vert_bindings = [_]usize{ 2, 4 };
 
-    const vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
+    var vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
+    vert = if (!disable_bindless) vert else rhi.Shader.disableBindless(
+        vert,
+        vert_bindings[0..],
+    ) catch @panic("bindless");
 
     var frag = Compiler.runWithBytes(self.allocator, @embedFile("grid_frag.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(frag);
@@ -188,7 +205,7 @@ fn renderGrid(self: *Fog) void {
         .program = prog,
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
-    const m = math.matrix.uniformScale(1);
+    const m = math.matrix.uniformScale(100);
     var i_datas: [1]rhi.instanceData = .{.{
         .t_column0 = m.columns[0],
         .t_column1 = m.columns[1],
@@ -200,8 +217,17 @@ fn renderGrid(self: *Fog) void {
 
     if (self.grid_t_tex) |*t| {
         t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-albedo.png") catch null, prog, "f_grid_samp") catch {
-            std.debug.print("no texture?", .{});
             self.grid_t_tex = null;
+        };
+    }
+    if (self.grid_t_hig) |*t| {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-height.png") catch null, prog, "f_height_samp") catch {
+            self.grid_t_hig = null;
+        };
+    }
+    if (self.grid_t_nor) |*t| {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-normal.png") catch null, prog, "f_normal_samp") catch {
+            self.grid_t_nor = null;
         };
     }
     self.grid = grid_obj;

@@ -1,4 +1,5 @@
 #version 460 core
+#extension GL_ARB_bindless_texture : require
 layout (location = 0) in vec3 f_position;
 layout (location = 1) in vec4 f_color;
 layout (location = 2) in vec3 f_normal;
@@ -17,6 +18,8 @@ layout (location = 9) in vec4 f_i_color;
 //#include "src/foundations/shaders/vertex_outs.glsl"
 
 //#include "src/foundations/shaders/vertex_xup_wavefront.glsl"
+
+layout(bindless_sampler) uniform sampler2D f_height_samp;
 
 out vec4 fo_t_column0;
 out vec4 fo_t_column1;
@@ -41,7 +44,10 @@ void main()
     fo_t_column3 = f_t_column3;
 
     mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
-    vec4 f_main_pos = m_matrix * vec4(f_position.xyz, 1.0);
+    float h_pos = texture(f_height_samp, f_texture_coords).r * 0.025;
+    vec4 f_pos = vec4(f_position.xyz, 1.0) + vec4(f_normal * h_pos, 1.0);
+    vec4 f_main_pos = m_matrix * f_pos;
+
     fo_light = f_light.direction.xyz;
     fo_vert = f_main_pos.xyz;
     fo_normal = normalize(f_norm_matrix * f_normal);
