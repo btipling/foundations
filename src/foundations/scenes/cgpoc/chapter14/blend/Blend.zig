@@ -2,6 +2,7 @@ view_camera: *physics.camera.Camera(*Blend, physics.Integrator(physics.SmoothDec
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
+ready: bool = false,
 
 sphere: object.object = .{ .norender = .{} },
 
@@ -89,6 +90,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Blend {
     blend.renderBobbles();
     errdefer rhi.deleteObject(blend.bobble);
 
+    blend.ready = true;
+
     return blend;
 }
 
@@ -103,7 +106,48 @@ pub fn deinit(self: *Blend, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn updateCamera(_: *Blend) void {}
+pub fn updateCamera(self: *Blend) void {
+    const SortData = struct {
+        position: math.vector.vec3,
+        distance: f32,
+        instance: usize,
+        fn sort(_: void, lhs: @This(), rhs: @This()) bool {
+            return lhs.distance > rhs.distance;
+        }
+    };
+    if (!self.ready) return;
+    var distances: [num_bobbles]SortData = undefined;
+    std.debug.print("\n", .{});
+    for (0..num_bobbles) |i| {
+        distances[i] = .{
+            .position = self.bobble_positions[i],
+            .distance = math.vector.distance(self.bobble_positions[i], self.view_camera.camera_pos),
+            .instance = i,
+        };
+    }
+    // for (0..num_bobbles) |i| {
+    //     const d = distances[i];
+    //     std.debug.print("before: {d} {d:.3}\n", .{ d.instance, d.distance });
+    // }
+    std.mem.sort(SortData, distances[0..], {}, SortData.sort);
+    std.debug.print("\n", .{});
+    // for (0..num_bobbles) |i| {
+    //     const d = distances[i];
+    //     std.debug.print("after: {d} {d:.3}\n", .{ d.instance, d.distance });
+    // }
+    for (0..num_bobbles) |i| {
+        const d = distances[i];
+        const m = math.matrix.translateVec(d.position);
+        self.bobble.sphere.updateInstanceAt(i, .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ @floatFromInt(d.instance), 0, 0, 0 },
+        });
+    }
+    std.debug.print("\n\n", .{});
+}
 
 pub fn draw(self: *Blend, dt: f64) void {
     self.view_camera.update(dt);
@@ -189,7 +233,7 @@ fn renderBobbles(self: *Blend) void {
             .t_column1 = m.columns[1],
             .t_column2 = m.columns[2],
             .t_column3 = m.columns[3],
-            .color = .{ 1, 0, 1, 1 },
+            .color = .{ @floatFromInt(i), 0, 0, 0 },
         };
     }
 
