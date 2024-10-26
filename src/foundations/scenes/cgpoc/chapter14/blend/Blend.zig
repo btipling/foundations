@@ -12,6 +12,8 @@ lights: rhi.Buffer,
 
 const Blend = @This();
 
+const num_bobbles: usize = 2;
+
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
 };
@@ -168,14 +170,17 @@ fn renderBobbles(self: *Blend) void {
         .program = prog,
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
-    const m = math.matrix.uniformScale(1);
-    var i_datas: [1]rhi.instanceData = .{.{
-        .t_column0 = m.columns[0],
-        .t_column1 = m.columns[1],
-        .t_column2 = m.columns[2],
-        .t_column3 = m.columns[3],
-        .color = .{ 1, 0, 1, 1 },
-    }};
+    var i_datas: [num_bobbles]rhi.instanceData = undefined;
+    for (0..num_bobbles) |i| {
+        const m = math.matrix.translate(0, @floatFromInt(i * 3), 0);
+        i_datas[i] = .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        };
+    }
 
     self.bobble = .{ .sphere = object.Sphere.init(prog, i_datas[0..], false) };
 }
