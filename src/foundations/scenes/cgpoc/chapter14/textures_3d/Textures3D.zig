@@ -195,12 +195,9 @@ fn renderMarbledBlock(self: *Textures3D) void {
     const block = self.renderParallelepiped(m);
     self.marbled_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.marbled_tex.?.texture_unit = 1;
-    // var marbled = Marble.init(self.allocator);
-    // defer marbled.deinit(self.allocator);
-    // marbled.fillData();
-    // if (self.marbled_tex) |*t| {
-    //     t.setup3D(marbled.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
-    //         self.marbled_tex = null;
+    // if (self.striped_tex) |*t| {
+    //     t.setup3D(@embedFile("marble.vol"), tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+    //         self.striped_tex = null;
     //     };
     // }
 
@@ -212,11 +209,8 @@ fn renderStripedBlock(self: *Textures3D) void {
     const block = self.renderParallelepiped(m);
     self.striped_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.striped_tex.?.texture_unit = 1;
-    // var sp = StripedPattern.init(self.allocator);
-    // defer sp.deinit(self.allocator);
-    // sp.fillData();
     // if (self.striped_tex) |*t| {
-    //     t.setup3D(sp.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+    //     t.setup3D(@embedFile("striped.vol"), tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
     //         self.striped_tex = null;
     //     };
     // }
