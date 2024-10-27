@@ -71,18 +71,26 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistan
         .reflection_program = reflection_program,
     };
     pd.renderSphere();
+    errdefer rhi.deleteObject(pd.sphere);
+
     pd.renderParallepiped();
+    errdefer rhi.deleteObject(pd.parallelepiped);
     {
         pd.renderReflection();
         rhi.setUniformMatrix(reflection_program, "f_reflection_transform", math.matrix.identity());
     }
     pd.renderPlane();
+    errdefer rhi.deleteObject(pd.plane_visualization);
+
     return pd;
 }
 
 pub fn deinit(self: *PlaneDistance, allocator: std.mem.Allocator) void {
     self.grid.deinit();
     self.pointer.deinit();
+    rhi.deleteObject(self.sphere);
+    rhi.deleteObject(self.parallelepiped);
+    rhi.deleteObject(self.plane_visualization);
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
