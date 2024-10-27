@@ -16,6 +16,13 @@ lights: rhi.Buffer,
 
 const Textures3D = @This();
 
+const TextureData = struct {
+    data: []u8,
+    width: usize = 256,
+    height: usize = 256,
+    depth: usize = 256,
+};
+
 const mats = [_]lighting.Material{
     lighting.materials.Gold,
 };
@@ -79,7 +86,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     t3d.renderSphere();
     errdefer rhi.deleteObject(t3d.sphere);
 
-    t3d.renderParallelepiped();
+    t3d.renderStripedBlock();
     errdefer rhi.deleteObject(t3d.striped_block);
 
     t3d.renderGrid();
@@ -169,7 +176,13 @@ fn renderSphere(self: *Textures3D) void {
     self.sphere = sphere;
 }
 
-fn renderParallelepiped(self: *Textures3D) void {
+fn renderStripedBlock(self: *Textures3D) void {
+    const m = math.matrix.translateVec(.{ 0, 0, 2.5 });
+    const block = self.renderParallelepiped(m);
+    self.striped_block = .{ .parallelepiped = block };
+}
+
+fn renderParallelepiped(self: *Textures3D, m: math.matrix) object.Parallelepiped {
     const prog = rhi.createProgram();
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("parallelepiped_vert.glsl")) catch @panic("shader compiler");
@@ -186,7 +199,6 @@ fn renderParallelepiped(self: *Textures3D) void {
         .program = prog,
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
-    const m = math.matrix.translateVec(.{ 0, 0, 2.5 });
     const i_datas = [_]rhi.instanceData{
         .{
             .t_column0 = m.columns[0],
@@ -197,9 +209,9 @@ fn renderParallelepiped(self: *Textures3D) void {
         },
     };
 
-    var striped_block = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], false) };
-    striped_block.parallelepiped.mesh.linear_colorspace = false;
-    self.striped_block = striped_block;
+    var block = object.Parallelepiped.init(prog, i_datas[0..], false);
+    block.mesh.linear_colorspace = false;
+    return block;
 }
 
 fn renderGrid(self: *Textures3D) void {
