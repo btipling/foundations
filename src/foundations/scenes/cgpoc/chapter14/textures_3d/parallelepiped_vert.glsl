@@ -19,6 +19,13 @@ layout (location = 9) in vec4 f_i_color;
 out vec3 fo_light;
 out vec3 fo_pos;
 
+mat4 f_xup = mat4(
+    vec4(0, 1, 0, 0),
+    vec4(0, 0, 1, 0),
+    vec4(1, 0, 0, 0),
+    vec4(0, 0, 0, 1)
+);
+
 void main()
 {
     mat4 m_matrix = mat4(
@@ -33,7 +40,7 @@ void main()
     vec4 f_pos = vec4(f_position.xyz, 1.0);
     vec4 f_main_pos = m_matrix * f_pos;
 
-    fo_pos = f_pos.xyz;
+    fo_pos = (f_xup * f_pos).xyz;
     fo_light = f_light.direction.xyz;
     fo_vert = f_main_pos.xyz;
     fo_normal = normalize(f_norm_matrix * f_normal);
