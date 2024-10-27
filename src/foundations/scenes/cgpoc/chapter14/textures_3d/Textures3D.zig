@@ -54,7 +54,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
 
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
+            .ambient = [4]f32{ 0.75, 0.75, 0.75, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
@@ -151,7 +151,7 @@ fn deleteCross(self: *Textures3D) void {
 fn renderDebugCross(self: *Textures3D) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
-        math.matrix.translate(0.01, -0.025, -0.025),
+        math.matrix.translate(0.05, -0.025, -0.025),
         5,
     );
 }
