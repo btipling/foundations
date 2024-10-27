@@ -2,6 +2,7 @@ path: []const u8 = undefined,
 absolute_path: ?[]const u8 = null,
 bytes: ?[]const u8 = null,
 ctx: Generator.Ctx = undefined,
+owned: bool = false,
 
 const File = @This();
 
@@ -35,7 +36,7 @@ pub fn write(self: *File, _: std.mem.Allocator) !void {
 
 pub fn deinit(self: *File, allocator: std.mem.Allocator) void {
     if (self.absolute_path) |absolute_path| allocator.free(absolute_path);
-    if (self.bytes) |b| allocator.free(b);
+    if (self.owned) if (self.bytes) |b| allocator.free(b);
     allocator.destroy(self);
 }
 
