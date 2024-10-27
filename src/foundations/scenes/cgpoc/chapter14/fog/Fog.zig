@@ -183,7 +183,7 @@ fn renderGrid(self: *Fog) void {
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
     const frag_bindings = [_]usize{ 2, 4 };
-    const vert_bindings = [_]usize{ 2, 4 };
+    const vert_bindings = [_]usize{3};
 
     var vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
@@ -229,7 +229,7 @@ fn renderGrid(self: *Fog) void {
         };
     }
     if (self.grid_t_nor) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-normal.png") catch null, prog, "f_normal_samp") catch {
+        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-normal-ogl.png") catch null, prog, "f_normal_samp") catch {
             self.grid_t_nor = null;
         };
     }
