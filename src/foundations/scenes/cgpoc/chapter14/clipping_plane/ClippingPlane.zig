@@ -6,6 +6,8 @@ allocator: std.mem.Allocator = undefined,
 sphere: object.object = .{ .norender = .{} },
 
 torus: object.object = .{ .norender = .{} },
+torus_clip_plane: rhi.Uniform = undefined,
+
 plane: object.object = .{ .norender = .{} },
 
 materials: rhi.Buffer,
@@ -104,7 +106,9 @@ pub fn draw(self: *ClippingPlane, dt: f64) void {
         rhi.drawHorizon(self.sphere);
     }
     {
+        c.glEnable(c.GL_CLIP_DISTANCE0);
         rhi.drawObject(self.torus);
+        c.glEnable(c.GL_CLIP_DISTANCE1);
     }
     {
         rhi.drawObject(self.plane);
@@ -176,13 +180,22 @@ fn renderPlane(self: *ClippingPlane) void {
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
     const m = math.matrix.translateVec(.{ 1, 0, 2.5 });
-    const i_datas = [_]rhi.instanceData{.{
-        .t_column0 = m.columns[0],
-        .t_column1 = m.columns[1],
-        .t_column2 = m.columns[2],
-        .t_column3 = m.columns[3],
-        .color = .{ 1, 0, 1, 1 },
-    }};
+    const i_datas = [_]rhi.instanceData{
+        .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        },
+        .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        },
+    };
 
     var plane = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], false) };
     plane.parallelepiped.mesh.blend = true;
@@ -219,6 +232,9 @@ fn renderTorus(self: *ClippingPlane) void {
     var torus = .{ .torus = object.Torus.init(prog, i_datas[0..], false) };
     torus.torus.mesh.cull = false;
     torus.torus.mesh.linear_colorspace = false;
+    var cpu = rhi.Uniform.init(prog, "f_torus_clip") catch @panic("uniform");
+    cpu.setUniform4fv(.{ 0.0, 0.0, -1.0, 0.5 });
+    self.torus_clip_plane = cpu;
     self.torus = torus;
 }
 
