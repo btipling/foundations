@@ -49,4 +49,4 @@ pub fn fillData(self: *StripedPattern) void {
 }
 
 const std = @import("std");
-const math = @import("../../../../math/math.zig");
+const math = @import("../foundations/math/math.zig");

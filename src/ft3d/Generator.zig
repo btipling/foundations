@@ -33,6 +33,32 @@ pub fn run(self: *Generator) !void {
     self.ctx.args.parse(self.allocator) catch |err| std.debug.panic("{any}\n", .{err});
     self.ctx.args.validate() catch |err| std.debug.panic("{any}\n", .{err});
     self.ctx.args.debug();
+
+    const output_path = try std.fs.path.join(self.allocator, &[_][]const u8{
+        self.ctx.args.output_path,
+        self.ctx.args.file_name,
+    });
+    defer self.allocator.free(output_path);
+
+    var output_file = try File.init(self.allocator, self.ctx, output_path);
+    defer output_file.deinit(self.allocator);
+
+    switch (self.ctx.args.texture_type) {
+        .marble => {
+            var sp = StripedPattern.init(self.allocator);
+            defer sp.deinit(self.allocator);
+            sp.fillData();
+            output_file.bytes = sp.data.items;
+            try output_file.write(self.allocator);
+        },
+        .striped => {
+            var sp = StripedPattern.init(self.allocator);
+            defer sp.deinit(self.allocator);
+            sp.fillData();
+            output_file.bytes = sp.data.items;
+            try output_file.write(self.allocator);
+        },
+    }
 }
 
 pub fn deinit(self: *Generator) void {
