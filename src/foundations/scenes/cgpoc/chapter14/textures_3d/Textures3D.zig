@@ -249,7 +249,7 @@ fn renderGrid(self: *Textures3D) void {
     const prog = rhi.createProgram();
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
-    const frag_bindings = [_]usize{ 2, 4 };
+    const frag_bindings = [_]usize{ 2, 3 };
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
