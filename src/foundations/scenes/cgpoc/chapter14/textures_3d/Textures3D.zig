@@ -12,6 +12,9 @@ sphere: object.object = .{ .norender = .{} },
 striped_block: object.object = .{ .norender = .{} },
 striped_tex: ?rhi.Texture = null,
 
+marbled_block: object.object = .{ .norender = .{} },
+marbled_tex: ?rhi.Texture = null,
+
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 
@@ -85,6 +88,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     t3d.renderStripedBlock();
     errdefer rhi.deleteObject(t3d.striped_block);
 
+    t3d.renderMarbledBlock();
+    errdefer rhi.deleteObject(t3d.marbled_block);
+
     t3d.renderGrid();
     errdefer rhi.deleteObject(t3d.grid);
 
@@ -92,11 +98,13 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
 }
 
 pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
+    rhi.deleteObject(self.marbled_block);
     rhi.deleteObject(self.striped_block);
     rhi.deleteObject(self.sphere);
     if (self.grid_t_tex) |t| t.deinit();
     if (self.grid_t_nor) |t| t.deinit();
     if (self.striped_tex) |t| t.deinit();
+    if (self.marbled_tex) |t| t.deinit();
     self.deleteCross();
     self.lights.deinit();
     self.materials.deinit();
@@ -126,6 +134,12 @@ pub fn draw(self: *Textures3D, dt: f64) void {
             t.bind();
         }
         rhi.drawObject(self.striped_block);
+    }
+    {
+        if (self.marbled_tex) |t| {
+            t.bind();
+        }
+        rhi.drawObject(self.marbled_block);
     }
     self.cross.draw(dt);
 }
@@ -176,6 +190,23 @@ fn renderSphere(self: *Textures3D) void {
     self.sphere = sphere;
 }
 
+fn renderMarbledBlock(self: *Textures3D) void {
+    const m = math.matrix.translateVec(.{ 0, 2.5, 2.5 });
+    const block = self.renderParallelepiped(m);
+    self.marbled_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.marbled_tex.?.texture_unit = 1;
+    var marbled = Marble.init(self.allocator);
+    defer marbled.deinit(self.allocator);
+    marbled.fillData();
+    if (self.marbled_tex) |*t| {
+        t.setup3D(marbled.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+            self.marbled_tex = null;
+        };
+    }
+
+    self.marbled_block = .{ .parallelepiped = block };
+}
+
 fn renderStripedBlock(self: *Textures3D) void {
     const m = math.matrix.translateVec(.{ 0, 0, 2.5 });
     const block = self.renderParallelepiped(m);
@@ -186,7 +217,7 @@ fn renderStripedBlock(self: *Textures3D) void {
     sp.fillData();
     if (self.striped_tex) |*t| {
         t.setup3D(sp.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
-            self.grid_t_tex = null;
+            self.striped_tex = null;
         };
     }
 
@@ -311,3 +342,4 @@ const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
 const StripedPattern = @import("StripedPattern.zig");
+const Marble = @import("Marble.zig");
