@@ -223,6 +223,9 @@ pub fn setup3D(
 ) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_3D, 1, @ptrCast(&name));
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
 
     c.glTextureStorage3D(name, 1, c.GL_RGBA8, @intCast(width), @intCast(height), @intCast(depth));
