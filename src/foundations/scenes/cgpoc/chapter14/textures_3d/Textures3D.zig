@@ -130,7 +130,7 @@ fn deleteCross(self: *Textures3D) void {
 fn renderDebugCross(self: *Textures3D) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
-        math.matrix.translate(0, -0.025, -0.025),
+        math.matrix.translate(0.01, -0.025, -0.025),
         5,
     );
 }
@@ -157,7 +157,7 @@ fn renderSphere(self: *Textures3D) void {
         .t_column1 = m.columns[1],
         .t_column2 = m.columns[2],
         .t_column3 = m.columns[3],
-        .color = .{ 0.07, 0.08, 0.09, 1 },
+        .color = .{ 0.529, 0.808, 0.922, 1 },
     }};
     const sphere: object.object = .{
         .sphere = object.Sphere.init(
@@ -204,8 +204,12 @@ fn renderParallelepiped(self: *Textures3D) void {
 
 fn renderGrid(self: *Textures3D) void {
     self.grid_t_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.grid_t_tex.?.wrap_s = c.GL_REPEAT;
+    self.grid_t_tex.?.wrap_t = c.GL_REPEAT;
     self.grid_t_tex.?.texture_unit = 2;
     self.grid_t_nor = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.grid_t_nor.?.wrap_s = c.GL_REPEAT;
+    self.grid_t_nor.?.wrap_t = c.GL_REPEAT;
     self.grid_t_nor.?.texture_unit = 4;
     var grid_model: *assets.Obj = undefined;
     if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
@@ -236,8 +240,9 @@ fn renderGrid(self: *Textures3D) void {
         .program = prog,
     };
     s.attachAndLinkAll(self.allocator, shaders[0..]);
-    var m = math.matrix.uniformScale(10);
-    m = math.matrix.translateVec(.{ 0, -5, -5 });
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ -0.5, -500, -500 }));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(0.5, 1000, 1000));
     const i_datas = [_]rhi.instanceData{
         .{
             .t_column0 = m.columns[0],
