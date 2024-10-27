@@ -20,7 +20,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
         .allocator = allocator,
         .context = ctx,
     };
-    scenes.initScene(ui.ui_state.scene_type.fourteen_clipping_plane);
+    scenes.initScene(ui.ui_state.scene_type.fourteen_textures_3d);
     return scenes;
 }
 
@@ -43,7 +43,7 @@ fn updateSceneType(self: *Scenes) void {
 }
 
 fn initScene(self: *Scenes, dt: ui.ui_state.scene_type) void {
-    @setEvalBranchQuota(10_000);
+    @setEvalBranchQuota(100_000);
     self.scene_instance = switch (dt) {
         inline else => |dtag| @unionInit(ui.ui_state.scenes, @tagName(dtag), std.meta.Child(
             std.meta.TagPayload(

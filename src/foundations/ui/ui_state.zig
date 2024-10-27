@@ -43,6 +43,7 @@ pub const scene_type = enum(usize) {
     fourteen_fog,
     fourteen_blend,
     fourteen_clipping_plane,
+    fourteen_textures_3d,
 };
 
 pub const scenes = union(scene_type) {
@@ -90,6 +91,7 @@ pub const scenes = union(scene_type) {
     fourteen_fog: *scenes_list.cgpoc.chapter14.Fog,
     fourteen_blend: *scenes_list.cgpoc.chapter14.Blend,
     fourteen_clipping_plane: *scenes_list.cgpoc.chapter14.ClippingPlane,
+    fourteen_textures_3d: *scenes_list.cgpoc.chapter14.Textures3D,
 };
 
 pub const scene_nav_type = enum {
