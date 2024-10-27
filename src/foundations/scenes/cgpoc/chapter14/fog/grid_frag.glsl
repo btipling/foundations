@@ -46,9 +46,6 @@ void main()
     Light f_light = f_lights[0];
     Material f_mat = f_materials[0];
 
-    float f_d = length(fo_light);
-    float f_attenuation = 1.0;
-
     vec3 f_L = normalize(fo_light);
     vec3 f_H = normalize(f_L + f_V).xyz;
 

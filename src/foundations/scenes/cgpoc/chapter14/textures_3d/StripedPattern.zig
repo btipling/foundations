@@ -1,48 +1,53 @@
-data: []u8,
+data: std.ArrayListUnmanaged(u8) = .{},
 width: usize = 256,
 height: usize = 256,
 depth: usize = 256,
 dim: usize = 4,
 primary_color: math.vector.vec4 = .{ 255, 255, 0, 255 },
 secondary_color: math.vector.vec4 = .{ 0, 0, 255, 255 },
-tex_3d_pattern: [][][]f32,
 
 const StripedPattern = @This();
 
-pub fn buildPattern(self: StripedPattern) void {
-    for (0..self.width) |w| {
-        for (0..self.height) |h| {
-            for (0..self.depth) |d| {
-                const h_f: f32 = @floatFromInt(h);
-                if (math.float.equal_e(@mod(h_f / 10.0, 2), 0.0)) {
-                    self.tex_3d_pattern[w][h][d] = 0.0;
-                } else {
-                    self.tex_3d_pattern[w][h][d] = 1.0;
-                }
-            }
-        }
-    }
+pub const max_tex_dims = 256;
+
+pub fn init(allocator: std.mem.Allocator) *StripedPattern {
+    var sp = allocator.create(StripedPattern) catch @panic("OOM");
+    sp.* = .{};
+    sp.data = std.ArrayListUnmanaged(u8).initCapacity(
+        allocator,
+        sp.width * sp.height * sp.depth * sp.dim,
+    ) catch @panic("OOM");
+    sp.data.expandToCapacity();
+    return sp;
 }
 
-pub fn fillData(self: StripedPattern) void {
+pub fn deinit(self: *StripedPattern, allocator: std.mem.Allocator) void {
+    self.data.deinit(allocator);
+    self.data = undefined;
+    allocator.destroy(self);
+}
+
+pub fn fillData(self: *StripedPattern) void {
     for (0..self.width) |w| {
         for (0..self.height) |h| {
             for (0..self.depth) |d| {
                 var color: math.vector.vec4 = self.secondary_color;
-                if (math.float.equal_e(self.tex_3d_pattern[w][h][d], 1.0)) {
+                const h_f: f32 = @floatFromInt(h);
+                if (math.float.equal_e(@mod(h_f / 10.0, 2), 0.0)) {
                     color = self.primary_color;
                 }
                 var i = w;
                 i *= self.width * self.height * self.dim;
                 i += h * self.height * self.dim;
                 i += d * self.dim;
-                self.data[i + 0] = color[0];
-                self.data[i + 1] = color[1];
-                self.data[i + 2] = color[2];
-                self.data[i + 3] = color[3];
+                self.data.items[i + 0] = @intFromFloat(color[0]);
+                self.data.items[i + 1] = @intFromFloat(color[1]);
+                self.data.items[i + 2] = @intFromFloat(color[2]);
+                self.data.items[i + 3] = @intFromFloat(color[3]);
             }
         }
     }
 }
 
+const std = @import("std");
 const math = @import("../../../../math/math.zig");

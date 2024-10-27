@@ -10,18 +10,14 @@ grid_t_nor: ?rhi.Texture = null,
 sphere: object.object = .{ .norender = .{} },
 
 striped_block: object.object = .{ .norender = .{} },
+striped_tex: ?rhi.Texture = null,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 
 const Textures3D = @This();
 
-const TextureData = struct {
-    data: []u8,
-    width: usize = 256,
-    height: usize = 256,
-    depth: usize = 256,
-};
+const tex_dims: usize = 256;
 
 const mats = [_]lighting.Material{
     lighting.materials.Gold,
@@ -100,6 +96,7 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
     rhi.deleteObject(self.sphere);
     if (self.grid_t_tex) |t| t.deinit();
     if (self.grid_t_nor) |t| t.deinit();
+    if (self.striped_tex) |t| t.deinit();
     self.deleteCross();
     self.lights.deinit();
     self.materials.deinit();
@@ -125,6 +122,9 @@ pub fn draw(self: *Textures3D, dt: f64) void {
         rhi.drawObject(self.grid);
     }
     {
+        if (self.striped_tex) |t| {
+            t.bind();
+        }
         rhi.drawObject(self.striped_block);
     }
     self.cross.draw(dt);
@@ -179,17 +179,34 @@ fn renderSphere(self: *Textures3D) void {
 fn renderStripedBlock(self: *Textures3D) void {
     const m = math.matrix.translateVec(.{ 0, 0, 2.5 });
     const block = self.renderParallelepiped(m);
+    self.striped_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.striped_tex.?.texture_unit = 1;
+    var sp = StripedPattern.init(self.allocator);
+    defer sp.deinit(self.allocator);
+    sp.fillData();
+    if (self.striped_tex) |*t| {
+        t.setup3D(sp.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+            self.grid_t_tex = null;
+        };
+    }
+
     self.striped_block = .{ .parallelepiped = block };
 }
 
 fn renderParallelepiped(self: *Textures3D, m: math.matrix) object.Parallelepiped {
     const prog = rhi.createProgram();
 
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
+    const frag_bindings = [_]usize{1};
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("parallelepiped_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
 
-    const frag = Compiler.runWithBytes(self.allocator, @embedFile("parallelepiped_frag.glsl")) catch @panic("shader compiler");
+    var frag = Compiler.runWithBytes(self.allocator, @embedFile("parallelepiped_frag.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(frag);
+    frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+        frag,
+        frag_bindings[0..],
+    ) catch @panic("bindless");
 
     const shaders = [_]rhi.Shader.ShaderData{
         .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
@@ -222,7 +239,7 @@ fn renderGrid(self: *Textures3D) void {
     self.grid_t_nor = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.grid_t_nor.?.wrap_s = c.GL_REPEAT;
     self.grid_t_nor.?.wrap_t = c.GL_REPEAT;
-    self.grid_t_nor.?.texture_unit = 4;
+    self.grid_t_nor.?.texture_unit = 3;
     var grid_model: *assets.Obj = undefined;
     if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
         grid_model = o;
@@ -293,3 +310,4 @@ const Compiler = @import("../../../../../compiler/Compiler.zig");
 const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
+const StripedPattern = @import("StripedPattern.zig");
