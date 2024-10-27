@@ -33,7 +33,7 @@ const sphere_vertex_shader: []const u8 = @embedFile("sphere_vertex.glsl");
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
-        .name = "SurfaceDetail",
+        .name = "Surface Detail",
     };
 }
 

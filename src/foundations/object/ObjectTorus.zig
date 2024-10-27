@@ -12,7 +12,7 @@ const outer_radius: f32 = 0.2;
 
 pub fn init(
     program: u32,
-    instance_data: []rhi.instanceData,
+    instance_data: []const rhi.instanceData,
     wireframe: bool,
 ) Torus {
     var d = data();

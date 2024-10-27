@@ -116,8 +116,8 @@ pub fn attachBuffer(
 }
 
 pub fn attachInstancedBuffer(
-    vertex_data: []attributeData,
-    instance_data: []instanceData,
+    vertex_data: []const attributeData,
+    instance_data: []const instanceData,
 ) struct {
     vao: u32,
     buffer: u32,

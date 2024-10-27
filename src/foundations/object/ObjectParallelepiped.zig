@@ -17,7 +17,7 @@ pub const pp: math.geometry.Parallelepiped = .{
 
 pub fn init(
     program: u32,
-    instance_data: []rhi.instanceData,
+    instance_data: []const rhi.instanceData,
     blend: bool,
 ) Parallelepied {
     return initParallelepiped(program, instance_data, blend, false);
@@ -25,7 +25,7 @@ pub fn init(
 
 pub fn initCubemap(
     program: u32,
-    instance_data: []rhi.instanceData,
+    instance_data: []const rhi.instanceData,
     blend: bool,
 ) Parallelepied {
     return initParallelepiped(program, instance_data, blend, true);
@@ -33,7 +33,7 @@ pub fn initCubemap(
 
 fn initParallelepiped(
     program: u32,
-    instance_data: []rhi.instanceData,
+    instance_data: []const rhi.instanceData,
     blend: bool,
     cubemap: bool,
 ) Parallelepied {
