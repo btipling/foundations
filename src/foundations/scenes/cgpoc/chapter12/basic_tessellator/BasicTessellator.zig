@@ -195,4 +195,4 @@ const scenes = @import("../../../scenes.zig");
 const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
-const Compiler = @import("../../../../../compiler/Compiler.zig");
+const Compiler = @import("../../../../../fssc/Compiler.zig");

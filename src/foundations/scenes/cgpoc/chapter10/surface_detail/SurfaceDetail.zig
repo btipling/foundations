@@ -455,4 +455,4 @@ const scenery = @import("../../../../scenery/scenery.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
 const SurfaceDetailUI = @import("SurfaceDetailUI.zig");
-const Compiler = @import("../../../../../compiler/Compiler.zig");
+const Compiler = @import("../../../../../fssc/Compiler.zig");

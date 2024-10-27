@@ -195,14 +195,14 @@ fn renderMarbledBlock(self: *Textures3D) void {
     const block = self.renderParallelepiped(m);
     self.marbled_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.marbled_tex.?.texture_unit = 1;
-    var marbled = Marble.init(self.allocator);
-    defer marbled.deinit(self.allocator);
-    marbled.fillData();
-    if (self.marbled_tex) |*t| {
-        t.setup3D(marbled.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
-            self.marbled_tex = null;
-        };
-    }
+    // var marbled = Marble.init(self.allocator);
+    // defer marbled.deinit(self.allocator);
+    // marbled.fillData();
+    // if (self.marbled_tex) |*t| {
+    //     t.setup3D(marbled.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+    //         self.marbled_tex = null;
+    //     };
+    // }
 
     self.marbled_block = .{ .parallelepiped = block };
 }
@@ -212,14 +212,14 @@ fn renderStripedBlock(self: *Textures3D) void {
     const block = self.renderParallelepiped(m);
     self.striped_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.striped_tex.?.texture_unit = 1;
-    var sp = StripedPattern.init(self.allocator);
-    defer sp.deinit(self.allocator);
-    sp.fillData();
-    if (self.striped_tex) |*t| {
-        t.setup3D(sp.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
-            self.striped_tex = null;
-        };
-    }
+    // var sp = StripedPattern.init(self.allocator);
+    // defer sp.deinit(self.allocator);
+    // sp.fillData();
+    // if (self.striped_tex) |*t| {
+    //     t.setup3D(sp.data.items, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+    //         self.striped_tex = null;
+    //     };
+    // }
 
     self.striped_block = .{ .parallelepiped = block };
 }
@@ -337,9 +337,7 @@ const scenes = @import("../../../scenes.zig");
 const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
-const Compiler = @import("../../../../../compiler/Compiler.zig");
+const Compiler = @import("../../../../../fssc/Compiler.zig");
 const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
-const StripedPattern = @import("StripedPattern.zig");
-const Marble = @import("Marble.zig");

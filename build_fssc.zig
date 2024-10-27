@@ -2,7 +2,7 @@ pub fn build(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
     // fssc - the foundation simple shader compiler
     const compiler_exe = b.addExecutable(.{
         .name = "fssc",
-        .root_source_file = b.path("src/compiler.zig"),
+        .root_source_file = b.path("src/fssc.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -16,7 +16,7 @@ pub fn build(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
         fssc_cmd.addArgs(args);
     }
 
-    const fssc_step = b.step("fssc", "Compile a shder");
+    const fssc_step = b.step("fssc", "Compile a shader");
     fssc_step.dependOn(&fssc_cmd.step);
 }
 

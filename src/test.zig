@@ -18,5 +18,5 @@ test {
 const std = @import("std");
 const math = @import("foundations/math/math.zig");
 const config = @import("foundations/config/config.zig");
-const CompilerParser = @import("compiler/Parser.zig");
-const CompilerIncluder = @import("compiler/Includer.zig");
+const CompilerParser = @import("fssc/Parser.zig");
+const CompilerIncluder = @import("fssc/Includer.zig");
