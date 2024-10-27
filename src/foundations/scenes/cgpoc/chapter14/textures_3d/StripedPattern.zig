@@ -28,16 +28,15 @@ pub fn deinit(self: *StripedPattern, allocator: std.mem.Allocator) void {
 }
 
 pub fn fillData(self: *StripedPattern) void {
-    for (0..self.width) |w| {
-        for (0..self.height) |h| {
-            for (0..self.depth) |d| {
+    for (0..self.height) |h| {
+        for (0..self.depth) |d| {
+            for (0..self.width) |w| {
                 var color: math.vector.vec4 = self.secondary_color;
                 const h_f: f32 = @floatFromInt(h);
-                if (math.float.equal_e(@mod(h_f / 10.0, 2), 0.0)) {
+                if (@mod(h_f, 10) < 5.0) {
                     color = self.primary_color;
                 }
-                var i = w;
-                i *= self.width * self.height * self.dim;
+                var i = w * self.width * self.height * self.dim;
                 i += h * self.height * self.dim;
                 i += d * self.dim;
                 self.data.items[i + 0] = @intFromFloat(color[0]);
