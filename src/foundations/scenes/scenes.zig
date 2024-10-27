@@ -10,6 +10,7 @@ pub const SceneContext = struct {
     cfg: *const config,
     args: Args,
     textures_loader: *assets.loader.Loader(assets.Image),
+    textures_3d_loader: *assets.loader.Loader(assets.Texture3D),
     obj_loader: *assets.loader.Loader(assets.Obj),
 };
 

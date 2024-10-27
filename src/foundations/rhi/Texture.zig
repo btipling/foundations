@@ -214,13 +214,15 @@ pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uni
 
 pub fn setup3D(
     self: *Texture,
-    data: []const u8,
+    t3d_opt: ?*assets.Texture3D,
     width: u32,
     height: u32,
     depth: u32,
     program: u32,
     uniform_name: []const u8,
 ) TextureError!void {
+    const t3d = t3d_opt orelse return;
+    const data = t3d.data;
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_3D, 1, @ptrCast(&name));
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);

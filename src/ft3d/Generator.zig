@@ -45,7 +45,7 @@ pub fn run(self: *Generator) !void {
 
     switch (self.ctx.args.texture_type) {
         .marble => {
-            var sp = StripedPattern.init(self.allocator);
+            var sp = Marble.init(self.allocator);
             defer sp.deinit(self.allocator);
             sp.fillData();
             output_file.bytes = sp.data.items;

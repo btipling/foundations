@@ -195,11 +195,12 @@ fn renderMarbledBlock(self: *Textures3D) void {
     const block = self.renderParallelepiped(m);
     self.marbled_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.marbled_tex.?.texture_unit = 1;
-    // if (self.striped_tex) |*t| {
-    //     t.setup3D(@embedFile("marble.vol"), tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
-    //         self.striped_tex = null;
-    //     };
-    // }
+    if (self.marbled_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\marble.vol") catch null;
+        t.setup3D(data, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+            self.marbled_tex = null;
+        };
+    }
 
     self.marbled_block = .{ .parallelepiped = block };
 }
@@ -209,11 +210,12 @@ fn renderStripedBlock(self: *Textures3D) void {
     const block = self.renderParallelepiped(m);
     self.striped_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.striped_tex.?.texture_unit = 1;
-    // if (self.striped_tex) |*t| {
-    //     t.setup3D(@embedFile("striped.vol"), tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
-    //         self.striped_tex = null;
-    //     };
-    // }
+    if (self.striped_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\striped.vol") catch null;
+        t.setup3D(data, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+            self.striped_tex = null;
+        };
+    }
 
     self.striped_block = .{ .parallelepiped = block };
 }
