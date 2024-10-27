@@ -7,6 +7,27 @@ pub fn build(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
         .optimize = optimize,
     });
 
+    const cflags = &.{"-D_GLFW_WIN32"};
+
+    generator_exe.addIncludePath(b.path("libs/stb/include"));
+    generator_exe.linkLibC();
+    generator_exe.linkLibCpp();
+    switch (target.result.os.tag) {
+        .windows => {
+            generator_exe.linkSystemLibrary("gdi32");
+            generator_exe.linkSystemLibrary("user32");
+            generator_exe.linkSystemLibrary("shell32");
+            generator_exe.linkSystemLibrary("WS2_32");
+            generator_exe.addCSourceFiles(.{
+                .files = &.{
+                    "libs/stb/src/stb_perlin.c",
+                },
+                .flags = cflags,
+            });
+        },
+        else => @panic("this project only builds on windows"),
+    }
+
     b.installArtifact(generator_exe);
 
     const ft3d_cmd = b.addRunArtifact(generator_exe);

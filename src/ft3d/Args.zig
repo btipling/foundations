@@ -4,7 +4,7 @@ parsed: struct {
     file_name: ?[]const u8 = null,
     arg_ctx: arg_context = .none,
 } = .{},
-texture_type: []const u8 = undefined,
+texture_type: texture_type_opt = undefined,
 output_path: []const u8 = undefined,
 file_name: []const u8 = undefined,
 process_args: std.process.ArgIterator = undefined,
@@ -28,6 +28,11 @@ const arg_context = enum {
     file_name,
 };
 
+pub const texture_type_opt = enum {
+    striped,
+    marble,
+};
+
 pub fn init(allocator: std.mem.Allocator) !*Args {
     var process_args: std.process.ArgIterator = try std.process.argsWithAllocator(allocator);
     errdefer process_args.deinit();
@@ -48,14 +53,22 @@ pub fn parse(self: *Args, _: std.mem.Allocator) !void {
 }
 
 pub fn validate(self: *Args) ArgsError!void {
-    self.texture_type = self.parsed.texture_type orelse return ArgsError.ValidationErrorTypeInvalid;
+    self.texture_type = blk: {
+        const tts: []const u8 = self.parsed.texture_type orelse return ArgsError.ValidationErrorTypeInvalid;
+        if (std.mem.eql(u8, "marble", tts)) {
+            break :blk .marble;
+        } else if (std.mem.eql(u8, "striped", tts)) {
+            break :blk .striped;
+        }
+        return ArgsError.ValidationErrorTypeInvalid;
+    };
     self.output_path = self.parsed.output_path orelse return ArgsError.ValidationErrorOutputInvalid;
     self.file_name = self.parsed.file_name orelse return ArgsError.ValidationErrorTypeInvalid;
 }
 
 pub fn debug(self: *Args) void {
     std.debug.print("args: \n", .{});
-    std.debug.print("\t--type {s}\n", .{self.texture_type});
+    std.debug.print("\t--type {any}\n", .{self.texture_type});
     std.debug.print("\t--output {s}\n", .{self.output_path});
     std.debug.print("\t--name: {s}\n", .{self.file_name});
 }
