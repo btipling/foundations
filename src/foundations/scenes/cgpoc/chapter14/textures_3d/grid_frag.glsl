@@ -22,7 +22,7 @@ vec3 calcNewNormal()
 {
 	vec3 normal = vec3(1,0,0);
 	vec3 tangent = vec3(0,0, 1);
-	vec3 bitangent = cross(tangent, normal) * -1;
+	vec3 bitangent = cross(tangent, normal) * 1;
 	mat3 tbn = mat3(tangent, bitangent, normal);
 	vec3 retrievedNormal = texture(f_normal_samp, f_tc).xyz;
 	retrievedNormal = retrievedNormal * 2.0 - 1.0;
