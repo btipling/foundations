@@ -33,7 +33,9 @@ void main()
     mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
     vec4 f_pos = vec4(f_position.xyz, 1.0);
     vec4 f_main_pos = m_matrix * f_pos;
-    gl_ClipDistance[0] = dot(f_torus_clip.xyz, f_main_pos.xyz) - f_torus_clip.w;
+    vec4 f_clip_plane = normalize(f_torus_clip);
+    f_clip_plane = vec4(f_clip_plane.x, f_clip_plane.y, f_clip_plane.z, f_clip_plane.w);
+    gl_ClipDistance[0] = dot(f_clip_plane.xyz, f_main_pos.xyz) + f_clip_plane.w;
     f_view_p = (v_matrix * f_main_pos).xyz;
 
     fo_light = f_light.direction.xyz;

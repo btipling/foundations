@@ -132,17 +132,17 @@ pub fn draw(self: *ClippingPlane, dt: f64) void {
 
 pub fn updatePlaneTransform(self: *ClippingPlane, prog: u32) void {
     var m = math.matrix.identity();
-    const scale_matrix = math.matrix.scale(20.0, 0.05, 40.0);
+    const scale_matrix = math.matrix.scale(10.0, 0.05, 20.0);
     m = math.matrix.transformMatrix(m, math.matrix.translate(
         self.ui_state.plane_translate[0],
         self.ui_state.plane_translate[1],
         self.ui_state.plane_translate[2],
     ));
-    m = math.matrix.transformMatrix(m, math.matrix.translate(10, 0, 20));
+    m = math.matrix.transformMatrix(m, math.matrix.translate(5, 0, 10));
     m = math.matrix.transformMatrix(m, math.matrix.rotationX(self.ui_state.plane_rotation[0]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationY(self.ui_state.plane_rotation[1]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(self.ui_state.plane_rotation[2]));
-    m = math.matrix.transformMatrix(m, math.matrix.translate(-10, 0, -20));
+    m = math.matrix.transformMatrix(m, math.matrix.translate(-5.0, 0, -10.0));
     self.updatePlane(m);
     m = math.matrix.transformMatrix(m, scale_matrix);
     rhi.setUniformMatrix(prog, "f_plane_transform", m);
@@ -285,7 +285,7 @@ fn renderTorus(self: *ClippingPlane) void {
         },
     };
     var torus = .{ .torus = object.Torus.init(prog, i_datas[0..], false) };
-    // torus.torus.mesh.cull = false;
+    torus.torus.mesh.cull = false;
     torus.torus.mesh.linear_colorspace = false;
     var cpu = rhi.Uniform.init(prog, "f_torus_clip") catch @panic("uniform");
     cpu.setUniform4fv(.{ 0.0, 0.0, -1.0, 0.5 });

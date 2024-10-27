@@ -1,10 +1,6 @@
 distance: usize = 0,
-plane_rotation: [3]f32 = .{
-    std.math.pi,
-    std.math.pi,
-    std.math.pi,
-},
-plane_translate: [3]f32 = .{ 0, -15, -20 },
+plane_rotation: [3]f32 = .{ 0, 0, 0 },
+plane_translate: [3]f32 = .{ 0, 0, -12.5 },
 plane_updated: bool = true,
 
 const CipplingPlaneUI = @This();
