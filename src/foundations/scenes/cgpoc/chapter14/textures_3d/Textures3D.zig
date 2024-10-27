@@ -20,7 +20,7 @@ const Textures3D = @This();
 const tex_dims: usize = 256;
 
 const mats = [_]lighting.Material{
-    lighting.materials.Gold,
+    lighting.materials.Silver,
 };
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -51,7 +51,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
 
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .ambient = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
