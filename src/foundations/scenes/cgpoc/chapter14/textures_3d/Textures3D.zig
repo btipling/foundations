@@ -54,7 +54,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
 
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.75, 0.75, 0.75, 1.0 },
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
@@ -254,7 +254,7 @@ fn renderParallelepiped(self: *Textures3D, m: math.matrix) object.Parallelepiped
     };
 
     var block = object.Parallelepiped.init(prog, i_datas[0..], false);
-    block.mesh.linear_colorspace = false;
+    block.mesh.linear_colorspace = true;
     return block;
 }
 
@@ -310,7 +310,7 @@ fn renderGrid(self: *Textures3D) void {
     };
 
     var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], false) };
-    grid_obj.parallelepiped.mesh.linear_colorspace = false;
+    grid_obj.parallelepiped.mesh.linear_colorspace = true;
 
     if (self.grid_t_tex) |*t| {
         t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\wispy-grass-meadow_albedo.png") catch null, prog, "f_grid_samp") catch {
