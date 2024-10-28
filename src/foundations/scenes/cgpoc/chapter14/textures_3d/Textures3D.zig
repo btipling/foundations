@@ -2,6 +2,9 @@ view_camera: *physics.camera.Camera(*Textures3D, physics.Integrator(physics.Smoo
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
+ready: bool = false,
+
+shadowpass: *rendering.DirectionalShadowPass = undefined,
 
 grid: object.object = .{ .norender = .{} },
 grid_t_tex: ?rhi.Texture = null,
@@ -17,6 +20,8 @@ marbled_tex: ?rhi.Texture = null,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
+
+shadow_objects: [2]rendering.DirectionalShadowPass.ShadowObject = undefined,
 
 const Textures3D = @This();
 
@@ -52,6 +57,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
+    const shadowpass = rendering.DirectionalShadowPass.init(allocator, ctx);
+    errdefer shadowpass.deinit(allocator);
+
     const lights = [_]lighting.Light{
         .{
             .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
@@ -77,6 +85,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
         .allocator = allocator,
         .materials = mats_buf,
         .lights = lights_buf,
+        .shadowpass = shadowpass,
     };
 
     t3d.renderDebugCross();
@@ -87,13 +96,18 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
 
     t3d.renderStripedBlock();
     errdefer rhi.deleteObject(t3d.striped_block);
+    t3d.shadow_objects[0] = .{ .obj = t3d.striped_block };
 
     t3d.renderMarbledBlock();
     errdefer rhi.deleteObject(t3d.marbled_block);
+    t3d.shadow_objects[1] = .{ .obj = t3d.marbled_block };
 
     t3d.renderGrid();
     errdefer rhi.deleteObject(t3d.grid);
 
+    t3d.shadowpass.shadow_objects = t3d.shadow_objects[0..];
+
+    t3d.ready = true;
     return t3d;
 }
 
@@ -106,6 +120,7 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
     if (self.striped_tex) |t| t.deinit();
     if (self.marbled_tex) |t| t.deinit();
     self.deleteCross();
+    self.shadowpass.deinit(allocator);
     self.lights.deinit();
     self.materials.deinit();
     self.view_camera.deinit(allocator);
@@ -113,7 +128,10 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn updateCamera(_: *Textures3D) void {}
+pub fn updateCamera(self: *Textures3D) void {
+    if (!self.ready) return;
+    self.shadowpass.update();
+}
 
 pub fn draw(self: *Textures3D, dt: f64) void {
     self.view_camera.update(dt);
@@ -337,3 +355,4 @@ const Compiler = @import("../../../../../fssc/Compiler.zig");
 const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
+const rendering = @import("../../../../rendering/rendering.zig");

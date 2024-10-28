@@ -4,22 +4,23 @@ shadow_uniform: rhi.Uniform = undefined,
 shadow_x_up: rhi.Uniform = undefined,
 shadow_framebuffer: rhi.Framebuffer = undefined,
 f_shadow_m: rhi.Uniform = undefined,
+ctx: scenes.SceneContext,
 
 light_direction: math.vector.vec3 = undefined,
 light_view_shadowpass: math.matrix = undefined,
 light_view_renderpass: math.matrix = undefined,
 
-scene_objects: []ShadowObject = undefined,
+shadow_objects: []ShadowObject = undefined,
 
 texture_unit: c.GLuint = 0,
 
 const DirectionalShadowPass = @This();
 
-const ShadowObject = struct {
+pub const ShadowObject = struct {
     transform: math.matrix = math.matrix.identity(),
     x_up: math.matrix = math.matrix.identity(),
-    polygon_factor: f32 = 0,
-    polygon_unit: f32 = 0,
+    polygon_factor: f32 = 150,
+    polygon_unit: f32 = 100,
     obj: object.object,
 };
 
@@ -27,19 +28,34 @@ const num_maps: usize = 12;
 
 const shadow_vertex_shader: []const u8 = @embedFile("shadow_vert.glsl");
 
-fn init(allocator: std.mem.allocator) *DirectionalShadowPass {
-    const dsp = allocator.create(DirectionalShadowPass) catch @panic("OOM");
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *DirectionalShadowPass {
+    const dsp: *DirectionalShadowPass = allocator.create(DirectionalShadowPass) catch @panic("OOM");
     errdefer dsp.deinit(allocator);
+    dsp.* = .{
+        .ctx = ctx,
+    };
+    dsp.setupShadowmaps(allocator);
     return dsp;
 }
 
-fn deinit(self: *DirectionalShadowPass, allocator: std.mem.Allocator) void {
+pub fn deinit(self: *DirectionalShadowPass, allocator: std.mem.Allocator) void {
     c.glDeleteProgram(self.shadowmap_program);
     self.shadow_framebuffer.deinit();
     allocator.destroy(self);
 }
 
-fn setupShadowmaps(self: *DirectionalShadowPass) void {
+pub fn update(self: *DirectionalShadowPass) void {
+    var m = math.matrix.identity();
+    // This is the camera from the perspective of the light seen by game camera, set to default above origin for now.
+    // That's where most of the objects are in these learning scenes, but it should eventually move around and
+    // capture the full view space frustum the player sees.
+    m = math.matrix.transformMatrix(m, math.matrix.translate(10.0, 0, 0));
+    // Rotate it directly down by rotating down along the z axis. 90 degree downward cw in LH.
+    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
+    self.setLightViewMatrix(m);
+}
+
+fn setupShadowmaps(self: *DirectionalShadowPass, allocator: std.mem.Allocator) void {
     self.shadowmap_program = rhi.createProgram();
     {
         var s: rhi.Shader = .{
@@ -47,7 +63,7 @@ fn setupShadowmaps(self: *DirectionalShadowPass) void {
             .instance_data = true,
             .fragment_shader = .shadow,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
     }
 
     var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_vp") catch @panic("uniform failed");
@@ -61,9 +77,7 @@ fn setupShadowmaps(self: *DirectionalShadowPass) void {
     var shadow_x_up: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_xup_shadow") catch @panic("uniform failed");
     shadow_x_up.setUniformMatrix(math.matrix.transpose(math.matrix.identity()));
     self.shadow_x_up = shadow_x_up;
-    for (0..self.shadowmaps.len) |i| {
-        self.genShadowmapTexture(i);
-    }
+    self.genShadowmapTexture();
 }
 
 fn genShadowmapTexture(self: *DirectionalShadowPass) void {
@@ -95,7 +109,7 @@ pub fn genShadowMap(self: *DirectionalShadowPass) void {
 
     c.glClear(c.GL_DEPTH_BUFFER_BIT);
 
-    for (self.scene_objects) |so| {
+    for (self.shadow_objects) |so| {
         self.shadow_x_up.setUniformMatrix(so.x_up);
         c.glPolygonOffset(
             @floatCast(so.polygon_factor),
@@ -134,7 +148,7 @@ fn setLightViewMatrix(self: *DirectionalShadowPass, tm: math.matrix) void {
         0.0, 0.5, 0.0, 0.0,
         0.0, 0.0, 1.0, 0.0,
         0.5, 0.5, 0.0, 1.0,
-    })), m).array();
+    })), m);
     self.light_view_shadowpass = m;
     self.light_view_renderpass = light_view;
 }
@@ -144,3 +158,4 @@ const c = @import("../../c.zig").c;
 const rhi = @import("../../rhi/rhi.zig");
 const object = @import("../../object/object.zig");
 const math = @import("../../math/math.zig");
+const scenes = @import("../../scenes/scenes.zig");
