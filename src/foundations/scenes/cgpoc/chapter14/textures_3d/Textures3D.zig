@@ -132,6 +132,7 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
 pub fn updateCamera(self: *Textures3D) void {
     if (!self.ready) return;
     self.shadowpass.update(light_direction);
+    self.view_camera.f_shadow_view_m = self.shadowpass.light_view_renderpass;
 }
 
 pub fn draw(self: *Textures3D, dt: f64) void {
@@ -344,6 +345,7 @@ fn renderGrid(self: *Textures3D) void {
             self.grid_t_nor = null;
         };
     }
+
     self.grid = grid_obj;
 }
 
