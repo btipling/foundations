@@ -26,6 +26,7 @@ shadow_objects: [2]rendering.DirectionalShadowPass.ShadowObject = undefined,
 const Textures3D = @This();
 
 const tex_dims: usize = 256;
+const light_direction = [4]f32{ 10, -10.0, -0.3, 0.0 };
 
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
@@ -66,7 +67,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-            .direction = [4]f32{ 10, -10.0, -0.3, 0.0 },
+            .direction = light_direction,
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
@@ -130,7 +131,7 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
 
 pub fn updateCamera(self: *Textures3D) void {
     if (!self.ready) return;
-    self.shadowpass.update();
+    self.shadowpass.update(light_direction);
 }
 
 pub fn draw(self: *Textures3D, dt: f64) void {

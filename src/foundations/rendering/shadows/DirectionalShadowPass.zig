@@ -53,14 +53,26 @@ pub fn updateShdowObjects(self: *DirectionalShadowPass, sos: []ShadowObject) voi
     self.shadow_objects = sos;
 }
 
-pub fn update(self: *DirectionalShadowPass) void {
+pub fn update(self: *DirectionalShadowPass, light_direction: [4]f32) void {
     var m = math.matrix.identity();
-    // This is the camera from the perspective of the light seen by game camera, set to default above origin for now.
+    // This is the camera from the perspective of the light seen by game camera, set to default near origin for now.
     // That's where most of the objects are in these learning scenes, but it should eventually move around and
     // capture the full view space frustum the player sees.
-    m = math.matrix.transformMatrix(m, math.matrix.translate(10.0, 0, 0));
-    // Rotate it directly down by rotating down along the z axis. 90 degree downward cw in LH.
-    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
+    m = math.matrix.transformMatrix(m, math.matrix.translate(10.0, 5, 3));
+    // Rotate in the direction that the light is pointing.
+    self.light_direction = .{ light_direction[0], light_direction[1], light_direction[2] };
+    const ld = self.light_direction;
+    const down: math.vector.vec3 = .{ -1, 0, 0 };
+    const xld: math.vector.vec3 = .{ ld[0], 0, 0 };
+    const yld: math.vector.vec3 = .{ 0, ld[1], 0 };
+    const zld: math.vector.vec3 = .{ 0, 0, ld[2] };
+    const x_angle = math.vector.angleBetweenVectors(down, xld);
+    const y_angle = math.vector.angleBetweenVectors(down, yld);
+    const z_angle = math.vector.angleBetweenVectors(down, zld);
+    m = math.matrix.transformMatrix(m, math.matrix.rotationX(x_angle));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(y_angle));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(z_angle));
+    m.debug("light matrix");
     self.setLightViewMatrix(m);
 }
 
@@ -159,6 +171,7 @@ fn setLightViewMatrix(self: *DirectionalShadowPass, tm: math.matrix) void {
         0.5, 0.5, 0.0, 1.0,
     })), m);
     self.light_view_shadowpass = m;
+    self.shadow_uniform.setUniformMatrix(m);
     self.light_view_renderpass = light_view;
 }
 
