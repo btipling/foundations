@@ -19,8 +19,8 @@ const DirectionalShadowPass = @This();
 pub const ShadowObject = struct {
     transform: math.matrix = math.matrix.identity(),
     x_up: math.matrix = math.matrix.identity(),
-    polygon_factor: f32 = 150,
-    polygon_unit: f32 = 100,
+    polygon_factor: f32 = 5,
+    polygon_unit: f32 = 5,
     obj: object.object,
 };
 
@@ -57,26 +57,8 @@ pub fn updateShdowObjects(self: *DirectionalShadowPass, sos: []ShadowObject) voi
     self.shadow_objects = sos;
 }
 
-pub fn update(self: *DirectionalShadowPass, light_direction: [4]f32) void {
-    var m = math.matrix.identity();
-    // This is the camera from the perspective of the light seen by game camera, set to default near origin for now.
-    // That's where most of the objects are in these learning scenes, but it should eventually move around and
-    // capture the full view space frustum the player sees.
-    m = math.matrix.transformMatrix(m, math.matrix.translate(10.0, 5, 3));
-    // Rotate in the direction that the light is pointing.
-    self.light_direction = .{ light_direction[0], light_direction[1], light_direction[2] };
-    const ld = self.light_direction;
-    const down: math.vector.vec3 = .{ -1, 0, 0 };
-    const xld: math.vector.vec3 = .{ ld[0], 0, 0 };
-    const yld: math.vector.vec3 = .{ 0, ld[1], 0 };
-    const zld: math.vector.vec3 = .{ 0, 0, ld[2] };
-    const x_angle = math.vector.angleBetweenVectors(down, xld);
-    const y_angle = math.vector.angleBetweenVectors(down, yld);
-    const z_angle = math.vector.angleBetweenVectors(down, zld);
-    m = math.matrix.transformMatrix(m, math.matrix.rotationX(x_angle));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationY(y_angle));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(z_angle));
-    self.setLightViewMatrix(m);
+pub fn update(self: *DirectionalShadowPass, light_m: math.matrix) void {
+    self.setLightViewMatrix(light_m);
 }
 
 fn setupShadowmaps(self: *DirectionalShadowPass, allocator: std.mem.Allocator) void {

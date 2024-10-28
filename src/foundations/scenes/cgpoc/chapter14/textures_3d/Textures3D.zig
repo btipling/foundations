@@ -3,6 +3,7 @@ ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
 ready: bool = false,
+ui_state: Textures3DUI,
 
 shadowpass: *rendering.DirectionalShadowPass = undefined,
 
@@ -20,13 +21,13 @@ marbled_tex: ?rhi.Texture = null,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
+light_m: math.matrix,
 
 shadow_objects: [3]rendering.DirectionalShadowPass.ShadowObject = undefined,
 
 const Textures3D = @This();
 
 const tex_dims: usize = 256;
-const light_direction = [4]f32{ 10, -10.0, -0.3, 0.0 };
 
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
@@ -61,6 +62,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     const shadowpass = rendering.DirectionalShadowPass.init(allocator, ctx, 1);
     errdefer shadowpass.deinit(allocator);
 
+    var light_direction: math.vector.vec4 = .{ 0, 1, 0, 0 };
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.rotationX(std.math.pi));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(std.math.pi / 2.0));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
+    light_direction = math.matrix.transformVector(m, light_direction);
     const lights = [_]lighting.Light{
         .{
             .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
@@ -80,6 +87,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     var lights_buf = rhi.Buffer.init(ld);
     errdefer lights_buf.deinit();
 
+    const ui_state: Textures3DUI = .{};
     t3d.* = .{
         .view_camera = cam,
         .ctx = ctx,
@@ -87,6 +95,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
         .materials = mats_buf,
         .lights = lights_buf,
         .shadowpass = shadowpass,
+        .light_m = m,
+        .ui_state = ui_state,
     };
 
     t3d.renderDebugCross();
@@ -132,11 +142,46 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
 
 pub fn updateCamera(self: *Textures3D) void {
     if (!self.ready) return;
-    self.shadowpass.update(light_direction);
+}
+
+fn updateLights(self: *Textures3D) void {
+    const lp = self.ui_state.light_position;
+    const lr = self.ui_state.light_rotation;
+    var m = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(lp[0], lp[1], lp[2]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationX(lr[0]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(lr[1]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(lr[2]));
+    self.light_m = m;
+    const forward: math.vector.vec4 = .{ 0, -1, 0, 0 };
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = math.vector.mul(-1, math.matrix.transformVector(m, forward)),
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+    };
+    self.lights.deinit();
+    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
+    var lights_buf = rhi.Buffer.init(ld);
+    errdefer lights_buf.deinit();
+    self.lights = lights_buf;
+    self.shadowpass.update(self.light_m);
     self.view_camera.f_shadow_view_m = self.shadowpass.light_view_renderpass;
 }
 
 pub fn draw(self: *Textures3D, dt: f64) void {
+    if (self.ui_state.light_updated) {
+        self.updateLights();
+        self.ui_state.light_updated = false;
+    }
     self.view_camera.update(dt);
     {
         self.shadowpass.genShadowMap();
@@ -169,6 +214,7 @@ pub fn draw(self: *Textures3D, dt: f64) void {
         rhi.drawObject(self.marbled_block);
     }
     self.cross.draw(dt);
+    self.ui_state.draw();
 }
 
 fn deleteCross(self: *Textures3D) void {
@@ -366,3 +412,4 @@ const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
 const rendering = @import("../../../../rendering/rendering.zig");
+const Textures3DUI = @import("Textures3DUI.zig");
