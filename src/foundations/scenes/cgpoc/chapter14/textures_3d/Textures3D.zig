@@ -105,7 +105,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     t3d.renderGrid();
     errdefer rhi.deleteObject(t3d.grid);
 
-    t3d.shadowpass.shadow_objects = t3d.shadow_objects[0..];
+    t3d.shadowpass.updateShdowObjects(t3d.shadow_objects[0..]);
 
     t3d.ready = true;
     return t3d;
@@ -135,6 +135,9 @@ pub fn updateCamera(self: *Textures3D) void {
 
 pub fn draw(self: *Textures3D, dt: f64) void {
     self.view_camera.update(dt);
+    {
+        self.shadowpass.genShadowMap();
+    }
     {
         rhi.drawHorizon(self.sphere);
     }

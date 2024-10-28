@@ -44,6 +44,15 @@ pub fn deinit(self: *DirectionalShadowPass, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
+pub fn updateShdowObjects(self: *DirectionalShadowPass, sos: []ShadowObject) void {
+    for (sos) |*so| {
+        switch (so.obj) {
+            inline else => |*o| o.mesh.shadowmap_program = self.shadowmap_program,
+        }
+    }
+    self.shadow_objects = sos;
+}
+
 pub fn update(self: *DirectionalShadowPass) void {
     var m = math.matrix.identity();
     // This is the camera from the perspective of the light seen by game camera, set to default above origin for now.
