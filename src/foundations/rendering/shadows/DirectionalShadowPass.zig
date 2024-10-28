@@ -48,7 +48,10 @@ pub fn deinit(self: *DirectionalShadowPass, allocator: std.mem.Allocator) void {
 pub fn updateShdowObjects(self: *DirectionalShadowPass, sos: []ShadowObject) void {
     for (sos) |*so| {
         switch (so.obj) {
-            inline else => |*o| o.mesh.shadowmap_program = self.shadowmap_program,
+            inline else => |*o| {
+                o.mesh.shadowmap_program = self.shadowmap_program;
+                self.shadowmap.addUniform(o.mesh.program, "f_shadow_texture") catch @panic("uniform failed");
+            },
         }
     }
     self.shadow_objects = sos;

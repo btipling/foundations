@@ -21,7 +21,7 @@ marbled_tex: ?rhi.Texture = null,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 
-shadow_objects: [2]rendering.DirectionalShadowPass.ShadowObject = undefined,
+shadow_objects: [3]rendering.DirectionalShadowPass.ShadowObject = undefined,
 
 const Textures3D = @This();
 
@@ -105,6 +105,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
 
     t3d.renderGrid();
     errdefer rhi.deleteObject(t3d.grid);
+    t3d.shadow_objects[2] = .{ .obj = t3d.grid };
 
     t3d.shadowpass.updateShdowObjects(t3d.shadow_objects[0..]);
 
@@ -142,6 +143,9 @@ pub fn draw(self: *Textures3D, dt: f64) void {
     }
     {
         rhi.drawHorizon(self.sphere);
+    }
+    {
+        self.shadowpass.shadowmap.bind();
     }
     if (self.grid_t_tex) |t| {
         t.bind();
