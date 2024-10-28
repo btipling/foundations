@@ -28,11 +28,12 @@ const num_maps: usize = 12;
 
 const shadow_vertex_shader: []const u8 = @embedFile("shadow_vert.glsl");
 
-pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *DirectionalShadowPass {
+pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext, texture_unit: c.GLuint) *DirectionalShadowPass {
     const dsp: *DirectionalShadowPass = allocator.create(DirectionalShadowPass) catch @panic("OOM");
     errdefer dsp.deinit(allocator);
     dsp.* = .{
         .ctx = ctx,
+        .texture_unit = texture_unit,
     };
     dsp.setupShadowmaps(allocator);
     return dsp;

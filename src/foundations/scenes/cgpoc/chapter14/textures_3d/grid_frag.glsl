@@ -14,9 +14,11 @@ out vec4 fo_frag_color;
 //#include "src/foundations/shaders/material.glsl"
 //#include "src/foundations/shaders/light.glsl"
 
+layout(bindless_sampler) uniform sampler2DShadow f_shadow_texture;
 layout(bindless_sampler) uniform sampler2D f_grid_samp;
 layout(bindless_sampler) uniform sampler2D f_normal_samp;
 
+in vec4 fo_shadow_coord;
 
 vec3 calcNewNormal()
 {

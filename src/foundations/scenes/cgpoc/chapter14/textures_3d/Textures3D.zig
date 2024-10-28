@@ -58,7 +58,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     var mats_buf = rhi.Buffer.init(bd);
     errdefer mats_buf.deinit();
 
-    const shadowpass = rendering.DirectionalShadowPass.init(allocator, ctx);
+    const shadowpass = rendering.DirectionalShadowPass.init(allocator, ctx, 1);
     errdefer shadowpass.deinit(allocator);
 
     const lights = [_]lighting.Light{
@@ -299,7 +299,7 @@ fn renderGrid(self: *Textures3D) void {
     const prog = rhi.createProgram();
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
-    const frag_bindings = [_]usize{ 2, 3 };
+    const frag_bindings = [_]usize{ 1, 2, 3 };
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
