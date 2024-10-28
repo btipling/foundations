@@ -35,6 +35,9 @@ vec3 calcNewNormal()
 
 void main()
 {
+
+    float not_in_shadow = textureProj(f_shadow_texture, fo_shadow_coord);
+
     vec4 f_texture_color = texture(f_grid_samp, f_tc);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     vec3 f_N = calcNewNormal();
@@ -52,5 +55,9 @@ void main()
     vec3 f_diffuse = f_light.diffuse.xyz * f_mat.diffuse.xyz * max(cosTheta, 0.0);
     vec3 f_specular = f_mat.specular.xyz * f_light.specular.xyz * pow(max(cosPhi, 0.0), f_mat.shininess * 4.0) * 0.0;
 
-    fo_frag_color = f_texture_color * vec4((f_ambient + f_diffuse + f_specular), 1.0);
+    if (not_in_shadow == 1.0) {
+        fo_frag_color = f_texture_color * vec4((f_ambient + f_diffuse + f_specular), 1.0);
+    } else {
+        fo_frag_color = f_texture_color * vec4((f_ambient), 1.0);
+    }
 }

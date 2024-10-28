@@ -73,7 +73,6 @@ pub fn update(self: *DirectionalShadowPass, light_direction: [4]f32) void {
     m = math.matrix.transformMatrix(m, math.matrix.rotationX(x_angle));
     m = math.matrix.transformMatrix(m, math.matrix.rotationY(y_angle));
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(z_angle));
-    m.debug("light matrix");
     self.setLightViewMatrix(m);
 }
 
