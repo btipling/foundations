@@ -31,6 +31,7 @@ const arg_context = enum {
 pub const texture_type_opt = enum {
     striped,
     marble,
+    wood,
 };
 
 pub fn init(allocator: std.mem.Allocator) !*Args {
@@ -57,6 +58,8 @@ pub fn validate(self: *Args) ArgsError!void {
         const tts: []const u8 = self.parsed.texture_type orelse return ArgsError.ValidationErrorTypeInvalid;
         if (std.mem.eql(u8, "marble", tts)) {
             break :blk .marble;
+        } else if (std.mem.eql(u8, "wood", tts)) {
+            break :blk .wood;
         } else if (std.mem.eql(u8, "striped", tts)) {
             break :blk .striped;
         }

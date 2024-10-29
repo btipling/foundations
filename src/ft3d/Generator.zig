@@ -51,6 +51,13 @@ pub fn run(self: *Generator) !void {
             output_file.bytes = sp.data.items;
             try output_file.write(self.allocator);
         },
+        .wood => {
+            var sp = Wood.init(self.allocator);
+            defer sp.deinit(self.allocator);
+            sp.fillData();
+            output_file.bytes = sp.data.items;
+            try output_file.write(self.allocator);
+        },
         .striped => {
             var sp = StripedPattern.init(self.allocator);
             defer sp.deinit(self.allocator);
@@ -72,3 +79,4 @@ const File = @import("File.zig");
 
 const StripedPattern = @import("StripedPattern.zig");
 const Marble = @import("Marble.zig");
+const Wood = @import("Wood.zig");

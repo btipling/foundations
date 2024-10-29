@@ -280,7 +280,7 @@ fn renderWoodBlock(self: *Textures3D) void {
     self.wood_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.wood_tex.?.texture_unit = 1;
     if (self.wood_tex) |*t| {
-        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\marble.vol") catch null;
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\wood.vol") catch null;
         t.setup3D(
             data,
             tex_dims,
