@@ -1,10 +1,6 @@
 data: std.ArrayListUnmanaged(u8) = .{},
-width: usize = 256,
-height: usize = 256,
-depth: usize = 256,
+dims: usize = 256,
 dim: usize = 4,
-primary_color: math.vector.vec4 = .{ 255, 255, 0, 255 },
-secondary_color: math.vector.vec4 = .{ 0, 0, 255, 255 },
 
 const StripedPattern = @This();
 
@@ -15,7 +11,7 @@ pub fn init(allocator: std.mem.Allocator) *StripedPattern {
     sp.* = .{};
     sp.data = std.ArrayListUnmanaged(u8).initCapacity(
         allocator,
-        sp.width * sp.height * sp.depth * sp.dim,
+        sp.dims * sp.dims * sp.dims * sp.dim,
     ) catch @panic("OOM");
     sp.data.expandToCapacity();
     return sp;
@@ -28,21 +24,40 @@ pub fn deinit(self: *StripedPattern, allocator: std.mem.Allocator) void {
 }
 
 pub fn fillData(self: *StripedPattern) void {
-    for (0..self.height) |h| {
-        for (0..self.depth) |d| {
-            for (0..self.width) |w| {
-                var color: math.vector.vec4 = self.secondary_color;
-                const h_f: f32 = @floatFromInt(h);
-                if (@mod(h_f, 10) < 5.0) {
-                    color = self.primary_color;
-                }
-                var i = w * self.width * self.height * self.dim;
-                i += h * self.height * self.dim;
+    const period: f32 = 40.0;
+    const offset: f32 = 2.0;
+    const dims: f32 = @floatFromInt(self.dims);
+    for (0..self.dims) |h| {
+        const h_f: f32 = @floatFromInt(h);
+        for (0..self.dims) |d| {
+            for (0..self.dims) |w| {
+                const w_f: f32 = @floatFromInt(w);
+
+                // double xValue = (i - (double)noiseWidth / 2.0) / (double)noiseWidth;
+                // double yValue = (j - (double)noiseHeight / 2.0) / (double)noiseHeight;
+                // double distanceFromZ = sqrt(xValue * xValue + yValue * yValue) + turbPower * turbulence(i,j,k,maxZoom)/256.0;
+                // double sineValue = 128.0 * abs(sin(2.0 * xyPeriod * distanceFromZ * 3.14159));
+
+                // float redPortion = (float)(80 + (int)sineValue);
+                // float greenPortion = (float)(30 + (int)sineValue);
+                // float bluePortion = 0.0f;
+
+                const w_val: f32 = ((w_f - dims / offset) / dims) - 0.25;
+                const h_val: f32 = ((h_f - dims / offset) / dims) - 0.25;
+                const depth_dist: f32 = @sqrt(w_val * w_val + h_val * h_val);
+                const sine_val = dims / offset * @abs(@sin(offset * period * depth_dist * std.math.pi));
+
+                const r_channel: f32 = @min(80.0 + sine_val, 255.0);
+                const g_channel: f32 = @min(230.0 + sine_val, 255.0);
+                const b_channel: f32 = 0;
+
+                var i = w * self.dims * self.dims * self.dim;
+                i += h * self.dims * self.dim;
                 i += d * self.dim;
-                self.data.items[i + 0] = @intFromFloat(color[0]);
-                self.data.items[i + 1] = @intFromFloat(color[1]);
-                self.data.items[i + 2] = @intFromFloat(color[2]);
-                self.data.items[i + 3] = @intFromFloat(color[3]);
+                self.data.items[i + 0] = @intFromFloat(r_channel);
+                self.data.items[i + 1] = @intFromFloat(g_channel);
+                self.data.items[i + 2] = @intFromFloat(b_channel);
+                self.data.items[i + 3] = 0xFF;
             }
         }
     }
