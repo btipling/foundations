@@ -42,6 +42,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         global_ambient: [4]f32,
         name: []const u8 = "main camera",
         owns_buffer: bool,
+        updated: bool = false,
 
         f_shadow_view_m: math.matrix = math.matrix.identity(),
 
@@ -167,6 +168,10 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         pub fn update(self: *Self, dt: f64) void {
             self.integrate(dt);
             self.handleInput(dt);
+            if (!self.updated) {
+                self.updateMVP();
+                self.updated = true;
+            }
         }
 
         pub fn setViewActivation(self: *Self, enabled: bool) void {

@@ -2,7 +2,6 @@ view_camera: *physics.camera.Camera(*Textures3D, physics.Integrator(physics.Smoo
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
-ready: bool = false,
 ui_state: Textures3DUI,
 
 shadowpass: *rendering.DirectionalShadowPass = undefined,
@@ -19,11 +18,14 @@ striped_tex: ?rhi.Texture = null,
 marbled_block: object.object = .{ .norender = .{} },
 marbled_tex: ?rhi.Texture = null,
 
+wood_block: object.object = .{ .norender = .{} },
+wood_tex: ?rhi.Texture = null,
+
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 light_m: math.matrix,
 
-shadow_objects: [3]rendering.DirectionalShadowPass.ShadowObject = undefined,
+shadow_objects: [4]rendering.DirectionalShadowPass.ShadowObject = undefined,
 
 const Textures3D = @This();
 
@@ -113,19 +115,23 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     errdefer rhi.deleteObject(t3d.marbled_block);
     t3d.shadow_objects[1] = .{ .obj = t3d.marbled_block };
 
+    t3d.renderWoodBlock();
+    errdefer rhi.deleteObject(t3d.wood_block);
+    t3d.shadow_objects[2] = .{ .obj = t3d.wood_block };
+
     t3d.renderGrid();
     errdefer rhi.deleteObject(t3d.grid);
-    t3d.shadow_objects[2] = .{ .obj = t3d.grid };
+    t3d.shadow_objects[3] = .{ .obj = t3d.grid };
 
     t3d.shadowpass.updateShdowObjects(t3d.shadow_objects[0..]);
 
-    t3d.ready = true;
     return t3d;
 }
 
 pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
     rhi.deleteObject(self.marbled_block);
     rhi.deleteObject(self.striped_block);
+    rhi.deleteObject(self.wood_block);
     rhi.deleteObject(self.sphere);
     if (self.grid_t_tex) |t| t.deinit();
     if (self.grid_t_nor) |t| t.deinit();
@@ -140,9 +146,7 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn updateCamera(self: *Textures3D) void {
-    if (!self.ready) return;
-}
+pub fn updateCamera(_: *Textures3D) void {}
 
 fn updateLights(self: *Textures3D) void {
     const lp = self.ui_state.light_position;
@@ -213,6 +217,12 @@ pub fn draw(self: *Textures3D, dt: f64) void {
         }
         rhi.drawObject(self.marbled_block);
     }
+    {
+        if (self.wood_tex) |t| {
+            t.bind();
+        }
+        rhi.drawObject(self.wood_block);
+    }
     self.cross.draw(dt);
     self.ui_state.draw();
 }
@@ -261,6 +271,29 @@ fn renderSphere(self: *Textures3D) void {
         ),
     };
     self.sphere = sphere;
+}
+
+fn renderWoodBlock(self: *Textures3D) void {
+    const m = math.matrix.translateVec(.{ 0, 5, 2.5 });
+    const block = self.renderParallelepiped(m);
+    self.wood_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.wood_tex.?.texture_unit = 1;
+    if (self.wood_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\marble.vol") catch null;
+        t.setup3D(
+            data,
+            tex_dims,
+            tex_dims,
+            tex_dims,
+            block.mesh.program,
+            "f_tex_samp",
+            "wood_3d",
+        ) catch {
+            self.wood_tex = null;
+        };
+    }
+
+    self.wood_block = .{ .parallelepiped = block };
 }
 
 fn renderMarbledBlock(self: *Textures3D) void {
