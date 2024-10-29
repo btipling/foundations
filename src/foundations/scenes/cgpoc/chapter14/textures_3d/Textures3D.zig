@@ -152,19 +152,23 @@ fn updateLights(self: *Textures3D) void {
     var lp = math.vector.normalize(@as(math.vector.vec3, self.ui_state.light_position));
     lp = math.vector.mul(self.ui_state.light_distance, lp);
     const lr = self.ui_state.light_rotation;
-    var m = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(lp[0], lp[1], lp[2]));
+    var mt = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(lp[0], lp[1], lp[2]));
+    mt = math.matrix.transformMatrix(mt, math.matrix.rotationX(lr[0]));
+    mt = math.matrix.transformMatrix(mt, math.matrix.rotationY(lr[1]));
+    mt = math.matrix.transformMatrix(mt, math.matrix.rotationZ(lr[2]));
+    var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.rotationX(lr[0]));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationY(lr[1]));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(-lr[1]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(lr[2]));
-    self.light_m = m;
-    const forward: math.vector.vec4 = .{ 0, 1, 0, 0 };
+    self.light_m = mt;
+    const forward: math.vector.vec4 = .{ 0, -1, 0, 0 };
     const lights = [_]lighting.Light{
         .{
             .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-            .direction = math.matrix.transformVector(m, forward),
+            .direction = math.vector.mul(-1, math.matrix.transformVector(m, forward)),
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
@@ -275,7 +279,7 @@ fn renderSphere(self: *Textures3D) void {
 }
 
 fn renderWoodBlock(self: *Textures3D) void {
-    const m = math.matrix.translateVec(.{ 0, 5, 2.5 });
+    const m = math.matrix.translateVec(.{ 0, -2.5, 2.5 });
     const block = self.renderParallelepiped(m);
     self.wood_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.wood_tex.?.texture_unit = 1;
