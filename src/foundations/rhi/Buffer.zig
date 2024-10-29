@@ -38,7 +38,7 @@ pub fn init(data: buffer_data, label: [:0]const u8) Buffer {
     c.glCreateBuffers(1, @ptrCast(&name));
 
     var buf: [500]u8 = undefined;
-    const label_text = std.fmt.bufPrintZ(&buf, "buffer_{s}", .{label}) catch @panic("bufsize too small");
+    const label_text = std.fmt.bufPrintZ(&buf, "🐕buffer_{s}", .{label}) catch @panic("bufsize too small");
     c.glObjectLabel(c.GL_BUFFER, name, -1, label_text);
     const data_size: usize = switch (data) {
         .materials => @sizeOf(lighting.Material),

@@ -191,19 +191,19 @@ pub fn attachAndLinkAll(self: Shader, allocator: std.mem.Allocator, shaders: []c
         const shader = c.glCreateShader(shaders[i].shader_type);
         var buf: [500]u8 = undefined;
         const label_text = switch (shaders[i].shader_type) {
-            c.GL_VERTEX_SHADER => std.fmt.bufPrintZ(&buf, "vertex_shader_{s}", .{
+            c.GL_VERTEX_SHADER => std.fmt.bufPrintZ(&buf, "🟧vertex_shader_{s}", .{
                 label,
             }) catch @panic("bufsize too small"),
-            c.GL_FRAGMENT_SHADER => std.fmt.bufPrintZ(&buf, "fragment_shader_{s}", .{
+            c.GL_FRAGMENT_SHADER => std.fmt.bufPrintZ(&buf, "🟨fragment_shader_{s}", .{
                 label,
             }) catch @panic("bufsize too small"),
-            c.GL_GEOMETRY_SHADER => std.fmt.bufPrintZ(&buf, "geometry_shader_{s}", .{
+            c.GL_GEOMETRY_SHADER => std.fmt.bufPrintZ(&buf, "🟩geometry_shader_{s}", .{
                 label,
             }) catch @panic("bufsize too small"),
-            c.GL_TESS_EVALUATION_SHADER => std.fmt.bufPrintZ(&buf, "tes_shader_{s}", .{
+            c.GL_TESS_EVALUATION_SHADER => std.fmt.bufPrintZ(&buf, "🟪tes_shader_{s}", .{
                 label,
             }) catch @panic("bufsize too small"),
-            c.GL_TESS_CONTROL_SHADER => std.fmt.bufPrintZ(&buf, "tcs_shader_{s}", .{
+            c.GL_TESS_CONTROL_SHADER => std.fmt.bufPrintZ(&buf, "🟫tcs_shader_{s}", .{
                 label,
             }) catch @panic("bufsize too small"),
             else => std.fmt.bufPrintZ(&buf, "shader_{s}", .{

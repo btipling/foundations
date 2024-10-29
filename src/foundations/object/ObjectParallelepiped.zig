@@ -40,7 +40,7 @@ fn initParallelepiped(
     var d = data(cubemap);
 
     const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data, label);
-    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
+    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,

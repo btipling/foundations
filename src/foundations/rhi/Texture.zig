@@ -43,7 +43,7 @@ pub fn setupShadow(self: *Texture, width: usize, height: usize, label: [:0]const
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
     var buf: [500]u8 = undefined;
-    const label_text = std.fmt.bufPrintZ(&buf, "shadow_texture_{s}", .{label}) catch @panic("bufsize too small");
+    const label_text = std.fmt.bufPrintZ(&buf, "👤shadow_texture_{s}", .{label}) catch @panic("bufsize too small");
     c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
     c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32, @intCast(width), @intCast(height));
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
@@ -77,7 +77,7 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
     var buf: [500]u8 = undefined;
-    const label_text = std.fmt.bufPrintZ(&buf, "texture_{s}", .{label}) catch @panic("bufsize too small");
+    const label_text = std.fmt.bufPrintZ(&buf, "🌮texture_{s}", .{label}) catch @panic("bufsize too small");
     c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, self.wrap_s);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, self.wrap_t);
@@ -148,7 +148,7 @@ pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uni
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_CUBE_MAP, 1, @ptrCast(&name));
     var buf: [500]u8 = undefined;
-    const label_text = std.fmt.bufPrintZ(&buf, "cubemap_{s}", .{label}) catch @panic("bufsize too small");
+    const label_text = std.fmt.bufPrintZ(&buf, "🗺️cubemap_{s}", .{label}) catch @panic("bufsize too small");
     c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
@@ -235,7 +235,9 @@ pub fn setup3D(
     const data = t3d.data;
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_3D, 1, @ptrCast(&name));
-    c.glObjectLabel(c.GL_TEXTURE, name, -1, label);
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "🧱3d_texture_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, c.GL_CLAMP_TO_EDGE);

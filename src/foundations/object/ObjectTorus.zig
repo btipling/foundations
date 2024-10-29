@@ -18,7 +18,7 @@ pub fn init(
     var d = data();
 
     const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data, label);
-    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
+    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,

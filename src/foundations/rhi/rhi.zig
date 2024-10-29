@@ -71,7 +71,9 @@ pub fn beginFrame() void {
 
 pub fn createProgram(label: [:0]const u8) u32 {
     const p = c.glCreateProgram();
-    c.glObjectLabel(c.GL_PROGRAM, p, -1, label);
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "💾program_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_PROGRAM, p, -1, label_text);
     return @intCast(p);
 }
 
@@ -105,7 +107,7 @@ pub fn attachBuffer(
     const bind_index: usize = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
     var buf: [500]u8 = undefined;
-    var label_text = std.fmt.bufPrintZ(&buf, "a_buffer_{s}", .{label}) catch @panic("bufsize too small");
+    var label_text = std.fmt.bufPrintZ(&buf, "🐩a_buffer_{s}", .{label}) catch @panic("bufsize too small");
     c.glObjectLabel(c.GL_BUFFER, buffer, -1, label_text);
 
     const data_size = @sizeOf(attributeData);
@@ -114,8 +116,8 @@ pub fn attachBuffer(
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
-    label_text = std.fmt.bufPrintZ(&buf, "vao_{s}", .{label}) catch @panic("bufsize too small");
-    c.glObjectLabel(c.GL_VERTEX_ARRAY, buffer, -1, label_text);
+    label_text = std.fmt.bufPrintZ(&buf, "🟦vao_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_VERTEX_ARRAY, vao, -1, label_text);
     c.glVertexArrayVertexBuffer(vao, bind_index, buffer, 0, @intCast(data_size));
     defineVertexData(vao, bind_index);
 
@@ -136,7 +138,9 @@ pub fn attachInstancedBuffer(
     const vertex_bind_index: usize = 0;
     const instance_bind_index: usize = 1;
     c.glCreateBuffers(1, @ptrCast(&buffer));
-    c.glObjectLabel(c.GL_BUFFER, buffer, -1, label);
+    var buf: [500]u8 = undefined;
+    var label_text = std.fmt.bufPrintZ(&buf, "🐶a_buffer_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_BUFFER, buffer, -1, label_text);
 
     const vertex_data_stride = @sizeOf(attributeData);
     const instance_data_stride = @sizeOf(instanceData);
@@ -148,6 +152,8 @@ pub fn attachInstancedBuffer(
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
+    label_text = std.fmt.bufPrintZ(&buf, "🟦vao_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_VERTEX_ARRAY, vao, -1, label_text);
     c.glVertexArrayVertexBuffer(vao, vertex_bind_index, buffer, 0, @intCast(vertex_data_stride));
     c.glVertexArrayVertexBuffer(vao, instance_bind_index, buffer, @intCast(vertex_data_size), @intCast(instance_data_stride));
     defineVertexData(vao, vertex_bind_index);
@@ -192,9 +198,12 @@ pub fn updateNamedBuffer(name: u32, size: usize, draw_hint: c.GLenum, data: []co
     c.glNamedBufferData(name, @intCast(size), data.ptr, draw_hint);
 }
 
-pub fn initEBO(indices: []const u32, vao: u32) u32 {
+pub fn initEBO(indices: []const u32, vao: u32, label: [:0]const u8) u32 {
     var ebo: u32 = undefined;
     c.glCreateBuffers(1, @ptrCast(&ebo));
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "🌯ebo_buffer_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_BUFFER, ebo, -1, label_text);
 
     const size = @as(isize, @intCast(indices.len * @sizeOf(u32)));
     const indicesptr: *const anyopaque = indices.ptr;

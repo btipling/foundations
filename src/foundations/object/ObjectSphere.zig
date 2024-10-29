@@ -29,7 +29,7 @@ pub fn initWithPrecision(
     data(&attribute_data, &indices, precision);
 
     const vao_buf = rhi.attachInstancedBuffer(attribute_data[0..num_vertices], instance_data, label);
-    const ebo = rhi.initEBO(@ptrCast(indices[0..num_indices]), vao_buf.vao);
+    const ebo = rhi.initEBO(@ptrCast(indices[0..num_indices]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,

@@ -87,7 +87,7 @@ pub fn initInstanced(
         };
     }
     const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data, label);
-    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao);
+    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,

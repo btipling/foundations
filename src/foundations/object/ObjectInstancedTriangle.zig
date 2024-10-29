@@ -32,7 +32,7 @@ pub fn init(
 
     const indices: [3]u32 = .{ 0, 1, 2 };
     const vao_buf = rhi.attachInstancedBuffer(attribute_data[0..], instance_data, label);
-    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao);
+    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,
