@@ -436,7 +436,7 @@ pub fn renderCubemap(self: *Particles) void {
         } else |_| {
             std.debug.print("failed to load textures\n", .{});
         }
-        bt.setupCubemap(images, prog, "f_cubemap") catch {
+        bt.setupCubemap(images, prog, "f_cubemap", "shadowmap_cubemap") catch {
             self.cubemap_texture = null;
         };
     }

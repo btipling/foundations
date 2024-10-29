@@ -250,7 +250,7 @@ pub fn renderCubemap(self: *SurfaceDetail) void {
         } else |_| {
             std.debug.print("failed to load textures\n", .{});
         }
-        bt.setupCubemap(images, prog, "f_cubemap") catch {
+        bt.setupCubemap(images, prog, "f_cubemap", "surface_detail_cubemap") catch {
             self.cubemap_texture = null;
         };
     }
@@ -303,12 +303,22 @@ pub fn renderMoon(self: *SurfaceDetail) void {
         ),
     };
     if (self.moon_normal_map) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\moonNORMAL.jpg") catch null, prog, "f_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\moonNORMAL.jpg") catch null,
+            prog,
+            "f_samp",
+            "moon_normal",
+        ) catch {
             self.moon_normal_map = null;
         };
     }
     if (self.moon_texture) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\moonbump4kRGB.jpg") catch null, prog, "f_samp_1") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\moonbump4kRGB.jpg") catch null,
+            prog,
+            "f_samp_1",
+            "moon_bump",
+        ) catch {
             self.moon_texture = null;
         };
     }
@@ -372,17 +382,32 @@ pub fn renderEarth(self: *SurfaceDetail, vert: []u8, frag: []u8) void {
         ),
     };
     if (self.earth_normal_map) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\earthspec1kNORMAL.jpg") catch null, prog, "f_samp_2") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\earthspec1kNORMAL.jpg") catch null,
+            prog,
+            "f_samp_2",
+            "earth_normal",
+        ) catch {
             self.earth_normal_map = null;
         };
     }
     if (self.earth_texture) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_samp_3") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null,
+            prog,
+            "f_samp_3",
+            "earth_height",
+        ) catch {
             self.earth_texture = null;
         };
     }
     if (self.earth_height_map) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\earthspec1kNEG.jpg") catch null, prog, "f_earth_heightmap") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\surface_details\\earthspec1kNEG.jpg") catch null,
+            prog,
+            "f_earth_heightmap",
+            "earth_neg",
+        ) catch {
             self.earth_height_map = null;
         };
     }

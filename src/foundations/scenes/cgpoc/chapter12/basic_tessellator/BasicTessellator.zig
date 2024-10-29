@@ -172,7 +172,12 @@ pub fn renderSurface(self: *BasicTessellator) void {
     s.attachAndLinkAll(self.allocator, shaders[0..]);
 
     if (self.surface_t) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_tiles.jpg") catch null, prog, "f_samp_2") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_tiles.jpg") catch null,
+            prog,
+            "f_samp_2",
+            "tiles",
+        ) catch {
             self.surface_t = null;
         };
     }

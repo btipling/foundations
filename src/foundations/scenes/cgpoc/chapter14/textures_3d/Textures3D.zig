@@ -270,7 +270,15 @@ fn renderMarbledBlock(self: *Textures3D) void {
     self.marbled_tex.?.texture_unit = 1;
     if (self.marbled_tex) |*t| {
         const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\marble.vol") catch null;
-        t.setup3D(data, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+        t.setup3D(
+            data,
+            tex_dims,
+            tex_dims,
+            tex_dims,
+            block.mesh.program,
+            "f_tex_samp",
+            "marbel_3d",
+        ) catch {
             self.marbled_tex = null;
         };
     }
@@ -285,7 +293,15 @@ fn renderStripedBlock(self: *Textures3D) void {
     self.striped_tex.?.texture_unit = 1;
     if (self.striped_tex) |*t| {
         const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\striped.vol") catch null;
-        t.setup3D(data, tex_dims, tex_dims, tex_dims, block.mesh.program, "f_tex_samp") catch {
+        t.setup3D(
+            data,
+            tex_dims,
+            tex_dims,
+            tex_dims,
+            block.mesh.program,
+            "f_tex_samp",
+            "striped_3d",
+        ) catch {
             self.striped_tex = null;
         };
     }
@@ -386,12 +402,22 @@ fn renderGrid(self: *Textures3D) void {
     grid_obj.parallelepiped.mesh.linear_colorspace = true;
 
     if (self.grid_t_tex) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\wispy-grass-meadow_albedo.png") catch null, prog, "f_grid_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\grid\\wispy-grass-meadow_albedo.png") catch null,
+            prog,
+            "f_grid_samp",
+            "grass",
+        ) catch {
             self.grid_t_tex = null;
         };
     }
     if (self.grid_t_nor) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\wispy-grass-meadow_normal-ogl.png") catch null, prog, "f_normal_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\grid\\wispy-grass-meadow_normal-ogl.png") catch null,
+            prog,
+            "f_normal_samp",
+            "grass_normals",
+        ) catch {
             self.grid_t_nor = null;
         };
     }

@@ -820,6 +820,7 @@ fn genShadowmapTexture(self: *Shadows, i: usize) void {
     shadow_texture.setupShadow(
         self.ctx.cfg.fb_width,
         self.ctx.cfg.fb_height,
+        "shadowmap",
     ) catch @panic("unable to setup shadow texture");
     shadow_texture.texture_unit = @intCast(4 + i);
     self.shadowmaps[i] = shadow_texture;

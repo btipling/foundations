@@ -310,7 +310,12 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
         ),
     };
     if (self.sun_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\sunmap.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\sunmap.jpg") catch null,
+            prog,
+            "f_samp",
+            "sun",
+        ) catch {
             std.debug.print("didn't load sun\n", .{});
             self.sun_texture = null;
         };
@@ -360,7 +365,12 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
         ),
     };
     if (self.earth_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null,
+            prog,
+            "f_samp",
+            "earth",
+        ) catch {
             self.earth_texture = null;
         };
     }
@@ -409,7 +419,12 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
         ),
     };
     if (self.moon_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\moon.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\moon.jpg") catch null,
+            prog,
+            "f_samp",
+            "moon",
+        ) catch {
             self.moon_texture = null;
         };
     }
@@ -475,7 +490,12 @@ pub fn renderCubemap(self: *SimpleSolarSystem) void {
         } else |_| {
             std.debug.print("failed to load textures\n", .{});
         }
-        bt.setupCubemap(images, prog, "f_cubemap") catch {
+        bt.setupCubemap(
+            images,
+            prog,
+            "f_cubemap",
+            "milkeyway",
+        ) catch {
             self.cubemap_texture = null;
         };
     }
@@ -527,7 +547,12 @@ pub fn renderShuttle(self: *SimpleSolarSystem) void {
         i_datas[0] = i_data;
     }
     if (self.shuttle_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null,
+            prog,
+            "f_samp",
+            "shuttle",
+        ) catch {
             self.shuttle_texture = null;
         };
     }

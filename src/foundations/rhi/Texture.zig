@@ -39,9 +39,10 @@ pub fn deinit(self: Texture) void {
     }
 }
 
-pub fn setupShadow(self: *Texture, width: usize, height: usize) TextureError!void {
+pub fn setupShadow(self: *Texture, width: usize, height: usize, label: [:0]const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label);
     c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32, @intCast(width), @intCast(height));
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
@@ -70,9 +71,10 @@ pub fn setupShadow(self: *Texture, width: usize, height: usize) TextureError!voi
     return;
 }
 
-pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: []const u8) TextureError!void {
+pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: []const u8, label: [:0]const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, self.wrap_s);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, self.wrap_t);
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR_MIPMAP_LINEAR);
@@ -138,9 +140,10 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
     return;
 }
 
-pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uniform_name: []const u8) TextureError!void {
+pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uniform_name: []const u8, label: [:0]const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_CUBE_MAP, 1, @ptrCast(&name));
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, c.GL_CLAMP_TO_EDGE);
@@ -220,11 +223,13 @@ pub fn setup3D(
     depth: u32,
     program: u32,
     uniform_name: []const u8,
+    label: [:0]const u8,
 ) TextureError!void {
     const t3d = t3d_opt orelse return;
     const data = t3d.data;
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_3D, 1, @ptrCast(&name));
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, c.GL_CLAMP_TO_EDGE);

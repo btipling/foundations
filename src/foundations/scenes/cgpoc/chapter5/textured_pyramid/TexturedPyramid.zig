@@ -121,12 +121,22 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
         ),
     };
     if (self.brick_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null,
+            prog,
+            "f_samp",
+            "brick",
+        ) catch {
             self.brick_texture = null;
         };
     }
     if (self.ice_texture) |*it| {
-        it.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\ice.jpg") catch null, prog, "f_samp") catch {
+        it.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\luna\\ice.jpg") catch null,
+            prog,
+            "f_samp",
+            "ice",
+        ) catch {
             self.ice_texture = null;
         };
     }

@@ -257,17 +257,32 @@ pub fn renderTerrain(self: *TerrainTessellator) void {
     s.attachAndLinkAll(self.allocator, shaders[0..]);
 
     if (self.terrain_t_tex) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_map.jpg") catch null, prog, "f_terrain_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_map.jpg") catch null,
+            prog,
+            "f_terrain_samp",
+            "moon_height",
+        ) catch {
             self.terrain_t_tex = null;
         };
     }
     if (self.terrain_t_map) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_bump.jpg") catch null, prog, "f_height_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_bump.jpg") catch null,
+            prog,
+            "f_height_samp",
+            "moon_bump",
+        ) catch {
             self.terrain_t_map = null;
         };
     }
     if (self.terrain_t_nor) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_normal.jpg") catch null, prog, "f_normal_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_normal.jpg") catch null,
+            prog,
+            "f_normal_samp",
+            "moon_normal",
+        ) catch {
             self.terrain_t_nor = null;
         };
     }

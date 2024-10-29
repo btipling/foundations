@@ -103,6 +103,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     shadow_texture.setupShadow(
         ctx.cfg.fb_width,
         ctx.cfg.fb_height,
+        "shadow_map_dolphin",
     ) catch @panic("unable to setup shadow texture");
     shadow_texture.texture_unit = 4;
 
@@ -291,7 +292,12 @@ pub fn renderDolphin(self: *Dolphin) void {
         i_datas[0] = i_data;
     }
     if (self.dolphin_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\Dolphin\\Dolphin_HighPolyUV.png") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\Dolphin\\Dolphin_HighPolyUV.png") catch null,
+            prog,
+            "f_samp",
+            "highpoly_dolphin",
+        ) catch {
             self.dolphin_texture = null;
         };
     }
@@ -345,7 +351,7 @@ pub fn renderParallepiped(self: *Dolphin) void {
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
     parallelepiped.parallelepiped.mesh.shadowmap_program = self.shadowmap_program;
     if (self.ground_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\grass.jpg") catch null, prog, "f_samp_1") catch {
+        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\grass.jpg") catch null, prog, "f_samp_1", "grass") catch {
             self.ground_texture = null;
         };
         bt.texture_unit = 1;

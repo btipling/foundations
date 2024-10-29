@@ -92,6 +92,7 @@ fn genShadowmapTexture(self: *DirectionalShadowPass) void {
     shadow_texture.setupShadow(
         self.ctx.cfg.fb_width,
         self.ctx.cfg.fb_height,
+        "directional_shadowmap",
     ) catch @panic("unable to setup shadow texture");
     shadow_texture.texture_unit = self.texture_unit;
     self.shadowmap = shadow_texture;

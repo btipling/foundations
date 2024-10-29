@@ -107,7 +107,12 @@ pub fn renderShuttle(self: *Shuttle) void {
         i_datas[0] = i_data;
     }
     if (self.shuttle_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null,
+            prog,
+            "f_samp",
+            "shuttle",
+        ) catch {
             self.shuttle_texture = null;
         };
     }

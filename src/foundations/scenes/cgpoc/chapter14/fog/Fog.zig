@@ -219,17 +219,32 @@ fn renderGrid(self: *Fog) void {
     grid_obj.obj.mesh.linear_colorspace = true;
 
     if (self.grid_t_tex) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-albedo.png") catch null, prog, "f_grid_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-albedo.png") catch null,
+            prog,
+            "f_grid_samp",
+            "rock_ground",
+        ) catch {
             self.grid_t_tex = null;
         };
     }
     if (self.grid_t_hig) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-height.png") catch null, prog, "f_height_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-height.png") catch null,
+            prog,
+            "f_height_samp",
+            "rock_height",
+        ) catch {
             self.grid_t_hig = null;
         };
     }
     if (self.grid_t_nor) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-normal-ogl.png") catch null, prog, "f_normal_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\grid\\rough-igneous-rock-normal-ogl.png") catch null,
+            prog,
+            "f_normal_samp",
+            "rock_normal",
+        ) catch {
             self.grid_t_nor = null;
         };
     }
