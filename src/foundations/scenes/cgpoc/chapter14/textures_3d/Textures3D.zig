@@ -12,6 +12,9 @@ grid_t_nor: ?rhi.Texture = null,
 
 sphere: object.object = .{ .norender = .{} },
 sky_tex: ?rhi.Texture = null,
+sky_rot: ?rhi.Uniform = null,
+sky_dep: ?rhi.Uniform = null,
+sky_depth: f32 = 0.0,
 
 striped_block: object.object = .{ .norender = .{} },
 striped_tex: ?rhi.Texture = null,
@@ -200,6 +203,13 @@ pub fn draw(self: *Textures3D, dt: f64) void {
         if (self.sky_tex) |t| {
             t.bind();
         }
+        const dtt = dt * 0.1;
+        self.sky_rot.?.setUniformMatrix(math.matrix.rotationX(@floatCast(dtt)));
+        self.sky_depth += @floatCast(dtt * 0.00003);
+        if (self.sky_depth >= 0.99) {
+            self.sky_depth = 0.01;
+        }
+        self.sky_dep.?.setUniform1f(self.sky_depth);
         rhi.drawHorizon(self.sphere);
     }
     {
@@ -301,6 +311,12 @@ fn renderSphere(self: *Textures3D) void {
             self.sky_tex = null;
         };
     }
+    const sr = rhi.Uniform.init(prog, "f_sky_rot") catch @panic("no uniform");
+    sr.setUniformMatrix(math.matrix.identity());
+    self.sky_rot = sr;
+    const sd = rhi.Uniform.init(prog, "f_sky_dep") catch @panic("no uniform");
+    sd.setUniform1f(0);
+    self.sky_dep = sd;
     self.sphere = sphere;
 }
 

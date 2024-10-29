@@ -18,6 +18,8 @@ layout (location = 9) in vec4 f_i_color;
 out vec3 fo_light;
 out vec3 fo_pos;
 
+uniform mat4 f_sky_rot;
+uniform float f_sky_dep;
 
 void main()
 {
@@ -35,7 +37,11 @@ void main()
     );
     vec4 f_main_pos = f_cubemap_t * f_transform * vec4(f_position.xyz, 1.0);
     vec4 f_pos = vec4(f_position.xyz, 1.0);
-    fo_pos = f_pos.xyz;
+
+    fo_pos = (f_sky_rot * f_pos).xyz;
+    fo_pos.y = f_sky_dep;
+
+
     fo_normal = f_normal;
     fo_vert = vec4(f_position.xyz, 1.0).xyz;
     gl_Position = f_mvp *  f_main_pos;
