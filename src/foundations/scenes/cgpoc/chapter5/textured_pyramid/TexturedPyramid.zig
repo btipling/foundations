@@ -87,7 +87,7 @@ pub fn draw(self: *TexturedPyramid, dt: f64) void {
 pub fn updateCamera(_: *TexturedPyramid) void {}
 
 pub fn renderParallepiped(self: *TexturedPyramid) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube");
     self.brick_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.ice_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
@@ -117,7 +117,7 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
         .pyramid = object.Pyramid.init(
             prog,
             i_datas[0..],
-            false,
+            "cube",
         ),
     };
     if (self.brick_texture) |*bt| {
@@ -134,7 +134,7 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
 }
 
 pub fn renderBG(self: *TexturedPyramid) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("background");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -162,6 +162,7 @@ pub fn renderBG(self: *TexturedPyramid) void {
         .instanced_triangle = object.InstancedTriangle.init(
             prog,
             i_datas[0..],
+            "background",
         ),
     };
     bg.instanced_triangle.mesh.cull = false;

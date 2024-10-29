@@ -45,7 +45,7 @@ pub fn program(self: *Grid) u32 {
 }
 
 fn renderGrid(self: *Grid) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("grid");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -108,7 +108,7 @@ fn renderGrid(self: *Grid) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            false,
+            "grid",
         ),
     };
     self.grid = grid;

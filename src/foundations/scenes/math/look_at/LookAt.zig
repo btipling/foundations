@@ -85,7 +85,7 @@ pub fn updateCamera(self: *LookAt) void {
 }
 
 pub fn renderCube(self: *LookAt) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -99,6 +99,7 @@ pub fn renderCube(self: *LookAt) void {
             prog,
             object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
+            "cube",
         ),
     };
     var m = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(2.0, 0.0, 0.0));
@@ -119,7 +120,7 @@ pub fn renderCube(self: *LookAt) void {
 }
 
 pub fn renderCamera(self: *LookAt) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("camera");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -133,6 +134,7 @@ pub fn renderCamera(self: *LookAt) void {
             prog,
             object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
+            "camera",
         ),
     };
     const m = math.matrix.transformMatrix(math.matrix.identity(), self.view_camera.camera_matrix);

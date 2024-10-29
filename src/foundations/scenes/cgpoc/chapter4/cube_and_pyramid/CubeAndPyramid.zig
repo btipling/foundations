@@ -66,7 +66,7 @@ pub fn updatePyramidTransform(_: *CubeAndPyramid, prog: u32) void {
 }
 
 pub fn renderPyramid(self: *CubeAndPyramid) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("pyramid");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -93,7 +93,7 @@ pub fn renderPyramid(self: *CubeAndPyramid) void {
         .pyramid = object.Pyramid.init(
             prog,
             i_datas[0..],
-            false,
+            "pyramid",
         ),
     };
     self.updatePyramidTransform(prog);
@@ -106,7 +106,7 @@ pub fn updateParallepipedTransform(_: *CubeAndPyramid, prog: u32) void {
 }
 
 pub fn renderParallepiped(self: *CubeAndPyramid) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -133,7 +133,7 @@ pub fn renderParallepiped(self: *CubeAndPyramid) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            false,
+            "cube",
         ),
     };
     self.updateParallepipedTransform(prog);

@@ -49,7 +49,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *CubeAnimated {
     const p = allocator.create(CubeAnimated) catch @panic("OOM");
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube_animated");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -63,6 +63,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *CubeAnimate
             prog,
             object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
+            "cube",
         ),
     };
     p.* = .{

@@ -7,6 +7,7 @@ const Strip = @This();
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
+    label: [:0]const u8,
 ) Strip {
     // zig fmt: off
     const positions: [3][3]f32 = .{
@@ -26,7 +27,7 @@ pub fn init(
             .normal = .{ 1, 0, 0 },
         };
     }
-    const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data);
+    const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data, label);
     const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{

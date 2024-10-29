@@ -18,28 +18,28 @@ pub const pp: math.geometry.Parallelepiped = .{
 pub fn init(
     program: u32,
     instance_data: []const rhi.instanceData,
-    blend: bool,
+    label: [:0]const u8,
 ) Parallelepied {
-    return initParallelepiped(program, instance_data, blend, false);
+    return initParallelepiped(program, instance_data, false, label);
 }
 
 pub fn initCubemap(
     program: u32,
     instance_data: []const rhi.instanceData,
-    blend: bool,
+    label: [:0]const u8,
 ) Parallelepied {
-    return initParallelepiped(program, instance_data, blend, true);
+    return initParallelepiped(program, instance_data, true, label);
 }
 
 fn initParallelepiped(
     program: u32,
     instance_data: []const rhi.instanceData,
-    blend: bool,
     cubemap: bool,
+    label: [:0]const u8,
 ) Parallelepied {
     var d = data(cubemap);
 
-    const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data);
+    const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data, label);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
@@ -55,7 +55,6 @@ fn initParallelepiped(
                     .format = c.GL_UNSIGNED_INT,
                 },
             },
-            .blend = blend,
         },
         .vertex_data_size = vao_buf.vertex_data_size,
         .instance_data_stride = vao_buf.instance_data_stride,

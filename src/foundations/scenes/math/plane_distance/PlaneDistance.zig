@@ -52,7 +52,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistan
     errdefer pointer.deinit();
     const ui_state: PlaneDistanceUI = .{};
 
-    const reflection_program = rhi.createProgram();
+    const reflection_program = rhi.createProgram("reflection");
     {
         var s: rhi.Shader = .{
             .program = reflection_program,
@@ -257,7 +257,7 @@ pub fn updateReflection(self: *PlaneDistance) void {
 pub fn updateCamera(_: *PlaneDistance) void {}
 
 pub fn renderPlane(self: *PlaneDistance) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("plane");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -282,7 +282,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            true,
+            "plane",
         ),
     };
     self.plane_visualization = plane_vis;
@@ -291,7 +291,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
 }
 
 pub fn renderSphere(self: *PlaneDistance) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sphere");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -336,14 +336,14 @@ pub fn renderSphere(self: *PlaneDistance) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "sphere",
         ),
     };
     self.sphere = sphere;
 }
 
 pub fn renderParallepiped(self: *PlaneDistance) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -367,7 +367,7 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            false,
+            "cube",
         ),
     };
     self.updateCubeTransform(prog);
@@ -446,6 +446,7 @@ fn triangleFromCubeSurfacePartial(self: *PlaneDistance, program: u32, vindex0: u
                 .{ 1, 0, 1, 1 },
             },
             .{ n0, n1, n2 },
+            "reflected_cube_part",
         ),
     };
 }

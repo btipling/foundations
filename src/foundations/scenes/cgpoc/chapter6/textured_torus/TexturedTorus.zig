@@ -97,7 +97,7 @@ pub fn deleteTorus(self: *TexturedTorus) void {
 }
 
 pub fn renderTorus(self: *TexturedTorus) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("torus");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -126,7 +126,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
         .torus = object.Torus.init(
             prog,
             i_datas[0..],
-            false,
+            "torus",
         ),
     };
     self.torus = torus;
@@ -154,7 +154,7 @@ pub fn deleteCubemap(self: *TexturedTorus) void {
 }
 
 pub fn renderCubemap(self: *TexturedTorus) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cubemap");
     self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -183,7 +183,7 @@ pub fn renderCubemap(self: *TexturedTorus) void {
         .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
-            false,
+            "cubemap",
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;

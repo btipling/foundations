@@ -19,7 +19,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 }
 
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Point {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("point");
     const vao = rhi.createVAO();
     {
         var s: rhi.Shader = .{

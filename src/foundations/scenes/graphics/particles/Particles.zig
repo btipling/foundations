@@ -285,7 +285,7 @@ pub fn deleteParticles(self: *Particles) void {
 }
 
 pub fn renderParticles(self: *Particles) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("particles");
 
     const particles_vert = Compiler.runWithBytes(self.allocator, @embedFile("particles_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(particles_vert);
@@ -320,7 +320,7 @@ pub fn renderParticles(self: *Particles) void {
         i_datas[0] = i_data;
     }
     const points: object.object = .{
-        .points = object.Points.init(prog, max_num_particles),
+        .points = object.Points.init(prog, max_num_particles, "particles"),
     };
     var pd: rhi.Uniform = rhi.Uniform.init(prog, "f_particles_data") catch @panic("uniform failed");
     pd.setUniform1i(self.particles_count);
@@ -336,7 +336,7 @@ pub fn deleteSphere(self: *Particles) void {
 }
 
 pub fn renderSphere(self: *Particles) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("party_ball");
 
     const particles_vert = Compiler.runWithBytes(self.allocator, @embedFile("sphere_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(particles_vert);
@@ -366,7 +366,7 @@ pub fn renderSphere(self: *Particles) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "partyball",
         ),
     };
     var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
@@ -386,7 +386,7 @@ pub fn deleteCubemap(self: *Particles) void {
 }
 
 pub fn renderCubemap(self: *Particles) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube_map");
     self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -415,7 +415,7 @@ pub fn renderCubemap(self: *Particles) void {
         .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
-            false,
+            "cubemap",
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;

@@ -9,6 +9,7 @@ const num_indices: usize = (num_vertices - 2) * 3;
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
+    label: [:0]const u8,
 ) Circle {
     const d = data();
 
@@ -21,7 +22,7 @@ pub fn init(
             .normal = .{ 1, 0, 0 },
         };
     }
-    const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data);
+    const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data, label);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{

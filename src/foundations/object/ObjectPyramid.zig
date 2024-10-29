@@ -17,11 +17,11 @@ pub const pp: math.geometry.Pyramid = .{
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
-    blend: bool,
+    label: [:0]const u8,
 ) Pyramid {
     var d = data();
 
-    const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data);
+    const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data, label);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
@@ -37,7 +37,6 @@ pub fn init(
                     .format = c.GL_UNSIGNED_INT,
                 },
             },
-            .blend = blend,
         },
         .vertex_data_size = vao_buf.vertex_data_size,
         .instance_data_stride = vao_buf.instance_data_stride,

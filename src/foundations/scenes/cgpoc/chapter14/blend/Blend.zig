@@ -172,7 +172,7 @@ fn renderDebugCross(self: *Blend) void {
 }
 
 fn renderSphere(self: *Blend) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sphere");
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("sphere_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
@@ -199,14 +199,14 @@ fn renderSphere(self: *Blend) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "sphere",
         ),
     };
     self.sphere = sphere;
 }
 
 fn renderBobbles(self: *Blend) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("bobble");
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("blend_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
@@ -234,7 +234,7 @@ fn renderBobbles(self: *Blend) void {
         };
     }
 
-    var bobble = .{ .sphere = object.Sphere.init(prog, i_datas[0..], false) };
+    var bobble = .{ .sphere = object.Sphere.init(prog, i_datas[0..], "bobble") };
     bobble.sphere.mesh.blend = true;
     bobble.sphere.mesh.cull = false;
     self.bobble = bobble;

@@ -19,7 +19,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Circle {
         .ctx = ctx,
     };
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cone_animated");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -44,6 +44,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Circle {
         .circle = object.Circle.init(
             prog,
             i_data[0..],
+            "circle",
         ),
     };
     p.program = prog;

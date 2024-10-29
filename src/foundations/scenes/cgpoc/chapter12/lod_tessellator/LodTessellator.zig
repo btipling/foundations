@@ -102,7 +102,7 @@ pub fn deleteTerrain(self: *LodTessellator) void {
 }
 
 pub fn renderTerrain(self: *LodTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("terrain");
     const vao = rhi.createVAO();
 
     self.terrain_t_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;

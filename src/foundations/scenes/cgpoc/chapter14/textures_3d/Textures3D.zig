@@ -230,7 +230,7 @@ fn renderDebugCross(self: *Textures3D) void {
 }
 
 fn renderSphere(self: *Textures3D) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sky_dome");
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("sphere_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
@@ -257,7 +257,7 @@ fn renderSphere(self: *Textures3D) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "skydome",
         ),
     };
     self.sphere = sphere;
@@ -294,7 +294,7 @@ fn renderStripedBlock(self: *Textures3D) void {
 }
 
 fn renderParallelepiped(self: *Textures3D, m: math.matrix) object.Parallelepiped {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("block");
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
     const frag_bindings = [_]usize{1};
@@ -326,7 +326,7 @@ fn renderParallelepiped(self: *Textures3D, m: math.matrix) object.Parallelepiped
         },
     };
 
-    var block = object.Parallelepiped.init(prog, i_datas[0..], false);
+    var block = object.Parallelepiped.init(prog, i_datas[0..], "block");
     block.mesh.linear_colorspace = true;
     return block;
 }
@@ -346,7 +346,7 @@ fn renderGrid(self: *Textures3D) void {
     } else {
         return;
     }
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("ground");
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
     const frag_bindings = [_]usize{ 1, 2, 3 };
@@ -382,7 +382,7 @@ fn renderGrid(self: *Textures3D) void {
         },
     };
 
-    var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], false) };
+    var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "ground") };
     grid_obj.parallelepiped.mesh.linear_colorspace = true;
 
     if (self.grid_t_tex) |*t| {

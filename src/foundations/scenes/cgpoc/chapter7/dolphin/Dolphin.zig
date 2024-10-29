@@ -80,7 +80,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     // Shadow objects
     const shadow_mvp = generateShadowMatrix(light_position, light_dir, ctx);
 
-    const shadowmap_program = rhi.createProgram();
+    const shadowmap_program = rhi.createProgram("shadow_map");
     errdefer c.glDeleteProgram(shadowmap_program);
 
     {
@@ -263,7 +263,7 @@ pub fn renderDolphin(self: *Dolphin) void {
         return;
     }
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("dolphin");
     self.dolphin_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -295,7 +295,7 @@ pub fn renderDolphin(self: *Dolphin) void {
             self.dolphin_texture = null;
         };
     }
-    var dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..]);
+    var dolphin_object: object.object = dolphin_model.toObject(prog, i_datas[0..], "dolphin");
     dolphin_object.obj.mesh.shadowmap_program = self.shadowmap_program;
     self.dolphin = dolphin_object;
 }
@@ -308,7 +308,7 @@ pub fn deleteParallepiped(self: *Dolphin) void {
 }
 
 pub fn renderParallepiped(self: *Dolphin) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("ground");
     self.ground_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -339,7 +339,7 @@ pub fn renderParallepiped(self: *Dolphin) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            false,
+            "ground",
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;

@@ -11,16 +11,16 @@ const max_num_indices = max_precision * max_precision * 6;
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
-    wireframe: bool,
+    label: [:0]const u8,
 ) Sphere {
-    return initWithPrecision(program, instance_data, wireframe, default_precision);
+    return initWithPrecision(program, instance_data, default_precision, label);
 }
 
 pub fn initWithPrecision(
     program: u32,
     instance_data: []rhi.instanceData,
-    wireframe: bool,
     precision: usize,
+    label: [:0]const u8,
 ) Sphere {
     const num_vertices = (precision + 1) * (precision + 1);
     const num_indices = precision * precision * 6;
@@ -28,14 +28,13 @@ pub fn initWithPrecision(
     var indices: [max_num_indices]u32 = undefined;
     data(&attribute_data, &indices, precision);
 
-    const vao_buf = rhi.attachInstancedBuffer(attribute_data[0..num_vertices], instance_data);
+    const vao_buf = rhi.attachInstancedBuffer(attribute_data[0..num_vertices], instance_data, label);
     const ebo = rhi.initEBO(@ptrCast(indices[0..num_indices]), vao_buf.vao);
     return .{
         .mesh = .{
             .program = program,
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
-            .wire_mesh = wireframe,
             .instance_type = .{
                 .instanced = .{
                     .index_count = num_indices,

@@ -40,7 +40,7 @@ pub fn programs(self: *Pointer) [2]u32 {
 }
 
 pub fn renderCylinder(self: *Pointer) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("pointer_cylinder");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -66,14 +66,14 @@ pub fn renderCylinder(self: *Pointer) void {
         .cylinder = object.Cylinder.init(
             prog,
             i_datas[0..],
-            false,
+            "pointer_cylinder",
         ),
     };
     self.cylinder = cylinder;
 }
 
 pub fn renderCone(self: *Pointer) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("pointer_cone");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -99,6 +99,7 @@ pub fn renderCone(self: *Pointer) void {
         .cone = object.Cone.init(
             prog,
             i_datas[0..],
+            "pointer_cone",
         ),
     };
     self.cone = cone;

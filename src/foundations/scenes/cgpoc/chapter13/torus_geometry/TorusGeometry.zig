@@ -186,7 +186,7 @@ pub fn deleteTorus(_: *TorusGeometry, obj: object.object) void {
 }
 
 pub fn renderTorus(self: *TorusGeometry, geo_shader: []const u8, m: math.matrix) object.object {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("torus");
 
     const torus_vert = Compiler.runWithBytes(self.allocator, @embedFile("torus_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(torus_vert);
@@ -223,7 +223,7 @@ pub fn renderTorus(self: *TorusGeometry, geo_shader: []const u8, m: math.matrix)
         .torus = object.Torus.init(
             prog,
             i_datas[0..],
-            false,
+            "torus",
         ),
     };
     torus.torus.mesh.linear_colorspace = false;

@@ -18,6 +18,7 @@ pub fn init(
         .{ 1, 0, 0, 1 },
         m,
         width,
+        "x_line",
     );
     const y_line = Line.init(
         allocator,
@@ -26,6 +27,7 @@ pub fn init(
         .{ 0, 1, 0, 1 },
         m,
         width,
+        "y_line",
     );
     const z_line = Line.init(
         allocator,
@@ -34,6 +36,7 @@ pub fn init(
         .{ 0, 0, 1, 1 },
         m,
         width,
+        "z_line",
     );
     return .{
         .x_line = x_line,

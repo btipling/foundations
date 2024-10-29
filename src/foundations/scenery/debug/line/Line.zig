@@ -14,8 +14,9 @@ pub fn init(
     color: math.vector.vec4,
     m: math.matrix,
     width: f32,
+    label: [:0]const u8,
 ) Line {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram(label);
     errdefer c.glDeleteProgram(prog);
     {
         var s: rhi.Shader = .{
@@ -35,7 +36,7 @@ pub fn init(
         .position = end,
         .color = color,
     };
-    const vao_buf = rhi.attachBuffer(data[0..]);
+    const vao_buf = rhi.attachBuffer(data[0..], label);
     var lm: rhi.Uniform = rhi.Uniform.init(prog, "f_object_m") catch @panic("uniform failed");
     lm.setUniformMatrix(m);
     return .{

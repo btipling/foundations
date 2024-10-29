@@ -62,7 +62,7 @@ pub fn update(self: *DirectionalShadowPass, light_m: math.matrix) void {
 }
 
 fn setupShadowmaps(self: *DirectionalShadowPass, allocator: std.mem.Allocator) void {
-    self.shadowmap_program = rhi.createProgram();
+    self.shadowmap_program = rhi.createProgram("shadow_pass");
     {
         var s: rhi.Shader = .{
             .program = self.shadowmap_program,

@@ -217,7 +217,7 @@ pub fn deleteQuad(self: *Manager) void {
 }
 
 pub fn initCircle(self: *Manager) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("circle");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -234,6 +234,7 @@ pub fn initCircle(self: *Manager) void {
         .circle = object.Circle.init(
             prog,
             i_datas[0..self.num_points],
+            "circle",
         ),
     };
     self.circle = circle;
@@ -243,7 +244,7 @@ pub fn renderStrips(self: *Manager) void {
     const num_points = self.num_points - self.num_tangents;
     if (num_points < 2) return;
     self.deleteStrip();
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("strips");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -303,6 +304,7 @@ pub fn renderStrips(self: *Manager) void {
         .strip = object.Strip.init(
             prog,
             i_datas[0 .. points_added * 1_000],
+            "line",
         ),
     };
     self.strip = strip;
@@ -311,7 +313,7 @@ pub fn renderStrips(self: *Manager) void {
 pub fn renderQuads(self: *Manager) void {
     if (self.num_tangents < 1) return;
     self.deleteQuad();
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("quads");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -354,6 +356,7 @@ pub fn renderQuads(self: *Manager) void {
         .quad = object.Quad.initInstanced(
             prog,
             i_datas[0..self.num_tangents],
+            "quads",
         ),
     };
     self.quad = quad;

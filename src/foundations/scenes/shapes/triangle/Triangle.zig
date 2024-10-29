@@ -29,7 +29,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Triangle {
     const t = allocator.create(Triangle) catch @panic("OOM");
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("triangle");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -58,7 +58,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Triangle {
             .color = colors[i],
         };
     }
-    const vao_buf = rhi.attachBuffer(data[0..]);
+    const vao_buf = rhi.attachBuffer(data[0..], "triangle");
     t.* = .{
         .program = prog,
         .vao = vao_buf.vao,

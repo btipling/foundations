@@ -69,8 +69,9 @@ pub fn beginFrame() void {
     c.glClearColor(0.023, 0.051, 0.068, 1);
 }
 
-pub fn createProgram() u32 {
+pub fn createProgram(label: [:0]const u8) u32 {
     const p = c.glCreateProgram();
+    c.glObjectLabel(c.GL_PROGRAM, p, -1, label);
     return @intCast(p);
 }
 
@@ -98,10 +99,12 @@ pub const instanceData = struct {
 
 pub fn attachBuffer(
     data: []const attributeData,
+    label: [:0]const u8,
 ) struct { vao: u32, buffer: u32 } {
     var buffer: c.GLuint = 0;
     const bind_index: usize = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
+    c.glObjectLabel(c.GL_BUFFER, buffer, -1, label);
 
     const data_size = @sizeOf(attributeData);
     const size = data.len * data_size;
@@ -118,6 +121,7 @@ pub fn attachBuffer(
 pub fn attachInstancedBuffer(
     vertex_data: []const attributeData,
     instance_data: []const instanceData,
+    label: [:0]const u8,
 ) struct {
     vao: u32,
     buffer: u32,
@@ -128,6 +132,7 @@ pub fn attachInstancedBuffer(
     const vertex_bind_index: usize = 0;
     const instance_bind_index: usize = 1;
     c.glCreateBuffers(1, @ptrCast(&buffer));
+    c.glObjectLabel(c.GL_BUFFER, buffer, -1, label);
 
     const vertex_data_stride = @sizeOf(attributeData);
     const instance_data_stride = @sizeOf(instanceData);

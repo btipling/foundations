@@ -133,7 +133,7 @@ fn renderDebugCross(self: *Fog) void {
 }
 
 fn renderSphere(self: *Fog) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sky_dome");
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("sphere_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
@@ -160,7 +160,7 @@ fn renderSphere(self: *Fog) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "skydome",
         ),
     };
     self.sphere = sphere;
@@ -179,7 +179,7 @@ fn renderGrid(self: *Fog) void {
     } else {
         return;
     }
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("mountains");
 
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
     const frag_bindings = [_]usize{ 2, 4 };
@@ -215,7 +215,7 @@ fn renderGrid(self: *Fog) void {
         .t_column3 = m.columns[3],
         .color = .{ 1, 0, 1, 1 },
     }};
-    var grid_obj: object.object = grid_model.toObject(prog, i_datas[0..]);
+    var grid_obj: object.object = grid_model.toObject(prog, i_datas[0..], "grid");
     grid_obj.obj.mesh.linear_colorspace = true;
 
     if (self.grid_t_tex) |*t| {

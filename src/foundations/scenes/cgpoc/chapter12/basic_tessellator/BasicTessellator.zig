@@ -100,7 +100,7 @@ pub fn deleteGrid(self: *BasicTessellator) void {
 }
 
 pub fn renderGrid(self: *BasicTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("grid");
     const vao = rhi.createVAO();
 
     const grid_vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
@@ -138,7 +138,7 @@ pub fn deleteSurface(self: *BasicTessellator) void {
 }
 
 pub fn renderSurface(self: *BasicTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("surface");
     const vao = rhi.createVAO();
 
     self.surface_t = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;

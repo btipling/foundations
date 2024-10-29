@@ -11,11 +11,11 @@ const num_indices: usize = 6 * num_sides; // because normal
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
-    cull: bool,
+    label: [:0]const u8,
 ) Cylinder {
     var d = data();
 
-    const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data);
+    const vao_buf = rhi.attachInstancedBuffer(d.data[0..], instance_data, label);
     const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{
@@ -31,7 +31,6 @@ pub fn init(
                     .format = c.GL_UNSIGNED_INT,
                 },
             },
-            .cull = cull,
         },
         .vertex_data_size = vao_buf.vertex_data_size,
         .instance_data_stride = vao_buf.instance_data_stride,

@@ -200,7 +200,7 @@ pub fn deleteCubemap(self: *SurfaceDetail) void {
 }
 
 pub fn renderCubemap(self: *SurfaceDetail) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube_map");
     self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -229,7 +229,7 @@ pub fn renderCubemap(self: *SurfaceDetail) void {
         .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
-            false,
+            "cube_map",
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
@@ -265,7 +265,7 @@ pub fn deleteMoon(self: *SurfaceDetail) void {
 }
 
 pub fn renderMoon(self: *SurfaceDetail) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("moon");
     self.moon_normal_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.moon_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.moon_texture.?.texture_unit = 1;
@@ -298,8 +298,8 @@ pub fn renderMoon(self: *SurfaceDetail) void {
         .sphere = object.Sphere.initWithPrecision(
             prog,
             i_datas[0..],
-            false,
             250,
+            "moon",
         ),
     };
     if (self.moon_normal_map) |*t| {
@@ -325,7 +325,7 @@ pub fn deleteEarth(self: *SurfaceDetail) void {
 }
 
 pub fn renderEarth(self: *SurfaceDetail, vert: []u8, frag: []u8) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("earth");
     self.earth_normal_map = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.earth_normal_map.?.texture_unit = 2;
     self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
@@ -367,8 +367,8 @@ pub fn renderEarth(self: *SurfaceDetail, vert: []u8, frag: []u8) void {
         .sphere = object.Sphere.initWithPrecision(
             prog,
             i_datas[0..],
-            false,
             250,
+            "earth",
         ),
     };
     if (self.earth_normal_map) |*t| {
@@ -411,7 +411,7 @@ pub fn deleteSphere(self: *SurfaceDetail) void {
 }
 
 pub fn renderSphere(self: *SurfaceDetail) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sun");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -433,7 +433,7 @@ pub fn renderSphere(self: *SurfaceDetail) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "sun",
         ),
     };
     const lp = self.ui_state.light_position;

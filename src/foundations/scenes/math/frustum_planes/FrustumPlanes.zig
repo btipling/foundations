@@ -229,7 +229,7 @@ fn genObject(
 }
 
 pub fn renderSphere(self: *FrustumPlanes) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sphere");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -251,7 +251,7 @@ pub fn renderSphere(self: *FrustumPlanes) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..sphere_max],
-            false,
+            "sphere",
         ),
     };
     self.num_spheres = sphere_max;
@@ -264,7 +264,7 @@ pub fn updateParallepipedTransform(_: *FrustumPlanes, prog: u32) void {
 }
 
 pub fn renderParallepiped(self: *FrustumPlanes) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -279,7 +279,7 @@ pub fn renderParallepiped(self: *FrustumPlanes) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..i],
-            false,
+            "cube",
         ),
     };
     self.updateParallepipedTransform(prog);

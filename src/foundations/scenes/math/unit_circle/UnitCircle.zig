@@ -43,7 +43,7 @@ pub fn deleteStrip(self: *UnitCircle) void {
 }
 
 pub fn renderCircle(self: *UnitCircle) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("circle");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -73,6 +73,7 @@ pub fn renderCircle(self: *UnitCircle) void {
         .strip = object.Strip.init(
             prog,
             i_datas[0..],
+            "unit_circle",
         ),
     };
     self.strip = strip;

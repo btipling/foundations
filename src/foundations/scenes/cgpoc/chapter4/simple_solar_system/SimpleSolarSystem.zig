@@ -279,7 +279,7 @@ pub fn deleteSun(self: *SimpleSolarSystem) void {
 
 pub fn renderSun(self: *SimpleSolarSystem) void {
     self.sun_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sun");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -306,7 +306,7 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "sun",
         ),
     };
     if (self.sun_texture) |*bt| {
@@ -327,7 +327,7 @@ pub fn deleteEarth(self: *SimpleSolarSystem) void {
 }
 
 pub fn renderEarth(self: *SimpleSolarSystem) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("earth");
     self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -356,7 +356,7 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "earth",
         ),
     };
     if (self.earth_texture) |*bt| {
@@ -377,7 +377,7 @@ pub fn deleteMoon(self: *SimpleSolarSystem) void {
 
 pub fn renderMoon(self: *SimpleSolarSystem) void {
     self.moon_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("moon");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -405,7 +405,7 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "moon",
         ),
     };
     if (self.moon_texture) |*bt| {
@@ -425,7 +425,7 @@ pub fn deleteCubemap(self: *SimpleSolarSystem) void {
 }
 
 pub fn renderCubemap(self: *SimpleSolarSystem) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube_map");
     self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -454,7 +454,7 @@ pub fn renderCubemap(self: *SimpleSolarSystem) void {
         .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
-            false,
+            "cubemap",
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
@@ -499,7 +499,7 @@ pub fn renderShuttle(self: *SimpleSolarSystem) void {
         return;
     }
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("shuttle");
     self.shuttle_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -531,7 +531,7 @@ pub fn renderShuttle(self: *SimpleSolarSystem) void {
             self.shuttle_texture = null;
         };
     }
-    const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
+    const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..], "shuttle");
     self.shuttle_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
     {
         self.shuttle_uniform.setUniformMatrix(math.matrix.translate(3, 0, 0));

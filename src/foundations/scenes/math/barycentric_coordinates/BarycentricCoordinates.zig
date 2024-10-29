@@ -71,7 +71,7 @@ pub fn deleteStrip(self: *BCTriangle) void {
 
 pub fn renderStrip(self: *BCTriangle) void {
     self.deleteStrip();
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("strip");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -112,13 +112,14 @@ pub fn renderStrip(self: *BCTriangle) void {
         .strip = object.Strip.init(
             prog,
             i_datas[0..],
+            "barycentric_line",
         ),
     };
     self.strip = strip;
 }
 
 pub fn renderCircle(self: *BCTriangle) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("circle");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -135,6 +136,7 @@ pub fn renderCircle(self: *BCTriangle) void {
         .circle = object.Circle.init(
             prog,
             self.circles[0..],
+            "barycentric_circle",
         ),
     };
     self.circle = circle;

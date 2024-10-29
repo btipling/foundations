@@ -73,7 +73,7 @@ pub fn deleteConnectionStrip(self: *LineDistance) void {
 }
 
 pub fn renderCircle(self: *LineDistance) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("circle");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -87,6 +87,7 @@ pub fn renderCircle(self: *LineDistance) void {
         .circle = object.Circle.init(
             prog,
             self.circles[0..],
+            "circle",
         ),
     };
     self.circle = circle;
@@ -94,7 +95,7 @@ pub fn renderCircle(self: *LineDistance) void {
 
 pub fn renderStrip(self: *LineDistance) void {
     self.deleteStrip();
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("strip");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -131,6 +132,7 @@ pub fn renderStrip(self: *LineDistance) void {
         .strip = object.Strip.init(
             prog,
             i_datas[0..],
+            "line",
         ),
     };
     self.strip = strip;
@@ -140,7 +142,7 @@ pub fn renderStrip(self: *LineDistance) void {
 pub fn renderConnectionStrip(self: *LineDistance) void {
     const pv = self.ui_state.point_vector orelse return;
     self.deleteConnectionStrip();
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("connection_strip");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -177,6 +179,7 @@ pub fn renderConnectionStrip(self: *LineDistance) void {
         .strip = object.Strip.init(
             prog,
             i_datas[0..],
+            "connection_strip",
         ),
     };
     self.connection_strip = strip;

@@ -179,7 +179,7 @@ fn renderDebugCross(self: *ClippingPlane) void {
 }
 
 fn renderSphere(self: *ClippingPlane) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sky_dome");
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("sphere_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
@@ -206,14 +206,14 @@ fn renderSphere(self: *ClippingPlane) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "sphere",
         ),
     };
     self.sphere = sphere;
 }
 
 fn renderPlane(self: *ClippingPlane) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("plane");
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("plane_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
@@ -240,7 +240,7 @@ fn renderPlane(self: *ClippingPlane) void {
         },
     };
 
-    var plane = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], false) };
+    var plane = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "plane") };
     plane.parallelepiped.mesh.blend = true;
     plane.parallelepiped.mesh.cull = false;
     plane.parallelepiped.mesh.linear_colorspace = false;
@@ -251,7 +251,7 @@ fn renderPlane(self: *ClippingPlane) void {
 }
 
 fn renderTorus(self: *ClippingPlane) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("torus");
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("torus_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
@@ -284,7 +284,7 @@ fn renderTorus(self: *ClippingPlane) void {
             .color = .{ 1, 0, 1, 1 },
         },
     };
-    var torus = .{ .torus = object.Torus.init(prog, i_datas[0..], false) };
+    var torus = .{ .torus = object.Torus.init(prog, i_datas[0..], "torus") };
     torus.torus.mesh.cull = false;
     torus.torus.mesh.linear_colorspace = false;
     var cpu = rhi.Uniform.init(prog, "f_torus_clip") catch @panic("uniform");

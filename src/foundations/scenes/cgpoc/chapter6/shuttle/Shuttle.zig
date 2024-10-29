@@ -80,7 +80,7 @@ pub fn renderShuttle(self: *Shuttle) void {
         return;
     }
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("shuttle");
     self.shuttle_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -111,7 +111,7 @@ pub fn renderShuttle(self: *Shuttle) void {
             self.shuttle_texture = null;
         };
     }
-    const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
+    const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..], "shuttle");
     self.shuttle = shuttle_object;
 }
 

@@ -8,6 +8,7 @@ const InstancedTriangle = @This();
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
+    label: [:0]const u8,
 ) InstancedTriangle {
     var attribute_data: [3]rhi.attributeData = undefined;
 
@@ -18,19 +19,19 @@ pub fn init(
     const triangle = math.geometry.Triangle.init(p0, p1, p2);
     attribute_data[0] = .{
         .position = triangle.p0,
-        .normal  = triangle.normal,
+        .normal = triangle.normal,
     };
     attribute_data[1] = .{
         .position = triangle.p1,
-        .normal  = triangle.normal,
+        .normal = triangle.normal,
     };
     attribute_data[2] = .{
         .position = triangle.p2,
-        .normal  = triangle.normal,
+        .normal = triangle.normal,
     };
 
     const indices: [3]u32 = .{ 0, 1, 2 };
-    const vao_buf = rhi.attachInstancedBuffer(attribute_data[0..], instance_data);
+    const vao_buf = rhi.attachInstancedBuffer(attribute_data[0..], instance_data, label);
     const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao);
     return .{
         .mesh = .{

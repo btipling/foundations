@@ -16,7 +16,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 }
 
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *AnimatedTriangle {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("triangle_animated");
     const vao = rhi.createVAO();
     {
         var s: rhi.Shader = .{

@@ -214,7 +214,7 @@ fn updateLights(self: *TerrainTessellator) void {
 }
 
 pub fn renderTerrain(self: *TerrainTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("terrain");
     const vao = rhi.createVAO();
 
     self.terrain_t_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
@@ -296,7 +296,7 @@ pub fn deletesphere_1(self: *TerrainTessellator) void {
 }
 
 pub fn rendersphere_1(self: *TerrainTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("light");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -323,7 +323,7 @@ pub fn rendersphere_1(self: *TerrainTessellator) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "light",
         ),
     };
     const lp = self.ui_state.light_1.position;
