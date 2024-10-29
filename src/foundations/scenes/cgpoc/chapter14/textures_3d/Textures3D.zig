@@ -149,21 +149,22 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
 pub fn updateCamera(_: *Textures3D) void {}
 
 fn updateLights(self: *Textures3D) void {
-    const lp = self.ui_state.light_position;
+    var lp = math.vector.normalize(@as(math.vector.vec3, self.ui_state.light_position));
+    lp = math.vector.mul(self.ui_state.light_distance, lp);
     const lr = self.ui_state.light_rotation;
     var m = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(lp[0], lp[1], lp[2]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationX(lr[0]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationY(lr[1]));
     m = math.matrix.transformMatrix(m, math.matrix.rotationZ(lr[2]));
     self.light_m = m;
-    const forward: math.vector.vec4 = .{ 0, -1, 0, 0 };
+    const forward: math.vector.vec4 = .{ 0, 1, 0, 0 };
     const lights = [_]lighting.Light{
         .{
             .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-            .direction = math.vector.mul(-1, math.matrix.transformVector(m, forward)),
+            .direction = math.matrix.transformVector(m, forward),
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
