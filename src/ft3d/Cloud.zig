@@ -9,8 +9,12 @@ pub const max_tex_dims = 256;
 
 pub fn init(allocator: std.mem.Allocator) *StripedPattern {
     var sp = allocator.create(StripedPattern) catch @panic("OOM");
+    const n = noise.Noise3D.init(allocator);
+    n.lacunarity = 2.0;
+    n.gain = 0.5;
+    n.octaves = 3;
     sp.* = .{
-        .noise_3d = noise.Noise3D.init(allocator),
+        .noise_3d = n,
     };
     sp.data = std.ArrayListUnmanaged(u8).initCapacity(
         allocator,
@@ -28,9 +32,7 @@ pub fn deinit(self: *StripedPattern, allocator: std.mem.Allocator) void {
 }
 
 pub fn fillData(self: *StripedPattern) void {
-    const period: f32 = 40.0;
-    const offset: f32 = 2.0;
-    const dims: f32 = @floatFromInt(self.dims);
+    // const dims: f32 = @floatFromInt(self.dims);
     for (0..self.dims) |h| {
         const h_f: f32 = @floatFromInt(h);
         for (0..self.dims) |d| {
@@ -38,16 +40,15 @@ pub fn fillData(self: *StripedPattern) void {
             for (0..self.dims) |w| {
                 const w_f: f32 = @floatFromInt(w);
 
-                const nn: f32 = self.noise_3d.noise(h_f, d_f, w_f) / dims;
+                const nn: f32 = self.noise_3d.noise(h_f, d_f, w_f);
 
-                const w_val: f32 = ((w_f - dims / offset) / dims) - 0.25;
-                const h_val: f32 = ((h_f - dims / offset) / dims) - 0.25;
-                const depth_dist: f32 = @sqrt(w_val * w_val + h_val * h_val) + nn * 3.0;
-                const sine_val = (dims / offset * @abs(@sin(offset * period * depth_dist * std.math.pi))) / dims * 2;
+                const brightness: f32 = 1.0 - nn * 2.0;
 
-                const r_channel: f32 = @min(80.0 * sine_val, 255.0);
-                const g_channel: f32 = @min(40.0 * sine_val, 255.0);
-                const b_channel: f32 = 0;
+                // std.debug.print("brightness {d} nn {d}\n", .{ brightness, nn });
+
+                const r_channel: f32 = @max(brightness * 255.0, 0);
+                const g_channel: f32 = @max(brightness * 255.0, 0);
+                const b_channel: f32 = 255.0;
 
                 var i = w * self.dims * self.dims * self.dim;
                 i += h * self.dims * self.dim;

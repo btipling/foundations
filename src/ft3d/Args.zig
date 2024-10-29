@@ -32,6 +32,7 @@ pub const texture_type_opt = enum {
     striped,
     marble,
     wood,
+    cloud,
 };
 
 pub fn init(allocator: std.mem.Allocator) !*Args {
@@ -60,6 +61,8 @@ pub fn validate(self: *Args) ArgsError!void {
             break :blk .marble;
         } else if (std.mem.eql(u8, "wood", tts)) {
             break :blk .wood;
+        } else if (std.mem.eql(u8, "cloud", tts)) {
+            break :blk .cloud;
         } else if (std.mem.eql(u8, "striped", tts)) {
             break :blk .striped;
         }
