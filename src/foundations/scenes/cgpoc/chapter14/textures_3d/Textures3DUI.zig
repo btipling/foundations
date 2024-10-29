@@ -1,5 +1,5 @@
 light_rotation: [3]f32 = .{ 2.178, 5.260, 3.771 },
-light_position: [3]f32 = .{ 0.379, 0.501, 0.950 },
+light_position: [3]f32 = .{ 0.347, 0.501, 0.401 },
 light_distance: f32 = 5.998,
 light_updated: bool = true,
 
