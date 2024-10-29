@@ -11,6 +11,7 @@ grid_t_tex: ?rhi.Texture = null,
 grid_t_nor: ?rhi.Texture = null,
 
 sphere: object.object = .{ .norender = .{} },
+sky_tex: ?rhi.Texture = null,
 
 striped_block: object.object = .{ .norender = .{} },
 striped_tex: ?rhi.Texture = null,
@@ -196,6 +197,9 @@ pub fn draw(self: *Textures3D, dt: f64) void {
         self.shadowpass.genShadowMap();
     }
     {
+        if (self.sky_tex) |t| {
+            t.bind();
+        }
         rhi.drawHorizon(self.sphere);
     }
     {
@@ -246,11 +250,19 @@ fn renderDebugCross(self: *Textures3D) void {
 
 fn renderSphere(self: *Textures3D) void {
     const prog = rhi.createProgram("sky_dome");
+    self.sky_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.sky_tex.?.texture_unit = 1;
+    const frag_bindings = [_]usize{1};
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("sphere_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
-    const frag = Compiler.runWithBytes(self.allocator, @embedFile("sphere_frag.glsl")) catch @panic("shader compiler");
+    var frag = Compiler.runWithBytes(self.allocator, @embedFile("sphere_frag.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(frag);
+    frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+        frag,
+        frag_bindings[0..],
+    ) catch @panic("bindless");
 
     const shaders = [_]rhi.Shader.ShaderData{
         .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
@@ -275,6 +287,20 @@ fn renderSphere(self: *Textures3D) void {
             "skydome",
         ),
     };
+    if (self.sky_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\cloud.vol") catch null;
+        t.setup3D(
+            data,
+            tex_dims,
+            tex_dims,
+            tex_dims,
+            prog,
+            "f_tex_samp",
+            "skydone_3d",
+        ) catch {
+            self.sky_tex = null;
+        };
+    }
     self.sphere = sphere;
 }
 
