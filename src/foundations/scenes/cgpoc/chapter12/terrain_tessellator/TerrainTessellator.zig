@@ -59,7 +59,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -78,7 +78,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: TerrainTesselatorUI = .{};
@@ -208,7 +208,7 @@ fn updateLights(self: *TerrainTessellator) void {
     };
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
@@ -254,7 +254,7 @@ pub fn renderTerrain(self: *TerrainTessellator) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "terrain");
 
     if (self.terrain_t_tex) |*t| {
         t.setup(
@@ -318,7 +318,7 @@ pub fn rendersphere_1(self: *TerrainTessellator) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);

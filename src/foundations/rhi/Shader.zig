@@ -79,7 +79,7 @@ const frag_shadow = @embedFile("../shaders/shadow_frag.glsl");
 const frag_phong_lighting = @embedFile("../shaders/frag_phong_lighting.glsl");
 const frag_blinn_phong_lighting = @embedFile("../shaders/frag_blinn_phong_lighting.glsl");
 
-pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []const []const u8) void {
+pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []const []const u8, label: [:0]const u8) void {
     if (self.fragment_shader != .disabled) {
         {
             self.vertex_partials[self.num_vertex_partials] = vertex_header;
@@ -179,16 +179,38 @@ pub fn attach(self: *Shader, allocator: std.mem.Allocator, vertex_partials: []co
         .{ .source = vertex, .shader_type = c.GL_VERTEX_SHADER },
         .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
     };
-    self.attachAndLinkAll(allocator, shaders[0..]);
+    self.attachAndLinkAll(allocator, shaders[0..], label);
 }
 
-pub fn attachAndLinkAll(self: Shader, allocator: std.mem.Allocator, shaders: []const ShaderData) void {
+pub fn attachAndLinkAll(self: Shader, allocator: std.mem.Allocator, shaders: []const ShaderData, label: [:0]const u8) void {
     var i: usize = 0;
     while (i < shaders.len) : (i += 1) {
         const source: [:0]u8 = std.mem.concatWithSentinel(allocator, u8, &[_][]const u8{shaders[i].source}, 0) catch @panic("OOM");
         defer allocator.free(source);
 
         const shader = c.glCreateShader(shaders[i].shader_type);
+        var buf: [500]u8 = undefined;
+        const label_text = switch (shaders[i].shader_type) {
+            c.GL_VERTEX_SHADER => std.fmt.bufPrintZ(&buf, "vertex_shader_{s}", .{
+                label,
+            }) catch @panic("bufsize too small"),
+            c.GL_FRAGMENT_SHADER => std.fmt.bufPrintZ(&buf, "fragment_shader_{s}", .{
+                label,
+            }) catch @panic("bufsize too small"),
+            c.GL_GEOMETRY_SHADER => std.fmt.bufPrintZ(&buf, "geometry_shader_{s}", .{
+                label,
+            }) catch @panic("bufsize too small"),
+            c.GL_TESS_EVALUATION_SHADER => std.fmt.bufPrintZ(&buf, "tes_shader_{s}", .{
+                label,
+            }) catch @panic("bufsize too small"),
+            c.GL_TESS_CONTROL_SHADER => std.fmt.bufPrintZ(&buf, "tcs_shader_{s}", .{
+                label,
+            }) catch @panic("bufsize too small"),
+            else => std.fmt.bufPrintZ(&buf, "shader_{s}", .{
+                label,
+            }) catch @panic("bufsize too small"),
+        };
+        c.glObjectLabel(c.GL_SHADER, shader, -1, label_text);
 
         self.attachToProgram(shader, source) catch {
             for (shaders) |s| std.debug.print("\n\n{s}\n\n", .{s.source});

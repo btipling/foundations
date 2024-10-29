@@ -25,7 +25,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RotatingPoi
             .instance_data = false,
             .fragment_shader = .color,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "rotating_point");
     }
 
     const p = allocator.create(RotatingPoint) catch @panic("OOM");

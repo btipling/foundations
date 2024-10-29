@@ -42,7 +42,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Fog {
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -61,7 +61,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Fog {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     fog.* = .{
@@ -147,7 +147,7 @@ fn renderSphere(self: *Fog) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "sky_dome");
     const m = math.matrix.uniformScale(1);
     var i_datas: [1]rhi.instanceData = .{.{
         .t_column0 = m.columns[0],
@@ -206,7 +206,7 @@ fn renderGrid(self: *Fog) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "mountains");
     const m = math.matrix.uniformScale(500);
     var i_datas: [1]rhi.instanceData = .{.{
         .t_column0 = m.columns[0],
@@ -215,7 +215,7 @@ fn renderGrid(self: *Fog) void {
         .t_column3 = m.columns[3],
         .color = .{ 1, 0, 1, 1 },
     }};
-    var grid_obj: object.object = grid_model.toObject(prog, i_datas[0..], "grid");
+    var grid_obj: object.object = grid_model.toObject(prog, i_datas[0..], "mountains");
     grid_obj.obj.mesh.linear_colorspace = true;
 
     if (self.grid_t_tex) |*t| {

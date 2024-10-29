@@ -236,7 +236,7 @@ pub fn renderSphere(self: *FrustumPlanes) void {
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "sphere");
     }
     var i_datas: [sphere_max]rhi.instanceData = undefined;
     const m = math.matrix.identity();
@@ -271,7 +271,7 @@ pub fn renderParallepiped(self: *FrustumPlanes) void {
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(voxel_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(voxel_vertex_shader)[0..], "cube");
     }
     var i_datas: [voxel_max]rhi.instanceData = undefined;
     const i = genObject(&self.voxel_map, &self.voxel_transforms, &i_datas, 3.0, 1.5, 1.0, 0.45, 1, 4);

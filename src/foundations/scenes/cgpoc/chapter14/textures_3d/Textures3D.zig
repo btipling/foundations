@@ -56,7 +56,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const shadowpass = rendering.DirectionalShadowPass.init(allocator, ctx, 1);
@@ -84,7 +84,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: Textures3DUI = .{};
@@ -170,7 +170,7 @@ fn updateLights(self: *Textures3D) void {
     };
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
     self.shadowpass.update(self.light_m);
@@ -244,7 +244,7 @@ fn renderSphere(self: *Textures3D) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "sky_dome");
     const m = math.matrix.uniformScale(1);
     var i_datas: [1]rhi.instanceData = .{.{
         .t_column0 = m.columns[0],
@@ -331,7 +331,7 @@ fn renderParallelepiped(self: *Textures3D, m: math.matrix) object.Parallelepiped
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "block");
     const i_datas = [_]rhi.instanceData{
         .{
             .t_column0 = m.columns[0],
@@ -384,7 +384,7 @@ fn renderGrid(self: *Textures3D) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "ground");
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ -0.5, -500, -500 }));
     m = math.matrix.transformMatrix(m, math.matrix.scale(0.5, 1000, 1000));

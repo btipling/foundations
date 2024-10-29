@@ -27,7 +27,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Point {
             .instance_data = false,
             .fragment_shader = .color,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "point");
     }
 
     const p = allocator.create(Point) catch @panic("OOM");

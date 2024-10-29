@@ -24,7 +24,7 @@ pub fn init(
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], label);
     }
 
     var data: [2]rhi.attributeData = undefined;

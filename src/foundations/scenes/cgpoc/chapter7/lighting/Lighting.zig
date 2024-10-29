@@ -65,7 +65,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -97,7 +97,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: LightingUI = .{};
@@ -193,7 +193,7 @@ fn updateLights(self: *Lighting) void {
     };
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
@@ -264,7 +264,7 @@ pub fn renderBG(self: *Lighting) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..], "background");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -337,7 +337,7 @@ pub fn renderModel(self: *Lighting) void {
                 partials = .{gouraud_vertex_shader};
             },
         }
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "model");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -481,14 +481,14 @@ pub fn deletesphere_1(self: *Lighting) void {
 }
 
 pub fn rendersphere_1(self: *Lighting) void {
-    const prog = rhi.createProgram("light");
+    const prog = rhi.createProgram("light1");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light1");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
@@ -533,7 +533,7 @@ pub fn rendersphere_2(self: *Lighting) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light2");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);

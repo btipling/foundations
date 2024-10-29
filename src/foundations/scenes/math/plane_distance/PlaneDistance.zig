@@ -59,7 +59,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistan
             .instance_data = false,
             .fragment_shader = .normal,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(reflection_vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(reflection_vertex_shader)[0..], "reflection");
     }
     pd.* = .{
         .ui_state = ui_state,
@@ -265,7 +265,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
             .fragment_shader = .normal,
             .frag_body = plane_frag_shader,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(plane_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(plane_vertex_shader)[0..], "plane");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -298,7 +298,7 @@ pub fn renderSphere(self: *PlaneDistance) void {
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "sphere");
     }
     var i_datas: [3]rhi.instanceData = undefined;
     {
@@ -350,7 +350,7 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..], "cube");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

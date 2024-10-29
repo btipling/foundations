@@ -113,7 +113,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -145,11 +145,11 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const sd: rhi.Buffer.buffer_data = .{ .chapter8_shadows = .{} };
-    var scene_data_buffer = rhi.Buffer.init(sd);
+    var scene_data_buffer = rhi.Buffer.init(sd, "scene_data");
     errdefer scene_data_buffer.deinit();
 
     const ui_state: ShadowsUI = .{};
@@ -267,7 +267,7 @@ fn updateLights(self: *Shadows) void {
     };
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
@@ -407,7 +407,7 @@ pub fn renderBG(self: *Shadows) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..], "background");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -497,7 +497,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
                 partials = .{gouraud_vertex_shader};
             },
         }
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "object");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -712,7 +712,7 @@ pub fn rendersphere_1(self: *Shadows) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light1");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
@@ -757,7 +757,7 @@ pub fn rendersphere_2(self: *Shadows) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light2");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
@@ -795,7 +795,7 @@ fn setupShadowmaps(self: *Shadows) void {
             .instance_data = true,
             .fragment_shader = .shadow,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..], "shadowmap");
     }
 
     var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_vp") catch @panic("uniform failed");

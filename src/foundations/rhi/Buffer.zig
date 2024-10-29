@@ -33,9 +33,13 @@ pub const storage_binding_point = union(storage_type) {
     ubo: c.GLuint,
 };
 
-pub fn init(data: buffer_data) Buffer {
+pub fn init(data: buffer_data, label: [:0]const u8) Buffer {
     var name: c.GLuint = 0;
     c.glCreateBuffers(1, @ptrCast(&name));
+
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "buffer_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_BUFFER, name, -1, label_text);
     const data_size: usize = switch (data) {
         .materials => @sizeOf(lighting.Material),
         .lights => @sizeOf(lighting.Light),
@@ -116,6 +120,7 @@ pub fn update(self: Buffer, data: buffer_data) void {
     }
 }
 
+const std = @import("std");
 const c = @import("../c.zig").c;
 const lighting = @import("../lighting/lighting.zig");
 const physics = @import("../physics/physics.zig");

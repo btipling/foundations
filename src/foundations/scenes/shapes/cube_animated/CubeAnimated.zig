@@ -56,7 +56,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *CubeAnimate
             .instance_data = false,
             .fragment_shader = .normal,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "cube");
     }
     const cube: object.object = .{
         .cube = object.Cube.init(

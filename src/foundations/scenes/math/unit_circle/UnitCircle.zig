@@ -50,7 +50,7 @@ pub fn renderCircle(self: *UnitCircle) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "circle");
     }
     var i_datas: [num_triangles]rhi.instanceData = undefined;
     for (0..num_triangles) |i| {

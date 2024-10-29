@@ -52,7 +52,7 @@ fn renderGrid(self: *Grid) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(grid_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(grid_vertex_shader)[0..], "grid");
     }
     var i_datas: [num_grid_lines * 2]rhi.instanceData = undefined;
     var i_data_i: usize = 0;

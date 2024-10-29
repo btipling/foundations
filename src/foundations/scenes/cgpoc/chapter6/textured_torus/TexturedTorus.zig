@@ -106,7 +106,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
             .frag_body = frag_shader,
         };
         const partials = [_][]const u8{vertex_shader};
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "torus");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -163,7 +163,7 @@ pub fn renderCubemap(self: *TexturedTorus) void {
             .instance_data = true,
             .fragment_shader = .texture,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..], "cubemap");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

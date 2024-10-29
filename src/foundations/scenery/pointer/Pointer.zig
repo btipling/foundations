@@ -47,7 +47,7 @@ pub fn renderCylinder(self: *Pointer) void {
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(pointer_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(pointer_vertex_shader)[0..], "pointer_cylinder");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     var m = math.matrix.identity();
@@ -80,7 +80,7 @@ pub fn renderCone(self: *Pointer) void {
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(pointer_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(pointer_vertex_shader)[0..], "pointer_cone");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     var m = math.matrix.identity();

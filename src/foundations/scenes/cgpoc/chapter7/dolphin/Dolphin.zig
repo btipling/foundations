@@ -53,7 +53,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
     };
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const light_position: math.vector.vec3 = .{ 10, 5, -9 };
@@ -74,7 +74,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     // Shadow objects
@@ -90,7 +90,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Dolphin {
             .shadowmaps = true,
             .fragment_shader = .shadow,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..], "shadowmap");
     }
 
     var shadow_uniform: rhi.Uniform = rhi.Uniform.init(shadowmap_program, "f_shadow_m") catch @panic("uniform failed");
@@ -275,7 +275,7 @@ pub fn renderDolphin(self: *Dolphin) void {
             .frag_body = frag_shader,
             .fragment_shader = rhi.Texture.frag_shader(self.dolphin_texture),
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "dolphin");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -325,7 +325,7 @@ pub fn renderParallepiped(self: *Dolphin) void {
             .fragment_shader = rhi.Texture.frag_shader(self.ground_texture),
             .shadowmaps = true,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "ground");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

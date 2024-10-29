@@ -78,7 +78,7 @@ pub fn renderStrip(self: *BCTriangle) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "strip");
     }
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
@@ -126,7 +126,7 @@ pub fn renderCircle(self: *BCTriangle) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "circle");
     }
     for (0..num_points) |i| self.updatePointIData(i);
     self.updatePointIData(center_circle_index);

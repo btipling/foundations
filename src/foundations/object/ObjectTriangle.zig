@@ -36,7 +36,7 @@ pub fn init(
             .instance_data = true,
             .fragment_shader = frag_shader,
         };
-        s.attach(allocator, vertex_partials);
+        s.attach(allocator, vertex_partials, label);
     }
     return initWithProgram(program, positions, colors, normal, label);
 }

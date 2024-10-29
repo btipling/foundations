@@ -26,7 +26,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Circle {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "cone");
     }
     var m = math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far);
     m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());

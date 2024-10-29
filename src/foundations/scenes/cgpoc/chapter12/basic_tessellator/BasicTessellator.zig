@@ -122,7 +122,7 @@ pub fn renderGrid(self: *BasicTessellator) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "grid");
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0, 5));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(10));
@@ -169,7 +169,7 @@ pub fn renderSurface(self: *BasicTessellator) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "surface");
 
     if (self.surface_t) |*t| {
         t.setup(

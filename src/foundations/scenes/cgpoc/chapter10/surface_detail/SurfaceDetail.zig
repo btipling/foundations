@@ -59,7 +59,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
     cam.updateMVP();
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -78,7 +78,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: SurfaceDetailUI = .{};
@@ -200,7 +200,7 @@ pub fn deleteCubemap(self: *SurfaceDetail) void {
 }
 
 pub fn renderCubemap(self: *SurfaceDetail) void {
-    const prog = rhi.createProgram("cube_map");
+    const prog = rhi.createProgram("cubemap");
     self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -209,7 +209,7 @@ pub fn renderCubemap(self: *SurfaceDetail) void {
             .instance_data = true,
             .fragment_shader = .texture,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..], "cubemap");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -278,7 +278,7 @@ pub fn renderMoon(self: *SurfaceDetail) void {
             .frag_body = moon_frag_shader,
         };
         const partials = [_][]const u8{moon_vertex_shader};
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "moon");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -358,7 +358,7 @@ pub fn renderEarth(self: *SurfaceDetail, vert: []u8, frag: []u8) void {
         };
         s.attach(self.allocator, rhi.Shader.single_vertex(
             if (!disable_bindless) vert else rhi.Shader.disableBindless(vert, vert_bindings[0..]) catch @panic("bindless"),
-        )[0..]);
+        )[0..], "earth");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -443,7 +443,7 @@ pub fn renderSphere(self: *SurfaceDetail) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "sun");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);

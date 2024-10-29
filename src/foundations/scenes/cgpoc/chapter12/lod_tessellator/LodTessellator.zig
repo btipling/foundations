@@ -140,7 +140,7 @@ pub fn renderTerrain(self: *LodTessellator) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "terrain");
 
     if (self.terrain_t_tex) |*t| {
         t.setup(

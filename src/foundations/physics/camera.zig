@@ -84,7 +84,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .f_global_ambient = global_ambient,
                 .f_shadow_view_m = math.matrix.identity().array(),
             } };
-            var camera_buffer = rhi.Buffer.init(cd);
+            var camera_buffer = rhi.Buffer.init(cd, "camera");
             errdefer camera_buffer.deinit();
             return initInternal(allocator, cfg, scene, integrator, pos, heading, camera_buffer, false);
         }

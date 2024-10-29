@@ -37,7 +37,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PolygonOffs
     errdefer cam.deinit(allocator);
 
     const sd: rhi.Buffer.buffer_data = .{ .chapter8_shadows = .{} };
-    var scene_data_buffer = rhi.Buffer.init(sd);
+    var scene_data_buffer = rhi.Buffer.init(sd, "scene_data");
     errdefer scene_data_buffer.deinit();
 
     const ui_state: ShadowsUI = .{};
@@ -149,7 +149,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "object");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

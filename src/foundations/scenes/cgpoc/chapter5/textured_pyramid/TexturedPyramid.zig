@@ -97,7 +97,7 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
             .fragment_shader = rhi.Texture.frag_shader(self.brick_texture),
         };
         const partials = [_][]const u8{vertex_shader};
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "cube");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -151,7 +151,7 @@ pub fn renderBG(self: *TexturedPyramid) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..], "background");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

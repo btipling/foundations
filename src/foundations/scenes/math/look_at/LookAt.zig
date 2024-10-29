@@ -92,7 +92,7 @@ pub fn renderCube(self: *LookAt) void {
             .instance_data = false,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..], "cube");
     }
     const cube: object.object = .{
         .cube = object.Cube.init(
@@ -127,7 +127,7 @@ pub fn renderCamera(self: *LookAt) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(camera_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(camera_vertex_shader)[0..], "camera");
     }
     const camera: object.object = .{
         .cube = object.Cube.init(

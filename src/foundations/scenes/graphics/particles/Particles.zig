@@ -61,7 +61,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -80,7 +80,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const particles = [_]rhi.Buffer.ParticlesData{
@@ -94,7 +94,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         },
     };
     const pd: rhi.Buffer.buffer_data = .{ .particles = particles[0..] };
-    var particles_buf = rhi.Buffer.init(pd);
+    var particles_buf = rhi.Buffer.init(pd, "materials");
     errdefer particles_buf.deinit();
     const prng = std.Random.DefaultPrng.init(blk: {
         var seed: u64 = undefined;
@@ -305,7 +305,7 @@ pub fn renderParticles(self: *Particles) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "particles");
 
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -352,7 +352,7 @@ pub fn renderSphere(self: *Particles) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "party_ball");
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
     i_datas[0] = .{
@@ -395,7 +395,7 @@ pub fn renderCubemap(self: *Particles) void {
             .instance_data = true,
             .fragment_shader = .texture,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..], "cubemap");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

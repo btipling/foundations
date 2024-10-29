@@ -26,7 +26,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Sphere {
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "sphere");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

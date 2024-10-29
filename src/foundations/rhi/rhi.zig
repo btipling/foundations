@@ -104,7 +104,9 @@ pub fn attachBuffer(
     var buffer: c.GLuint = 0;
     const bind_index: usize = 0;
     c.glCreateBuffers(1, @ptrCast(&buffer));
-    c.glObjectLabel(c.GL_BUFFER, buffer, -1, label);
+    var buf: [500]u8 = undefined;
+    var label_text = std.fmt.bufPrintZ(&buf, "a_buffer_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_BUFFER, buffer, -1, label_text);
 
     const data_size = @sizeOf(attributeData);
     const size = data.len * data_size;
@@ -112,6 +114,8 @@ pub fn attachBuffer(
 
     var vao: c.GLuint = 0;
     c.glCreateVertexArrays(1, @ptrCast(&vao));
+    label_text = std.fmt.bufPrintZ(&buf, "vao_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_VERTEX_ARRAY, buffer, -1, label_text);
     c.glVertexArrayVertexBuffer(vao, bind_index, buffer, 0, @intCast(data_size));
     defineVertexData(vao, bind_index);
 

@@ -41,7 +41,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TorusGeomet
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -60,7 +60,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TorusGeomet
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     tg.* = .{
@@ -206,7 +206,7 @@ pub fn renderTorus(self: *TorusGeometry, geo_shader: []const u8, m: math.matrix)
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "torus");
 
     var i_datas: [1]rhi.instanceData = undefined;
     {

@@ -80,7 +80,7 @@ pub fn renderCircle(self: *LineDistance) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "circle");
     }
     for (0..num_points - 1) |i| self.updatePointIData(i);
     const circle: object.object = .{
@@ -102,7 +102,7 @@ pub fn renderStrip(self: *LineDistance) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "strip");
     }
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
@@ -149,7 +149,7 @@ pub fn renderConnectionStrip(self: *LineDistance) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "connection_strip");
     }
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;

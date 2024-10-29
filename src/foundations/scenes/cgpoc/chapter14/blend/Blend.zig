@@ -47,7 +47,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Blend {
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -66,7 +66,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Blend {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     blend.* = .{
@@ -186,7 +186,7 @@ fn renderSphere(self: *Blend) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "sphere");
     const m = math.matrix.uniformScale(1);
     var i_datas: [1]rhi.instanceData = .{.{
         .t_column0 = m.columns[0],
@@ -221,7 +221,7 @@ fn renderBobbles(self: *Blend) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "bobble");
     var i_datas: [num_bobbles]rhi.instanceData = undefined;
     for (0..num_bobbles) |i| {
         const m = math.matrix.translateVec(self.bobble_positions[i]);

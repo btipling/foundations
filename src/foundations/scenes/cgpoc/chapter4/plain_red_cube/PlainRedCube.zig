@@ -83,7 +83,7 @@ pub fn renderParallepiped(self: *PlainRedCube) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "red_cube");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

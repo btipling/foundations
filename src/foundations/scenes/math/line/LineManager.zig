@@ -224,7 +224,7 @@ pub fn initCircle(self: *Manager) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "circle");
     }
     var i_datas: [point_limit]rhi.instanceData = undefined;
     for (0..self.num_points) |i| {
@@ -251,7 +251,7 @@ pub fn renderStrips(self: *Manager) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "strips");
     }
     var i_datas: [100_000]rhi.instanceData = undefined;
     var positions: [point_limit]math.vector.vec4 = undefined;
@@ -320,7 +320,7 @@ pub fn renderQuads(self: *Manager) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "quads");
     }
     var i_datas: [100]rhi.instanceData = undefined;
     var tangents_added: usize = 0;

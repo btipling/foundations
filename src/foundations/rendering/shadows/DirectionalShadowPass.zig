@@ -69,7 +69,7 @@ fn setupShadowmaps(self: *DirectionalShadowPass, allocator: std.mem.Allocator) v
             .instance_data = true,
             .fragment_shader = .shadow,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..], "shadowmap");
     }
 
     var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_vp") catch @panic("uniform failed");

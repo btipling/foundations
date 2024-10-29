@@ -73,7 +73,7 @@ pub fn renderPyramid(self: *CubeAndPyramid) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(pyramid_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(pyramid_vertex_shader)[0..], "pyramid");
     }
     var cm = math.matrix.identity();
     cm = math.matrix.transformMatrix(cm, math.matrix.translate(5, 4, 3));
@@ -113,7 +113,7 @@ pub fn renderParallepiped(self: *CubeAndPyramid) void {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..], "cube");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

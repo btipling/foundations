@@ -90,7 +90,7 @@ pub fn renderShuttle(self: *Shuttle) void {
             .fragment_shader = rhi.Texture.frag_shader(self.shuttle_texture),
         };
         const partials = [_][]const u8{vertex_shader};
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "shuttle");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {

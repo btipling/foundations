@@ -48,7 +48,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ClippingPla
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -67,7 +67,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ClippingPla
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: ClippingPlaneUI = .{};
@@ -193,7 +193,7 @@ fn renderSphere(self: *ClippingPlane) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "sky_dome");
     const m = math.matrix.uniformScale(1);
     var i_datas: [1]rhi.instanceData = .{.{
         .t_column0 = m.columns[0],
@@ -228,7 +228,7 @@ fn renderPlane(self: *ClippingPlane) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "plane");
     const m = math.matrix.translateVec(.{ 0, 0, 0 });
     const i_datas = [_]rhi.instanceData{
         .{
@@ -266,7 +266,7 @@ fn renderTorus(self: *ClippingPlane) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "torus");
     const m = math.matrix.translateVec(.{ 1, 0, -2.5 });
     const i_datas = [_]rhi.instanceData{
         .{

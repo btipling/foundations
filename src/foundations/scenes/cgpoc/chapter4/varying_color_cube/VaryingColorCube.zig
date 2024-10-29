@@ -77,7 +77,7 @@ pub fn renderParallepiped(self: *VaryingColorCube) void {
             transforms,
             vertex_main,
         };
-        s.attach(self.allocator, partials[0..]);
+        s.attach(self.allocator, partials[0..], "varying_color_cube");
     }
     var cm = math.matrix.identity();
     cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));

@@ -36,7 +36,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Triangle {
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "triangle");
     }
 
     var data: [3]rhi.attributeData = undefined;

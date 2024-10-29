@@ -41,7 +41,7 @@ pub fn init(
             .instance_data = true,
             .fragment_shader = frag_shader,
         };
-        s.attach(allocator, vertex_partials);
+        s.attach(allocator, vertex_partials, name);
     }
 
     var data: [6]rhi.attributeData = undefined;
