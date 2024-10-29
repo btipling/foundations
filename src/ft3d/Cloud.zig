@@ -32,7 +32,6 @@ pub fn deinit(self: *StripedPattern, allocator: std.mem.Allocator) void {
 }
 
 pub fn fillData(self: *StripedPattern) void {
-    // const dims: f32 = @floatFromInt(self.dims);
     for (0..self.dims) |h| {
         const h_f: f32 = @floatFromInt(h);
         for (0..self.dims) |d| {
@@ -42,9 +41,7 @@ pub fn fillData(self: *StripedPattern) void {
 
                 const nn: f32 = self.noise_3d.noiseOther(h_f, d_f, w_f);
 
-                const brightness: f32 = 1.0 - nn; // * 2.0;
-
-                // std.debug.print("brightness {d} nn {d}\n", .{ brightness, nn });
+                const brightness: f32 = 1.0 - nn;
 
                 const r_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);
                 const g_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);
