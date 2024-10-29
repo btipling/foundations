@@ -42,5 +42,20 @@ pub fn noise(self: *Noise3D, fx: f32, fy: f32, fz: f32) f32 {
     return rv;
 }
 
+pub fn noiseOther(self: *Noise3D, fx: f32, fy: f32, fz: f32) f32 {
+    const rv = c.stb_perlin_fbm_noise3(
+        fx * 0.03,
+        fy * 0.03,
+        fz * 0.03,
+        self.lacunarity,
+        self.gain,
+        @intCast(self.octaves),
+    );
+    if (rv > 0) {
+        // std.debug.print("rv: {d}\n", .{rv});
+    }
+    return rv;
+}
+
 const std = @import("std");
 const c = @import("../c.zig").c;

@@ -10,9 +10,9 @@ pub const max_tex_dims = 256;
 pub fn init(allocator: std.mem.Allocator) *StripedPattern {
     var sp = allocator.create(StripedPattern) catch @panic("OOM");
     const n = noise.Noise3D.init(allocator);
-    n.lacunarity = 2.0;
-    n.gain = 0.5;
-    n.octaves = 3;
+    n.lacunarity = 0.2;
+    n.gain = 1.3;
+    n.octaves = 10;
     sp.* = .{
         .noise_3d = n,
     };
@@ -40,14 +40,14 @@ pub fn fillData(self: *StripedPattern) void {
             for (0..self.dims) |w| {
                 const w_f: f32 = @floatFromInt(w);
 
-                const nn: f32 = self.noise_3d.noise(h_f, d_f, w_f);
+                const nn: f32 = self.noise_3d.noiseOther(h_f, d_f, w_f);
 
-                const brightness: f32 = 1.0 - nn * 2.0;
+                const brightness: f32 = 1.0 - nn; // * 2.0;
 
                 // std.debug.print("brightness {d} nn {d}\n", .{ brightness, nn });
 
-                const r_channel: f32 = @max(brightness * 255.0, 0);
-                const g_channel: f32 = @max(brightness * 255.0, 0);
+                const r_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);
+                const g_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);
                 const b_channel: f32 = 255.0;
 
                 var i = w * self.dims * self.dims * self.dim;
