@@ -10,9 +10,7 @@ pub const max_tex_dims = 256;
 pub fn init(allocator: std.mem.Allocator) *Static {
     var sp = allocator.create(Static) catch @panic("OOM");
     const n = noise.Noise3D.init(allocator);
-    n.lacunarity = 0.2;
-    n.gain = 1.3;
-    n.octaves = 10;
+    n.coord_sensitivity = 0.8;
     sp.* = .{
         .noise_3d = n,
     };
@@ -38,10 +36,13 @@ pub fn fillData(self: *Static) void {
             const d_f: f32 = @floatFromInt(d);
             for (0..self.dims) |w| {
                 const w_f: f32 = @floatFromInt(w);
+                self.noise_3d.lacunarity = h_f * 0.005;
+                self.noise_3d.octaves = 3;
+                self.noise_3d.coord_sensitivity = @mod(w_f, 12.8732) * @mod(h_f, 49.3283) * 0.01;
+                self.noise_3d.gain = d_f * 0.0003;
+                const nn: f32 = self.noise_3d.turbulence(h_f, d_f, w_f);
 
-                const nn: f32 = self.noise_3d.ridged(h_f, d_f, w_f);
-
-                const brightness: f32 = 1.0 - nn;
+                const brightness: f32 = nn;
 
                 const r_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);
                 const g_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);

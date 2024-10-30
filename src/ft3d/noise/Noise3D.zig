@@ -66,5 +66,17 @@ pub fn ridged(self: *Noise3D, fx: f32, fy: f32, fz: f32) f32 {
     return rv;
 }
 
+pub fn perlin(self: *Noise3D, fx: f32, fy: f32, fz: f32, x_wrap: c_int, y_wrap: c_int, z_wrap: c_int) f32 {
+    const rv = c.stb_perlin_noise3(
+        fx * self.coord_sensitivity,
+        fy * self.coord_sensitivity,
+        fz * self.coord_sensitivity,
+        x_wrap,
+        y_wrap,
+        z_wrap,
+    );
+    return rv;
+}
+
 const std = @import("std");
 const c = @import("../c.zig").c;

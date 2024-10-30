@@ -25,6 +25,9 @@ marbled_tex: ?rhi.Texture = null,
 wood_block: object.object = .{ .norender = .{} },
 wood_tex: ?rhi.Texture = null,
 
+static_block: object.object = .{ .norender = .{} },
+static_tex: ?rhi.Texture = null,
+
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 light_m: math.matrix,
@@ -122,6 +125,10 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     t3d.renderWoodBlock();
     errdefer rhi.deleteObject(t3d.wood_block);
     t3d.shadow_objects[2] = .{ .obj = t3d.wood_block };
+
+    t3d.renderStaticBlock();
+    errdefer rhi.deleteObject(t3d.static_block);
+    t3d.shadow_objects[2] = .{ .obj = t3d.static_block };
 
     t3d.renderGrid();
     errdefer rhi.deleteObject(t3d.grid);
@@ -242,6 +249,12 @@ pub fn draw(self: *Textures3D, dt: f64) void {
         }
         rhi.drawObject(self.wood_block);
     }
+    {
+        if (self.static_tex) |t| {
+            t.bind();
+        }
+        rhi.drawObject(self.static_block);
+    }
     self.cross.draw(dt);
     self.ui_state.draw();
 }
@@ -318,6 +331,29 @@ fn renderSphere(self: *Textures3D) void {
     sd.setUniform1f(0);
     self.sky_dep = sd;
     self.sphere = sphere;
+}
+
+fn renderStaticBlock(self: *Textures3D) void {
+    const m = math.matrix.translateVec(.{ 0, -2.5, 0 });
+    const block = self.renderParallelepiped(m);
+    self.static_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.static_tex.?.texture_unit = 1;
+    if (self.static_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\static.vol") catch null;
+        t.setup3D(
+            data,
+            tex_dims,
+            tex_dims,
+            tex_dims,
+            block.mesh.program,
+            "f_tex_samp",
+            "wood_3d",
+        ) catch {
+            self.static_tex = null;
+        };
+    }
+
+    self.static_block = .{ .parallelepiped = block };
 }
 
 fn renderWoodBlock(self: *Textures3D) void {
