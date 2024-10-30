@@ -347,7 +347,7 @@ fn renderStaticBlock(self: *Textures3D) void {
             tex_dims,
             block.mesh.program,
             "f_tex_samp",
-            "wood_3d",
+            "static_3d",
         ) catch {
             self.static_tex = null;
         };

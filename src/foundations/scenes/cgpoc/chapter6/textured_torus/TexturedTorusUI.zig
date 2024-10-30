@@ -1,5 +1,5 @@
 disintegrate: bool = false,
-disintegration: f32 = 0,
+disintegration: f32 = 1,
 
 const TexturedTorusUI = @This();
 
@@ -15,11 +15,12 @@ pub fn draw(self: *TexturedTorusUI) void {
     if (self.disintegrate) {
         if (c.igButton("Reset", btn_dims)) {
             self.disintegrate = false;
-            self.disintegration = 0;
+            self.disintegration = 1;
         }
     } else {
         if (c.igButton("Disintegrate", btn_dims)) {
             self.disintegrate = true;
+            self.disintegration = 1;
         }
     }
 

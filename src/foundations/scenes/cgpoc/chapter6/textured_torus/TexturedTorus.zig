@@ -7,6 +7,9 @@ ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 ui_state: TexturedTorusUI = .{},
 
+disintegration_tex: ?rhi.Texture = null,
+disintegration_uni: rhi.Uniform = undefined,
+
 const TexturedTorus = @This();
 
 const vertex_shader: []const u8 = @embedFile("torus_vert.glsl");
@@ -65,6 +68,14 @@ pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *TexturedTorus, dt: f64) void {
+    if (self.ui_state.disintegrate) {
+        self.ui_state.disintegration -= @floatCast(@mod(dt, 0.01));
+        if (math.float.equal_e(self.ui_state.disintegration, 0.0)) {
+            self.ui_state.disintegrate = false;
+            self.ui_state.disintegration = 1;
+        }
+    }
+    self.disintegration_uni.setUniform1f(self.ui_state.disintegration);
     self.view_camera.update(dt);
     if (self.cubemap_texture) |t| {
         t.bind();
@@ -81,6 +92,9 @@ pub fn draw(self: *TexturedTorus, dt: f64) void {
     }
     self.cross.draw(dt);
     {
+        if (self.disintegration_tex) |t| {
+            t.bind();
+        }
         const objects: [1]object.object = .{
             self.torus,
         };
@@ -134,6 +148,25 @@ pub fn renderTorus(self: *TexturedTorus) void {
     self.torus = torus;
     if (self.cubemap_texture == null) return;
     self.cubemap_texture.?.addUniform(prog, "f_cubemap") catch @panic("uniform failed");
+    self.disintegration_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.disintegration_tex.?.texture_unit = 17;
+    if (self.disintegration_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\static.vol") catch null;
+        t.setup3D(
+            data,
+            256,
+            256,
+            256,
+            prog,
+            "f_3d_samp",
+            "disintegration_3d",
+        ) catch {
+            self.disintegration_tex = null;
+        };
+    }
+    const du = rhi.Uniform.init(prog, "f_disintegration") catch @panic("bad uniform");
+    du.setUniform1f(self.ui_state.disintegration);
+    self.disintegration_uni = du;
 }
 
 pub fn deleteCross(self: *TexturedTorus) void {
