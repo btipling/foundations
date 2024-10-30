@@ -1,8 +1,10 @@
 dims: usize = 256,
 data: std.ArrayListUnmanaged(f32) = .{},
+coord_sensitivity: f32 = 0.03,
 rand: std.Random.DefaultPrng = undefined,
 lacunarity: f32 = 2.0,
 gain: f32 = 0.6,
+offset: f32 = 2.0,
 octaves: u32 = 6,
 
 const Noise3D = @This();
@@ -27,33 +29,40 @@ pub fn deinit(self: *Noise3D, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn noise(self: *Noise3D, fx: f32, fy: f32, fz: f32) f32 {
+pub fn turbulence(self: *Noise3D, fx: f32, fy: f32, fz: f32) f32 {
     const rv = c.stb_perlin_turbulence_noise3(
-        fx * 0.03,
-        fy * 0.03,
-        fz * 0.03,
+        fx * self.coord_sensitivity,
+        fy * self.coord_sensitivity,
+        fz * self.coord_sensitivity,
         self.lacunarity,
         self.gain,
         @intCast(self.octaves),
     );
-    if (rv > 0) {
-        // std.debug.print("rv: {d}\n", .{rv});
-    }
     return rv;
 }
 
-pub fn noiseOther(self: *Noise3D, fx: f32, fy: f32, fz: f32) f32 {
+pub fn fbm(self: *Noise3D, fx: f32, fy: f32, fz: f32) f32 {
     const rv = c.stb_perlin_fbm_noise3(
-        fx * 0.03,
-        fy * 0.03,
-        fz * 0.03,
+        fx * self.coord_sensitivity,
+        fy * self.coord_sensitivity,
+        fz * self.coord_sensitivity,
         self.lacunarity,
         self.gain,
         @intCast(self.octaves),
     );
-    if (rv > 0) {
-        // std.debug.print("rv: {d}\n", .{rv});
-    }
+    return rv;
+}
+
+pub fn ridged(self: *Noise3D, fx: f32, fy: f32, fz: f32) f32 {
+    const rv = c.stb_perlin_ridge_noise3(
+        fx * self.coord_sensitivity,
+        fy * self.coord_sensitivity,
+        fz * self.coord_sensitivity,
+        self.lacunarity,
+        self.gain,
+        self.offset,
+        @intCast(self.octaves),
+    );
     return rv;
 }
 

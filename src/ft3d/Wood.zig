@@ -38,7 +38,7 @@ pub fn fillData(self: *StripedPattern) void {
             for (0..self.dims) |w| {
                 const w_f: f32 = @floatFromInt(w);
 
-                const nn: f32 = self.noise_3d.noise(h_f, d_f, w_f) / dims;
+                const nn: f32 = self.noise_3d.turbulence(h_f, d_f, w_f) / dims;
 
                 const w_val: f32 = ((w_f - dims / offset) / dims) - 0.25;
                 const h_val: f32 = ((h_f - dims / offset) / dims) - 0.25;

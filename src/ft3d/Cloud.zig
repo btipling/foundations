@@ -3,12 +3,12 @@ dims: usize = 256,
 dim: usize = 4,
 noise_3d: *noise.Noise3D = undefined,
 
-const StripedPattern = @This();
+const Cloud = @This();
 
 pub const max_tex_dims = 256;
 
-pub fn init(allocator: std.mem.Allocator) *StripedPattern {
-    var sp = allocator.create(StripedPattern) catch @panic("OOM");
+pub fn init(allocator: std.mem.Allocator) *Cloud {
+    var sp = allocator.create(Cloud) catch @panic("OOM");
     const n = noise.Noise3D.init(allocator);
     n.lacunarity = 0.2;
     n.gain = 1.3;
@@ -24,14 +24,14 @@ pub fn init(allocator: std.mem.Allocator) *StripedPattern {
     return sp;
 }
 
-pub fn deinit(self: *StripedPattern, allocator: std.mem.Allocator) void {
+pub fn deinit(self: *Cloud, allocator: std.mem.Allocator) void {
     self.noise_3d.deinit(allocator);
     self.data.deinit(allocator);
     self.data = undefined;
     allocator.destroy(self);
 }
 
-pub fn fillData(self: *StripedPattern) void {
+pub fn fillData(self: *Cloud) void {
     for (0..self.dims) |h| {
         const h_f: f32 = @floatFromInt(h);
         for (0..self.dims) |d| {
@@ -39,7 +39,7 @@ pub fn fillData(self: *StripedPattern) void {
             for (0..self.dims) |w| {
                 const w_f: f32 = @floatFromInt(w);
 
-                const nn: f32 = self.noise_3d.noiseOther(h_f, d_f, w_f);
+                const nn: f32 = self.noise_3d.fbm(h_f, d_f, w_f);
 
                 const brightness: f32 = 1.0 - nn;
 
