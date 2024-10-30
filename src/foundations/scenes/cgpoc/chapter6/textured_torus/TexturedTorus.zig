@@ -5,6 +5,7 @@ view_camera: *physics.camera.Camera(*TexturedTorus, physics.Integrator(physics.S
 cubemap_texture: ?rhi.Texture = null,
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
+ui_state: TexturedTorusUI = .{},
 
 const TexturedTorus = @This();
 
@@ -85,6 +86,7 @@ pub fn draw(self: *TexturedTorus, dt: f64) void {
         };
         rhi.drawObjects(objects[0..]);
     }
+    self.ui_state.draw();
 }
 
 pub fn updateCamera(_: *TexturedTorus) void {}
@@ -221,3 +223,4 @@ const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
 const assets = @import("../../../../assets/assets.zig");
+const TexturedTorusUI = @import("TexturedTorusUI.zig");
