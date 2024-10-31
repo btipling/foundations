@@ -15,5 +15,12 @@ out vec4 fo_frag_color;
 
 void main()
 {
-    fo_frag_color = vec4(1.0, 0.0, 1.0, 1.0);
+    float f_z = floor(fo_vert.z) / 8.0;
+    float f_y = floor(fo_vert.y) / 8.0;
+
+    if (mod(f_z, 2.0) <= 0.95 && mod(f_y, 2.0) > 0.95 || mod(f_z, 2.0) > 0.95 && mod(f_y, 2.0) <= 0.95) {
+        fo_frag_color = vec4(0.01, 0.01, 0.01, 1.0);
+    } else {
+        fo_frag_color = vec4(0.9, 0.9, 0.9, 0.9);
+    }
 }
