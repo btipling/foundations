@@ -76,14 +76,14 @@ pub fn updateParallepipedTransform(_: *PlainRedCube, prog: u32) void {
 }
 
 pub fn renderParallepiped(self: *PlainRedCube) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("red_cube");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "red_cube");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -103,7 +103,7 @@ pub fn renderParallepiped(self: *PlainRedCube) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            false,
+            "red_cube",
         ),
     };
     self.updateParallepipedTransform(prog);

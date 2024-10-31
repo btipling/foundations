@@ -49,7 +49,7 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ConeAnimated {
     const p = allocator.create(ConeAnimated) catch @panic("OOM");
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cone_animated");
     var i_datas: [1]rhi.instanceData = undefined;
     {
         const m = math.matrix.identity();
@@ -67,12 +67,13 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ConeAnimate
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "cone");
     }
     const cone: object.object = .{
         .cone = object.Cone.init(
             prog,
             i_datas[0..],
+            "cone",
         ),
     };
     p.* = .{

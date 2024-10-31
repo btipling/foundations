@@ -102,7 +102,7 @@ pub fn deleteTerrain(self: *LodTessellator) void {
 }
 
 pub fn renderTerrain(self: *LodTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("terrain");
     const vao = rhi.createVAO();
 
     self.terrain_t_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
@@ -140,15 +140,25 @@ pub fn renderTerrain(self: *LodTessellator) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "terrain");
 
     if (self.terrain_t_tex) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_map.jpg") catch null, prog, "f_terrain_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_map.jpg") catch null,
+            prog,
+            "f_terrain_samp",
+            "moon_height",
+        ) catch {
             self.terrain_t_tex = null;
         };
     }
     if (self.terrain_t_map) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_bump.jpg") catch null, prog, "f_height_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_bump.jpg") catch null,
+            prog,
+            "f_height_samp",
+            "moon_bump",
+        ) catch {
             self.terrain_t_map = null;
         };
     }
@@ -172,5 +182,5 @@ const scenes = @import("../../../scenes.zig");
 const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
-const Compiler = @import("../../../../../compiler/Compiler.zig");
+const Compiler = @import("../../../../../fssc/Compiler.zig");
 const LodTessellatorUI = @import("LodTessellatorUI.zig");

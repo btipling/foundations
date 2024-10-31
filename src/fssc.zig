@@ -1,5 +1,5 @@
 pub fn main() !void {
-    std.debug.print("Starting compiler.\n", .{});
+    std.debug.print("Starting fssc.\n", .{});
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -9,8 +9,8 @@ pub fn main() !void {
 
     try c.run();
 
-    std.debug.print("Compiler finished.\n", .{});
+    std.debug.print("fssc finished.\n", .{});
 }
 
 const std = @import("std");
-const Compiler = @import("compiler/Compiler.zig");
+const Compiler = @import("fssc/Compiler.zig");

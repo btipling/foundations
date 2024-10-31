@@ -12,19 +12,18 @@ const outer_radius: f32 = 0.2;
 
 pub fn init(
     program: u32,
-    instance_data: []rhi.instanceData,
-    wireframe: bool,
+    instance_data: []const rhi.instanceData,
+    label: [:0]const u8,
 ) Torus {
     var d = data();
 
-    const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data);
-    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
+    const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data, label);
+    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,
             .vao = vao_buf.vao,
             .buffer = vao_buf.buffer,
-            .wire_mesh = wireframe,
             .instance_type = .{
                 .instanced = .{
                     .index_count = num_indices,

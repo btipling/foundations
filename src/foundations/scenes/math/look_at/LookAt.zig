@@ -85,20 +85,21 @@ pub fn updateCamera(self: *LookAt) void {
 }
 
 pub fn renderCube(self: *LookAt) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = false,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..], "cube");
     }
     const cube: object.object = .{
         .cube = object.Cube.init(
             prog,
             object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
+            "cube",
         ),
     };
     var m = math.matrix.transformMatrix(math.matrix.identity(), math.matrix.translate(2.0, 0.0, 0.0));
@@ -119,20 +120,21 @@ pub fn renderCube(self: *LookAt) void {
 }
 
 pub fn renderCamera(self: *LookAt) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("camera");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(camera_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(camera_vertex_shader)[0..], "camera");
     }
     const camera: object.object = .{
         .cube = object.Cube.init(
             prog,
             object.Cube.default_positions,
             .{ 1, 0, 1, 1 },
+            "camera",
         ),
     };
     const m = math.matrix.transformMatrix(math.matrix.identity(), self.view_camera.camera_matrix);

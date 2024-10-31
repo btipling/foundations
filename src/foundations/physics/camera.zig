@@ -13,6 +13,7 @@ pub const CameraData = struct {
     v_matrix: [16]f32,
     f_camera_pos: [4]f32,
     f_global_ambient: [4]f32,
+    f_shadow_view_m: [16]f32,
 };
 
 pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
@@ -41,6 +42,9 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         global_ambient: [4]f32,
         name: []const u8 = "main camera",
         owns_buffer: bool,
+        updated: bool = false,
+
+        f_shadow_view_m: math.matrix = math.matrix.identity(),
 
         const Self = @This();
 
@@ -79,8 +83,9 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .v_matrix = v_matrix.array(),
                 .f_camera_pos = .{ pos[0], pos[1], pos[2], 1 },
                 .f_global_ambient = global_ambient,
+                .f_shadow_view_m = math.matrix.identity().array(),
             } };
-            var camera_buffer = rhi.Buffer.init(cd);
+            var camera_buffer = rhi.Buffer.init(cd, "camera");
             errdefer camera_buffer.deinit();
             return initInternal(allocator, cfg, scene, integrator, pos, heading, camera_buffer, false);
         }
@@ -163,6 +168,10 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         pub fn update(self: *Self, dt: f64) void {
             self.integrate(dt);
             self.handleInput(dt);
+            if (!self.updated) {
+                self.updateMVP();
+                self.updated = true;
+            }
         }
 
         pub fn setViewActivation(self: *Self, enabled: bool) void {
@@ -462,6 +471,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                     1,
                 },
                 .f_global_ambient = self.global_ambient,
+                .f_shadow_view_m = self.f_shadow_view_m.array(),
             } });
             self.scene.updateCamera();
         }

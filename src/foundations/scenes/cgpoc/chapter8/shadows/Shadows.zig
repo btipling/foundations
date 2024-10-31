@@ -113,7 +113,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -145,11 +145,11 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const sd: rhi.Buffer.buffer_data = .{ .chapter8_shadows = .{} };
-    var scene_data_buffer = rhi.Buffer.init(sd);
+    var scene_data_buffer = rhi.Buffer.init(sd, "scene_data");
     errdefer scene_data_buffer.deinit();
 
     const ui_state: ShadowsUI = .{};
@@ -267,7 +267,7 @@ fn updateLights(self: *Shadows) void {
     };
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
@@ -400,14 +400,14 @@ pub fn deleteBG(self: *Shadows) void {
 }
 
 pub fn renderBG(self: *Shadows) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("background");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..], "background");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -428,6 +428,7 @@ pub fn renderBG(self: *Shadows) void {
         .instanced_triangle = object.InstancedTriangle.init(
             prog,
             i_datas[0..],
+            "background",
         ),
     };
     bg.instanced_triangle.mesh.cull = false;
@@ -496,7 +497,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
                 partials = .{gouraud_vertex_shader};
             },
         }
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "object");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -517,7 +518,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
                 .torus = object.Torus.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "torus_model",
                 ),
             };
             torus.torus.mesh.linear_colorspace = false;
@@ -528,7 +529,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
                 .parallelepiped = object.Parallelepiped.init(
                     prog,
                     i_datas[0..],
-                    true,
+                    "parallelepiped_model",
                 ),
             };
             parallelepiped.parallelepiped.mesh.linear_colorspace = false;
@@ -539,7 +540,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
                 .sphere = object.Sphere.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "sphere_model",
                 ),
             };
             sphere.sphere.mesh.linear_colorspace = false;
@@ -550,6 +551,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
                 .cone = object.Cone.init(
                     prog,
                     i_datas[0..],
+                    "cone_model",
                 ),
             };
             cone.cone.mesh.linear_colorspace = false;
@@ -560,7 +562,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
                 .cylinder = object.Cylinder.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "cylinder_model",
                 ),
             };
             cylinder.cylinder.mesh.linear_colorspace = false;
@@ -571,7 +573,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
                 .pyramid = object.Pyramid.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "pyramid_model",
                 ),
             };
             pyramid.pyramid.mesh.linear_colorspace = false;
@@ -584,7 +586,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s shuttle_model.toObject(prog, i_datas[0..]);
+            break :s shuttle_model.toObject(prog, i_datas[0..], "shuttle_model");
         },
         7 => {
             var dolphin_model: *assets.Obj = undefined;
@@ -593,7 +595,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s dolphin_model.toObject(prog, i_datas[0..]);
+            break :s dolphin_model.toObject(prog, i_datas[0..], "lowpoly_dolphin_model");
         },
         8 => {
             var dolphin_model: *assets.Obj = undefined;
@@ -602,7 +604,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s dolphin_model.toObject(prog, i_datas[0..]);
+            break :s dolphin_model.toObject(prog, i_datas[0..], "highpoly_dolphin_model");
         },
         else => .{ .norender = .{} },
     };
@@ -640,7 +642,7 @@ pub fn renderObject(self: *Shadows, obj_setting: ShadowsUI.objectSetting, prog: 
 }
 
 pub fn renderObject_1(self: *Shadows) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("object1");
     self.object_1 = self.renderObject(self.ui_state.object_1, prog);
 
     switch (self.object_1) {
@@ -668,7 +670,7 @@ pub fn renderObject_1(self: *Shadows) void {
 }
 
 pub fn renderObject_2(self: *Shadows) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("object2");
     self.object_2 = self.renderObject(self.ui_state.object_2, prog);
 
     switch (self.object_2) {
@@ -703,14 +705,14 @@ pub fn deletesphere_1(self: *Shadows) void {
 }
 
 pub fn rendersphere_1(self: *Shadows) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("light1");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light1");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
@@ -730,7 +732,7 @@ pub fn rendersphere_1(self: *Shadows) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "light1",
         ),
     };
     const lp = self.ui_state.light_1.position;
@@ -748,14 +750,14 @@ pub fn deletesphere_2(self: *Shadows) void {
 }
 
 pub fn rendersphere_2(self: *Shadows) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("light2");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light2");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
@@ -775,7 +777,7 @@ pub fn rendersphere_2(self: *Shadows) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "light2",
         ),
     };
     const lp = self.ui_state.light_2.position;
@@ -786,14 +788,14 @@ pub fn rendersphere_2(self: *Shadows) void {
 }
 
 fn setupShadowmaps(self: *Shadows) void {
-    self.shadowmap_program = rhi.createProgram();
+    self.shadowmap_program = rhi.createProgram("shadow_map");
     {
         var s: rhi.Shader = .{
             .program = self.shadowmap_program,
             .instance_data = true,
             .fragment_shader = .shadow,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(shadow_vertex_shader)[0..], "shadowmap");
     }
 
     var shadow_uniform: rhi.Uniform = rhi.Uniform.init(self.shadowmap_program, "f_shadow_vp") catch @panic("uniform failed");
@@ -818,6 +820,7 @@ fn genShadowmapTexture(self: *Shadows, i: usize) void {
     shadow_texture.setupShadow(
         self.ctx.cfg.fb_width,
         self.ctx.cfg.fb_height,
+        "shadowmap",
     ) catch @panic("unable to setup shadow texture");
     shadow_texture.texture_unit = @intCast(4 + i);
     self.shadowmaps[i] = shadow_texture;

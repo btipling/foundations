@@ -5,6 +5,10 @@ view_camera: *physics.camera.Camera(*TexturedTorus, physics.Integrator(physics.S
 cubemap_texture: ?rhi.Texture = null,
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
+ui_state: TexturedTorusUI = .{},
+
+disintegration_tex: ?rhi.Texture = null,
+disintegration_uni: rhi.Uniform = undefined,
 
 const TexturedTorus = @This();
 
@@ -64,6 +68,14 @@ pub fn deinit(self: *TexturedTorus, allocator: std.mem.Allocator) void {
 }
 
 pub fn draw(self: *TexturedTorus, dt: f64) void {
+    if (self.ui_state.disintegrate) {
+        self.ui_state.disintegration -= @floatCast(@mod(dt, 0.01));
+        if (math.float.equal_e(self.ui_state.disintegration, 0.0)) {
+            self.ui_state.disintegrate = false;
+            self.ui_state.disintegration = 1;
+        }
+    }
+    self.disintegration_uni.setUniform1f(self.ui_state.disintegration);
     self.view_camera.update(dt);
     if (self.cubemap_texture) |t| {
         t.bind();
@@ -80,11 +92,15 @@ pub fn draw(self: *TexturedTorus, dt: f64) void {
     }
     self.cross.draw(dt);
     {
+        if (self.disintegration_tex) |t| {
+            t.bind();
+        }
         const objects: [1]object.object = .{
             self.torus,
         };
         rhi.drawObjects(objects[0..]);
     }
+    self.ui_state.draw();
 }
 
 pub fn updateCamera(_: *TexturedTorus) void {}
@@ -97,7 +113,7 @@ pub fn deleteTorus(self: *TexturedTorus) void {
 }
 
 pub fn renderTorus(self: *TexturedTorus) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("torus");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -106,7 +122,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
             .frag_body = frag_shader,
         };
         const partials = [_][]const u8{vertex_shader};
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "torus");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -126,12 +142,34 @@ pub fn renderTorus(self: *TexturedTorus) void {
         .torus = object.Torus.init(
             prog,
             i_datas[0..],
-            false,
+            "torus",
         ),
     };
     self.torus = torus;
     if (self.cubemap_texture == null) return;
     self.cubemap_texture.?.addUniform(prog, "f_cubemap") catch @panic("uniform failed");
+    self.disintegration_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.disintegration_tex.?.wrap_s = c.GL_REPEAT;
+    self.disintegration_tex.?.wrap_t = c.GL_REPEAT;
+    self.disintegration_tex.?.texture_unit = 17;
+    if (self.disintegration_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\static.vol") catch null;
+        t.setup3D(
+            data,
+            256,
+            256,
+            256,
+            prog,
+            c.GL_REPEAT,
+            "f_3d_samp",
+            "disintegration_3d",
+        ) catch {
+            self.disintegration_tex = null;
+        };
+    }
+    const du = rhi.Uniform.init(prog, "f_disintegration") catch @panic("bad uniform");
+    du.setUniform1f(self.ui_state.disintegration);
+    self.disintegration_uni = du;
 }
 
 pub fn deleteCross(self: *TexturedTorus) void {
@@ -154,7 +192,7 @@ pub fn deleteCubemap(self: *TexturedTorus) void {
 }
 
 pub fn renderCubemap(self: *TexturedTorus) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cubemap");
     self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -163,7 +201,7 @@ pub fn renderCubemap(self: *TexturedTorus) void {
             .instance_data = true,
             .fragment_shader = .texture,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..], "cubemap");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -183,7 +221,7 @@ pub fn renderCubemap(self: *TexturedTorus) void {
         .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
-            false,
+            "cubemap",
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
@@ -204,7 +242,7 @@ pub fn renderCubemap(self: *TexturedTorus) void {
         } else |_| {
             std.debug.print("failed to load textures\n", .{});
         }
-        bt.setupCubemap(images, prog, "f_cubemap") catch {
+        bt.setupCubemap(images, prog, "f_cubemap", "alien_world") catch {
             self.cubemap_texture = null;
         };
     }
@@ -221,3 +259,4 @@ const scenes = @import("../../../scenes.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
 const assets = @import("../../../../assets/assets.zig");
+const TexturedTorusUI = @import("TexturedTorusUI.zig");

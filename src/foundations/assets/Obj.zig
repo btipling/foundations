@@ -69,7 +69,7 @@ pub fn init(self: *Obj, _: std.mem.Allocator, data: []u8, file_name: []const u8)
     self.num_normals = n_index;
 }
 
-pub fn toObject(self: *Obj, prog: u32, i_datas: []rhi.instanceData) object.object {
+pub fn toObject(self: *Obj, prog: u32, i_datas: []rhi.instanceData, label: [:0]const u8) object.object {
     var attribute_data: [max_vertices]rhi.attributeData = undefined;
     var indices: [max_indicies]u32 = undefined;
 
@@ -94,6 +94,7 @@ pub fn toObject(self: *Obj, prog: u32, i_datas: []rhi.instanceData) object.objec
             i_datas,
             attribute_data[0..current_index],
             indices[0..current_index],
+            label,
         ),
     };
     return model;

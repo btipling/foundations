@@ -36,7 +36,7 @@ pub fn draw(self: *Nav) void {
 inline fn navMenuItems(self: *Nav, nav_type: ui.ui_state.scene_nav_type) void {
     inline for (std.meta.fields(ui.ui_state.scene_type)) |field| {
         const dt = @field(ui.ui_state.scene_type, field.name);
-        @setEvalBranchQuota(10_000);
+        @setEvalBranchQuota(100_000);
         switch (dt) {
             inline else => |dtag| {
                 const ntfn: *const fn () ui.ui_state.scene_nav_info = @field(std.meta.Child(std.meta.TagPayload(

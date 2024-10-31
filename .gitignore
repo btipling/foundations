@@ -4,3 +4,11 @@ zig-cache
 imgui.ini
 .vscode
 .vs
+vtune
+.vol
+.gltf
+.png
+.bmp
+.jpg
+.obj
+

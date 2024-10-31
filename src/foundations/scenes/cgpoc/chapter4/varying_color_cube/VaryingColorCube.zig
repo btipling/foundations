@@ -66,7 +66,7 @@ pub fn updateParallepipedTransform(_: *VaryingColorCube, prog: u32) void {
 }
 
 pub fn renderParallepiped(self: *VaryingColorCube) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("varying_color_cube");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -77,7 +77,7 @@ pub fn renderParallepiped(self: *VaryingColorCube) void {
             transforms,
             vertex_main,
         };
-        s.attach(self.allocator, partials[0..]);
+        s.attach(self.allocator, partials[0..], "varying_color_cube");
     }
     var cm = math.matrix.identity();
     cm = math.matrix.transformMatrix(cm, math.matrix.translate(0, -1, -1));
@@ -97,7 +97,7 @@ pub fn renderParallepiped(self: *VaryingColorCube) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            false,
+            "varying_color_cube",
         ),
     };
     self.updateParallepipedTransform(prog);

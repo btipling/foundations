@@ -43,14 +43,14 @@ pub fn deleteStrip(self: *UnitCircle) void {
 }
 
 pub fn renderCircle(self: *UnitCircle) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("circle");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "circle");
     }
     var i_datas: [num_triangles]rhi.instanceData = undefined;
     for (0..num_triangles) |i| {
@@ -73,6 +73,7 @@ pub fn renderCircle(self: *UnitCircle) void {
         .strip = object.Strip.init(
             prog,
             i_datas[0..],
+            "unit_circle",
         ),
     };
     self.strip = strip;

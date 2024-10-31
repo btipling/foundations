@@ -9,11 +9,12 @@ const num_indices: usize = 3 * num_triangles;
 pub fn init(
     program: u32,
     instance_data: []rhi.instanceData,
+    label: [:0]const u8,
 ) Cone {
     var d = data();
 
-    const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data);
-    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao);
+    const vao_buf = rhi.attachInstancedBuffer(d.attribute_data[0..], instance_data, label);
+    const ebo = rhi.initEBO(@ptrCast(d.indices[0..]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,
@@ -50,17 +51,17 @@ fn data() struct { attribute_data: [num_vertices]rhi.attributeData, indices: [nu
         const tri = math.geometry.Triangle.init(p0, p1, p2);
         attribute_data[offset + 0] = .{
             .position = tri.p0,
-            .normal  = tri.normal,
+            .normal = tri.normal,
         };
         indices[offset + 0] = uoffset + 0;
         attribute_data[uoffset + 1] = .{
             .position = tri.p1,
-            .normal  = tri.normal,
+            .normal = tri.normal,
         };
         indices[offset + 1] = uoffset + 1;
         attribute_data[uoffset + 2] = .{
             .position = tri.p2,
-            .normal  = tri.normal,
+            .normal = tri.normal,
         };
         indices[offset + 2] = uoffset + 2;
         offset += 3;

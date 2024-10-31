@@ -59,7 +59,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -78,7 +78,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: TerrainTesselatorUI = .{};
@@ -107,6 +107,9 @@ pub fn deinit(self: *TerrainTessellator, allocator: std.mem.Allocator) void {
     self.deleteCross();
     self.deleteTerrain();
     self.deletesphere_1();
+    if (self.terrain_t_map) |t| t.deinit();
+    if (self.terrain_t_tex) |t| t.deinit();
+    if (self.terrain_t_nor) |t| t.deinit();
     self.lights.deinit();
     self.materials.deinit();
     self.view_camera.deinit(allocator);
@@ -205,13 +208,13 @@ fn updateLights(self: *TerrainTessellator) void {
     };
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
 
 pub fn renderTerrain(self: *TerrainTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("terrain");
     const vao = rhi.createVAO();
 
     self.terrain_t_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
@@ -251,20 +254,35 @@ pub fn renderTerrain(self: *TerrainTessellator) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "terrain");
 
     if (self.terrain_t_tex) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_map.jpg") catch null, prog, "f_terrain_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_map.jpg") catch null,
+            prog,
+            "f_terrain_samp",
+            "moon_height",
+        ) catch {
             self.terrain_t_tex = null;
         };
     }
     if (self.terrain_t_map) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_bump.jpg") catch null, prog, "f_height_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_bump.jpg") catch null,
+            prog,
+            "f_height_samp",
+            "moon_bump",
+        ) catch {
             self.terrain_t_map = null;
         };
     }
     if (self.terrain_t_nor) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_normal.jpg") catch null, prog, "f_normal_samp") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_moon_normal.jpg") catch null,
+            prog,
+            "f_normal_samp",
+            "moon_normal",
+        ) catch {
             self.terrain_t_nor = null;
         };
     }
@@ -293,14 +311,14 @@ pub fn deletesphere_1(self: *TerrainTessellator) void {
 }
 
 pub fn rendersphere_1(self: *TerrainTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("light");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
@@ -320,7 +338,7 @@ pub fn rendersphere_1(self: *TerrainTessellator) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "light",
         ),
     };
     const lp = self.ui_state.light_1.position;
@@ -338,7 +356,7 @@ const scenes = @import("../../../scenes.zig");
 const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
-const Compiler = @import("../../../../../compiler/Compiler.zig");
+const Compiler = @import("../../../../../fssc/Compiler.zig");
 const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const TerrainTesselatorUI = @import("TerrainTessellatorUI.zig");

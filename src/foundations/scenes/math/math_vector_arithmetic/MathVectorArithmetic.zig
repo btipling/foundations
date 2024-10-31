@@ -93,6 +93,7 @@ fn addVector(self: *MathVectorArithmetic) void {
             triangle_positions,
             triangle_colors,
             object.Triangle.default_normals,
+            "arrowhead",
         ),
     };
     self.num_objects += 1;
@@ -130,6 +131,7 @@ fn addVector(self: *MathVectorArithmetic) void {
             .color,
             quad_positions,
             quad_colors,
+            "line",
         ),
     };
     self.num_objects += 1;

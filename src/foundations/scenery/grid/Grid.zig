@@ -45,14 +45,14 @@ pub fn program(self: *Grid) u32 {
 }
 
 fn renderGrid(self: *Grid) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("grid");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(grid_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(grid_vertex_shader)[0..], "grid");
     }
     var i_datas: [num_grid_lines * 2]rhi.instanceData = undefined;
     var i_data_i: usize = 0;
@@ -108,7 +108,7 @@ fn renderGrid(self: *Grid) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            false,
+            "grid",
         ),
     };
     self.grid = grid;

@@ -19,14 +19,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Circle {
         .ctx = ctx,
     };
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cone_animated");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "cone");
     }
     var m = math.matrix.orthographicProjection(0, 9, 0, 6, ctx.cfg.near, ctx.cfg.far);
     m = math.matrix.transformMatrix(m, math.matrix.leftHandedXUpToNDC());
@@ -44,6 +44,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Circle {
         .circle = object.Circle.init(
             prog,
             i_data[0..],
+            "circle",
         ),
     };
     p.program = prog;

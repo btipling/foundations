@@ -49,14 +49,14 @@ pub fn navType() ui.ui_state.scene_nav_info {
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Torus {
     const p = allocator.create(Torus) catch @panic("OOM");
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("torus");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "torus");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -73,7 +73,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Torus {
         .torus = object.Torus.init(
             prog,
             i_datas[0..],
-            false,
+            "torus",
         ),
     };
     p.* = .{

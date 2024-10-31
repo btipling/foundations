@@ -18,7 +18,7 @@ const Manager = @This();
 
 const vertex_shader: []const u8 = @embedFile("line_vertex.glsl");
 
-pub inline fn coordinate(c: f32) f32 {
+pub fn coordinate(c: f32) f32 {
     return c;
 }
 
@@ -217,14 +217,14 @@ pub fn deleteQuad(self: *Manager) void {
 }
 
 pub fn initCircle(self: *Manager) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("circle");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "circle");
     }
     var i_datas: [point_limit]rhi.instanceData = undefined;
     for (0..self.num_points) |i| {
@@ -234,6 +234,7 @@ pub fn initCircle(self: *Manager) void {
         .circle = object.Circle.init(
             prog,
             i_datas[0..self.num_points],
+            "circle",
         ),
     };
     self.circle = circle;
@@ -243,14 +244,14 @@ pub fn renderStrips(self: *Manager) void {
     const num_points = self.num_points - self.num_tangents;
     if (num_points < 2) return;
     self.deleteStrip();
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("strips");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "strips");
     }
     var i_datas: [100_000]rhi.instanceData = undefined;
     var positions: [point_limit]math.vector.vec4 = undefined;
@@ -303,6 +304,7 @@ pub fn renderStrips(self: *Manager) void {
         .strip = object.Strip.init(
             prog,
             i_datas[0 .. points_added * 1_000],
+            "line",
         ),
     };
     self.strip = strip;
@@ -311,14 +313,14 @@ pub fn renderStrips(self: *Manager) void {
 pub fn renderQuads(self: *Manager) void {
     if (self.num_tangents < 1) return;
     self.deleteQuad();
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("quads");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "quads");
     }
     var i_datas: [100]rhi.instanceData = undefined;
     var tangents_added: usize = 0;
@@ -354,6 +356,7 @@ pub fn renderQuads(self: *Manager) void {
         .quad = object.Quad.initInstanced(
             prog,
             i_datas[0..self.num_tangents],
+            "quads",
         ),
     };
     self.quad = quad;

@@ -39,9 +39,12 @@ pub fn deinit(self: Texture) void {
     }
 }
 
-pub fn setupShadow(self: *Texture, width: usize, height: usize) TextureError!void {
+pub fn setupShadow(self: *Texture, width: usize, height: usize, label: [:0]const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "👤shadow_texture_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
     c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT32, @intCast(width), @intCast(height));
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
@@ -70,9 +73,12 @@ pub fn setupShadow(self: *Texture, width: usize, height: usize) TextureError!voi
     return;
 }
 
-pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: []const u8) TextureError!void {
+pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: []const u8, label: [:0]const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "🌮texture_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, self.wrap_s);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, self.wrap_t);
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR_MIPMAP_LINEAR);
@@ -138,9 +144,12 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
     return;
 }
 
-pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uniform_name: []const u8) TextureError!void {
+pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uniform_name: []const u8, label: [:0]const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_CUBE_MAP, 1, @ptrCast(&name));
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "🗺️cubemap_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
     c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, c.GL_CLAMP_TO_EDGE);
@@ -190,6 +199,73 @@ pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uni
         c.glTextureParameterf(name, c.GL_TEXTURE_MAX_ANISOTROPY, ansio_setting);
     }
     self.texture_unit = 16;
+    self.name = name;
+
+    self.uniforms[0] = Uniform.init(program, uniform_name) catch {
+        return TextureError.UniformCreationFailed;
+    };
+    self.num_uniforms += 1;
+
+    if (self.disable_bindless) {
+        return;
+    }
+    // Generate bindless handle
+    self.handle = c.glGetTextureHandleARB(self.name);
+    if (self.handle == 0) {
+        return TextureError.BindlessHandleCreationFailed;
+    }
+
+    // Make the texture resident
+    c.glMakeTextureHandleResidentARB(self.handle);
+
+    return;
+}
+
+pub fn setup3D(
+    self: *Texture,
+    t3d_opt: ?*assets.Texture3D,
+    width: u32,
+    height: u32,
+    depth: u32,
+    program: u32,
+    wrap: c.GLint,
+    uniform_name: []const u8,
+    label: [:0]const u8,
+) TextureError!void {
+    const t3d = t3d_opt orelse return;
+    const data = t3d.data;
+    var name: u32 = undefined;
+    c.glCreateTextures(c.GL_TEXTURE_3D, 1, @ptrCast(&name));
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "🧱3d_texture_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, wrap);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, wrap);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, wrap);
+    c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
+
+    c.glTextureStorage3D(name, 1, c.GL_RGBA8, @intCast(width), @intCast(height), @intCast(depth));
+    c.glTextureSubImage3D(
+        name,
+        0,
+        0,
+        0,
+        0,
+        @intCast(width),
+        @intCast(height),
+        @intCast(depth),
+        c.GL_RGBA,
+        c.GL_UNSIGNED_INT_8_8_8_8_REV,
+        data.ptr,
+    );
+
+    c.glGenerateTextureMipmap(name);
+    if (c.glfwExtensionSupported("GL_EXT_texture_filter_anisotropic") == 1) {
+        var ansio_setting: f32 = 0;
+        c.glGetFloatv(c.GL_MAX_TEXTURE_MAX_ANISOTROPY, &ansio_setting);
+        c.glTextureParameterf(name, c.GL_TEXTURE_MAX_ANISOTROPY, ansio_setting);
+    }
+
     self.name = name;
 
     self.uniforms[0] = Uniform.init(program, uniform_name) catch {

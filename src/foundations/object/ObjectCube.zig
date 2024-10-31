@@ -113,6 +113,7 @@ pub fn init(
     program: u32,
     positions: [36][3]f32,
     color: [4]f32,
+    label: [:0]const u8,
 ) Cube {
     var data: [36]rhi.attributeData = undefined;
     var i: usize = 0;
@@ -123,7 +124,7 @@ pub fn init(
             .normal = normal[i],
         };
     }
-    const vao_buf = rhi.attachBuffer(data[0..]);
+    const vao_buf = rhi.attachBuffer(data[0..], label);
     return .{
         .mesh = .{
             .program = program,

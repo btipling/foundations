@@ -19,14 +19,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Sphere {
     const p = allocator.create(Sphere) catch @panic("OOM");
     errdefer allocator.destroy(p);
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sphere");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "sphere");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -43,7 +43,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Sphere {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "sphere",
         ),
     };
     p.* = .{

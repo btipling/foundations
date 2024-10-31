@@ -5,6 +5,7 @@ const Points = @This();
 pub fn init(
     program: u32,
     instance_count: usize,
+    label: [:0]const u8,
 ) Points {
     var attribute_data: [1]rhi.attributeData = undefined;
 
@@ -17,8 +18,8 @@ pub fn init(
     };
 
     const indices: [1]u32 = .{0};
-    const vao_buf = rhi.attachBuffer(attribute_data[0..]);
-    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao);
+    const vao_buf = rhi.attachBuffer(attribute_data[0..], label);
+    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,

@@ -87,7 +87,7 @@ pub fn draw(self: *TexturedPyramid, dt: f64) void {
 pub fn updateCamera(_: *TexturedPyramid) void {}
 
 pub fn renderParallepiped(self: *TexturedPyramid) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube");
     self.brick_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.ice_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
@@ -97,7 +97,7 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
             .fragment_shader = rhi.Texture.frag_shader(self.brick_texture),
         };
         const partials = [_][]const u8{vertex_shader};
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "cube");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -117,16 +117,26 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
         .pyramid = object.Pyramid.init(
             prog,
             i_datas[0..],
-            false,
+            "cube",
         ),
     };
     if (self.brick_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null,
+            prog,
+            "f_samp",
+            "brick",
+        ) catch {
             self.brick_texture = null;
         };
     }
     if (self.ice_texture) |*it| {
-        it.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\ice.jpg") catch null, prog, "f_samp") catch {
+        it.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\luna\\ice.jpg") catch null,
+            prog,
+            "f_samp",
+            "ice",
+        ) catch {
             self.ice_texture = null;
         };
     }
@@ -134,14 +144,14 @@ pub fn renderParallepiped(self: *TexturedPyramid) void {
 }
 
 pub fn renderBG(self: *TexturedPyramid) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("background");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..], "background");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -162,6 +172,7 @@ pub fn renderBG(self: *TexturedPyramid) void {
         .instanced_triangle = object.InstancedTriangle.init(
             prog,
             i_datas[0..],
+            "background",
         ),
     };
     bg.instanced_triangle.mesh.cull = false;

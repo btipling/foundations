@@ -37,7 +37,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PolygonOffs
     errdefer cam.deinit(allocator);
 
     const sd: rhi.Buffer.buffer_data = .{ .chapter8_shadows = .{} };
-    var scene_data_buffer = rhi.Buffer.init(sd);
+    var scene_data_buffer = rhi.Buffer.init(sd, "scene_data");
     errdefer scene_data_buffer.deinit();
 
     const ui_state: ShadowsUI = .{};
@@ -149,7 +149,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "object");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -170,7 +170,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
                 .torus = object.Torus.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "torus",
                 ),
             };
             torus.torus.mesh.linear_colorspace = false;
@@ -181,7 +181,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
                 .parallelepiped = object.Parallelepiped.init(
                     prog,
                     i_datas[0..],
-                    true,
+                    "parallelepiped",
                 ),
             };
             parallelepiped.parallelepiped.mesh.linear_colorspace = false;
@@ -192,7 +192,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
                 .sphere = object.Sphere.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "sphere",
                 ),
             };
             sphere.sphere.mesh.linear_colorspace = false;
@@ -203,6 +203,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
                 .cone = object.Cone.init(
                     prog,
                     i_datas[0..],
+                    "cone",
                 ),
             };
             cone.cone.mesh.linear_colorspace = false;
@@ -213,7 +214,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
                 .cylinder = object.Cylinder.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "cylinder",
                 ),
             };
             cylinder.cylinder.mesh.linear_colorspace = false;
@@ -224,7 +225,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
                 .pyramid = object.Pyramid.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "pyramid",
                 ),
             };
             pyramid.pyramid.mesh.linear_colorspace = false;
@@ -237,7 +238,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s shuttle_model.toObject(prog, i_datas[0..]);
+            break :s shuttle_model.toObject(prog, i_datas[0..], "shuttle");
         },
         7 => {
             var dolphin_model: *assets.Obj = undefined;
@@ -246,7 +247,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s dolphin_model.toObject(prog, i_datas[0..]);
+            break :s dolphin_model.toObject(prog, i_datas[0..], "lowdolphin");
         },
         8 => {
             var dolphin_model: *assets.Obj = undefined;
@@ -255,7 +256,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s dolphin_model.toObject(prog, i_datas[0..]);
+            break :s dolphin_model.toObject(prog, i_datas[0..], "highdolphin");
         },
         else => .{ .norender = .{} },
     };
@@ -264,7 +265,7 @@ pub fn renderObject(self: *PolygonOffset, obj_setting: ShadowsUI.objectSetting, 
 }
 
 pub fn renderObject_1(self: *PolygonOffset) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("object1");
     self.object_1 = self.renderObject(self.ui_state.object_1, prog);
 
     var om: rhi.Uniform = rhi.Uniform.init(prog, "f_object_m") catch @panic("uniform failed");
@@ -274,7 +275,7 @@ pub fn renderObject_1(self: *PolygonOffset) void {
 }
 
 pub fn renderObject_2(self: *PolygonOffset) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("object2");
     self.object_2 = self.renderObject(self.ui_state.object_2, prog);
 
     var om: rhi.Uniform = rhi.Uniform.init(prog, "f_object_m") catch @panic("uniform failed");

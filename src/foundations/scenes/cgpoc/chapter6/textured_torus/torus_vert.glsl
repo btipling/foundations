@@ -6,6 +6,8 @@ mat4 f_cubemap_xup = (mat4(
     vec4(0, 0, 0, 1)
 ));
 
+out vec3 fo_pos;
+
 void main()
 {
     mat4 m_matrix = mat4(
@@ -19,6 +21,7 @@ void main()
 
     fo_normal = normalize(f_norm_matrix * f_normal);
     fo_vert =  (f_cubemap_xup * f_main_pos).xyz;
+    fo_pos = f_position.xyz;
     
     gl_Position =  f_mvp * f_main_pos;
 }

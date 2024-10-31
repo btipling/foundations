@@ -9,9 +9,10 @@ pub fn init(
     instance_data: []rhi.instanceData,
     attribute_data: []rhi.attributeData,
     indices: []u32,
+    label: [:0]const u8,
 ) Obj {
-    const vao_buf = rhi.attachInstancedBuffer(attribute_data, instance_data);
-    const ebo = rhi.initEBO(@ptrCast(indices), vao_buf.vao);
+    const vao_buf = rhi.attachInstancedBuffer(attribute_data, instance_data, label);
+    const ebo = rhi.initEBO(@ptrCast(indices), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,

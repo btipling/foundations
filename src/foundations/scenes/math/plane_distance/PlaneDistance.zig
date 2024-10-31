@@ -52,14 +52,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistan
     errdefer pointer.deinit();
     const ui_state: PlaneDistanceUI = .{};
 
-    const reflection_program = rhi.createProgram();
+    const reflection_program = rhi.createProgram("reflection");
     {
         var s: rhi.Shader = .{
             .program = reflection_program,
             .instance_data = false,
             .fragment_shader = .normal,
         };
-        s.attach(allocator, rhi.Shader.single_vertex(reflection_vertex_shader)[0..]);
+        s.attach(allocator, rhi.Shader.single_vertex(reflection_vertex_shader)[0..], "reflection");
     }
     pd.* = .{
         .ui_state = ui_state,
@@ -71,18 +71,26 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PlaneDistan
         .reflection_program = reflection_program,
     };
     pd.renderSphere();
+    errdefer rhi.deleteObject(pd.sphere);
+
     pd.renderParallepiped();
+    errdefer rhi.deleteObject(pd.parallelepiped);
     {
         pd.renderReflection();
         rhi.setUniformMatrix(reflection_program, "f_reflection_transform", math.matrix.identity());
     }
     pd.renderPlane();
+    errdefer rhi.deleteObject(pd.plane_visualization);
+
     return pd;
 }
 
 pub fn deinit(self: *PlaneDistance, allocator: std.mem.Allocator) void {
     self.grid.deinit();
     self.pointer.deinit();
+    rhi.deleteObject(self.sphere);
+    rhi.deleteObject(self.parallelepiped);
+    rhi.deleteObject(self.plane_visualization);
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -249,7 +257,7 @@ pub fn updateReflection(self: *PlaneDistance) void {
 pub fn updateCamera(_: *PlaneDistance) void {}
 
 pub fn renderPlane(self: *PlaneDistance) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("plane");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -257,7 +265,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
             .fragment_shader = .normal,
             .frag_body = plane_frag_shader,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(plane_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(plane_vertex_shader)[0..], "plane");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -274,7 +282,7 @@ pub fn renderPlane(self: *PlaneDistance) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            true,
+            "plane",
         ),
     };
     self.plane_visualization = plane_vis;
@@ -283,14 +291,14 @@ pub fn renderPlane(self: *PlaneDistance) void {
 }
 
 pub fn renderSphere(self: *PlaneDistance) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sphere");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "sphere");
     }
     var i_datas: [3]rhi.instanceData = undefined;
     {
@@ -328,21 +336,21 @@ pub fn renderSphere(self: *PlaneDistance) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "sphere",
         ),
     };
     self.sphere = sphere;
 }
 
 pub fn renderParallepiped(self: *PlaneDistance) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .normal,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cube_vertex_shader)[0..], "cube");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -359,7 +367,7 @@ pub fn renderParallepiped(self: *PlaneDistance) void {
         .parallelepiped = object.Parallelepiped.init(
             prog,
             i_datas[0..],
-            false,
+            "cube",
         ),
     };
     self.updateCubeTransform(prog);
@@ -438,6 +446,7 @@ fn triangleFromCubeSurfacePartial(self: *PlaneDistance, program: u32, vindex0: u
                 .{ 1, 0, 1, 1 },
             },
             .{ n0, n1, n2 },
+            "reflected_cube_part",
         ),
     };
 }

@@ -63,7 +63,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
     };
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -82,7 +82,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     ss.* = .{
@@ -279,7 +279,7 @@ pub fn deleteSun(self: *SimpleSolarSystem) void {
 
 pub fn renderSun(self: *SimpleSolarSystem) void {
     self.sun_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("sun");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -288,7 +288,7 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
             .frag_body = texture_frag_shader,
             .fragment_shader = rhi.Texture.frag_shader(self.sun_texture),
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "sun");
     }
     const cm = math.matrix.identity();
     const i_data: rhi.instanceData = .{
@@ -306,11 +306,16 @@ pub fn renderSun(self: *SimpleSolarSystem) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "sun",
         ),
     };
     if (self.sun_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\sunmap.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\sunmap.jpg") catch null,
+            prog,
+            "f_samp",
+            "sun",
+        ) catch {
             std.debug.print("didn't load sun\n", .{});
             self.sun_texture = null;
         };
@@ -327,7 +332,7 @@ pub fn deleteEarth(self: *SimpleSolarSystem) void {
 }
 
 pub fn renderEarth(self: *SimpleSolarSystem) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("earth");
     self.earth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -337,7 +342,7 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
             .frag_body = frag_texture_shader,
             .fragment_shader = rhi.Texture.frag_shader(self.earth_texture),
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "earth");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -356,11 +361,16 @@ pub fn renderEarth(self: *SimpleSolarSystem) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "earth",
         ),
     };
     if (self.earth_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null,
+            prog,
+            "f_samp",
+            "earth",
+        ) catch {
             self.earth_texture = null;
         };
     }
@@ -377,7 +387,7 @@ pub fn deleteMoon(self: *SimpleSolarSystem) void {
 
 pub fn renderMoon(self: *SimpleSolarSystem) void {
     self.moon_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("moon");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -386,7 +396,7 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
             .frag_body = frag_texture_shader,
             .fragment_shader = rhi.Texture.frag_shader(self.moon_texture),
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "moon");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -405,11 +415,16 @@ pub fn renderMoon(self: *SimpleSolarSystem) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "moon",
         ),
     };
     if (self.moon_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\moon.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\moon.jpg") catch null,
+            prog,
+            "f_samp",
+            "moon",
+        ) catch {
             self.moon_texture = null;
         };
     }
@@ -425,7 +440,7 @@ pub fn deleteCubemap(self: *SimpleSolarSystem) void {
 }
 
 pub fn renderCubemap(self: *SimpleSolarSystem) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cubemap");
     self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -434,7 +449,7 @@ pub fn renderCubemap(self: *SimpleSolarSystem) void {
             .instance_data = true,
             .fragment_shader = .texture,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..], "cubemap");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -454,7 +469,7 @@ pub fn renderCubemap(self: *SimpleSolarSystem) void {
         .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
-            false,
+            "cubemap",
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
@@ -475,7 +490,12 @@ pub fn renderCubemap(self: *SimpleSolarSystem) void {
         } else |_| {
             std.debug.print("failed to load textures\n", .{});
         }
-        bt.setupCubemap(images, prog, "f_cubemap") catch {
+        bt.setupCubemap(
+            images,
+            prog,
+            "f_cubemap",
+            "milkeyway",
+        ) catch {
             self.cubemap_texture = null;
         };
     }
@@ -499,7 +519,7 @@ pub fn renderShuttle(self: *SimpleSolarSystem) void {
         return;
     }
 
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("shuttle");
     self.shuttle_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -511,7 +531,7 @@ pub fn renderShuttle(self: *SimpleSolarSystem) void {
             .fragment_shader = rhi.Texture.frag_shader(self.shuttle_texture),
         };
         const partials = [_][]const u8{vertex_shader};
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "shuttle");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -527,11 +547,16 @@ pub fn renderShuttle(self: *SimpleSolarSystem) void {
         i_datas[0] = i_data;
     }
     if (self.shuttle_texture) |*bt| {
-        bt.setup(self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null, prog, "f_samp") catch {
+        bt.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\NasaShuttle\\spstob_1.jpg") catch null,
+            prog,
+            "f_samp",
+            "shuttle",
+        ) catch {
             self.shuttle_texture = null;
         };
     }
-    const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..]);
+    const shuttle_object: object.object = shuttle_model.toObject(prog, i_datas[0..], "shuttle");
     self.shuttle_uniform = rhi.Uniform.init(prog, "f_model_transform") catch @panic("uniform failed");
     {
         self.shuttle_uniform.setUniformMatrix(math.matrix.translate(3, 0, 0));

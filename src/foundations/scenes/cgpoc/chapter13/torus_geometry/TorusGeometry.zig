@@ -41,7 +41,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TorusGeomet
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -60,7 +60,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TorusGeomet
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     tg.* = .{
@@ -186,7 +186,7 @@ pub fn deleteTorus(_: *TorusGeometry, obj: object.object) void {
 }
 
 pub fn renderTorus(self: *TorusGeometry, geo_shader: []const u8, m: math.matrix) object.object {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("torus");
 
     const torus_vert = Compiler.runWithBytes(self.allocator, @embedFile("torus_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(torus_vert);
@@ -206,7 +206,7 @@ pub fn renderTorus(self: *TorusGeometry, geo_shader: []const u8, m: math.matrix)
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "torus");
 
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -223,7 +223,7 @@ pub fn renderTorus(self: *TorusGeometry, geo_shader: []const u8, m: math.matrix)
         .torus = object.Torus.init(
             prog,
             i_datas[0..],
-            false,
+            "torus",
         ),
     };
     torus.torus.mesh.linear_colorspace = false;
@@ -239,6 +239,6 @@ const scenes = @import("../../../scenes.zig");
 const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
-const Compiler = @import("../../../../../compiler/Compiler.zig");
+const Compiler = @import("../../../../../fssc/Compiler.zig");
 const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");

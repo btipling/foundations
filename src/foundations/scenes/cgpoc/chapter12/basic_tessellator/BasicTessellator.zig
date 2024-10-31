@@ -100,7 +100,7 @@ pub fn deleteGrid(self: *BasicTessellator) void {
 }
 
 pub fn renderGrid(self: *BasicTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("grid");
     const vao = rhi.createVAO();
 
     const grid_vert = Compiler.runWithBytes(self.allocator, @embedFile("grid_vert.glsl")) catch @panic("shader compiler");
@@ -122,7 +122,7 @@ pub fn renderGrid(self: *BasicTessellator) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "grid");
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translate(0, 0, 5));
     m = math.matrix.transformMatrix(m, math.matrix.uniformScale(10));
@@ -138,7 +138,7 @@ pub fn deleteSurface(self: *BasicTessellator) void {
 }
 
 pub fn renderSurface(self: *BasicTessellator) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("surface");
     const vao = rhi.createVAO();
 
     self.surface_t = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
@@ -169,10 +169,15 @@ pub fn renderSurface(self: *BasicTessellator) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "surface");
 
     if (self.surface_t) |*t| {
-        t.setup(self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_tiles.jpg") catch null, prog, "f_samp_2") catch {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\tessellation\\square_tiles.jpg") catch null,
+            prog,
+            "f_samp_2",
+            "tiles",
+        ) catch {
             self.surface_t = null;
         };
     }
@@ -195,4 +200,4 @@ const scenes = @import("../../../scenes.zig");
 const math = @import("../../../../math/math.zig");
 const physics = @import("../../../../physics/physics.zig");
 const scenery = @import("../../../../scenery/scenery.zig");
-const Compiler = @import("../../../../../compiler/Compiler.zig");
+const Compiler = @import("../../../../../fssc/Compiler.zig");

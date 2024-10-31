@@ -27,17 +27,18 @@ pub fn init(
     positions: [3][3]f32,
     colors: [3][4]f32,
     normal: [3][3]f32,
+    label: [:0]const u8,
 ) Triangle {
-    const program = rhi.createProgram();
+    const program = rhi.createProgram(label);
     {
         var s: rhi.Shader = .{
             .program = program,
             .instance_data = true,
             .fragment_shader = frag_shader,
         };
-        s.attach(allocator, vertex_partials);
+        s.attach(allocator, vertex_partials, label);
     }
-    return initWithProgram(program, positions, colors, normal);
+    return initWithProgram(program, positions, colors, normal, label);
 }
 
 pub fn initWithProgram(
@@ -45,6 +46,7 @@ pub fn initWithProgram(
     positions: [3][3]f32,
     colors: [3][4]f32,
     normal: [3][3]f32,
+    label: [:0]const u8,
 ) Triangle {
     var data: [3]rhi.attributeData = undefined;
     var i: usize = 0;
@@ -55,7 +57,7 @@ pub fn initWithProgram(
             .normal = normal[i],
         };
     }
-    const vao_buf = rhi.attachBuffer(data[0..]);
+    const vao_buf = rhi.attachBuffer(data[0..], label);
     return .{
         .mesh = .{
             .cull = false,

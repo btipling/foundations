@@ -32,15 +32,16 @@ pub fn init(
     frag_shader: rhi.Shader.fragment_shader_type,
     positions: [6][3]f32,
     colors: [6][4]f32,
+    name: [:0]const u8,
 ) Quad {
-    const program = rhi.createProgram();
+    const program = rhi.createProgram(name);
     {
         var s: rhi.Shader = .{
             .program = program,
             .instance_data = true,
             .fragment_shader = frag_shader,
         };
-        s.attach(allocator, vertex_partials);
+        s.attach(allocator, vertex_partials, name);
     }
 
     var data: [6]rhi.attributeData = undefined;
@@ -51,7 +52,7 @@ pub fn init(
             .color = colors[i],
         };
     }
-    const vao_buf = rhi.attachBuffer(data[0..]);
+    const vao_buf = rhi.attachBuffer(data[0..], name);
     return .{
         .mesh = .{
             .program = program,
@@ -69,6 +70,7 @@ pub fn init(
 pub fn initInstanced(
     program: u32,
     instance_data: []rhi.instanceData,
+    label: [:0]const u8,
 ) Quad {
     // zig fmt: off
     const positions = default_correct_positions;
@@ -84,8 +86,8 @@ pub fn initInstanced(
             .normal = .{ 1, 0, 0 },
         };
     }
-    const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data);
-    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao);
+    const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data, label);
+    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao, label);
     return .{
         .mesh = .{
             .program = program,

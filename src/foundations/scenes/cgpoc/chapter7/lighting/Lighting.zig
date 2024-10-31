@@ -65,7 +65,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -97,7 +97,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Lighting {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: LightingUI = .{};
@@ -193,7 +193,7 @@ fn updateLights(self: *Lighting) void {
     };
     self.lights.deinit();
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
@@ -257,14 +257,14 @@ pub fn deleteBG(self: *Lighting) void {
 }
 
 pub fn renderBG(self: *Lighting) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("background");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_static_shader)[0..], "background");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -285,6 +285,7 @@ pub fn renderBG(self: *Lighting) void {
         .instanced_triangle = object.InstancedTriangle.init(
             prog,
             i_datas[0..],
+            "background",
         ),
     };
     bg.instanced_triangle.mesh.cull = false;
@@ -299,7 +300,7 @@ pub fn deleteModel(self: *Lighting) void {
 }
 
 pub fn renderModel(self: *Lighting) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("model");
     {
         var s: rhi.Shader = .{
             .program = prog,
@@ -336,7 +337,7 @@ pub fn renderModel(self: *Lighting) void {
                 partials = .{gouraud_vertex_shader};
             },
         }
-        s.attach(self.allocator, @ptrCast(partials[0..]));
+        s.attach(self.allocator, @ptrCast(partials[0..]), "model");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -366,7 +367,7 @@ pub fn renderModel(self: *Lighting) void {
                 .torus = object.Torus.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "torus_model",
                 ),
             };
             torus.torus.mesh.linear_colorspace = false;
@@ -377,7 +378,7 @@ pub fn renderModel(self: *Lighting) void {
                 .parallelepiped = object.Parallelepiped.init(
                     prog,
                     i_datas[0..],
-                    true,
+                    "parallelepiped_model",
                 ),
             };
             parallelepiped.parallelepiped.mesh.linear_colorspace = false;
@@ -388,7 +389,7 @@ pub fn renderModel(self: *Lighting) void {
                 .sphere = object.Sphere.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "sphere_model",
                 ),
             };
             sphere.sphere.mesh.linear_colorspace = false;
@@ -399,6 +400,7 @@ pub fn renderModel(self: *Lighting) void {
                 .cone = object.Cone.init(
                     prog,
                     i_datas[0..],
+                    "object_model",
                 ),
             };
             cone.cone.mesh.linear_colorspace = false;
@@ -409,7 +411,7 @@ pub fn renderModel(self: *Lighting) void {
                 .cylinder = object.Cylinder.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "cylinder_model",
                 ),
             };
             cylinder.cylinder.mesh.linear_colorspace = false;
@@ -420,7 +422,7 @@ pub fn renderModel(self: *Lighting) void {
                 .pyramid = object.Pyramid.init(
                     prog,
                     i_datas[0..],
-                    false,
+                    "pyramid_model",
                 ),
             };
             pyramid.pyramid.mesh.linear_colorspace = false;
@@ -433,7 +435,7 @@ pub fn renderModel(self: *Lighting) void {
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s shuttle_model.toObject(prog, i_datas[0..]);
+            break :s shuttle_model.toObject(prog, i_datas[0..], "shuttle_model");
         },
         7 => {
             var dolphin_model: *assets.Obj = undefined;
@@ -442,7 +444,7 @@ pub fn renderModel(self: *Lighting) void {
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s dolphin_model.toObject(prog, i_datas[0..]);
+            break :s dolphin_model.toObject(prog, i_datas[0..], "lowpoly_dolphin_model");
         },
         8 => {
             var dolphin_model: *assets.Obj = undefined;
@@ -451,7 +453,7 @@ pub fn renderModel(self: *Lighting) void {
             } else {
                 break :s .{ .norender = .{} };
             }
-            break :s dolphin_model.toObject(prog, i_datas[0..]);
+            break :s dolphin_model.toObject(prog, i_datas[0..], "highpoly_dolphin_model");
         },
         else => .{ .norender = .{} },
     };
@@ -479,14 +481,14 @@ pub fn deletesphere_1(self: *Lighting) void {
 }
 
 pub fn rendersphere_1(self: *Lighting) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("light1");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light1");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
@@ -506,7 +508,7 @@ pub fn rendersphere_1(self: *Lighting) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "light1",
         ),
     };
     const lp = self.ui_state.light_1.position;
@@ -524,14 +526,14 @@ pub fn deletesphere_2(self: *Lighting) void {
 }
 
 pub fn rendersphere_2(self: *Lighting) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("light2");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(sphere_vertex_shader)[0..], "light2");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
@@ -551,7 +553,7 @@ pub fn rendersphere_2(self: *Lighting) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "light2",
         ),
     };
     const lp = self.ui_state.light_2.position;

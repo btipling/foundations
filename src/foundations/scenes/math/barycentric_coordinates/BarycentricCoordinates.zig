@@ -21,9 +21,9 @@ const strip_scale: f32 = 0.005;
 const point_scale: f32 = 0.025;
 
 const vertex_last_index = 2;
-const center_circle_index = 3;
+const center_circle_index = 5;
 const inscribed_circle_index = 4;
-const circumscribed_circle_index = 5;
+const circumscribed_circle_index = 3;
 
 const vertex_shader: []const u8 = @embedFile("bc_vertex.glsl");
 
@@ -71,14 +71,14 @@ pub fn deleteStrip(self: *BCTriangle) void {
 
 pub fn renderStrip(self: *BCTriangle) void {
     self.deleteStrip();
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("strip");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "strip");
     }
     var i_datas: [num_points_interpolated * num_triangles]rhi.instanceData = undefined;
     var positions: [num_points_interpolated]math.vector.vec4 = undefined;
@@ -108,46 +108,50 @@ pub fn renderStrip(self: *BCTriangle) void {
         };
         i_datas[i] = i_data;
     }
-    const strip: object.object = .{
+    var strip: object.object = .{
         .strip = object.Strip.init(
             prog,
             i_datas[0..],
+            "barycentric_line",
         ),
     };
+    strip.strip.mesh.cull = false;
     self.strip = strip;
 }
 
 pub fn renderCircle(self: *BCTriangle) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("circle");
     {
         var s: rhi.Shader = .{
             .program = prog,
             .instance_data = true,
             .fragment_shader = .color,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(vertex_shader)[0..], "circle");
     }
     for (0..num_points) |i| self.updatePointIData(i);
     self.updatePointIData(center_circle_index);
     self.updatePointIData(inscribed_circle_index);
     self.updatePointIData(circumscribed_circle_index);
-    const circle: object.object = .{
+    var circle: object.object = .{
         .circle = object.Circle.init(
             prog,
             self.circles[0..],
+            "barycentric_circle",
         ),
     };
+    circle.circle.mesh.cull = false;
     self.circle = circle;
 }
 
 pub fn draw(self: *BCTriangle, _: f64) void {
     self.handleInput();
-    if (self.strip) |s| {
-        const objects: [1]object.object = .{s};
-        rhi.drawObjects(objects[0..]);
-    }
     {
         const objects: [1]object.object = .{self.circle};
+        rhi.drawObjects(objects[0..]);
+    }
+    if (self.strip) |s| {
+        const objects: [1]object.object = .{s};
         rhi.drawObjects(objects[0..]);
     }
     self.ui_state.draw();

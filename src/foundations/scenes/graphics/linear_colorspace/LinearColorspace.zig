@@ -48,6 +48,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LinearColor
             triangle_positions,
             triangle_colors,
             object.Triangle.default_normals,
+            "srgb_triangle",
         ),
     };
     p.objects[0] = triangle1;
@@ -80,6 +81,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *LinearColor
             triangle_positions,
             triangle_colors,
             object.Triangle.default_normals,
+            "nosrgb_triangle",
         ),
     };
     triangle2.triangle.mesh.linear_colorspace = false;

@@ -61,7 +61,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
     errdefer cam.deinit(allocator);
 
     const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd);
+    var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -80,7 +80,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld);
+    var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const particles = [_]rhi.Buffer.ParticlesData{
@@ -94,7 +94,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         },
     };
     const pd: rhi.Buffer.buffer_data = .{ .particles = particles[0..] };
-    var particles_buf = rhi.Buffer.init(pd);
+    var particles_buf = rhi.Buffer.init(pd, "materials");
     errdefer particles_buf.deinit();
     const prng = std.Random.DefaultPrng.init(blk: {
         var seed: u64 = undefined;
@@ -151,14 +151,7 @@ pub fn draw(self: *Particles, dt: f64) void {
         t.bind();
     }
     {
-        const objects: [1]object.object = .{
-            self.cubemap,
-        };
-        c.glDisable(c.GL_DEPTH_TEST);
-        c.glFrontFace(c.GL_CCW);
-        rhi.drawObjects(objects[0..]);
-        c.glFrontFace(c.GL_CW);
-        c.glEnable(c.GL_DEPTH_TEST);
+        rhi.drawHorizon(self.cubemap);
     }
     {
         const objects: [1]object.object = .{
@@ -292,7 +285,7 @@ pub fn deleteParticles(self: *Particles) void {
 }
 
 pub fn renderParticles(self: *Particles) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("particles");
 
     const particles_vert = Compiler.runWithBytes(self.allocator, @embedFile("particles_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(particles_vert);
@@ -312,7 +305,7 @@ pub fn renderParticles(self: *Particles) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "particles");
 
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -327,7 +320,7 @@ pub fn renderParticles(self: *Particles) void {
         i_datas[0] = i_data;
     }
     const points: object.object = .{
-        .points = object.Points.init(prog, max_num_particles),
+        .points = object.Points.init(prog, max_num_particles, "particles"),
     };
     var pd: rhi.Uniform = rhi.Uniform.init(prog, "f_particles_data") catch @panic("uniform failed");
     pd.setUniform1i(self.particles_count);
@@ -343,7 +336,7 @@ pub fn deleteSphere(self: *Particles) void {
 }
 
 pub fn renderSphere(self: *Particles) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("party_ball");
 
     const particles_vert = Compiler.runWithBytes(self.allocator, @embedFile("sphere_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(particles_vert);
@@ -359,7 +352,7 @@ pub fn renderSphere(self: *Particles) void {
     const s: rhi.Shader = .{
         .program = prog,
     };
-    s.attachAndLinkAll(self.allocator, shaders[0..]);
+    s.attachAndLinkAll(self.allocator, shaders[0..], "party_ball");
     var i_datas: [1]rhi.instanceData = undefined;
     const m = math.matrix.uniformScale(0.125);
     i_datas[0] = .{
@@ -373,7 +366,7 @@ pub fn renderSphere(self: *Particles) void {
         .sphere = object.Sphere.init(
             prog,
             i_datas[0..],
-            false,
+            "partyball",
         ),
     };
     var sm: rhi.Uniform = rhi.Uniform.init(prog, "f_sphere_matrix") catch @panic("uniform failed");
@@ -393,7 +386,7 @@ pub fn deleteCubemap(self: *Particles) void {
 }
 
 pub fn renderCubemap(self: *Particles) void {
-    const prog = rhi.createProgram();
+    const prog = rhi.createProgram("cube_map");
     self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     {
         var s: rhi.Shader = .{
@@ -402,7 +395,7 @@ pub fn renderCubemap(self: *Particles) void {
             .instance_data = true,
             .fragment_shader = .texture,
         };
-        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..]);
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..], "cubemap");
     }
     var i_datas: [1]rhi.instanceData = undefined;
     {
@@ -422,7 +415,7 @@ pub fn renderCubemap(self: *Particles) void {
         .parallelepiped = object.Parallelepiped.initCubemap(
             prog,
             i_datas[0..],
-            false,
+            "cubemap",
         ),
     };
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
@@ -443,7 +436,7 @@ pub fn renderCubemap(self: *Particles) void {
         } else |_| {
             std.debug.print("failed to load textures\n", .{});
         }
-        bt.setupCubemap(images, prog, "f_cubemap") catch {
+        bt.setupCubemap(images, prog, "f_cubemap", "shadowmap_cubemap") catch {
             self.cubemap_texture = null;
         };
     }
@@ -458,7 +451,7 @@ const scenes = @import("../../scenes.zig");
 const math = @import("../../../math/math.zig");
 const physics = @import("../../../physics/physics.zig");
 const scenery = @import("../../../scenery/scenery.zig");
-const Compiler = @import("../../../../compiler/Compiler.zig");
+const Compiler = @import("../../../../fssc/Compiler.zig");
 const object = @import("../../../object/object.zig");
 const lighting = @import("../../../lighting/lighting.zig");
 const assets = @import("../../../assets/assets.zig");

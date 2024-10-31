@@ -8,7 +8,7 @@ columns: [4]vector.vec4 = .{
 
 const matrix = @This();
 
-pub inline fn mc(d: [16]f32) matrix {
+pub fn mc(d: [16]f32) matrix {
     var m: matrix = undefined;
     inline for (0..4) |r| {
         inline for (0..4) |c| {
@@ -18,7 +18,7 @@ pub inline fn mc(d: [16]f32) matrix {
     return m;
 }
 
-pub inline fn identity() matrix {
+pub fn identity() matrix {
     return mc(.{
         1, 0, 0, 0,
         0, 1, 0, 0,
@@ -27,7 +27,7 @@ pub inline fn identity() matrix {
     });
 }
 
-pub inline fn rotationX(angle: f32) matrix {
+pub fn rotationX(angle: f32) matrix {
     return mc(.{
         1, 0,           0,            0,
         0, @cos(angle), -@sin(angle), 0,
@@ -36,7 +36,7 @@ pub inline fn rotationX(angle: f32) matrix {
     });
 }
 
-pub inline fn rotationY(angle: f32) matrix {
+pub fn rotationY(angle: f32) matrix {
     return mc(.{
         @cos(angle), 0, -@sin(angle), 0,
         0,           1, 0,            0,
@@ -45,7 +45,7 @@ pub inline fn rotationY(angle: f32) matrix {
     });
 }
 
-pub inline fn rotationZ(angle: f32) matrix {
+pub fn rotationZ(angle: f32) matrix {
     return mc(.{
         @cos(angle), -@sin(angle), 0, 0,
         @sin(angle), @cos(angle),  0, 0,
@@ -54,7 +54,7 @@ pub inline fn rotationZ(angle: f32) matrix {
     });
 }
 
-pub inline fn scale(x: f32, y: f32, z: f32) matrix {
+pub fn scale(x: f32, y: f32, z: f32) matrix {
     return mc(.{
         x, 0, 0, 0,
         0, y, 0, 0,
@@ -63,7 +63,7 @@ pub inline fn scale(x: f32, y: f32, z: f32) matrix {
     });
 }
 
-pub inline fn perspectiveProjection(field_of_view_y_angle: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
+pub fn perspectiveProjection(field_of_view_y_angle: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
     const perspective_plane_distance_g: f32 = 1.0 / @tan(field_of_view_y_angle * 0.5);
     return perspectiveProjectionCamera(perspective_plane_distance_g, aspect_ratio_s, near, far);
 }
@@ -87,7 +87,7 @@ test perspectiveProjection {
     try std.testing.expect(float.equal(plane_extracted_left[3], perspective_transformed_left[3], 0.000001));
 }
 
-pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
+pub fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, aspect_ratio_s: f32, near: f32, far: f32) matrix {
     const depth_scale = far / (far - near);
     return mc(.{
         perspective_plane_distance_g / aspect_ratio_s, 0,                            0,           0,
@@ -97,7 +97,7 @@ pub inline fn perspectiveProjectionCamera(perspective_plane_distance_g: f32, asp
     });
 }
 
-pub inline fn infinityProjection(fovy: f32, s: f32, n: f32, epsilon: f32) matrix {
+pub fn infinityProjection(fovy: f32, s: f32, n: f32, epsilon: f32) matrix {
     const g: f32 = 1.0 / @tan(fovy * 0.5);
     return mc(.{
         g / s, 0, 0,       0,
@@ -107,7 +107,7 @@ pub inline fn infinityProjection(fovy: f32, s: f32, n: f32, epsilon: f32) matrix
     });
 }
 
-pub inline fn orthographicProjection(_: f32, r: f32, _: f32, b: f32, n: f32, f: f32) matrix {
+pub fn orthographicProjection(_: f32, r: f32, _: f32, b: f32, n: f32, f: f32) matrix {
     const d_inv: f32 = 1.0 / (f - n);
     return mc(.{
         2 / r, 0,     0,     0,
@@ -117,15 +117,19 @@ pub inline fn orthographicProjection(_: f32, r: f32, _: f32, b: f32, n: f32, f: 
     });
 }
 
-pub inline fn reverseOrthographicProjection(l: f32, r: f32, t: f32, b: f32, n: f32, f: f32) matrix {
+pub fn reverseOrthographicProjection(l: f32, r: f32, t: f32, b: f32, n: f32, f: f32) matrix {
     return inverse(orthographicProjection(l, r, t, b, n, f));
 }
 
-pub inline fn uniformScale(s: f32) matrix {
+pub fn uniformScale(s: f32) matrix {
     return scale(s, s, s);
 }
 
-pub inline fn translate(x: f32, y: f32, z: f32) matrix {
+pub fn translateVec(v: anytype) matrix {
+    return translate(v[0], v[1], v[2]);
+}
+
+pub fn translate(x: f32, y: f32, z: f32) matrix {
     return mc(.{
         1, 0, 0, x,
         0, 1, 0, y,
@@ -134,7 +138,7 @@ pub inline fn translate(x: f32, y: f32, z: f32) matrix {
     });
 }
 
-pub inline fn normalizedQuaternionToMatrix(q: Quat) matrix {
+pub fn normalizedQuaternionToMatrix(q: Quat) matrix {
     const qw = q[0];
     const qx = q[1];
     const qy = q[2];
@@ -167,7 +171,7 @@ pub inline fn normalizedQuaternionToMatrix(q: Quat) matrix {
     });
 }
 
-pub inline fn leftHandedXUpToNDC() matrix {
+pub fn leftHandedXUpToNDC() matrix {
     return mc(.{
         0, 0, 1, 0,
         1, 0, 0, 0,
@@ -176,7 +180,7 @@ pub inline fn leftHandedXUpToNDC() matrix {
     });
 }
 
-pub inline fn NDCToLeftHandedXUp() matrix {
+pub fn NDCToLeftHandedXUp() matrix {
     return transpose(leftHandedXUpToNDC());
 }
 
@@ -208,7 +212,7 @@ pub fn debug(m: matrix, msg: []const u8) void {
     });
 }
 
-pub inline fn array(m: matrix) [16]f32 {
+pub fn array(m: matrix) [16]f32 {
     var rv: [16]f32 = undefined;
     @memcpy(rv[0..4], @as([4]f32, m.columns[0])[0..]);
     @memcpy(rv[4..8], @as([4]f32, m.columns[1])[0..]);
@@ -217,7 +221,7 @@ pub inline fn array(m: matrix) [16]f32 {
     return rv;
 }
 
-pub inline fn at(m: matrix, row: usize, column: usize) f32 {
+pub fn at(m: matrix, row: usize, column: usize) f32 {
     return m.columns[column][row];
 }
 
@@ -409,7 +413,7 @@ test scaleMatrix {
     try std.testing.expectEqual(a_e, a_r);
 }
 
-pub inline fn hermite_basis() matrix {
+pub fn hermite_basis() matrix {
     return .{
         .columns = .{
             .{ 2, -3, 0, 1 },
@@ -525,7 +529,7 @@ test preTransformVector {
     try std.testing.expectEqual(c_e, c_r);
 }
 
-pub inline fn transpose(m: matrix) matrix {
+pub fn transpose(m: matrix) matrix {
     return .{
         .columns = .{
             .{
@@ -577,7 +581,7 @@ test transpose {
     try std.testing.expectEqual(a_e, a_r);
 }
 
-pub inline fn cameraInverse(m: matrix) matrix {
+pub fn cameraInverse(m: matrix) matrix {
     var r: matrix = .{
         .columns = .{
             .{
