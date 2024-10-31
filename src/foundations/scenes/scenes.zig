@@ -21,7 +21,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
         .allocator = allocator,
         .context = ctx,
     };
-    scenes.initScene(ui.ui_state.scene_type.six_textured_torus);
+    scenes.initScene(ui.ui_state.scene_type.fifteen_simulating_water);
     return scenes;
 }
 

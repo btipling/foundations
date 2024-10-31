@@ -144,6 +144,7 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
     rhi.deleteObject(self.striped_block);
     rhi.deleteObject(self.wood_block);
     rhi.deleteObject(self.sphere);
+    rhi.deleteObject(self.grid);
     if (self.grid_t_tex) |t| t.deinit();
     if (self.grid_t_nor) |t| t.deinit();
     if (self.striped_tex) |t| t.deinit();
