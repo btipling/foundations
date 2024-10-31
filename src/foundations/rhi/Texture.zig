@@ -228,6 +228,7 @@ pub fn setup3D(
     height: u32,
     depth: u32,
     program: u32,
+    wrap: c.GLint,
     uniform_name: []const u8,
     label: [:0]const u8,
 ) TextureError!void {
@@ -238,9 +239,9 @@ pub fn setup3D(
     var buf: [500]u8 = undefined;
     const label_text = std.fmt.bufPrintZ(&buf, "🧱3d_texture_{s}", .{label}) catch @panic("bufsize too small");
     c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
-    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, c.GL_CLAMP_TO_EDGE);
-    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, c.GL_CLAMP_TO_EDGE);
-    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, c.GL_CLAMP_TO_EDGE);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, wrap);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, wrap);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_R, wrap);
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
 
     c.glTextureStorage3D(name, 1, c.GL_RGBA8, @intCast(width), @intCast(height), @intCast(depth));

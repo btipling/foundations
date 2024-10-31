@@ -318,6 +318,7 @@ fn renderSphere(self: *Textures3D) void {
             tex_dims,
             tex_dims,
             prog,
+            c.GL_CLAMP_TO_EDGE,
             "f_tex_samp",
             "skydone_3d",
         ) catch {
@@ -346,6 +347,7 @@ fn renderStaticBlock(self: *Textures3D) void {
             tex_dims,
             tex_dims,
             block.mesh.program,
+            c.GL_CLAMP_TO_EDGE,
             "f_tex_samp",
             "static_3d",
         ) catch {
@@ -369,6 +371,7 @@ fn renderWoodBlock(self: *Textures3D) void {
             tex_dims,
             tex_dims,
             block.mesh.program,
+            c.GL_CLAMP_TO_EDGE,
             "f_tex_samp",
             "wood_3d",
         ) catch {
@@ -392,6 +395,7 @@ fn renderMarbledBlock(self: *Textures3D) void {
             tex_dims,
             tex_dims,
             block.mesh.program,
+            c.GL_CLAMP_TO_EDGE,
             "f_tex_samp",
             "marbel_3d",
         ) catch {
@@ -415,6 +419,7 @@ fn renderStripedBlock(self: *Textures3D) void {
             tex_dims,
             tex_dims,
             block.mesh.program,
+            c.GL_CLAMP_TO_EDGE,
             "f_tex_samp",
             "striped_3d",
         ) catch {

@@ -149,6 +149,8 @@ pub fn renderTorus(self: *TexturedTorus) void {
     if (self.cubemap_texture == null) return;
     self.cubemap_texture.?.addUniform(prog, "f_cubemap") catch @panic("uniform failed");
     self.disintegration_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.disintegration_tex.?.wrap_s = c.GL_REPEAT;
+    self.disintegration_tex.?.wrap_t = c.GL_REPEAT;
     self.disintegration_tex.?.texture_unit = 17;
     if (self.disintegration_tex) |*t| {
         const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\static.vol") catch null;
@@ -158,6 +160,7 @@ pub fn renderTorus(self: *TexturedTorus) void {
             256,
             256,
             prog,
+            c.GL_REPEAT,
             "f_3d_samp",
             "disintegration_3d",
         ) catch {
