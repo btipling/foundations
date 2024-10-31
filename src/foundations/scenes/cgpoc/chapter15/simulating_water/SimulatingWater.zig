@@ -5,6 +5,9 @@ allocator: std.mem.Allocator = undefined,
 
 grid: object.object = .{ .norender = .{} },
 
+skybox: object.object = .{ .norender = .{} },
+skybox_tex: ?rhi.Texture = null,
+
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 
@@ -79,10 +82,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
     t3d.renderGrid();
     errdefer rhi.deleteObject(t3d.grid);
 
+    t3d.renderSkybox();
+    errdefer rhi.deleteObject(t3d.skybox);
+
     return t3d;
 }
 
 pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
+    rhi.deleteObject(self.skybox);
     rhi.deleteObject(self.grid);
     self.deleteCross();
     self.lights.deinit();
@@ -96,19 +103,12 @@ pub fn updateCamera(_: *SimulatingWater) void {}
 
 pub fn draw(self: *SimulatingWater, dt: f64) void {
     self.view_camera.update(dt);
-    // {
-    //     if (self.sky_tex) |t| {
-    //         t.bind();
-    //     }
-    //     const dtt = dt * 0.1;
-    //     self.sky_rot.?.setUniformMatrix(math.matrix.rotationX(@floatCast(dtt)));
-    //     self.sky_depth += @floatCast(dtt * 0.00003);
-    //     if (self.sky_depth >= 0.99) {
-    //         self.sky_depth = 0.01;
-    //     }
-    //     self.sky_dep.?.setUniform1f(self.sky_depth);
-    //     rhi.drawHorizon(self.sphere);
-    // }
+    {
+        if (self.skybox_tex) |t| {
+            t.bind();
+        }
+        rhi.drawHorizon(self.skybox);
+    }
     {
         rhi.drawObject(self.grid);
     }
@@ -166,6 +166,77 @@ fn renderGrid(self: *SimulatingWater) void {
     var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "floor") };
     grid_obj.parallelepiped.mesh.linear_colorspace = true;
     self.grid = grid_obj;
+}
+
+pub fn renderSkybox(self: *SimulatingWater) void {
+    const prog = rhi.createProgram("skybox");
+    self.skybox_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.skybox_tex.?.texture_unit = 16;
+
+    const frag_bindings = [_]usize{16};
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
+
+    const vert = Compiler.runWithBytes(self.allocator, @embedFile("skybox_vert.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(vert);
+    var frag = Compiler.runWithBytes(self.allocator, @embedFile("skybox_frag.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(frag);
+    frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+        frag,
+        frag_bindings[0..],
+    ) catch @panic("bindless");
+
+    const shaders = [_]rhi.Shader.ShaderData{
+        .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
+        .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
+    };
+    const s: rhi.Shader = .{
+        .program = prog,
+    };
+    s.attachAndLinkAll(self.allocator, shaders[0..], "skybox");
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(20));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-0.5, -0.5, -0.5));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 1, 0, 0, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    var parallelepiped: object.object = .{
+        .parallelepiped = object.Parallelepiped.initCubemap(
+            prog,
+            i_datas[0..],
+            "skybox",
+        ),
+    };
+    parallelepiped.parallelepiped.mesh.linear_colorspace = false;
+    if (self.skybox_tex) |*t| {
+        var cm: assets.Cubemap = .{
+            .path = "cgpoc\\cubemaps\\AlienWorld\\cubeMap",
+            .textures_loader = self.ctx.textures_loader,
+        };
+        cm.names[0] = "xp.png";
+        cm.names[1] = "xn.png";
+        cm.names[2] = "yp.png";
+        cm.names[3] = "yn.png";
+        cm.names[4] = "zp.png";
+        cm.names[5] = "zn.png";
+        var images: ?[6]*assets.Image = null;
+        if (cm.loadAll(self.allocator)) {
+            images = cm.images;
+        } else |_| {
+            std.debug.print("failed to load textures\n", .{});
+        }
+        t.setupCubemap(images, prog, "f_skybox", "alien_world") catch {
+            self.skybox_tex = null;
+        };
+    }
+    self.skybox = parallelepiped;
 }
 
 const std = @import("std");

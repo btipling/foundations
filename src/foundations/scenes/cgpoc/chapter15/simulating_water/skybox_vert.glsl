@@ -10,31 +10,37 @@ layout (location = 7) in vec4 f_t_column2;
 layout (location = 8) in vec4 f_t_column3;
 layout (location = 9) in vec4 f_i_color;
 
-//#include "src/foundations/shaders/light.glsl"
-
 //#include "src/foundations/shaders/camera.glsl"
 
 //#include "src/foundations/shaders/vertex_outs.glsl"
 
-out vec3 fo_light;
+out vec3 fo_skybox_tc;
+
+mat4 f_cubemap_xup = mat4(
+    vec4(0, 1, 0, 0),
+    vec4(0, 0, 1, 0),
+    vec4(1, 0, 0, 0),
+    vec4(0, 0, 0, 1)
+);
 
 void main()
 {
-    mat4 m_matrix = mat4(
+    mat4 f_cubemap_t = mat4(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        f_camera_pos[0], f_camera_pos[1], f_camera_pos[2], 1
+    );
+    mat4 f_transform = mat4(
         f_t_column0,
         f_t_column1,
         f_t_column2,
         f_t_column3
     );
-    Light f_light = f_lights[0];
-    mat3 f_norm_matrix = transpose(inverse(mat3(m_matrix)));
-    vec4 f_pos = vec4(f_position.xyz, 1.0);
-    vec4 f_main_pos = m_matrix * f_pos;
-
-    fo_light = f_light.direction.xyz;
-    fo_vert = f_main_pos.xyz;
-    fo_normal = normalize(f_norm_matrix * f_normal);
-    f_tc = f_texture_coords * 250;
+    vec4 f_pos = f_mvp * f_cubemap_t * f_transform * vec4(f_position.xyz, 1.0);
+    gl_Position = f_pos;
+    fo_skybox_tc =  (f_transform * f_cubemap_xup * vec4(f_position.xyz, 1.0)).xyz;
+    f_tc = f_texture_coords;
     f_frag_color = f_i_color;
-    gl_Position = f_mvp * f_main_pos;
+    fo_normal = f_normal;
 }
