@@ -3,6 +3,11 @@ pub const AxisAngle = struct {
     angle: f32,
     axis: vector.vec3,
 };
+pub const Euler = struct {
+    pitch: f32,
+    heading: f32,
+    bank: f32,
+};
 
 pub fn axisAngleToQuat(a: AxisAngle) Quat {
     const half_angle = a.angle * 0.5;
@@ -49,6 +54,65 @@ test quatToAngleAxis {
     try std.testing.expect(float.equal(a_expected_axis[0], a_r.axis[0], 0.00001));
     try std.testing.expect(float.equal(a_expected_axis[1], a_r.axis[1], 0.00001));
     try std.testing.expect(float.equal(a_expected_axis[2], a_r.axis[2], 0.00001));
+}
+
+pub fn quatToEuler(q: Quat) Euler {
+    const w: f32 = q[0];
+    const x: f32 = q[1];
+    const y: f32 = q[2];
+    const z: f32 = q[3];
+
+    var p: f32 = 0;
+    var h: f32 = 0;
+    var b: f32 = 0;
+
+    const sin_pitch = -2.0 * (y * z - w * x);
+    if (@abs(sin_pitch) > 0.9999) {
+        // gimbal locked
+        p = std.math.pi / 2.0 * sin_pitch;
+        h = std.math.atan2(-x * z + w * y, 0.5 - y * y - z * z);
+        b = 0;
+    } else {
+        p = std.math.asin(sin_pitch);
+        h = std.math.atan2(x * z + w * y, 0.5 - x * x - y * y);
+        b = std.math.atan2(x * y + w * z, 0.5 - x * x - z * z);
+    }
+    return .{
+        .pitch = p,
+        .heading = h,
+        .bank = b,
+    };
+}
+
+test quatToEuler {
+    const a_q: Quat = axisAngleToQuat(.{
+        .angle = degreesToRadians(90),
+        .axis = .{ 1, 0, 0 },
+    });
+    const a_r = quatToEuler(a_q);
+    const a_e: Euler = .{ .pitch = std.math.pi / 2.0, .heading = 0, .bank = 0 };
+    try std.testing.expect(float.equal_e(a_e.pitch, a_r.pitch));
+    try std.testing.expect(float.equal_e(a_e.heading, a_r.heading));
+    try std.testing.expect(float.equal_e(a_e.bank, a_r.bank));
+
+    const b_q1: Quat = axisAngleToQuat(.{
+        .angle = degreesToRadians(90),
+        .axis = .{ 1, 0, 0 },
+    });
+    const b_q2: Quat = axisAngleToQuat(.{
+        .angle = degreesToRadians(45),
+        .axis = .{ 0, 1, 0 },
+    });
+    const b_q = multiplyQuaternions(b_q1, b_q2);
+    const b_r = quatToEuler(b_q);
+    const b_e: Euler = .{
+        .pitch = (std.math.pi * 2 + std.math.pi / 2.0) * 0.1,
+        .heading = std.math.pi / 2.0,
+        .bank = std.math.pi / 2.0,
+    };
+    try std.testing.expect(float.equal_e(b_e.pitch, b_r.pitch));
+    try std.testing.expect(float.equal_e(b_e.heading, b_r.heading));
+    try std.testing.expect(float.equal_e(b_e.bank, b_r.bank));
 }
 
 pub fn multiplyQuaternions(q2: Quat, q1: Quat) Quat {
