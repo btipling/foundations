@@ -16,6 +16,10 @@ skybox_tex: ?rhi.Texture = null,
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 
+// Reflection stuff
+reflection_tex: rhi.Texture = undefined,
+reflection_fbo: rhi.Framebuffer = undefined,
+
 const SimulatingWater = @This();
 
 const mats = [_]lighting.Material{
@@ -76,6 +80,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
         .lights = lights_buf,
     };
 
+    t3d.setupReflection();
+
     t3d.renderDebugCross();
     errdefer t3d.deleteCross();
 
@@ -99,6 +105,8 @@ pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
     rhi.deleteObject(self.surface_top);
     rhi.deleteObject(self.surface_bottom);
     rhi.deleteObject(self.floor);
+    self.reflection_tex.deinit();
+    self.reflection_fbo.deinit();
     self.deleteCross();
     self.lights.deinit();
     self.materials.deinit();
@@ -132,6 +140,37 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
     }
     self.cross.draw(dt);
     self.ui_state.draw();
+}
+
+fn setupReflection(self: *SimulatingWater) void {
+    var render_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
+    errdefer render_texture.deinit();
+    render_texture.setupRenderTexture(
+        self.ctx.cfg.fb_width,
+        self.ctx.cfg.fb_height,
+        "reflection",
+    ) catch @panic("unable to setup reflection render texture");
+    render_texture.texture_unit = 2;
+    self.reflection_tex = render_texture;
+
+    var depth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
+    errdefer render_texture.deinit();
+    depth_texture.setupDepthTexture(
+        self.ctx.cfg.fb_width,
+        self.ctx.cfg.fb_height,
+        "reflection",
+    ) catch @panic("unable to setup reflection render texture");
+    render_texture.texture_unit = 2;
+    self.reflection_tex = render_texture;
+
+    var reflection_framebuffer = rhi.Framebuffer.init();
+    errdefer reflection_framebuffer.deinit();
+
+    reflection_framebuffer.setupForColorRendering(
+        render_texture,
+        depth_texture,
+    ) catch @panic("unable to setup reflection framebuffer");
+    self.reflection_fbo = reflection_framebuffer;
 }
 
 fn updateLights(self: *SimulatingWater) void {

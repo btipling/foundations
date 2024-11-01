@@ -78,7 +78,7 @@ pub fn setupRenderTexture(self: *Texture, width: usize, height: usize, label: [:
     var buf: [500]u8 = undefined;
     const label_text = std.fmt.bufPrintZ(&buf, "🎨render_texture_{s}", .{label}) catch @panic("bufsize too small");
     c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
-    c.glTextureStorage2D(name, 1, c.GL_DEPTH_COMPONENT24, @intCast(width), @intCast(height));
+    c.glTextureStorage2D(name, 1, c.GL_RGBA8, @intCast(width), @intCast(height));
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_LINEAR);
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_LINEAR);
 

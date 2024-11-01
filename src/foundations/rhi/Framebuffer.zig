@@ -60,9 +60,37 @@ pub fn attachColorTexture(self: *FrameBuffer, texture: Texture) void {
 
 pub fn checkStatus(self: FrameBuffer) FrameBufferError!void {
     const status = c.glCheckNamedFramebufferStatus(self.name, c.GL_FRAMEBUFFER);
-    if (status != c.GL_FRAMEBUFFER_COMPLETE) {
-        return FrameBufferError.FramebufferIncomplete;
+    switch (status) {
+        c.GL_FRAMEBUFFER_COMPLETE => return,
+        c.GL_FRAMEBUFFER_UNDEFINED => {
+            std.debug.print("Framebuffer undefined - probably means FBO 0 is bound {d}\n", .{self.name});
+        },
+        c.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT => {
+            std.debug.print("Framebuffer incomplete: attachment points are framebuffer incomplete {d}\n", .{self.name});
+        },
+        c.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT => {
+            std.debug.print("Framebuffer incomplete: no attachments set {d}\n", .{self.name});
+        },
+        c.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER => {
+            std.debug.print("Framebuffer incomplete: draw buffer {d}\n", .{self.name});
+        },
+        c.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER => {
+            std.debug.print("Framebuffer incomplete: read buffer {d}\n", .{self.name});
+        },
+        c.GL_FRAMEBUFFER_UNSUPPORTED => {
+            std.debug.print("Framebuffer incomplete: unsupported format combination {d}\n", .{self.name});
+        },
+        c.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE => {
+            std.debug.print("Framebuffer incomplete: multisample settings mismatch {d}\n", .{self.name});
+        },
+        c.GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS => {
+            std.debug.print("Framebuffer incomplete: layer targets mismatch {d}\n", .{self.name});
+        },
+        else => {
+            std.debug.print("Framebuffer status unknown: {d} for {d}\n", .{ status, self.name });
+        },
     }
+    return FrameBufferError.FramebufferIncomplete;
 }
 
 pub fn bind(self: FrameBuffer) void {
