@@ -349,7 +349,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             );
         }
 
-        fn flipVerticalOrientation(
+        pub fn flipVerticalOrientation(
             self: *Self,
         ) void {
             if (self.fly_mode) return;
@@ -370,6 +370,8 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 self.camera_orientation_heading,
                 self.camera_orientation_pitch,
             );
+            self.updateCameraMatrix();
+            self.updateMVP();
         }
 
         fn updateOrientation(

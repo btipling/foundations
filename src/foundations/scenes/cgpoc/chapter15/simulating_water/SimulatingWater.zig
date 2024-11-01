@@ -140,6 +140,7 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
 }
 
 fn drawReflection(self: *SimulatingWater, _: f64) void {
+    self.view_camera.flipVerticalOrientation();
     self.reflection_fbo.bind();
     {
         if (self.skybox_tex) |t| {
@@ -147,6 +148,7 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
         }
         rhi.drawHorizon(self.skybox);
     }
+    self.view_camera.flipVerticalOrientation();
 }
 
 fn drawRefraction(self: *SimulatingWater, _: f64) void {
