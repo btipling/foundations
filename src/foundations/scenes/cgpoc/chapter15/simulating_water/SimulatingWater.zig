@@ -27,7 +27,7 @@ const SimulatingWater = @This();
 
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
-    lighting.materials.PoolWater,
+    lighting.materials.ClearWater,
 };
 
 pub fn navType() ui.ui_state.scene_nav_info {
