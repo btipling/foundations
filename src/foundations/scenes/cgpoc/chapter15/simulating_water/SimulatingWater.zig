@@ -275,7 +275,7 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
     };
     s.attachAndLinkAll(self.allocator, shaders[0..], "surface_bot");
     var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.0, -500, -500 }));
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.4, -500, -500 }));
     m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 1000, 1000));
     const i_datas = [_]rhi.instanceData{
         .{
