@@ -28,10 +28,15 @@ pub fn setupForShadowMap(self: *FrameBuffer, depth_texture: Texture) FrameBuffer
     };
 }
 
-pub fn setupForColorRendering(self: *FrameBuffer, color_texture: Texture) FrameBufferError!void {
+pub fn setupForColorRendering(
+    self: *FrameBuffer,
+    color_texture: Texture,
+    depth_texture: Texture,
+) FrameBufferError!void {
     self.attachColorTexture(color_texture);
     const buffers = [_]c.GLenum{c.GL_COLOR_ATTACHMENT0};
     self.setDrawBuffers(&buffers);
+    self.attachDepthTexture(depth_texture);
     self.checkStatus() catch {
         return FrameBufferError.FramebufferStatusCheckFailure;
     };
