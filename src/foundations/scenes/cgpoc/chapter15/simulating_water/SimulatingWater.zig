@@ -39,7 +39,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
         t3d,
         integrator,
         .{ 2, -5, 0 },
-        0,
+        -std.math.pi / 3.0,
     );
     errdefer cam.deinit(allocator);
 
