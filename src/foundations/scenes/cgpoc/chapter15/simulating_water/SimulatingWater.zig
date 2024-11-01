@@ -2,6 +2,7 @@ view_camera: *physics.camera.Camera(*SimulatingWater, physics.Integrator(physics
 ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
+ui_state: SimulatingWaterUI = .{},
 
 floor: object.object = .{ .norender = .{} },
 
@@ -19,6 +20,7 @@ const SimulatingWater = @This();
 
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
+    lighting.materials.PoolWater,
 };
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -47,19 +49,13 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
     var mats_buf = rhi.Buffer.init(bd, "materials");
     errdefer mats_buf.deinit();
 
-    var light_direction: math.vector.vec4 = .{ 0, 1, 0, 0 };
-    var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.rotationX(std.math.pi));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationY(std.math.pi / 2.0));
-    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(std.math.pi / 2.0));
-    light_direction = math.matrix.transformVector(m, light_direction);
     const lights = [_]lighting.Light{
         .{
             .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
-            .direction = light_direction,
+            .direction = [4]f32{ 4.0, 2.0, -3.75, 0.0 },
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
@@ -114,6 +110,10 @@ pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
 pub fn updateCamera(_: *SimulatingWater) void {}
 
 pub fn draw(self: *SimulatingWater, dt: f64) void {
+    if (self.ui_state.light_updated) {
+        self.updateLights();
+        self.ui_state.light_updated = false;
+    }
     self.view_camera.update(dt);
     {
         if (self.skybox_tex) |t| {
@@ -131,6 +131,30 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
         rhi.drawObject(self.floor);
     }
     self.cross.draw(dt);
+    self.ui_state.draw();
+}
+
+fn updateLights(self: *SimulatingWater) void {
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = self.ui_state.light_direction,
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .direction,
+        },
+    };
+    self.lights.deinit();
+    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
+    var lights_buf = rhi.Buffer.init(ld, "lights");
+    errdefer lights_buf.deinit();
+    self.lights = lights_buf;
 }
 
 fn deleteCross(self: *SimulatingWater) void {
@@ -211,7 +235,7 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
     s.attachAndLinkAll(self.allocator, shaders[0..], "surface_top");
     var m = math.matrix.identity();
     m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.5, -500, -500 }));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(0.1, 1000, 1000));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 1000, 1000));
     const i_datas = [_]rhi.instanceData{
         .{
             .t_column0 = m.columns[0],
@@ -251,8 +275,8 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
     };
     s.attachAndLinkAll(self.allocator, shaders[0..], "surface_bot");
     var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.4, -500, -500 }));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(0.1, 1000, 1000));
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.0, -500, -500 }));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 1000, 1000));
     const i_datas = [_]rhi.instanceData{
         .{
             .t_column0 = m.columns[0],
@@ -352,3 +376,4 @@ const object = @import("../../../../object/object.zig");
 const lighting = @import("../../../../lighting/lighting.zig");
 const assets = @import("../../../../assets/assets.zig");
 const rendering = @import("../../../../rendering/rendering.zig");
+const SimulatingWaterUI = @import("SimulatingWaterUI.zig");

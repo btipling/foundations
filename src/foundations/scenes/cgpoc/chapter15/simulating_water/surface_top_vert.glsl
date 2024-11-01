@@ -31,10 +31,10 @@ void main()
     vec4 f_pos = vec4(f_position.xyz, 1.0);
     vec4 f_main_pos = m_matrix * f_pos;
 
-    fo_light = f_light.direction.xyz;
     fo_vert = f_main_pos.xyz;
+    fo_light = f_light.direction.xyz;
     fo_normal = normalize(f_norm_matrix * f_normal);
-    f_tc = f_texture_coords * 250;
+    f_tc = f_texture_coords;
     f_frag_color = f_i_color;
     gl_Position = f_mvp * f_main_pos;
 }

@@ -13,3 +13,4 @@ pub const GlassyPastelLavender = @import("material/glassy_pastel_lavender.zig").
 pub const GlassyPastelLemon = @import("material/glassy_pastel_lemon.zig").GlassyPastelLemon;
 pub const GlassyPastelMint = @import("material/glassy_pastel_mint.zig").GlassyPastelMint;
 pub const GlassyPastelPink = @import("material/glassy_pastel_pink.zig").GlassyPastelPink;
+pub const PoolWater = @import("material/pool_water.zig").PoolWater;
