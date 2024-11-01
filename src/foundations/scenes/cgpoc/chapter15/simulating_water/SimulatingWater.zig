@@ -150,7 +150,7 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
 }
 
 fn drawRefraction(self: *SimulatingWater, _: f64) void {
-    self.reflection_fbo.bind();
+    self.refraction_fbo.bind();
     {
         rhi.drawObject(self.floor);
     }
