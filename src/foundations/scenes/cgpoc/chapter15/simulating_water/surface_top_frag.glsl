@@ -1,4 +1,5 @@
 #version 460 
+#extension GL_ARB_bindless_texture : require
 
 in vec2 f_tc;
 in vec3 fo_normal;
@@ -6,12 +7,16 @@ in vec3 fo_vert;
 in vec3 fo_light;
 
 in vec3 f_view_p;
+in vec4 fo_pos;
 out vec4 fo_frag_color;
 
 
 //#include "src/foundations/shaders/camera.glsl"
 //#include "src/foundations/shaders/material.glsl"
 //#include "src/foundations/shaders/light.glsl"
+
+layout(bindless_sampler) uniform sampler2D f_reflection;
+layout(bindless_sampler) uniform sampler2D f_refraction;
 
 void main()
 {
@@ -31,6 +36,12 @@ void main()
     vec3 f_diffuse = f_light.diffuse.xyz * f_mat.diffuse.xyz * max(cosTheta, 0.0);
     vec3 f_specular = f_mat.specular.xyz * f_light.specular.xyz * pow(max(cosPhi, 0.0), f_mat.shininess * 40.0);
 
-    vec4 f_surface_color = vec4(0.0, 0.25, 0.5, 1.0);
+    vec4 f_blue_color = vec4(0.0, 0.25, 0.5, 1.0);
+    
+    vec2 refract_tc = (vec2(fo_pos.x, fo_pos.y))/(2.0 * fo_pos.w) + 0.5;
+    vec2 reflect_tc = (vec2(fo_pos.x, -fo_pos.y))/(2.0 * fo_pos.w) + 0.5;
+    vec4 f_reflection_color = texture(f_reflection, reflect_tc);
+    vec4 f_refraction_color = texture(f_refraction, refract_tc);
+    vec4 f_surface_color = (0.2 * f_refraction_color) + (1.0 * f_reflection_color) + (0.1 * f_blue_color);
     fo_frag_color = f_surface_color * vec4(f_ambient.xyz + f_diffuse.xyz, 1.0)  + vec4(f_specular, 1.0);
 }

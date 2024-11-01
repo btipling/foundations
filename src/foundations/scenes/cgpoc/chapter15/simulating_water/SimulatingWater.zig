@@ -140,6 +140,8 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
 }
 
 fn drawReflection(self: *SimulatingWater, _: f64) void {
+    const camera_x: f32 = self.view_camera.camera_pos[0];
+    self.view_camera.camera_pos[0] = -camera_x;
     self.view_camera.flipVerticalOrientation();
     self.reflection_fbo.bind();
     {
@@ -148,6 +150,7 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
         }
         rhi.drawHorizon(self.skybox);
     }
+    self.view_camera.camera_pos[0] = camera_x;
     self.view_camera.flipVerticalOrientation();
 }
 
@@ -167,6 +170,8 @@ fn drawScene(self: *SimulatingWater, dt: f64) void {
         rhi.drawHorizon(self.skybox);
     }
     {
+        self.reflection_tex.bind();
+        self.refraction_tex.bind();
         rhi.drawObject(self.surface_top);
     }
     {
@@ -216,7 +221,7 @@ fn setupRefraction(self: *SimulatingWater) void {
         self.ctx.cfg.fb_height,
         "refraction",
     ) catch @panic("unable to setup refraction render texture");
-    render_texture.texture_unit = 2;
+    render_texture.texture_unit = 3;
     self.refraction_tex = render_texture;
 
     var depth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create refraction texture");
@@ -321,12 +326,18 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
         return;
     }
     const prog = rhi.createProgram("surface_top");
+    const frag_bindings = [_]usize{ 2, 3 };
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_top_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
 
-    const frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_top_frag.glsl")) catch @panic("shader compiler");
+    var frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_top_frag.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(frag);
+    frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+        frag,
+        frag_bindings[0..],
+    ) catch @panic("bindless");
 
     const shaders = [_]rhi.Shader.ShaderData{
         .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
@@ -348,6 +359,8 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
             .color = .{ 1, 0, 1, 1 },
         },
     };
+    self.reflection_tex.addUniform(prog, "f_reflection") catch @panic("no reflection texture");
+    self.refraction_tex.addUniform(prog, "f_refraction") catch @panic("no refraction texture");
 
     var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "surface_top") };
     grid_obj.parallelepiped.mesh.linear_colorspace = false;
