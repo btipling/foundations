@@ -3,7 +3,11 @@ ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
 
-grid: object.object = .{ .norender = .{} },
+floor: object.object = .{ .norender = .{} },
+
+surface_top: object.object = .{ .norender = .{} },
+
+surface_bottom: object.object = .{ .norender = .{} },
 
 skybox: object.object = .{ .norender = .{} },
 skybox_tex: ?rhi.Texture = null,
@@ -79,8 +83,14 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
     t3d.renderDebugCross();
     errdefer t3d.deleteCross();
 
-    t3d.renderGrid();
-    errdefer rhi.deleteObject(t3d.grid);
+    t3d.renderFloor();
+    errdefer rhi.deleteObject(t3d.floor);
+
+    t3d.renderSurfaceTop();
+    errdefer rhi.deleteObject(t3d.surface_top);
+
+    t3d.renderSurfaceBottom();
+    errdefer rhi.deleteObject(t3d.surface_bottom);
 
     t3d.renderSkybox();
     errdefer rhi.deleteObject(t3d.skybox);
@@ -90,7 +100,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
 
 pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
     rhi.deleteObject(self.skybox);
-    rhi.deleteObject(self.grid);
+    rhi.deleteObject(self.surface_top);
+    rhi.deleteObject(self.surface_bottom);
+    rhi.deleteObject(self.floor);
     self.deleteCross();
     self.lights.deinit();
     self.materials.deinit();
@@ -110,7 +122,13 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
         rhi.drawHorizon(self.skybox);
     }
     {
-        rhi.drawObject(self.grid);
+        rhi.drawObject(self.surface_top);
+    }
+    {
+        rhi.drawObject(self.surface_bottom);
+    }
+    {
+        rhi.drawObject(self.floor);
     }
     self.cross.draw(dt);
 }
@@ -122,12 +140,12 @@ fn deleteCross(self: *SimulatingWater) void {
 fn renderDebugCross(self: *SimulatingWater) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
-        math.matrix.translate(0.05, -0.025, -0.025),
+        math.matrix.translate(1.0, -0.025, -0.025),
         5,
     );
 }
 
-fn renderGrid(self: *SimulatingWater) void {
+fn renderFloor(self: *SimulatingWater) void {
     var grid_model: *assets.Obj = undefined;
     if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
         grid_model = o;
@@ -151,7 +169,7 @@ fn renderGrid(self: *SimulatingWater) void {
     };
     s.attachAndLinkAll(self.allocator, shaders[0..], "floor");
     var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ -0.5, -500, -500 }));
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ -10.5, -500, -500 }));
     m = math.matrix.transformMatrix(m, math.matrix.scale(0.5, 1000, 1000));
     const i_datas = [_]rhi.instanceData{
         .{
@@ -165,7 +183,89 @@ fn renderGrid(self: *SimulatingWater) void {
 
     var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "floor") };
     grid_obj.parallelepiped.mesh.linear_colorspace = true;
-    self.grid = grid_obj;
+    self.floor = grid_obj;
+}
+
+fn renderSurfaceTop(self: *SimulatingWater) void {
+    var grid_model: *assets.Obj = undefined;
+    if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
+        grid_model = o;
+    } else {
+        return;
+    }
+    const prog = rhi.createProgram("surface_top");
+
+    const vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_top_vert.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(vert);
+
+    const frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_top_frag.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(frag);
+
+    const shaders = [_]rhi.Shader.ShaderData{
+        .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
+        .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
+    };
+    const s: rhi.Shader = .{
+        .program = prog,
+    };
+    s.attachAndLinkAll(self.allocator, shaders[0..], "surface_top");
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.5, -500, -500 }));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(0.1, 1000, 1000));
+    const i_datas = [_]rhi.instanceData{
+        .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        },
+    };
+
+    var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "surface_top") };
+    grid_obj.parallelepiped.mesh.linear_colorspace = false;
+    self.surface_top = grid_obj;
+}
+
+fn renderSurfaceBottom(self: *SimulatingWater) void {
+    var grid_model: *assets.Obj = undefined;
+    if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
+        grid_model = o;
+    } else {
+        return;
+    }
+    const prog = rhi.createProgram("surface_bottom");
+
+    const vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_bot_vert.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(vert);
+
+    const frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_bot_frag.glsl")) catch @panic("shader compiler");
+    defer self.allocator.free(frag);
+
+    const shaders = [_]rhi.Shader.ShaderData{
+        .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
+        .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
+    };
+    const s: rhi.Shader = .{
+        .program = prog,
+    };
+    s.attachAndLinkAll(self.allocator, shaders[0..], "surface_bot");
+    var m = math.matrix.identity();
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.4, -500, -500 }));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(0.1, 1000, 1000));
+    const i_datas = [_]rhi.instanceData{
+        .{
+            .t_column0 = m.columns[0],
+            .t_column1 = m.columns[1],
+            .t_column2 = m.columns[2],
+            .t_column3 = m.columns[3],
+            .color = .{ 1, 0, 1, 1 },
+        },
+    };
+
+    var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "surface_bot") };
+    grid_obj.parallelepiped.mesh.linear_colorspace = false;
+    self.surface_bottom = grid_obj;
 }
 
 pub fn renderSkybox(self: *SimulatingWater) void {
