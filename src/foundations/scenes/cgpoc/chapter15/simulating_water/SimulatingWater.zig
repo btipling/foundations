@@ -20,6 +20,9 @@ lights: rhi.Buffer,
 reflection_tex: rhi.Texture = undefined,
 reflection_fbo: rhi.Framebuffer = undefined,
 
+refraction_tex: rhi.Texture = undefined,
+refraction_fbo: rhi.Framebuffer = undefined,
+
 const SimulatingWater = @This();
 
 const mats = [_]lighting.Material{
@@ -35,14 +38,14 @@ pub fn navType() ui.ui_state.scene_nav_info {
 }
 
 pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingWater {
-    const t3d = allocator.create(SimulatingWater) catch @panic("OOM");
-    errdefer allocator.destroy(t3d);
+    const sw = allocator.create(SimulatingWater) catch @panic("OOM");
+    errdefer allocator.destroy(sw);
 
     const integrator = physics.Integrator(physics.SmoothDeceleration).init(.{});
     var cam = physics.camera.Camera(*SimulatingWater, physics.Integrator(physics.SmoothDeceleration)).init(
         allocator,
         ctx.cfg,
-        t3d,
+        sw,
         integrator,
         .{ 2, -5, 0 },
         -std.math.pi / 3.0,
@@ -72,7 +75,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
     var lights_buf = rhi.Buffer.init(ld, "lights");
     errdefer lights_buf.deinit();
 
-    t3d.* = .{
+    sw.* = .{
         .view_camera = cam,
         .ctx = ctx,
         .allocator = allocator,
@@ -80,24 +83,30 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
         .lights = lights_buf,
     };
 
-    t3d.setupReflection();
+    sw.setupReflection();
+    errdefer sw.reflection_tex.deinit();
+    errdefer sw.reflection_fbo.deinit();
 
-    t3d.renderDebugCross();
-    errdefer t3d.deleteCross();
+    sw.setupRefraction();
+    errdefer sw.refraction_tex.deinit();
+    errdefer sw.refraction_fbo.deinit();
 
-    t3d.renderFloor();
-    errdefer rhi.deleteObject(t3d.floor);
+    sw.renderDebugCross();
+    errdefer sw.deleteCross();
 
-    t3d.renderSurfaceTop();
-    errdefer rhi.deleteObject(t3d.surface_top);
+    sw.renderFloor();
+    errdefer rhi.deleteObject(sw.floor);
 
-    t3d.renderSurfaceBottom();
-    errdefer rhi.deleteObject(t3d.surface_bottom);
+    sw.renderSurfaceTop();
+    errdefer rhi.deleteObject(sw.surface_top);
 
-    t3d.renderSkybox();
-    errdefer rhi.deleteObject(t3d.skybox);
+    sw.renderSurfaceBottom();
+    errdefer rhi.deleteObject(sw.surface_bottom);
 
-    return t3d;
+    sw.renderSkybox();
+    errdefer rhi.deleteObject(sw.skybox);
+
+    return sw;
 }
 
 pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
@@ -107,6 +116,8 @@ pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
     rhi.deleteObject(self.floor);
     self.reflection_tex.deinit();
     self.reflection_fbo.deinit();
+    self.refraction_tex.deinit();
+    self.refraction_fbo.deinit();
     self.deleteCross();
     self.lights.deinit();
     self.materials.deinit();
@@ -143,7 +154,7 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
 }
 
 fn setupReflection(self: *SimulatingWater) void {
-    var render_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
+    var render_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create reflection texture");
     errdefer render_texture.deinit();
     render_texture.setupRenderTexture(
         self.ctx.cfg.fb_width,
@@ -153,7 +164,7 @@ fn setupReflection(self: *SimulatingWater) void {
     render_texture.texture_unit = 2;
     self.reflection_tex = render_texture;
 
-    var depth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create shadow texture");
+    var depth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create reflection texture");
     errdefer render_texture.deinit();
     depth_texture.setupDepthTexture(
         self.ctx.cfg.fb_width,
@@ -171,6 +182,37 @@ fn setupReflection(self: *SimulatingWater) void {
         depth_texture,
     ) catch @panic("unable to setup reflection framebuffer");
     self.reflection_fbo = reflection_framebuffer;
+}
+
+fn setupRefraction(self: *SimulatingWater) void {
+    var render_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create refraction texture");
+    errdefer render_texture.deinit();
+    render_texture.setupRenderTexture(
+        self.ctx.cfg.fb_width,
+        self.ctx.cfg.fb_height,
+        "refraction",
+    ) catch @panic("unable to setup refraction render texture");
+    render_texture.texture_unit = 2;
+    self.reflection_tex = render_texture;
+
+    var depth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create refraction texture");
+    errdefer render_texture.deinit();
+    depth_texture.setupDepthTexture(
+        self.ctx.cfg.fb_width,
+        self.ctx.cfg.fb_height,
+        "refraction",
+    ) catch @panic("unable to setup refraction render texture");
+    render_texture.texture_unit = 2;
+    self.reflection_tex = render_texture;
+
+    var refraction_framebuffer = rhi.Framebuffer.init();
+    errdefer refraction_framebuffer.deinit();
+
+    refraction_framebuffer.setupForColorRendering(
+        render_texture,
+        depth_texture,
+    ) catch @panic("unable to setup refraction framebuffer");
+    self.refraction_fbo = refraction_framebuffer;
 }
 
 fn updateLights(self: *SimulatingWater) void {
