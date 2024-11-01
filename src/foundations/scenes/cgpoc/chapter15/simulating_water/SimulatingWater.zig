@@ -134,6 +134,30 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
         self.ui_state.light_updated = false;
     }
     self.view_camera.update(dt);
+    self.drawReflection(dt);
+    self.drawRefraction(dt);
+    self.drawScene(dt);
+}
+
+fn drawReflection(self: *SimulatingWater, _: f64) void {
+    self.reflection_fbo.bind();
+    {
+        if (self.skybox_tex) |t| {
+            t.bind();
+        }
+        rhi.drawHorizon(self.skybox);
+    }
+}
+
+fn drawRefraction(self: *SimulatingWater, _: f64) void {
+    self.reflection_fbo.bind();
+    {
+        rhi.drawObject(self.floor);
+    }
+    self.refraction_fbo.unbind();
+}
+
+fn drawScene(self: *SimulatingWater, dt: f64) void {
     {
         if (self.skybox_tex) |t| {
             t.bind();
@@ -170,9 +194,7 @@ fn setupReflection(self: *SimulatingWater) void {
         self.ctx.cfg.fb_width,
         self.ctx.cfg.fb_height,
         "reflection",
-    ) catch @panic("unable to setup reflection render texture");
-    render_texture.texture_unit = 2;
-    self.reflection_tex = render_texture;
+    ) catch @panic("unable to setup reflection depth texture");
 
     var reflection_framebuffer = rhi.Framebuffer.init();
     errdefer reflection_framebuffer.deinit();
@@ -193,7 +215,7 @@ fn setupRefraction(self: *SimulatingWater) void {
         "refraction",
     ) catch @panic("unable to setup refraction render texture");
     render_texture.texture_unit = 2;
-    self.reflection_tex = render_texture;
+    self.refraction_tex = render_texture;
 
     var depth_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create refraction texture");
     errdefer render_texture.deinit();
@@ -201,9 +223,7 @@ fn setupRefraction(self: *SimulatingWater) void {
         self.ctx.cfg.fb_width,
         self.ctx.cfg.fb_height,
         "refraction",
-    ) catch @panic("unable to setup refraction render texture");
-    render_texture.texture_unit = 2;
-    self.reflection_tex = render_texture;
+    ) catch @panic("unable to setup refraction depth texture");
 
     var refraction_framebuffer = rhi.Framebuffer.init();
     errdefer refraction_framebuffer.deinit();
