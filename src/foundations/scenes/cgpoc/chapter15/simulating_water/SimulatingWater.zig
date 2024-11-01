@@ -217,22 +217,22 @@ pub fn renderSkybox(self: *SimulatingWater) void {
     parallelepiped.parallelepiped.mesh.linear_colorspace = false;
     if (self.skybox_tex) |*t| {
         var cm: assets.Cubemap = .{
-            .path = "cgpoc\\cubemaps\\AlienWorld\\cubeMap",
+            .path = "cgpoc\\cubemaps\\big_sky\\cubemap",
             .textures_loader = self.ctx.textures_loader,
         };
-        cm.names[0] = "xp.png";
-        cm.names[1] = "xn.png";
-        cm.names[2] = "yp.png";
-        cm.names[3] = "yn.png";
-        cm.names[4] = "zp.png";
-        cm.names[5] = "zn.png";
+        cm.names[0] = "xp.jpg";
+        cm.names[1] = "xn.jpg";
+        cm.names[2] = "yp.jpg";
+        cm.names[3] = "yn.jpg";
+        cm.names[4] = "zp.jpg";
+        cm.names[5] = "zn.jpg";
         var images: ?[6]*assets.Image = null;
         if (cm.loadAll(self.allocator)) {
             images = cm.images;
         } else |_| {
             std.debug.print("failed to load textures\n", .{});
         }
-        t.setupCubemap(images, prog, "f_skybox", "alien_world") catch {
+        t.setupCubemap(images, prog, "f_skybox", "big_sky") catch {
             self.skybox_tex = null;
         };
     }
