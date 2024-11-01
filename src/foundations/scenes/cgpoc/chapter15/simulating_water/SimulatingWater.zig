@@ -272,7 +272,7 @@ fn deleteCross(self: *SimulatingWater) void {
 fn renderDebugCross(self: *SimulatingWater) void {
     self.cross = scenery.debug.Cross.init(
         self.allocator,
-        math.matrix.translate(1.0, -0.025, -0.025),
+        math.matrix.translate(1.0, 0.0, 0.0),
         5,
     );
 }
@@ -348,8 +348,8 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
     };
     s.attachAndLinkAll(self.allocator, shaders[0..], "surface_top");
     var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.5, -500, -500 }));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 1000, 1000));
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0, -500, -500 }));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(1, 1000, 1000));
     const i_datas = [_]rhi.instanceData{
         .{
             .t_column0 = m.columns[0],
@@ -362,8 +362,8 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
     self.reflection_tex.addUniform(prog, "f_reflection") catch @panic("no reflection texture");
     self.refraction_tex.addUniform(prog, "f_refraction") catch @panic("no refraction texture");
 
-    var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "surface_top") };
-    grid_obj.parallelepiped.mesh.linear_colorspace = false;
+    var grid_obj = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "surface_top") };
+    grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_top = grid_obj;
 }
 
@@ -391,8 +391,11 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
     };
     s.attachAndLinkAll(self.allocator, shaders[0..], "surface_bot");
     var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0.0, -500, -500 }));
-    m = math.matrix.transformMatrix(m, math.matrix.scale(0.05, 1000, 1000));
+    _ = &m;
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0, -500, -500 }));
+    m = math.matrix.transformMatrix(m, math.matrix.scale(1, 1000, 1000));
+    m = math.matrix.transformMatrix(m, math.matrix.rotationY(std.math.pi));
+    m = math.matrix.transformMatrix(m, math.matrix.translateVec(.{ 0, 0, -1 }));
     const i_datas = [_]rhi.instanceData{
         .{
             .t_column0 = m.columns[0],
@@ -403,8 +406,8 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
         },
     };
 
-    var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "surface_bot") };
-    grid_obj.parallelepiped.mesh.linear_colorspace = false;
+    var grid_obj = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "surface_bot") };
+    grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_bottom = grid_obj;
 }
 

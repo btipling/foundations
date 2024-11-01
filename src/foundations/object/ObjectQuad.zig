@@ -26,6 +26,17 @@ pub const default_correct_indices: [6]u32 = .{
     2, 1, 0, 2, 1, 3,
 };
 
+pub const plane_positions: [4][3]f32 = .{
+    .{ 0, 0, 0 },
+    .{ 0, 0, 1 },
+    .{ 0, 1, 0 },
+    .{ 0, 1, 1 },
+};
+
+pub const plane_indices: [6]u32 = .{
+    0, 3, 1, 0, 2, 3,
+};
+
 pub fn init(
     allocator: std.mem.Allocator,
     vertex_partials: []const []const u8,
@@ -67,14 +78,52 @@ pub fn init(
     };
 }
 
-pub fn initInstanced(
+pub fn initPlane(
     program: u32,
-    instance_data: []rhi.instanceData,
+    instance_data: []const rhi.instanceData,
     label: [:0]const u8,
 ) Quad {
-    // zig fmt: off
+    const positions = plane_positions;
+    var indices = plane_indices;
+
+    var rhi_data: [positions.len]rhi.attributeData = undefined;
+    var i: usize = 0;
+    while (i < positions.len) : (i += 1) {
+        rhi_data[i] = .{
+            .position = positions[i],
+            .color = .{ 1, 0, 1, 1 },
+            .normal = .{ 1, 0, 0 },
+        };
+    }
+    const vao_buf = rhi.attachInstancedBuffer(rhi_data[0..], instance_data, label);
+    const ebo = rhi.initEBO(@ptrCast(indices[0..]), vao_buf.vao, label);
+    return .{
+        .mesh = .{
+            .program = program,
+            .vao = vao_buf.vao,
+            .buffer = vao_buf.buffer,
+            .instance_type = .{
+                .instanced = .{
+                    .index_count = indices.len,
+                    .instances_count = instance_data.len,
+                    .ebo = ebo,
+                    .primitive = c.GL_TRIANGLES,
+                    .format = c.GL_UNSIGNED_INT,
+                },
+            },
+        },
+        .vertex_data_size = vao_buf.vertex_data_size,
+        .instance_data_stride = vao_buf.instance_data_stride,
+        .instanced = true,
+    };
+}
+
+pub fn initInstanced(
+    program: u32,
+    instance_data: []const rhi.instanceData,
+    label: [:0]const u8,
+) Quad {
     const positions = default_correct_positions;
-    // zig fmt: on
     var indices = default_correct_indices;
 
     var rhi_data: [positions.len]rhi.attributeData = undefined;
