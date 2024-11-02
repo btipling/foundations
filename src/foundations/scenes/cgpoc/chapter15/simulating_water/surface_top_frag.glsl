@@ -19,13 +19,18 @@ layout(bindless_sampler) uniform sampler2D f_reflection;
 layout(bindless_sampler) uniform sampler2D f_refraction;
 layout(bindless_sampler) uniform sampler3D f_wave_samp;
 
+vec3 f_estimate_wave_normal(float f_w_offset, float f_w_map_scale, float f_w_h_scale)
+{
+    return vec3(1.0, 0.0, 0.0);
+}
+
 void main()
 {
 
     
     vec4 f_wave_color = texture(f_wave_samp, fo_pos.xyz/2.0 + 0.5);
 
-    vec3 f_N = vec3(1.0, 0.0, 0.0);
+    vec3 f_N = f_estimate_wave_normal(0.0002, 32.0, 16.0);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
     Light f_light = f_lights[0];
