@@ -31,7 +31,7 @@ vec3 f_estimate_wave_normal(float f_w_offset, float f_w_map_scale, float f_w_h_s
 	vec3 f_v4 = f_v2 - f_v1;
 	vec3 f_v5 = f_v3 - f_v1;
 	vec3 f_wn = normalize(cross(f_v4, f_v5));
-	return vec3(f_wn.y, f_wn.z, f_wn.x);
+	return normalize(vec3(f_wn.y, f_wn.z, f_wn.x));
     
     // float f_h1 = texture(f_wave_samp, vec3(0.5, f_tc.t, f_tc.s)).s;
 	// return vec3(f_h1, 0.0, 0.0);
@@ -42,7 +42,7 @@ void main()
 
     
 
-    vec3 f_N = f_estimate_wave_normal(0.2, 16.0, 5.0);
+    vec3 f_N = f_estimate_wave_normal(0.02, 16.0, 0.05);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
     Light f_light = f_lights[0];
