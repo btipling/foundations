@@ -38,7 +38,7 @@ void main()
     fo_light = f_light.direction.xyz;
     fo_vert = f_main_pos.xyz;
     fo_normal = normalize(f_norm_matrix * f_normal);
-    f_tc = f_texture_coords * 250;
+    f_tc = f_texture_coords;
     f_frag_color = f_i_color;
     fo_pos = f_mvp * f_main_pos;
     gl_Position = fo_pos;

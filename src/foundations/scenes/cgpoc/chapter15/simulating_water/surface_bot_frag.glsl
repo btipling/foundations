@@ -18,6 +18,7 @@ uniform vec3 f_waterdata;
 //#include "src/foundations/shaders/camera.glsl"
 //#include "src/foundations/shaders/material.glsl"
 //#include "src/foundations/shaders/light.glsl"
+//#include "src/foundations/scenes/cgpoc/chapter15/simulating_water/surface_wave.glsl"
 
 void main()
 {
@@ -27,11 +28,11 @@ void main()
     float f_frag_distance = length(f_view_p.xyz);
     float f_occlusion_factor = clamp(((f_occlusion_end - f_frag_distance) / (f_occlusion_end - f_occlusion_start)), 0.0, 1.0);
 
-    vec3 f_N = vec3(-1.0, 0.0, 0.0);
+    vec3 f_N = f_estimate_wave_normal(0.8, 32.0, 2.0);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
     Light f_light = f_lights[0];
-    Material f_mat = f_materials[0];
+    Material f_mat = f_materials[2];
 
     vec3 f_L = normalize(fo_light);
     vec3 f_H = normalize(f_L + f_V).xyz;
@@ -45,9 +46,9 @@ void main()
     
     vec2 reflect_tc = (vec2(fo_pos.x, fo_pos.y))/(2.0 * fo_pos.w) + 0.5;
     vec4 f_reflection_color = texture(f_reflection, reflect_tc);
-    vec4 f_blue = vec4(0.0, 0.25, 1.0, 1.0);;
-    vec4 f_surface_color = (0.7 * f_blue) + (0.3 * f_reflection_color);
-    f_surface_color = f_surface_color + vec4(f_ambient.xyz + f_diffuse.xyz, 1.0) * 0.5 + vec4(f_specular, 1.0);
+    vec4 f_blue = vec4(0.8, 0.9, 1.0, 1.0);
+    vec4 f_surface_color = (0.3 * f_blue) + (0.7 * f_reflection_color);
+    f_surface_color = f_surface_color * vec4(f_ambient.xyz + f_diffuse.xyz, 1.0) + vec4(f_specular, 1.0);
     if (f_waterdata[0] > 0) {
         f_surface_color = mix(f_water_occlusion, f_surface_color, f_occlusion_factor);
     }

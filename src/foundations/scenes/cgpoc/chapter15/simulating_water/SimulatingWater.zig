@@ -35,6 +35,7 @@ const SimulatingWater = @This();
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
     lighting.materials.ClearWater,
+    lighting.materials.PoolWater,
 };
 
 pub fn navType() ui.ui_state.scene_nav_info {
@@ -495,6 +496,7 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
     var uw = rhi.Uniform.init(prog, "f_waterdata") catch @panic("no uniform");
     uw.setUniform3fv(.{ 0, 0, 0 });
     self.water_data[2] = uw;
+    self.wave_tex.?.addUniform(prog, "f_wave_samp") catch @panic("no texture uniform");
 }
 
 pub fn renderSkybox(self: *SimulatingWater) void {
