@@ -1,11 +1,11 @@
 data: std.ArrayListUnmanaged(u8) = .{},
-dims: usize = 256,
+dims: usize = 512,
 dim: usize = 4,
 noise_3d: *noise.Noise3D = undefined,
 
 const Static = @This();
 
-pub const max_tex_dims = 256;
+pub const max_tex_dims = 512;
 
 pub fn init(allocator: std.mem.Allocator) *Static {
     var sp = allocator.create(Static) catch @panic("OOM");
@@ -31,10 +31,11 @@ pub fn deinit(self: *Static, allocator: std.mem.Allocator) void {
 
 fn wave(self: *Static, h_f: f32, d_f: f32, w_f: f32) f32 {
     var sum: f32 = 0.0;
+    sum = (@sin((1.0 / 1024.0) * (8 * std.math.pi) * (w_f + d_f)) + 1.0) * 8.0;
     const pers: f32 = 0.5;
     var amp: f32 = 10.0;
     self.noise_3d.coord_sensitivity = 0.01;
-    for (0..3) |octaves| {
+    for (0..4) |octaves| {
         self.noise_3d.octaves = @intCast(octaves + 1);
         const n: f32 = self.noise_3d.turbulence(h_f, d_f, w_f);
         sum += n * amp;
