@@ -29,6 +29,22 @@ pub fn deinit(self: *Static, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
+fn wave(self: *Static, h_f: f32, d_f: f32, w_f: f32) f32 {
+    var sum: f32 = 0.0;
+    const pers: f32 = 0.5;
+    var amp: f32 = 0.25;
+    self.noise_3d.coord_sensitivity = 0.01;
+    for (0..3) |octaves| {
+        self.noise_3d.octaves = @intCast(octaves + 1);
+        const n: f32 = self.noise_3d.turbulence(h_f, d_f, w_f);
+        sum += n * amp;
+
+        self.noise_3d.coord_sensitivity *= 1.1;
+        amp *= pers;
+    }
+    return @sin(sum * std.math.pi);
+}
+
 pub fn fillData(self: *Static) void {
     for (0..self.dims) |h| {
         const h_f: f32 = @floatFromInt(h);
@@ -36,11 +52,11 @@ pub fn fillData(self: *Static) void {
             const d_f: f32 = @floatFromInt(d);
             for (0..self.dims) |w| {
                 const w_f: f32 = @floatFromInt(w);
-                self.noise_3d.lacunarity = h_f * 0.005;
-                self.noise_3d.octaves = 3;
-                self.noise_3d.coord_sensitivity = @mod(w_f, 12.8732) * @mod(h_f, 49.3283) * 0.01;
-                self.noise_3d.gain = d_f * 0.0003;
-                const nn: f32 = self.noise_3d.turbulence(h_f, d_f, w_f);
+                self.noise_3d.lacunarity = 10.0;
+                // self.noise_3d.octaves = 3;
+                // self.noise_3d.coord_sensitivity = @mod(w_f, 12.8732) * @mod(h_f, 49.3283) * 0.01;
+                self.noise_3d.gain = 0.8;
+                const nn: f32 = self.wave(h_f, d_f, w_f);
 
                 const brightness: f32 = nn;
 
