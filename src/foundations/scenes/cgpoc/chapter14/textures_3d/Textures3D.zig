@@ -28,11 +28,14 @@ wood_tex: ?rhi.Texture = null,
 static_block: object.object = .{ .norender = .{} },
 static_tex: ?rhi.Texture = null,
 
+wave_block: object.object = .{ .norender = .{} },
+wave_tex: ?rhi.Texture = null,
+
 materials: rhi.Buffer,
 lights: rhi.Buffer,
 light_m: math.matrix,
 
-shadow_objects: [4]rendering.DirectionalShadowPass.ShadowObject = undefined,
+shadow_objects: [6]rendering.DirectionalShadowPass.ShadowObject = undefined,
 
 const Textures3D = @This();
 
@@ -128,11 +131,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
 
     t3d.renderStaticBlock();
     errdefer rhi.deleteObject(t3d.static_block);
-    t3d.shadow_objects[2] = .{ .obj = t3d.static_block };
+    t3d.shadow_objects[3] = .{ .obj = t3d.static_block };
+
+    t3d.renderWaveBlock();
+    errdefer rhi.deleteObject(t3d.wave_block);
+    t3d.shadow_objects[4] = .{ .obj = t3d.wave_block };
 
     t3d.renderGrid();
     errdefer rhi.deleteObject(t3d.grid);
-    t3d.shadow_objects[3] = .{ .obj = t3d.grid };
+    t3d.shadow_objects[5] = .{ .obj = t3d.grid };
 
     t3d.shadowpass.updateShdowObjects(t3d.shadow_objects[0..]);
 
@@ -143,12 +150,16 @@ pub fn deinit(self: *Textures3D, allocator: std.mem.Allocator) void {
     rhi.deleteObject(self.marbled_block);
     rhi.deleteObject(self.striped_block);
     rhi.deleteObject(self.wood_block);
+    rhi.deleteObject(self.static_block);
+    rhi.deleteObject(self.wave_block);
     rhi.deleteObject(self.sphere);
     rhi.deleteObject(self.grid);
     if (self.grid_t_tex) |t| t.deinit();
     if (self.grid_t_nor) |t| t.deinit();
     if (self.striped_tex) |t| t.deinit();
     if (self.marbled_tex) |t| t.deinit();
+    if (self.static_tex) |t| t.deinit();
+    if (self.wave_tex) |t| t.deinit();
     self.deleteCross();
     self.shadowpass.deinit(allocator);
     self.lights.deinit();
@@ -256,6 +267,12 @@ pub fn draw(self: *Textures3D, dt: f64) void {
         }
         rhi.drawObject(self.static_block);
     }
+    {
+        if (self.wave_tex) |t| {
+            t.bind();
+        }
+        rhi.drawObject(self.wave_block);
+    }
     self.cross.draw(dt);
     self.ui_state.draw();
 }
@@ -333,6 +350,30 @@ fn renderSphere(self: *Textures3D) void {
     sd.setUniform1f(0);
     self.sky_dep = sd;
     self.sphere = sphere;
+}
+
+fn renderWaveBlock(self: *Textures3D) void {
+    const m = math.matrix.translateVec(.{ 0, 2.5, 0 });
+    const block = self.renderParallelepiped(m);
+    self.wave_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.wave_tex.?.texture_unit = 1;
+    if (self.wave_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\static.vol") catch null;
+        t.setup3D(
+            data,
+            tex_dims,
+            tex_dims,
+            tex_dims,
+            block.mesh.program,
+            c.GL_CLAMP_TO_EDGE,
+            "f_tex_samp",
+            "wave_3d",
+        ) catch {
+            self.wave_tex = null;
+        };
+    }
+
+    self.wave_block = .{ .parallelepiped = block };
 }
 
 fn renderStaticBlock(self: *Textures3D) void {
