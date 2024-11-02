@@ -141,8 +141,11 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
 
 fn drawReflection(self: *SimulatingWater, _: f64) void {
     const camera_x: f32 = self.view_camera.camera_pos[0];
-    self.view_camera.camera_pos[0] = -camera_x;
-    self.view_camera.flipVerticalOrientation();
+    const is_above = self.view_camera.camera_pos[0] >= 0;
+    if (is_above) {
+        self.view_camera.camera_pos[0] = -camera_x;
+        self.view_camera.flipVerticalOrientation();
+    }
     self.reflection_fbo.bind();
     {
         if (self.skybox_tex) |t| {
@@ -150,8 +153,10 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
         }
         rhi.drawHorizon(self.skybox);
     }
-    self.view_camera.camera_pos[0] = camera_x;
-    self.view_camera.flipVerticalOrientation();
+    if (is_above) {
+        self.view_camera.camera_pos[0] = camera_x;
+        self.view_camera.flipVerticalOrientation();
+    }
 }
 
 fn drawRefraction(self: *SimulatingWater, _: f64) void {
@@ -415,6 +420,7 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
     var grid_obj: object.object = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "surface_bot") };
     grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_bottom = grid_obj;
+    self.reflection_tex.addUniform(prog, "f_reflection") catch @panic("no reflection texture");
 }
 
 pub fn renderSkybox(self: *SimulatingWater) void {
