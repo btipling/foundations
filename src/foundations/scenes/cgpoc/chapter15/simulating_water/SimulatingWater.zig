@@ -17,6 +17,7 @@ skybox_tex: ?rhi.Texture = null,
 
 under_water: [3]rhi.Uniform = undefined,
 is_under_water: bool = false,
+wave_tex: ?rhi.Texture = null,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
@@ -99,14 +100,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
     sw.renderDebugCross();
     errdefer sw.deleteCross();
 
-    sw.renderFloor();
-    errdefer rhi.deleteObject(sw.floor);
-
     sw.renderSurfaceTop();
     errdefer rhi.deleteObject(sw.surface_top);
+    errdefer if (sw.wave_tex) |t| t.deinit();
 
     sw.renderSurfaceBottom();
     errdefer rhi.deleteObject(sw.surface_bottom);
+
+    sw.renderFloor();
+    errdefer rhi.deleteObject(sw.floor);
 
     sw.renderSkybox();
     errdefer rhi.deleteObject(sw.skybox);
@@ -125,6 +127,7 @@ pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
     self.reflection_fbo.deinit();
     self.refraction_tex.deinit();
     self.refraction_fbo.deinit();
+    if (self.wave_tex) |t| t.deinit();
     self.deleteCross();
     self.lights.deinit();
     self.materials.deinit();
@@ -209,6 +212,9 @@ fn drawScene(self: *SimulatingWater, dt: f64) void {
     }
     self.reflection_tex.bind();
     self.refraction_tex.bind();
+    if (self.wave_tex) |t| {
+        t.bind();
+    }
     {
         rhi.drawObject(self.surface_top);
     }
@@ -278,6 +284,26 @@ fn setupRefraction(self: *SimulatingWater) void {
         depth_texture,
     ) catch @panic("unable to setup refraction framebuffer");
     self.refraction_fbo = refraction_framebuffer;
+}
+
+fn setupWaveTexture(self: *SimulatingWater, prog: u32) void {
+    self.wave_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    self.wave_tex.?.texture_unit = 4;
+    if (self.wave_tex) |*t| {
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\wave.vol") catch null;
+        t.setup3D(
+            data,
+            256,
+            256,
+            256,
+            prog,
+            c.GL_CLAMP_TO_EDGE,
+            "f_wave_samp",
+            "wave_3d",
+        ) catch {
+            self.wave_tex = null;
+        };
+    }
 }
 
 fn updateLights(self: *SimulatingWater) void {
@@ -367,7 +393,7 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
         return;
     }
     const prog = rhi.createProgram("surface_top");
-    const frag_bindings = [_]usize{ 2, 3 };
+    const frag_bindings = [_]usize{ 2, 3, 4 };
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_top_vert.glsl")) catch @panic("shader compiler");
@@ -406,6 +432,7 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
     var grid_obj: object.object = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "surface_top") };
     grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_top = grid_obj;
+    self.setupWaveTexture(prog);
 }
 
 fn renderSurfaceBottom(self: *SimulatingWater) void {

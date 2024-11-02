@@ -17,9 +17,14 @@ out vec4 fo_frag_color;
 
 layout(bindless_sampler) uniform sampler2D f_reflection;
 layout(bindless_sampler) uniform sampler2D f_refraction;
+layout(bindless_sampler) uniform sampler3D f_wave_samp;
 
 void main()
 {
+
+    
+    vec4 f_wave_color = texture(f_wave_samp, fo_pos.xyz/2.0 + 0.5);
+
     vec3 f_N = vec3(1.0, 0.0, 0.0);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
@@ -43,5 +48,5 @@ void main()
     vec4 f_reflection_color = texture(f_reflection, reflect_tc);
     vec4 f_refraction_color = texture(f_refraction, refract_tc);
     vec4 f_surface_color = (0.2 * f_refraction_color) + (1.0 * f_reflection_color);
-    fo_frag_color = f_surface_color * vec4(f_ambient.xyz + f_diffuse.xyz, 1.0)  + vec4(f_specular, 1.0);
+    fo_frag_color =  f_surface_color * vec4(f_ambient.xyz + f_diffuse.xyz, 1.0)  + vec4(f_specular, 1.0);
 }
