@@ -9,6 +9,7 @@ in vec3 fo_light;
 in vec3 f_view_p;
 in vec4 fo_pos;
 out vec4 fo_frag_color;
+uniform vec3 f_waterdata;
 
 
 //#include "src/foundations/shaders/camera.glsl"
@@ -21,10 +22,10 @@ layout(bindless_sampler) uniform sampler3D f_wave_samp;
 
 vec3 f_estimate_wave_normal(float f_w_offset, float f_w_map_scale, float f_w_h_scale)
 {
-
-	float f_h1 = 1.0 - (texture(f_wave_samp, vec3(((f_tc.s)) * f_w_map_scale, 0.5, ((f_tc.t) + f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
-	float f_h2 = 1.0 - (texture(f_wave_samp, vec3(((f_tc.s) - f_w_offset) * f_w_map_scale, 0.5, ((f_tc.t) - f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
-	float f_h3 = 1.0 - (texture(f_wave_samp, vec3(((f_tc.s) + f_w_offset) * f_w_map_scale, 0.5, ((f_tc.t) - f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
+    float f_depth_offset = f_waterdata[1];
+	float f_h1 = 1.0 - (texture(f_wave_samp, vec3(((f_tc.s)) * f_w_map_scale, f_depth_offset, ((f_tc.t) + f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
+	float f_h2 = 1.0 - (texture(f_wave_samp, vec3(((f_tc.s) - f_w_offset) * f_w_map_scale, f_depth_offset, ((f_tc.t) - f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
+	float f_h3 = 1.0 - (texture(f_wave_samp, vec3(((f_tc.s) + f_w_offset) * f_w_map_scale, f_depth_offset, ((f_tc.t) - f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
 	vec3 f_v1 = vec3(0.0, f_h1, -1.0);
 	vec3 f_v2 = vec3(-1.0, f_h2, 1.0);
 	vec3 f_v3 = vec3(1.0, f_h3, 1.0);
@@ -42,7 +43,7 @@ void main()
 
     
 
-    vec3 f_N = f_estimate_wave_normal(0.02, 32.0, 16.0);
+    vec3 f_N = f_estimate_wave_normal(0.8, 32.0, 2.0);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
     Light f_light = f_lights[0];
@@ -64,6 +65,6 @@ void main()
     vec2 reflect_tc = (vec2(fo_pos.x, -fo_pos.y))/(2.0 * fo_pos.w) + 0.5;
     vec4 f_reflection_color = texture(f_reflection, reflect_tc);
     vec4 f_refraction_color = texture(f_refraction, refract_tc);
-    vec4 f_surface_color = (0.2 * f_refraction_color) + (1.0 * f_reflection_color);
+    vec4 f_surface_color = (0.2 * f_refraction_color) + (0.8 * f_reflection_color);
     fo_frag_color =  f_surface_color * vec4(f_ambient.xyz + f_diffuse.xyz, 1.0)  + vec4(f_specular, 1.0);
 }

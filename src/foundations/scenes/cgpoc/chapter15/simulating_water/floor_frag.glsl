@@ -8,7 +8,7 @@ in vec3 fo_light;
 in vec3 f_view_p;
 out vec4 fo_frag_color;
 
-uniform int f_underwater;
+uniform vec3 f_waterdata;
 
 //#include "src/foundations/shaders/camera.glsl"
 //#include "src/foundations/shaders/material.glsl"
@@ -48,7 +48,7 @@ void main()
     vec3 f_specular = f_mat.specular.xyz * f_light.specular.xyz * pow(max(cosPhi, 0.0), f_mat.shininess * 40.0);
 
     f_surface_color = f_surface_color * vec4(f_ambient.xyz + f_diffuse.xyz, 1.0)  + vec4(f_specular, 1.0);
-    if (f_underwater > 0) {
+    if (f_waterdata[0] > 0) {
         f_surface_color = mix(f_water_occlusion, f_surface_color, f_occlusion_factor);
     }
     fo_frag_color = f_surface_color;

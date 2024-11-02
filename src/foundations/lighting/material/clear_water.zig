@@ -1,7 +1,7 @@
 pub const ClearWater: Material = .{
-    .ambient = .{ 0.125490, 0.125490, 0.125490, 1 },
-    .diffuse = .{ 0.68824, 0.68824, 0.68824, 1 },
-    .specular = .{ 0.870588, 0.870588, 0.870588, 1 },
+    .ambient = .{ 0.6, 0.6, 0.6, 1 },
+    .diffuse = .{ 0.9, 0.9, 0.9, 1 },
+    .specular = .{ 1, 1, 1, 1 },
     .shininess = 10.0,
 };
 

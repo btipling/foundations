@@ -7,7 +7,7 @@ in vec3 fo_vert;
 in vec3 fo_light;
 
 out vec4 fo_frag_color;
-uniform int f_underwater;
+uniform vec3 f_waterdata;
 
 //#include "src/foundations/shaders/camera.glsl"
 
@@ -17,7 +17,7 @@ in vec3 fo_skybox_tc;
 
 void main()
 {
-   if (f_underwater > 0) {
+   if (f_waterdata[0] > 0) {
       fo_frag_color = vec4(0.0, 0.0, 0.2, 1.0);
    } else {
       fo_frag_color = texture(f_skybox, fo_skybox_tc);

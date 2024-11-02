@@ -15,8 +15,9 @@ surface_bottom: object.object = .{ .norender = .{} },
 skybox: object.object = .{ .norender = .{} },
 skybox_tex: ?rhi.Texture = null,
 
-under_water: [3]rhi.Uniform = undefined,
+water_data: [4]rhi.Uniform = undefined,
 is_under_water: bool = false,
+water_data_local: [3]f32 = .{ 0, 0, 0 },
 wave_tex: ?rhi.Texture = null,
 
 materials: rhi.Buffer,
@@ -64,7 +65,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
 
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.01, 0.01, 0.01, 1.0 },
+            .ambient = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
             .diffuse = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
@@ -139,20 +140,20 @@ pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
 pub fn updateCamera(self: *SimulatingWater) void {
     if (!self.ready) return;
     if (self.lock_flip) return;
-    var is_underater = self.is_under_water;
+    var is_underwater = self.is_under_water;
     self.is_under_water = self.view_camera.camera_pos[0] < 0;
-    if (is_underater != self.is_under_water) {
-        self.updateUnderWater(self.is_under_water);
-        is_underater = self.is_under_water;
+    if (is_underwater != self.is_under_water) {
+        self.water_data_local[0] = if (self.is_under_water) 1.0 else 0.0;
+        self.updateWaterData();
+        is_underwater = self.is_under_water;
     }
 }
 
-fn updateUnderWater(self: *SimulatingWater, is_under_water: bool) void {
-    const v: usize = if (is_under_water) 1 else 0;
-    for (self.under_water) |uw| {
-        uw.setUniform1i(v);
+fn updateWaterData(self: *SimulatingWater) void {
+    for (self.water_data) |uw| {
+        uw.setUniform3fv(self.water_data_local);
     }
-    if (is_under_water) {
+    if (self.is_under_water) {
         self.view_camera.global_ambient = .{ 0.0, 0.0, 0.0, 1.0 };
     } else {
         self.view_camera.global_ambient = .{ 0.7, 0.7, 0.7, 1.0 };
@@ -164,6 +165,8 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
         self.updateLights();
         self.ui_state.light_updated = false;
     }
+    self.water_data_local[1] = @as(f32, @floatCast(@mod(dt, 60.0) * 0.05));
+    self.updateWaterData();
     self.view_camera.update(dt);
     self.drawReflection(dt);
     self.drawRefraction(dt);
@@ -177,7 +180,8 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
         self.view_camera.camera_pos[0] = -camera_x;
         self.view_camera.flipVerticalOrientation();
     } else {
-        self.updateUnderWater(false);
+        self.water_data_local[0] = 0.0;
+        self.updateWaterData();
     }
     self.reflection_fbo.bind();
     {
@@ -191,7 +195,8 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
         self.view_camera.flipVerticalOrientation();
         self.lock_flip = false;
     } else {
-        self.updateUnderWater(true);
+        self.water_data_local[0] = 1.0;
+        self.updateWaterData();
     }
 }
 
@@ -309,7 +314,7 @@ fn setupWaveTexture(self: *SimulatingWater, prog: u32) void {
 fn updateLights(self: *SimulatingWater) void {
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.01, 0.01, 0.01, 1.0 },
+            .ambient = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
@@ -379,9 +384,9 @@ fn renderFloor(self: *SimulatingWater) void {
 
     var grid_obj: object.object = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "floor") };
     grid_obj.parallelepiped.mesh.linear_colorspace = true;
-    var uw = rhi.Uniform.init(prog, "f_underwater") catch @panic("no uniform");
-    uw.setUniform1i(0);
-    self.under_water[0] = uw;
+    var uw = rhi.Uniform.init(prog, "f_waterdata") catch @panic("no uniform");
+    uw.setUniform3fv(.{ 0, 0, 0 });
+    self.water_data[0] = uw;
     self.floor = grid_obj;
 }
 
@@ -433,6 +438,9 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
     grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_top = grid_obj;
     self.setupWaveTexture(prog);
+    var uw = rhi.Uniform.init(prog, "f_waterdata") catch @panic("no uniform");
+    uw.setUniform3fv(.{ 0, 0, 0 });
+    self.water_data[1] = uw;
 }
 
 fn renderSurfaceBottom(self: *SimulatingWater) void {
@@ -484,9 +492,9 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
     grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_bottom = grid_obj;
     self.reflection_tex.addUniform(prog, "f_reflection") catch @panic("no reflection texture");
-    var uw = rhi.Uniform.init(prog, "f_underwater") catch @panic("no uniform");
-    uw.setUniform1i(0);
-    self.under_water[1] = uw;
+    var uw = rhi.Uniform.init(prog, "f_waterdata") catch @panic("no uniform");
+    uw.setUniform3fv(.{ 0, 0, 0 });
+    self.water_data[2] = uw;
 }
 
 pub fn renderSkybox(self: *SimulatingWater) void {
@@ -558,9 +566,9 @@ pub fn renderSkybox(self: *SimulatingWater) void {
         };
     }
     self.skybox = parallelepiped;
-    var uw = rhi.Uniform.init(prog, "f_underwater") catch @panic("no uniform");
-    uw.setUniform1i(0);
-    self.under_water[2] = uw;
+    var uw = rhi.Uniform.init(prog, "f_waterdata") catch @panic("no uniform");
+    uw.setUniform3fv(.{ 0, 0, 0 });
+    self.water_data[3] = uw;
 }
 
 const std = @import("std");

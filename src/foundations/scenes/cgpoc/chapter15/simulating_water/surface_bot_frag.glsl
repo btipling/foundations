@@ -13,7 +13,7 @@ out vec4 fo_frag_color;
 
 layout(bindless_sampler) uniform sampler2D f_reflection;
 
-uniform int f_underwater;
+uniform vec3 f_waterdata;
 
 //#include "src/foundations/shaders/camera.glsl"
 //#include "src/foundations/shaders/material.glsl"
@@ -48,7 +48,7 @@ void main()
     vec4 f_blue = vec4(0.0, 0.25, 1.0, 1.0);;
     vec4 f_surface_color = (0.7 * f_blue) + (0.3 * f_reflection_color);
     f_surface_color = f_surface_color + vec4(f_ambient.xyz + f_diffuse.xyz, 1.0) * 0.5 + vec4(f_specular, 1.0);
-    if (f_underwater > 0) {
+    if (f_waterdata[0] > 0) {
         f_surface_color = mix(f_water_occlusion, f_surface_color, f_occlusion_factor);
     }
     fo_frag_color = f_surface_color;
