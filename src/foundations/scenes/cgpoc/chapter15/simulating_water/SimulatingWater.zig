@@ -313,7 +313,7 @@ fn renderFloor(self: *SimulatingWater) void {
         },
     };
 
-    var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "floor") };
+    var grid_obj: object.object = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "floor") };
     grid_obj.parallelepiped.mesh.linear_colorspace = true;
     self.floor = grid_obj;
 }
@@ -362,7 +362,7 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
     self.reflection_tex.addUniform(prog, "f_reflection") catch @panic("no reflection texture");
     self.refraction_tex.addUniform(prog, "f_refraction") catch @panic("no refraction texture");
 
-    var grid_obj = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "surface_top") };
+    var grid_obj: object.object = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "surface_top") };
     grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_top = grid_obj;
 }
@@ -412,7 +412,7 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
         },
     };
 
-    var grid_obj = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "surface_bot") };
+    var grid_obj: object.object = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "surface_bot") };
     grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_bottom = grid_obj;
 }

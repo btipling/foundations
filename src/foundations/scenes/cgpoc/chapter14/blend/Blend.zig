@@ -234,7 +234,7 @@ fn renderBobbles(self: *Blend) void {
         };
     }
 
-    var bobble = .{ .sphere = object.Sphere.init(prog, i_datas[0..], "bobble") };
+    var bobble: object.object = .{ .sphere = object.Sphere.init(prog, i_datas[0..], "bobble") };
     bobble.sphere.mesh.blend = true;
     bobble.sphere.mesh.cull = false;
     self.bobble = bobble;

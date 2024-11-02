@@ -520,7 +520,7 @@ fn renderGrid(self: *Textures3D) void {
         },
     };
 
-    var grid_obj = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "ground") };
+    var grid_obj: object.object = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "ground") };
     grid_obj.parallelepiped.mesh.linear_colorspace = true;
 
     if (self.grid_t_tex) |*t| {
