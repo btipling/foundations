@@ -358,7 +358,7 @@ fn renderWaveBlock(self: *Textures3D) void {
     self.wave_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.wave_tex.?.texture_unit = 1;
     if (self.wave_tex) |*t| {
-        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\static.vol") catch null;
+        const data = self.ctx.textures_3d_loader.loadAsset("cgpoc\\wave.vol") catch null;
         t.setup3D(
             data,
             tex_dims,

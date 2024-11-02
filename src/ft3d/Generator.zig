@@ -72,6 +72,13 @@ pub fn run(self: *Generator) !void {
             output_file.bytes = sp.data.items;
             try output_file.write(self.allocator);
         },
+        .wave => {
+            var sp = Wave.init(self.allocator);
+            defer sp.deinit(self.allocator);
+            sp.fillData();
+            output_file.bytes = sp.data.items;
+            try output_file.write(self.allocator);
+        },
         .striped => {
             var sp = StripedPattern.init(self.allocator);
             defer sp.deinit(self.allocator);
@@ -96,3 +103,4 @@ const Marble = @import("Marble.zig");
 const Wood = @import("Wood.zig");
 const Cloud = @import("Cloud.zig");
 const Static = @import("Static.zig");
+const Wave = @import("Wave.zig");
