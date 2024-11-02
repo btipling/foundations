@@ -17,6 +17,8 @@ layout (location = 9) in vec4 f_i_color;
 //#include "src/foundations/shaders/vertex_outs.glsl"
 
 out vec3 fo_light;
+out vec4 fo_pos;
+
 
 void main()
 {
@@ -36,5 +38,6 @@ void main()
     fo_normal = normalize(f_norm_matrix * f_normal);
     f_tc = f_texture_coords * 250;
     f_frag_color = f_i_color;
-    gl_Position = f_mvp * f_main_pos;
+    fo_pos = f_mvp * f_main_pos;
+    gl_Position = fo_pos;
 }

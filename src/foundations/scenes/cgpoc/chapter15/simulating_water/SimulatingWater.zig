@@ -169,9 +169,9 @@ fn drawScene(self: *SimulatingWater, dt: f64) void {
         }
         rhi.drawHorizon(self.skybox);
     }
+    self.reflection_tex.bind();
+    self.refraction_tex.bind();
     {
-        self.reflection_tex.bind();
-        self.refraction_tex.bind();
         rhi.drawObject(self.surface_top);
     }
     {
@@ -375,12 +375,18 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
         return;
     }
     const prog = rhi.createProgram("surface_bottom");
+    const frag_bindings = [_]usize{2};
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_bot_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
 
-    const frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_bot_frag.glsl")) catch @panic("shader compiler");
+    var frag = Compiler.runWithBytes(self.allocator, @embedFile("surface_bot_frag.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(frag);
+    frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+        frag,
+        frag_bindings[0..],
+    ) catch @panic("bindless");
 
     const shaders = [_]rhi.Shader.ShaderData{
         .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
