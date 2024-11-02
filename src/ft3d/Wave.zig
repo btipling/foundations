@@ -60,9 +60,9 @@ pub fn fillData(self: *Static) void {
 
                 const brightness: f32 = nn;
 
-                const r_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);
-                const g_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);
-                const b_channel: f32 = @min(@max(brightness * 255.0, 0), 255.0);
+                const r_channel: f32 = @min(@max(brightness * 255.0, 0), 5.0);
+                const g_channel: f32 = @min(@max(brightness * 255.0, 0), 5.0);
+                const b_channel: f32 = @min(@max(brightness * 255.0, 0), 5.0);
 
                 var i = w * self.dims * self.dims * self.dim;
                 i += h * self.dims * self.dim;
