@@ -297,7 +297,7 @@ fn setupWaveTexture(self: *SimulatingWater, prog: u32) void {
             256,
             256,
             prog,
-            c.GL_CLAMP_TO_EDGE,
+            c.GL_REPEAT,
             "f_wave_samp",
             "wave_3d",
         ) catch {

@@ -21,16 +21,28 @@ layout(bindless_sampler) uniform sampler3D f_wave_samp;
 
 vec3 f_estimate_wave_normal(float f_w_offset, float f_w_map_scale, float f_w_h_scale)
 {
-    return vec3(1.0, 0.0, 0.0);
+
+	float f_h1 = (texture(f_wave_samp, vec3(((f_tc.s)) * f_w_map_scale, 0.5, ((f_tc.t) + f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
+	float f_h2 = (texture(f_wave_samp, vec3(((f_tc.s) - f_w_offset) * f_w_map_scale, 0.5, ((f_tc.t) - f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
+	float f_h3 = (texture(f_wave_samp, vec3(((f_tc.s) + f_w_offset) * f_w_map_scale, 0.5, ((f_tc.t) - f_w_offset) * f_w_map_scale))).r * f_w_h_scale;
+	vec3 f_v1 = vec3(0.0, f_h1, -1.0);
+	vec3 f_v2 = vec3(-1.0, f_h2, 1.0);
+	vec3 f_v3 = vec3(1.0, f_h3, 1.0);
+	vec3 f_v4 = f_v2 - f_v1;
+	vec3 f_v5 = f_v3 - f_v1;
+	vec3 f_wn = normalize(cross(f_v4, f_v5));
+	return vec3(f_wn.y, f_wn.z, f_wn.x);
+    
+    // float f_h1 = texture(f_wave_samp, vec3(0.5, f_tc.t, f_tc.s)).s;
+	// return vec3(f_h1, 0.0, 0.0);
 }
 
 void main()
 {
 
     
-    vec4 f_wave_color = texture(f_wave_samp, fo_pos.xyz/2.0 + 0.5);
 
-    vec3 f_N = f_estimate_wave_normal(0.0002, 32.0, 16.0);
+    vec3 f_N = f_estimate_wave_normal(0.2, 16.0, 5.0);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
     Light f_light = f_lights[0];

@@ -33,6 +33,13 @@ pub const plane_positions: [4][3]f32 = .{
     .{ 0, 1, 1 },
 };
 
+pub const plane_texture_coordinates: [4][2]f32 = .{
+    .{ 0, 0 },
+    .{ 0, 1 },
+    .{ 1, 0 },
+    .{ 1, 1 },
+};
+
 pub const plane_indices: [6]u32 = .{
     0, 3, 1, 0, 2, 3,
 };
@@ -91,6 +98,7 @@ pub fn initPlane(
     while (i < positions.len) : (i += 1) {
         rhi_data[i] = .{
             .position = positions[i],
+            .texture_coords = plane_texture_coordinates[i],
             .color = .{ 1, 0, 1, 1 },
             .normal = .{ 1, 0, 0 },
         };
