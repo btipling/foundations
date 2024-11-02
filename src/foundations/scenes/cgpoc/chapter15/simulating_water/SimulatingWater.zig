@@ -165,7 +165,7 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
         self.updateLights();
         self.ui_state.light_updated = false;
     }
-    self.water_data_local[1] = @as(f32, @floatCast(@mod(dt, 60.0) * 0.05));
+    self.water_data_local[1] = @as(f32, @floatCast(@mod(dt, 60.0) * 0.035));
     self.updateWaterData();
     self.view_camera.update(dt);
     self.drawReflection(dt);
