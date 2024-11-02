@@ -17,8 +17,8 @@ uniform int f_underwater;
 void main()
 {
     vec4 f_water_occlusion = vec4(0.0, 0.0, 0.035, 1.0);
-    float f_occlusion_start = 0.0005 * 1000.0;
-    float f_occlusion_end = 0.2 * 1000.0;
+    float f_occlusion_start = 0.01 * 1000.0;
+    float f_occlusion_end = 0.1 * 1000.0;
     float f_frag_distance = length(f_view_p.xyz);
     float f_occlusion_factor = clamp(((f_occlusion_end - f_frag_distance) / (f_occlusion_end - f_occlusion_start)), 0.0, 1.0);
 
