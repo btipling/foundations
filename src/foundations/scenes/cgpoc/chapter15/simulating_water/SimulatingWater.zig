@@ -3,6 +3,8 @@ ctx: scenes.SceneContext,
 cross: scenery.debug.Cross = undefined,
 allocator: std.mem.Allocator = undefined,
 ui_state: SimulatingWaterUI = .{},
+ready: bool = false,
+lock_flip: bool = false,
 
 floor: object.object = .{ .norender = .{} },
 
@@ -12,6 +14,9 @@ surface_bottom: object.object = .{ .norender = .{} },
 
 skybox: object.object = .{ .norender = .{} },
 skybox_tex: ?rhi.Texture = null,
+
+under_water: [3]rhi.Uniform = undefined,
+is_under_water: bool = false,
 
 materials: rhi.Buffer,
 lights: rhi.Buffer,
@@ -106,6 +111,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
     sw.renderSkybox();
     errdefer rhi.deleteObject(sw.skybox);
 
+    sw.ready = true;
+
     return sw;
 }
 
@@ -126,7 +133,23 @@ pub fn deinit(self: *SimulatingWater, allocator: std.mem.Allocator) void {
     allocator.destroy(self);
 }
 
-pub fn updateCamera(_: *SimulatingWater) void {}
+pub fn updateCamera(self: *SimulatingWater) void {
+    if (!self.ready) return;
+    if (self.lock_flip) return;
+    var is_underater = self.is_under_water;
+    self.is_under_water = self.view_camera.camera_pos[0] < 0;
+    if (is_underater != self.is_under_water) {
+        self.updateUnderWater(self.is_under_water);
+        is_underater = self.is_under_water;
+    }
+}
+
+fn updateUnderWater(self: *SimulatingWater, is_under_water: bool) void {
+    const v: usize = if (is_under_water) 1 else 0;
+    for (self.under_water) |uw| {
+        uw.setUniform1i(v);
+    }
+}
 
 pub fn draw(self: *SimulatingWater, dt: f64) void {
     if (self.ui_state.light_updated) {
@@ -141,10 +164,12 @@ pub fn draw(self: *SimulatingWater, dt: f64) void {
 
 fn drawReflection(self: *SimulatingWater, _: f64) void {
     const camera_x: f32 = self.view_camera.camera_pos[0];
-    const is_above = self.view_camera.camera_pos[0] >= 0;
-    if (is_above) {
+    if (!self.is_under_water) {
+        self.lock_flip = true;
         self.view_camera.camera_pos[0] = -camera_x;
         self.view_camera.flipVerticalOrientation();
+    } else {
+        self.updateUnderWater(false);
     }
     self.reflection_fbo.bind();
     {
@@ -153,9 +178,12 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
         }
         rhi.drawHorizon(self.skybox);
     }
-    if (is_above) {
+    if (!self.is_under_water) {
         self.view_camera.camera_pos[0] = camera_x;
         self.view_camera.flipVerticalOrientation();
+        self.lock_flip = false;
+    } else {
+        self.updateUnderWater(true);
     }
 }
 
@@ -320,6 +348,9 @@ fn renderFloor(self: *SimulatingWater) void {
 
     var grid_obj: object.object = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "floor") };
     grid_obj.parallelepiped.mesh.linear_colorspace = true;
+    var uw = rhi.Uniform.init(prog, "f_underwater") catch @panic("no uniform");
+    uw.setUniform1i(0);
+    self.under_water[0] = uw;
     self.floor = grid_obj;
 }
 
@@ -421,6 +452,9 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
     grid_obj.quad.mesh.linear_colorspace = false;
     self.surface_bottom = grid_obj;
     self.reflection_tex.addUniform(prog, "f_reflection") catch @panic("no reflection texture");
+    var uw = rhi.Uniform.init(prog, "f_underwater") catch @panic("no uniform");
+    uw.setUniform1i(0);
+    self.under_water[1] = uw;
 }
 
 pub fn renderSkybox(self: *SimulatingWater) void {
@@ -492,6 +526,9 @@ pub fn renderSkybox(self: *SimulatingWater) void {
         };
     }
     self.skybox = parallelepiped;
+    var uw = rhi.Uniform.init(prog, "f_underwater") catch @panic("no uniform");
+    uw.setUniform1i(0);
+    self.under_water[2] = uw;
 }
 
 const std = @import("std");

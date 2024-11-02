@@ -8,6 +8,7 @@ in vec3 fo_light;
 in vec3 f_view_p;
 out vec4 fo_frag_color;
 
+uniform int f_underwater;
 
 //#include "src/foundations/shaders/camera.glsl"
 //#include "src/foundations/shaders/material.glsl"

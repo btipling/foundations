@@ -13,6 +13,8 @@ out vec4 fo_frag_color;
 
 layout(bindless_sampler) uniform sampler2D f_reflection;
 
+uniform int f_underwater;
+
 //#include "src/foundations/shaders/camera.glsl"
 //#include "src/foundations/shaders/material.glsl"
 //#include "src/foundations/shaders/light.glsl"
