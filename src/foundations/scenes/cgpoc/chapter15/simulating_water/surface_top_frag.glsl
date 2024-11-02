@@ -42,7 +42,7 @@ void main()
 
     
 
-    vec3 f_N = f_estimate_wave_normal(0.2, 2.0, 16.0);
+    vec3 f_N = f_estimate_wave_normal(0.02, 32.0, 16.0);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
     Light f_light = f_lights[0];
