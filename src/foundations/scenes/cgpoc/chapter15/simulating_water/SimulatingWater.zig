@@ -63,8 +63,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
 
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
-            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .ambient = [4]f32{ 0.01, 0.01, 0.01, 1.0 },
+            .diffuse = [4]f32{ 0.5, 0.5, 0.5, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
             .direction = [4]f32{ 4.0, 2.0, -3.75, 0.0 },
@@ -148,6 +148,11 @@ fn updateUnderWater(self: *SimulatingWater, is_under_water: bool) void {
     const v: usize = if (is_under_water) 1 else 0;
     for (self.under_water) |uw| {
         uw.setUniform1i(v);
+    }
+    if (is_under_water) {
+        self.view_camera.global_ambient = .{ 0.0, 0.0, 0.0, 1.0 };
+    } else {
+        self.view_camera.global_ambient = .{ 0.7, 0.7, 0.7, 1.0 };
     }
 }
 
@@ -278,7 +283,7 @@ fn setupRefraction(self: *SimulatingWater) void {
 fn updateLights(self: *SimulatingWater) void {
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .ambient = [4]f32{ 0.01, 0.01, 0.01, 1.0 },
             .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
