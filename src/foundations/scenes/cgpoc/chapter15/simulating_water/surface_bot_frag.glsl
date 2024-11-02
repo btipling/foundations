@@ -21,6 +21,12 @@ uniform int f_underwater;
 
 void main()
 {
+    vec4 f_water_occlusion = vec4(0.0, 0.0, 0.2, 1.0);
+    float f_occlusion_start = 0.005 * 1000.0;
+    float f_occlusion_end = 0.15 * 1000.0;
+    float f_frag_distance = length(f_view_p.xyz);
+    float f_occlusion_factor = clamp(((f_occlusion_end - f_frag_distance) / (f_occlusion_end - f_occlusion_start)), 0.0, 1.0);
+
     vec3 f_N = vec3(-1.0, 0.0, 0.0);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
@@ -41,5 +47,9 @@ void main()
     vec4 f_reflection_color = texture(f_reflection, reflect_tc);
     vec4 f_blue = vec4(0.0, 0.25, 1.0, 1.0);;
     vec4 f_surface_color = (0.7 * f_blue) + (0.3 * f_reflection_color);
-    fo_frag_color = f_surface_color + vec4(f_ambient.xyz + f_diffuse.xyz, 1.0) * 0.5 + vec4(f_specular, 1.0);
+    f_surface_color = f_surface_color + vec4(f_ambient.xyz + f_diffuse.xyz, 1.0) * 0.5 + vec4(f_specular, 1.0);
+    if (f_underwater > 0) {
+        f_surface_color = mix(f_water_occlusion, f_surface_color, f_occlusion_factor);
+    }
+    fo_frag_color = f_surface_color;
 }

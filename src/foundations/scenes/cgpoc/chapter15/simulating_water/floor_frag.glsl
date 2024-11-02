@@ -16,6 +16,12 @@ uniform int f_underwater;
 
 void main()
 {
+    vec4 f_water_occlusion = vec4(0.0, 0.0, 0.035, 1.0);
+    float f_occlusion_start = 0.0005 * 1000.0;
+    float f_occlusion_end = 0.2 * 1000.0;
+    float f_frag_distance = length(f_view_p.xyz);
+    float f_occlusion_factor = clamp(((f_occlusion_end - f_frag_distance) / (f_occlusion_end - f_occlusion_start)), 0.0, 1.0);
+
     float f_z = floor(fo_vert.z) / 8.0;
     float f_y = floor(fo_vert.y) / 8.0;
 
@@ -41,5 +47,9 @@ void main()
     vec3 f_diffuse = f_light.diffuse.xyz * f_mat.diffuse.xyz * max(cosTheta, 0.0);
     vec3 f_specular = f_mat.specular.xyz * f_light.specular.xyz * pow(max(cosPhi, 0.0), f_mat.shininess * 40.0);
 
-    fo_frag_color = f_surface_color * vec4(f_ambient.xyz + f_diffuse.xyz, 1.0)  + vec4(f_specular, 1.0);
+    f_surface_color = f_surface_color * vec4(f_ambient.xyz + f_diffuse.xyz, 1.0)  + vec4(f_specular, 1.0);
+    if (f_underwater > 0) {
+        f_surface_color = mix(f_water_occlusion, f_surface_color, f_occlusion_factor);
+    }
+    fo_frag_color = f_surface_color;
 }
