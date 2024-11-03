@@ -43,7 +43,7 @@ void main()
     float f_z = floor(fo_vert.z) / 8.0;
     float f_y = floor(fo_vert.y) / 8.0;
 
-    float f_tile_distort_str = 0.5;
+    float f_tile_distort_str = 0.005 * (f_frag_distance - 10.0);
     if (f_waterdata[0] > 0.0) {
         f_tile_distort_str = 0.0;
     }
