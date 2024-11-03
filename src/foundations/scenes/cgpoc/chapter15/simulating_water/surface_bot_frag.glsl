@@ -31,7 +31,7 @@ void main()
     vec3 f_N = f_estimate_wave_normal(0.8, 32.0, 2.0);
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
-    Light f_light = f_lights[0];
+    Light f_light = f_lights[1];
     Material f_mat = f_materials[2];
 
     vec3 f_L = normalize(fo_light);
