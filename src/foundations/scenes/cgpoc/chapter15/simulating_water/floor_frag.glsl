@@ -24,16 +24,6 @@ void main()
     float f_frag_distance = length(f_view_p.xyz);
     float f_occlusion_factor = clamp(((f_occlusion_end - f_frag_distance) / (f_occlusion_end - f_occlusion_start)), 0.0, 1.0);
 
-    float f_z = floor(fo_vert.z) / 8.0;
-    float f_y = floor(fo_vert.y) / 8.0;
-
-    vec4 f_surface_color;
-    if (mod(f_z, 2.0) <= 0.95 && mod(f_y, 2.0) > 0.95 || mod(f_z, 2.0) > 0.95 && mod(f_y, 2.0) <= 0.95) {
-        f_surface_color = vec4(0.01, 0.01, 0.01, 1.0);
-    } else {
-        f_surface_color = vec4(0.9, 0.9, 0.9, 0.9);
-    }
-
     vec3 f_N = vec3(1.0, 0.0, 0.0);
     vec3 f_est_N = f_estimate_wave_normal(1.5, 0.08, 20.0);
     float f_distort_str = 0.05;
@@ -49,6 +39,23 @@ void main()
 
     float cosTheta = dot(f_L, f_N_distorted);
     float cosPhi = dot(f_H, f_N_distorted);
+
+    float f_z = floor(fo_vert.z) / 8.0;
+    float f_y = floor(fo_vert.y) / 8.0;
+
+    float f_tile_distort_str = 0.5;
+    if (f_waterdata[0] > 0.0) {
+        f_tile_distort_str = 0.0;
+    }
+    float f_z_distorted = f_z + f_est_N.z * f_tile_distort_str;
+    float f_y_distorted = f_y + f_est_N.y * f_tile_distort_str;
+
+    vec4 f_surface_color;
+    if (mod(f_z, 2.0) <= 0.95 && mod(f_y_distorted, 2.0) > 0.95 || mod(f_z_distorted, 2.0) > 0.95 && mod(f_y_distorted, 2.0) <= 0.95) {
+        f_surface_color = vec4(0.01, 0.01, 0.01, 1.0);
+    } else {
+        f_surface_color = vec4(0.9, 0.9, 0.9, 0.9);
+    }
 
     vec3 f_ambient = ((f_global_ambient * f_mat.ambient) + (f_light.ambient * f_mat.ambient)).xyz;
     vec3 f_diffuse = f_light.diffuse.xyz * f_mat.diffuse.xyz * max(cosTheta, 0.0);
