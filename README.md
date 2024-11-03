@@ -22,6 +22,8 @@ programming and build a game engine.
 * <https://essentialmath.com/book.htm>
 * <https://www.gamemath.com/>
 
+![Water scene](https://github.com/user-attachments/assets/82faebc6-fa0f-45cb-8e25-c48206955fd5)
+
 ![Torus](https://github.com/user-attachments/assets/2ed06912-4b29-423d-b78c-4dcf87fa5812)
 
 ![Solar System](https://github.com/user-attachments/assets/34e66724-25fc-43bb-82a0-7180ddd8d8d4)
