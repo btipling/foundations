@@ -240,7 +240,7 @@ fn renderPlane(self: *ClippingPlane) void {
         },
     };
 
-    var plane = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "plane") };
+    var plane: object.object = .{ .parallelepiped = object.Parallelepiped.init(prog, i_datas[0..], "plane") };
     plane.parallelepiped.mesh.blend = true;
     plane.parallelepiped.mesh.cull = false;
     plane.parallelepiped.mesh.linear_colorspace = false;
@@ -284,7 +284,7 @@ fn renderTorus(self: *ClippingPlane) void {
             .color = .{ 1, 0, 1, 1 },
         },
     };
-    var torus = .{ .torus = object.Torus.init(prog, i_datas[0..], "torus") };
+    var torus: object.object = .{ .torus = object.Torus.init(prog, i_datas[0..], "torus") };
     torus.torus.mesh.cull = false;
     torus.torus.mesh.linear_colorspace = false;
     var cpu = rhi.Uniform.init(prog, "f_torus_clip") catch @panic("uniform");

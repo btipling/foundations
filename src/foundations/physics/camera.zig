@@ -232,6 +232,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             if (ui.input.keyPressed(c.GLFW_KEY_SEMICOLON)) if (self.fly_mode) self.rollRight();
             if (ui.input.keyPressed(c.GLFW_KEY_L)) if (self.fly_mode) self.pitchUp();
             if (ui.input.keyPressed(c.GLFW_KEY_K)) if (self.fly_mode) self.pitchDown();
+            if (ui.input.keyPressed(c.GLFW_KEY_F)) if (!self.fly_mode) self.flipVerticalOrientation();
             if (new_cursor_coords) |cc| self.handleCursor(cc);
         }
 
@@ -346,6 +347,31 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 0,
                 roll_sensitivity,
             );
+        }
+
+        pub fn flipVerticalOrientation(
+            self: *Self,
+        ) void {
+            if (self.fly_mode) return;
+            const ea = math.rotation.quatToEuler(self.camera_orientation_pitch);
+            const a: math.rotation.AxisAngle = .{
+                .angle = -ea.bank * 2.0,
+                .axis = world_right,
+            };
+            var q = math.rotation.axisAngleToQuat(a);
+            q = math.vector.normalize(q);
+            self.camera_orientation_pitch = math.rotation.multiplyQuaternions(self.camera_orientation_pitch, q);
+
+            self.camera_orientation = math.rotation.multiplyQuaternions(
+                self.camera_orientation_heading,
+                self.camera_orientation_pitch,
+            );
+            self.camera_orientation = math.rotation.multiplyQuaternions(
+                self.camera_orientation_heading,
+                self.camera_orientation_pitch,
+            );
+            self.updateCameraMatrix();
+            self.updateMVP();
         }
 
         fn updateOrientation(
