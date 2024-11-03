@@ -179,6 +179,8 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
     if (!self.is_under_water) {
         self.lock_flip = true;
         self.view_camera.camera_pos[0] = -camera_x;
+        self.water_data_local[2] = 1;
+        self.updateWaterData();
         self.view_camera.flipVerticalOrientation();
     } else {
         self.water_data_local[0] = 0.0;
@@ -193,6 +195,8 @@ fn drawReflection(self: *SimulatingWater, _: f64) void {
     }
     if (!self.is_under_water) {
         self.view_camera.camera_pos[0] = camera_x;
+        self.water_data_local[2] = 0;
+        self.updateWaterData();
         self.view_camera.flipVerticalOrientation();
         self.lock_flip = false;
     } else {
@@ -210,6 +214,9 @@ fn drawRefraction(self: *SimulatingWater, _: f64) void {
 }
 
 fn drawScene(self: *SimulatingWater, dt: f64) void {
+    if (self.wave_tex) |t| {
+        t.bind();
+    }
     {
         if (self.skybox_tex) |t| {
             t.bind();
@@ -218,9 +225,6 @@ fn drawScene(self: *SimulatingWater, dt: f64) void {
     }
     self.reflection_tex.bind();
     self.refraction_tex.bind();
-    if (self.wave_tex) |t| {
-        t.bind();
-    }
     {
         rhi.drawObject(self.surface_top);
     }
@@ -512,7 +516,7 @@ pub fn renderSkybox(self: *SimulatingWater) void {
     self.skybox_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.skybox_tex.?.texture_unit = 16;
 
-    const frag_bindings = [_]usize{16};
+    const frag_bindings = [_]usize{ 4, 16 };
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("skybox_vert.glsl")) catch @panic("shader compiler");
@@ -579,6 +583,7 @@ pub fn renderSkybox(self: *SimulatingWater) void {
     var uw = rhi.Uniform.init(prog, "f_waterdata") catch @panic("no uniform");
     uw.setUniform3fv(.{ 0, 0, 0 });
     self.water_data[3] = uw;
+    self.wave_tex.?.addUniform(prog, "f_wave_samp") catch @panic("no texture uniform");
 }
 
 const std = @import("std");
