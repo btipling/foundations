@@ -542,7 +542,7 @@ pub fn renderSkybox(self: *SimulatingWater) void {
     self.skybox_tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
     self.skybox_tex.?.texture_unit = 16;
 
-    const frag_bindings = [_]usize{ 4, 16 };
+    const frag_bindings = [_]usize{16};
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("skybox_vert.glsl")) catch @panic("shader compiler");
@@ -609,7 +609,6 @@ pub fn renderSkybox(self: *SimulatingWater) void {
     var uw = rhi.Uniform.init(prog, "f_waterdata") catch @panic("no uniform");
     uw.setUniform3fv(.{ 0, 0, 0 });
     self.water_data[3] = uw;
-    self.wave_tex.?.addUniform(prog, "f_wave_samp") catch @panic("no texture uniform");
 }
 
 const std = @import("std");
