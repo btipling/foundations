@@ -51,7 +51,7 @@ void main()
     float f_y_distorted = f_y + f_est_N.y * f_tile_distort_str;
 
     vec4 f_surface_color;
-    if (mod(f_z, 2.0) <= 0.95 && mod(f_y_distorted, 2.0) > 0.95 || mod(f_z_distorted, 2.0) > 0.95 && mod(f_y_distorted, 2.0) <= 0.95) {
+    if (mod(f_z_distorted, 2.0) <= 0.95 && mod(f_y_distorted, 2.0) > 0.95 || mod(f_z_distorted, 2.0) > 0.95 && mod(f_y_distorted, 2.0) <= 0.95) {
         f_surface_color = vec4(0.01, 0.01, 0.01, 1.0);
     } else {
         f_surface_color = vec4(0.9, 0.9, 0.9, 0.9);
@@ -65,5 +65,6 @@ void main()
     if (f_waterdata[0] > 0) {
         f_surface_color = mix(f_water_occlusion, f_surface_color, f_occlusion_factor);
     }
+    
     fo_frag_color = f_surface_color;
 }
