@@ -355,12 +355,18 @@ fn renderFloor(self: *SimulatingWater) void {
         return;
     }
     const prog = rhi.createProgram("floor");
+    const frag_bindings = [_]usize{4};
+    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("floor_vert.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(vert);
 
-    const frag = Compiler.runWithBytes(self.allocator, @embedFile("floor_frag.glsl")) catch @panic("shader compiler");
+    var frag = Compiler.runWithBytes(self.allocator, @embedFile("floor_frag.glsl")) catch @panic("shader compiler");
     defer self.allocator.free(frag);
+    frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+        frag,
+        frag_bindings[0..],
+    ) catch @panic("bindless");
 
     const shaders = [_]rhi.Shader.ShaderData{
         .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
@@ -389,6 +395,8 @@ fn renderFloor(self: *SimulatingWater) void {
     uw.setUniform3fv(.{ 0, 0, 0 });
     self.water_data[0] = uw;
     self.floor = grid_obj;
+    self.water_data[3] = uw;
+    self.wave_tex.?.addUniform(prog, "f_wave_samp") catch @panic("no texture uniform");
 }
 
 fn renderSurfaceTop(self: *SimulatingWater) void {
@@ -399,7 +407,7 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
         return;
     }
     const prog = rhi.createProgram("surface_top");
-    const frag_bindings = [_]usize{ 2, 3, 4 };
+    const frag_bindings = [_]usize{ 4, 2, 3 };
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_top_vert.glsl")) catch @panic("shader compiler");
@@ -452,7 +460,7 @@ fn renderSurfaceBottom(self: *SimulatingWater) void {
         return;
     }
     const prog = rhi.createProgram("surface_bottom");
-    const frag_bindings = [_]usize{2};
+    const frag_bindings = [_]usize{ 2, 4 };
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
     const vert = Compiler.runWithBytes(self.allocator, @embedFile("surface_bot_vert.glsl")) catch @panic("shader compiler");
