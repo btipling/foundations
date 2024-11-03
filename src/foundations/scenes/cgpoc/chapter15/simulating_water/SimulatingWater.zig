@@ -78,6 +78,22 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
             .attenuation_quadratic = 0.0,
             .light_kind = .positional,
         },
+        .{
+            // Keep ambient black to avoid washing out the scene
+            .ambient = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            // Add blue tint to diffuse light, reduce red and green components
+            .diffuse = [4]f32{ 0.3, 0.4, 0.7, 1.0 },
+            // Slightly blue tinted specular to simulate underwater caustics
+            .specular = [4]f32{ 0.8, 0.9, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ 4.0, 2.0, -3.75, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
     };
     const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
     var lights_buf = rhi.Buffer.init(ld, "lights");
@@ -330,6 +346,21 @@ fn updateLights(self: *SimulatingWater) void {
             .attenuation_linear = 0.0,
             .attenuation_quadratic = 0.0,
             .light_kind = .direction,
+        },
+        .{
+            .ambient = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            // Reduced intensity of diffuse light
+            .diffuse = [4]f32{ 0.25, 0.35, 0.6, 1.0 },
+            // Slightly reduced specular intensity
+            .specular = [4]f32{ 0.7, 0.8, 0.9, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = self.ui_state.light_direction,
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
         },
     };
     self.lights.deinit();

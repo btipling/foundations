@@ -31,7 +31,7 @@ void main()
     vec3 f_N_distorted = normalize(f_N + vec3(0.0, f_distort.y, f_distort.x));
     vec3 f_V = normalize(f_camera_pos.xyz - fo_vert);
     
-    Light f_light = f_lights[0];
+    Light f_light = f_lights[1];
     Material f_mat = f_materials[0];
 
     vec3 f_L = normalize(fo_light);
