@@ -109,9 +109,20 @@ test include {
     try p.parse(allocator);
     var inc = try init(allocator, f, ctx, p);
 
-    try inc.included_files.put(allocator, "src/compiler/test/camera.glsl", @constCast(&(.{ .bytes = @embedFile("test/camera.glsl") })));
-    try inc.included_files.put(allocator, "src/compiler/test/lights.glsl", @constCast(&(.{ .bytes = @embedFile("test/lights.glsl") })));
-    try inc.included_files.put(allocator, "src/compiler/test/materials.glsl", @constCast(&(.{ .bytes = @embedFile("test/materials.glsl") })));
+    {
+        var inc_f: File = .{ .bytes = @embedFile("test/camera.glsl") };
+        try inc.included_files.put(allocator, "src/compiler/test/camera.glsl", &inc_f);
+    }
+
+    {
+        var inc_f: File = .{ .bytes = @embedFile("test/lights.glsl") };
+        try inc.included_files.put(allocator, "src/compiler/test/lights.glsl", &inc_f);
+    }
+
+    {
+        var inc_f: File = .{ .bytes = @embedFile("test/materials.glsl") };
+        try inc.included_files.put(allocator, "src/compiler/test/materials.glsl", &inc_f);
+    }
 
     try inc.include(allocator);
 
