@@ -3,11 +3,6 @@ pub const storage_type = enum(usize) {
     ubo,
 };
 
-pub const ParticlesData = struct {
-    ts: [4]f32 = .{ 0, 0, 0, 0 },
-    color: [4]f32 = .{ 1, 0, 1, 1 },
-};
-
 pub const storage_binding_point = union(storage_type) {
     ssbo: c.GLuint,
     ubo: c.GLuint,
@@ -15,9 +10,8 @@ pub const storage_binding_point = union(storage_type) {
 
 pub const bbp_materials: storage_binding_point = .{ .ssbo = 0 };
 pub const bbp_lights: storage_binding_point = .{ .ssbo = 1 };
-pub const bbp_particles: storage_binding_point = .{ .ssbo = 2 };
 pub const bbp_camera: storage_binding_point = .{ .ubo = 0 };
-pub const bbp_chapter8_shadows: storage_binding_point = .{ .ubo = 1 };
+// Binding ponits 3+ are reserved for scenes.
 
 pub fn Buffer(
     comptime T: type,

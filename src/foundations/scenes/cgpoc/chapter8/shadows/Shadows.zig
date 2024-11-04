@@ -37,7 +37,7 @@ sphere_2: object.object = .{ .norender = .{} },
 sphere_2_matrix: rhi.Uniform = undefined,
 light_2_view_ms: [6]math.matrix = undefined,
 
-scene_data_buffer: rhi.storage_buffer.Buffer(SceneData, rhi.storage_buffer.bbp_chapter8_shadows, c.GL_DYNAMIC_DRAW) = undefined,
+scene_data_buffer: UBO = undefined,
 scene_data: SceneData = .{},
 should_gen_shadow_map: bool = false,
 generated_shadow_map: bool = false,
@@ -78,6 +78,9 @@ const gouraud_vertex_shader: []const u8 = @embedFile("gouraud_vert.glsl");
 const blinn_phong_frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
 const phong_frag_shader: []const u8 = @embedFile("phong_frag.glsl");
 const gouraud_frag_shader: []const u8 = @embedFile("gouraud_frag.glsl");
+
+pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ubo = 3 };
+const UBO = rhi.storage_buffer.Buffer(SceneData, binding_point, c.GL_DYNAMIC_DRAW);
 
 const mats = [_]lighting.Material{
     lighting.materials.Gold,
@@ -150,7 +153,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     errdefer lights_buf.deinit();
 
     const sd: SceneData = .{};
-    var scene_data_buffer = rhi.storage_buffer.Buffer(SceneData, rhi.storage_buffer.bbp_chapter8_shadows, c.GL_DYNAMIC_DRAW).init(sd, "scene_data");
+    var scene_data_buffer = UBO.init(sd, "scene_data");
     errdefer scene_data_buffer.deinit();
 
     const ui_state: ShadowsUI = .{};

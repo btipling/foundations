@@ -8,7 +8,7 @@ pub const world_up: math.vector.vec3 = .{ 1, 0, 0 };
 pub const world_right: math.vector.vec3 = .{ 0, 0, 1 };
 pub const world_forward: math.vector.vec3 = .{ 0, 1, 0 };
 
-pub const SSBO = rhi.storage_buffer.Buffer(CameraData, rhi.storage_buffer.bbp_camera, c.GL_DYNAMIC_DRAW);
+pub const UBO = rhi.storage_buffer.Buffer(CameraData, rhi.storage_buffer.bbp_camera, c.GL_DYNAMIC_DRAW);
 
 pub const CameraData = struct {
     f_mvp: [16]f32,
@@ -40,7 +40,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
         input_inactive: bool = false,
         perspective_plane_distance_g: f32 = 0,
         aspect_ratio_s: f32 = 0,
-        camera_buffer: SSBO,
+        camera_buffer: UBO,
         global_ambient: [4]f32,
         name: []const u8 = "main camera",
         owns_buffer: bool,
@@ -88,7 +88,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
                 .f_shadow_view_m = math.matrix.identity().array(),
             };
 
-            var camera_buffer: SSBO = SSBO.init(cd, "camera");
+            var camera_buffer: UBO = UBO.init(cd, "camera");
             errdefer camera_buffer.deinit();
             return initInternal(allocator, cfg, scene, integrator, pos, heading, camera_buffer, false);
         }
@@ -100,7 +100,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             integrator: IntegratorT,
             pos: math.vector.vec3,
             heading: ?f32,
-            camera_buffer: SSBO,
+            camera_buffer: UBO,
         ) *Self {
             return initInternal(allocator, cfg, scene, integrator, pos, heading, camera_buffer, false);
         }
@@ -112,7 +112,7 @@ pub fn Camera(comptime T: type, comptime IntegratorT: type) type {
             integrator: IntegratorT,
             pos: math.vector.vec3,
             heading: ?f32,
-            camera_buffer: SSBO,
+            camera_buffer: UBO,
             owns_buffer: bool,
         ) *Self {
             const cam = allocator.create(Self) catch @panic("OOM");

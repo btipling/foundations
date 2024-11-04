@@ -18,7 +18,7 @@ out vec4 fo_light_2_y_pos_3;
 out vec4 fo_light_2_x_pos_4;
 out vec4 fo_light_2_x_neg_5;
 
-layout(std140, binding = 1) uniform SceneData
+layout(std140, binding = 3) uniform SceneData
 {
     vec4 light_1_position;
     vec4 light_1_attenuation;

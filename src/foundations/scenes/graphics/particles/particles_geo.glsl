@@ -10,7 +10,7 @@ struct Particle {
     vec4 color;
 };
 
-layout(std430, binding = 2) buffer ParticleBuffer {
+layout(std430, binding = 3) buffer ParticleBuffer {
     Particle f_particles[];
 };
 

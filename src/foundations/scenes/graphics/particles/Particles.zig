@@ -16,11 +16,11 @@ sphere_color: rhi.Uniform = undefined,
 particles: object.object = .{ .norender = .{} },
 particles_data: rhi.Uniform = undefined,
 particles_count: usize = 0,
-particles_list: [max_num_particles]rhi.storage_buffer.ParticlesData = undefined,
+particles_list: [max_num_particles]ParticlesData = undefined,
 
 materials: lighting.Material.SSBO,
 lights: lighting.Light.SSBO,
-particles_buffer: rhi.storage_buffer.Buffer([]const rhi.storage_buffer.ParticlesData, rhi.storage_buffer.bbp_particles, c.GL_DYNAMIC_DRAW),
+particles_buffer: SSBO,
 
 cubemap: object.object = .{ .norender = .{} },
 cubemap_texture: ?rhi.Texture = null,
@@ -33,6 +33,14 @@ const particle_per_frame: usize = 1;
 
 const sphere_vert: []const u8 = @embedFile("sphere_vert.glsl");
 const cubemap_vert: []const u8 = @embedFile("../../../shaders/cubemap_vert.glsl");
+
+pub const ParticlesData = struct {
+    ts: [4]f32 = .{ 0, 0, 0, 0 },
+    color: [4]f32 = .{ 1, 0, 1, 1 },
+};
+
+pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ssbo = 3 };
+const SSBO = rhi.storage_buffer.Buffer([]const ParticlesData, binding_point, c.GL_DYNAMIC_DRAW);
 
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
@@ -83,7 +91,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
     var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
-    const particles = [_]rhi.storage_buffer.ParticlesData{
+    const particles = [_]ParticlesData{
         .{
             .ts = .{ 2, 0, 1, 0.1 },
             .color = .{ 1, 0, 1, 1 },
@@ -93,8 +101,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
             .color = .{ 0, 1, 1, 1 },
         },
     };
-    const pd: []const rhi.storage_buffer.ParticlesData = particles[0..];
-    var particles_buf = rhi.storage_buffer.Buffer([]const rhi.storage_buffer.ParticlesData, rhi.storage_buffer.bbp_particles, c.GL_DYNAMIC_DRAW).init(pd, "materials");
+    const pd: []const ParticlesData = particles[0..];
+    var particles_buf = SSBO.init(pd, "materials");
     errdefer particles_buf.deinit();
     const prng = std.Random.DefaultPrng.init(blk: {
         var seed: u64 = undefined;
@@ -225,7 +233,7 @@ fn animateSphere(self: *Particles, dt: f64) void {
 
 pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: math.vector.vec4) void {
     if (self.particles_count >= max_num_particles) {
-        var new_pl: [max_num_particles]rhi.storage_buffer.ParticlesData = undefined;
+        var new_pl: [max_num_particles]ParticlesData = undefined;
         for (0..self.particles_count - particle_per_frame) |i| {
             const scale_change = 0.15 / max_num_particles_f;
             const vert_change = scale_change * 100;
@@ -243,7 +251,7 @@ pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: mat
         }
         self.particles_list = new_pl;
     } else {
-        var new_pl: [max_num_particles]rhi.storage_buffer.ParticlesData = undefined;
+        var new_pl: [max_num_particles]ParticlesData = undefined;
         for (0..self.particles_count) |i| {
             const scale_change = 0.15 / max_num_particles_f;
             const vert_change = scale_change * 100;
@@ -262,7 +270,7 @@ pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: mat
             if (self.particles_count >= max_num_particles) break;
         }
     }
-    const pd: []const rhi.storage_buffer.ParticlesData = self.particles_list[0..self.particles_count];
+    const pd: []const ParticlesData = self.particles_list[0..self.particles_count];
     self.particles_buffer.update(pd);
     self.particles_data.setUniform1i(self.particles_count);
 }
