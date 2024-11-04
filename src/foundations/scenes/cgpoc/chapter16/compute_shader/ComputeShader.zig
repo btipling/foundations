@@ -1,8 +1,19 @@
 ctx: scenes.SceneContext,
 allocator: std.mem.Allocator,
 ui_state: ComputeShaderUI,
+compute_buffer: SSBO,
 
 const ComputeShader = @This();
+
+pub const ComputeData = struct {
+    v1: [6]f32,
+    v2: [6]f32,
+    out: [6]f32,
+};
+
+pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ssbo = 3 };
+const SSBO = rhi.storage_buffer.Buffer(ComputeData, binding_point, c.GL_DYNAMIC_DRAW);
+
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
         .nav_type = .cgpoc,
@@ -14,17 +25,26 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ComputeShad
     const cs = allocator.create(ComputeShader) catch @panic("OOM");
     errdefer allocator.destroy(cs);
 
+    const cd: ComputeData = .{
+        .v1 = .{ 10, 12, 16, 18, 50, 17 },
+        .v2 = .{ 30, 14, 80, 20, 51, 12 },
+        .out = .{ 0, 0, 0, 0, 0, 0 },
+    };
+    var cd_buf = SSBO.init(cd, "compute_data");
+    errdefer cd_buf.deinit();
     const ui_state: ComputeShaderUI = .{};
     cs.* = .{
         .ui_state = ui_state,
         .allocator = allocator,
         .ctx = ctx,
+        .compute_buffer = cd_buf,
     };
 
     return cs;
 }
 
 pub fn deinit(self: *ComputeShader, allocator: std.mem.Allocator) void {
+    self.compute_buffer.deinit();
     allocator.destroy(self);
 }
 

@@ -102,8 +102,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
         },
     };
     const pd: []const ParticlesData = particles[0..];
-    var particles_buf = SSBO.init(pd, "materials");
+    var particles_buf = SSBO.init(pd, "particles_data");
     errdefer particles_buf.deinit();
+
     const prng = std.Random.DefaultPrng.init(blk: {
         var seed: u64 = undefined;
         std.posix.getrandom(std.mem.asBytes(&seed)) catch @panic("random fail");
