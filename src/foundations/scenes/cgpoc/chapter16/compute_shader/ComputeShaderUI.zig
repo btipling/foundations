@@ -1,4 +1,4 @@
-result: f32 = 0,
+results: [6]f32 = .{ 0, 0, 0, 0, 0, 0 },
 
 const ComputeShaderUI = @This();
 
@@ -11,8 +11,10 @@ pub fn draw(self: *ComputeShaderUI) void {
     _ = c.igBegin("Compute Shader", null, 0);
 
     var buf: [500]u8 = undefined;
-    const result_text = std.fmt.bufPrintZ(&buf, "result: {d:.3}", .{self.result}) catch @panic("bufsize too small");
-    _ = c.igText(result_text);
+    for (0..6) |i| {
+        const result_text = std.fmt.bufPrintZ(&buf, "out[{d}]: {d:.3}", .{ i, self.results[i] }) catch @panic("bufsize too small");
+        _ = c.igText(result_text);
+    }
     c.igEnd();
 }
 
