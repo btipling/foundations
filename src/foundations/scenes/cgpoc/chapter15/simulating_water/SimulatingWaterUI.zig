@@ -1,9 +1,9 @@
 light_direction: [4]f32 = .{ 4.0, 2.0, -3.75, 0 },
 light_updated: bool = true,
 
-const Textures3DUI = @This();
+const SimulatingWaterUI = @This();
 
-pub fn draw(self: *Textures3DUI) void {
+pub fn draw(self: *SimulatingWaterUI) void {
     const vp: *c.ImGuiViewport = c.igGetMainViewport();
     const pos = c.ImVec2_ImVec2_Float(vp.WorkPos.x + 50, vp.WorkPos.y + 50);
     c.igSetNextWindowPos(pos.*, c.ImGuiCond_FirstUseEver, c.ImVec2_ImVec2_Float(0, 0).*);
