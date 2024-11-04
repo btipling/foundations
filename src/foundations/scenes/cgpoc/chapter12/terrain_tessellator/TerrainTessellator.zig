@@ -16,8 +16,8 @@ sphere_1: object.object = .{ .norender = .{} },
 light_1_position: rhi.Uniform = undefined,
 sphere_1_matrix: rhi.Uniform = undefined,
 
-materials: rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW),
-lights: rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW),
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
 
 const TerrainTessellator = @This();
 
@@ -59,7 +59,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
     errdefer cam.deinit(allocator);
 
     const bd: []const lighting.Material = mats[0..];
-    var mats_buf = rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW).init(bd, "materials");
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -78,7 +78,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TerrainTess
         },
     };
     const ld: []const lighting.Light = lights[0..];
-    var lights_buf = rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW).init(ld, "lights");
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: TerrainTesselatorUI = .{};
@@ -208,7 +208,7 @@ fn updateLights(self: *TerrainTessellator) void {
     };
     self.lights.deinit();
     const ld: []const lighting.Light = lights[0..];
-    var lights_buf = rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW).init(ld, "lights");
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }

@@ -31,8 +31,8 @@ static_tex: ?rhi.Texture = null,
 wave_block: object.object = .{ .norender = .{} },
 wave_tex: ?rhi.Texture = null,
 
-materials: rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW),
-lights: rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW),
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
 light_m: math.matrix,
 
 shadow_objects: [6]rendering.DirectionalShadowPass.ShadowObject = undefined,
@@ -68,7 +68,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
     errdefer cam.deinit(allocator);
 
     const bd: []const lighting.Material = mats[0..];
-    var mats_buf = rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW).init(bd, "materials");
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const shadowpass = rendering.DirectionalShadowPass.init(allocator, ctx, 1);
@@ -96,7 +96,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Textures3D 
         },
     };
     const ld: []const lighting.Light = lights[0..];
-    var lights_buf = rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW).init(ld, "lights");
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: Textures3DUI = .{};
@@ -202,7 +202,7 @@ fn updateLights(self: *Textures3D) void {
     };
     self.lights.deinit();
     const ld: []const lighting.Light = lights[0..];
-    var lights_buf = rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW).init(ld, "lights");
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
     self.shadowpass.update(self.light_m);

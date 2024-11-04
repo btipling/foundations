@@ -13,8 +13,15 @@ light_kind: light_type,
 padding_1: f32 = 0,
 padding_2: f32 = 0,
 
+const Light = @This();
+
 pub const light_type = enum(u32) {
     direction,
     positional,
     spotlight,
 };
+
+pub const SSBO = rhi.storage_buffer.Buffer([]const Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW);
+
+const c = @import("../c.zig").c;
+const rhi = @import("../rhi/rhi.zig");

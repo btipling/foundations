@@ -2,8 +2,8 @@ view_camera: *physics.camera.Camera(*SurfaceDetail, physics.Integrator(physics.S
 ctx: scenes.SceneContext,
 allocator: std.mem.Allocator,
 ui_state: SurfaceDetailUI,
-materials: rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW),
-lights: rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW),
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
 moon: object.object = .{ .norender = .{} },
 moon_normal_map: ?rhi.Texture = null,
 moon_texture: ?rhi.Texture = null,
@@ -59,7 +59,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
     cam.updateMVP();
 
     const bd: []const lighting.Material = mats[0..];
-    var mats_buf = rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW).init(bd, "materials");
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -78,7 +78,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SurfaceDeta
         },
     };
     const ld: []const lighting.Light = lights[0..];
-    var lights_buf = rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW).init(ld, "lights");
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: SurfaceDetailUI = .{};
