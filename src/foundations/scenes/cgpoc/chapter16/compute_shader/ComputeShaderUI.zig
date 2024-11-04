@@ -1,4 +1,5 @@
 results: [6]f32 = .{ 0, 0, 0, 0, 0, 0 },
+computed: bool = false,
 
 const ComputeShaderUI = @This();
 
