@@ -429,5 +429,5 @@ pub const Mesh = @import("./Mesh.zig");
 pub const Uniform = @import("Uniform.zig");
 pub const Texture = @import("Texture.zig");
 pub const Shader = @import("Shader.zig");
-pub const Buffer = @import("Buffer.zig");
+pub const storage_buffer = @import("buffer.zig");
 pub const Framebuffer = @import("Framebuffer.zig");

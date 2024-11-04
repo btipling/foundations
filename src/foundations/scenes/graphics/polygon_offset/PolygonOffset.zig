@@ -36,10 +36,6 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *PolygonOffs
     );
     errdefer cam.deinit(allocator);
 
-    const sd: rhi.Buffer.buffer_data = .{ .chapter8_shadows = .{} };
-    var scene_data_buffer = rhi.Buffer.init(sd, "scene_data");
-    errdefer scene_data_buffer.deinit();
-
     const ui_state: ShadowsUI = .{};
     pd.* = .{
         .allocator = allocator,

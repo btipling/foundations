@@ -13,8 +13,8 @@ plane_visualization: object.object = .{ .norender = .{} },
 plane: math.geometry.Plane = undefined,
 plan_transform: rhi.Uniform = undefined,
 
-materials: rhi.Buffer,
-lights: rhi.Buffer,
+materials: rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW),
+lights: rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW),
 
 const ClippingPlane = @This();
 
@@ -47,8 +47,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ClippingPla
     );
     errdefer cam.deinit(allocator);
 
-    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd, "materials");
+    const bd: []const lighting.Material = mats[0..];
+    var mats_buf = rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW).init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -66,8 +66,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ClippingPla
             .light_kind = .positional,
         },
     };
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW).init(ld, "lights");
     errdefer lights_buf.deinit();
 
     const ui_state: ClippingPlaneUI = .{};

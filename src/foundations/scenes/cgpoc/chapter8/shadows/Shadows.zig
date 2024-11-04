@@ -3,8 +3,9 @@ ui_state: ShadowsUI,
 bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Shadows, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
-materials: rhi.Buffer,
-lights: rhi.Buffer,
+
+materials: rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW),
+lights: rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW),
 
 // Shadows
 shadowmaps: [num_maps]rhi.Texture = undefined,
@@ -36,7 +37,7 @@ sphere_2: object.object = .{ .norender = .{} },
 sphere_2_matrix: rhi.Uniform = undefined,
 light_2_view_ms: [6]math.matrix = undefined,
 
-scene_data_buffer: rhi.Buffer = undefined,
+scene_data_buffer: rhi.storage_buffer.Buffer(SceneData, rhi.storage_buffer.bbp_chapter8_shadows, c.GL_DYNAMIC_DRAW) = undefined,
 scene_data: SceneData = .{},
 should_gen_shadow_map: bool = false,
 generated_shadow_map: bool = false,
@@ -112,8 +113,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     );
     errdefer cam.deinit(allocator);
 
-    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd, "materials");
+    const bd: []const lighting.Material = mats[0..];
+    var mats_buf = rhi.storage_buffer.Buffer([]const lighting.Material, rhi.storage_buffer.bbp_materials, c.GL_STATIC_DRAW).init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -144,12 +145,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
             .light_kind = .positional,
         },
     };
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW).init(ld, "lights");
     errdefer lights_buf.deinit();
 
-    const sd: rhi.Buffer.buffer_data = .{ .chapter8_shadows = .{} };
-    var scene_data_buffer = rhi.Buffer.init(sd, "scene_data");
+    const sd: SceneData = .{};
+    var scene_data_buffer = rhi.storage_buffer.Buffer(SceneData, rhi.storage_buffer.bbp_chapter8_shadows, c.GL_DYNAMIC_DRAW).init(sd, "scene_data");
     errdefer scene_data_buffer.deinit();
 
     const ui_state: ShadowsUI = .{};
@@ -266,8 +267,8 @@ fn updateLights(self: *Shadows) void {
         },
     };
     self.lights.deinit();
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = rhi.storage_buffer.Buffer([]const lighting.Light, rhi.storage_buffer.bbp_lights, c.GL_STATIC_DRAW).init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
@@ -296,7 +297,7 @@ fn lightDataToMat(self: *Shadows) void {
 }
 
 fn updateSceneData(self: *Shadows) void {
-    self.scene_data_buffer.update(.{ .chapter8_shadows = self.scene_data });
+    self.scene_data_buffer.update(self.scene_data);
 }
 
 pub fn draw(self: *Shadows, dt: f64) void {
