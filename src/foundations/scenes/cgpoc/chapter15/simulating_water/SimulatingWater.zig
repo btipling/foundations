@@ -430,12 +430,6 @@ fn renderFloor(self: *SimulatingWater) void {
 }
 
 fn renderSurfaceTop(self: *SimulatingWater) void {
-    var grid_model: *assets.Obj = undefined;
-    if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
-        grid_model = o;
-    } else {
-        return;
-    }
     const prog = rhi.createProgram("surface_top");
     const frag_bindings = [_]usize{ 4, 2, 3 };
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
@@ -483,12 +477,6 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
 }
 
 fn renderSurfaceBottom(self: *SimulatingWater) void {
-    var grid_model: *assets.Obj = undefined;
-    if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
-        grid_model = o;
-    } else {
-        return;
-    }
     const prog = rhi.createProgram("surface_bottom");
     const frag_bindings = [_]usize{ 2, 4 };
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);

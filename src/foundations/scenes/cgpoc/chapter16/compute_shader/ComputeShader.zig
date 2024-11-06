@@ -43,6 +43,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ComputeShad
     };
 
     cs.initCompute();
+    errdefer c.glDeleteProgram(cs.compute_prog);
 
     return cs;
 }
