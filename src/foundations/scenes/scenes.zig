@@ -21,7 +21,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: SceneContext) *Scenes {
         .allocator = allocator,
         .context = ctx,
     };
-    scenes.initScene(ui.ui_state.scene_type.sixteen_compute_shader);
+    scenes.initScene(ui.ui_state.scene_type.sixteen_ray_casting);
     return scenes;
 }
 

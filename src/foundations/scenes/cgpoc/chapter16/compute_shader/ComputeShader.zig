@@ -49,6 +49,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *ComputeShad
 
 pub fn deinit(self: *ComputeShader, allocator: std.mem.Allocator) void {
     self.compute_buffer.deinit();
+    c.glDeleteProgram(self.compute_prog);
     allocator.destroy(self);
 }
 
