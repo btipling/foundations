@@ -202,6 +202,15 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8) 
         var grid_obj: object.object = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], name) };
         grid_obj.quad.mesh.linear_colorspace = false;
         img.quad = grid_obj;
+
+        img.tex.setupWriteable(
+            img.mem,
+            prog,
+            "f_texture",
+            name,
+            texture_dims,
+            texture_dims,
+        ) catch @panic("unable to setup reflection depth texture");
     }
     return img;
 }
