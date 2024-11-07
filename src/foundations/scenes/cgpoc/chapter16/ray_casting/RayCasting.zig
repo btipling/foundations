@@ -21,9 +21,9 @@ const Img = struct {
 const texture_dims: usize = 512;
 const num_channels: usize = 4;
 
-pub const SceneData = struct {
-    sphere_radius: f32,
-    sphere_position: [3]f32,
+pub const SceneData = extern struct {
+    sphere_radius: [4]f32,
+    sphere_position: [4]f32,
     sphere_color: [4]f32,
     box_position: [4]f32,
     box_dims: [4]f32,
@@ -57,8 +57,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     errdefer cam.deinit(allocator);
 
     const cd: SceneData = .{
-        .sphere_radius = 2.5,
-        .sphere_position = .{ 1, 0, -3 },
+        .sphere_radius = .{ 2.5, 0, 0, 0 },
+        .sphere_position = .{ 1, 0, -3, 1.0 },
         .sphere_color = .{ 0, 0, 1, 1 },
         .box_position = .{ -1.5, -1.5, 0, 0 },
         .box_dims = .{ 1, 1, 1, 0 },
@@ -81,7 +81,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     rc.renderDebugCross();
     errdefer rc.deleteCross();
 
-    rc.img_1 = rc.renderImg("img_1", @embedFile("img_1_compute.glsl"));
+    rc.img_1 = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"));
     errdefer rc.deleteImg(rc.img_1);
 
     return rc;
