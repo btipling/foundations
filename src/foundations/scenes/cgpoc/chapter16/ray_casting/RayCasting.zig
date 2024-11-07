@@ -124,10 +124,10 @@ pub fn allocateTextureMemory(self: *RayCasting) []u8 {
     var mem = self.allocator.alloc(u8, texture_dims * texture_dims * num_channels) catch @panic("OOM");
     for (0..texture_dims) |i| {
         for (0..texture_dims) |j| {
-            mem[i * texture_dims * num_channels + j + num_channels + 0] = 255;
-            mem[i * texture_dims * num_channels + j + num_channels + 1] = 255;
-            mem[i * texture_dims * num_channels + j + num_channels + 2] = 128;
-            mem[i * texture_dims * num_channels + j + num_channels + 3] = 255;
+            mem[i * texture_dims * num_channels + j * num_channels + 0] = 255;
+            mem[i * texture_dims * num_channels + j * num_channels + 1] = 128;
+            mem[i * texture_dims * num_channels + j * num_channels + 2] = 255;
+            mem[i * texture_dims * num_channels + j * num_channels + 3] = 255;
         }
     }
     return mem;

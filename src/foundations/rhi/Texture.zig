@@ -202,10 +202,7 @@ pub fn setupWriteable(
     c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_NEAREST);
     c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_NEAREST);
 
-    const w: f32 = @floatFromInt(width);
-    const h: f32 = @floatFromInt(height);
-    const mip_map_levels: c.GLsizei = @intFromFloat(@ceil(@log2(@max(w, h))));
-    c.glTextureStorage2D(name, mip_map_levels, c.GL_RGBA8, @intCast(width), @intCast(height));
+    c.glTextureStorage2D(name, 1, c.GL_RGBA8, @intCast(width), @intCast(height));
     c.glTextureSubImage2D(
         name,
         0,
