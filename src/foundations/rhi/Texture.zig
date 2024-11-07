@@ -413,6 +413,10 @@ pub fn addUniform(self: *Texture, program: u32, uniform_name: []const u8) Textur
     self.num_uniforms += 1;
 }
 
+pub fn bindWritableImage(self: Texture) void {
+    c.glBindImageTexture(self.texture_unit, self.name, 0, c.GL_FALSE, 0, c.GL_WRITE_ONLY, c.GL_RGBA8);
+}
+
 pub fn bind(self: Texture) void {
     if (self.disable_bindless) {
         c.glBindTextureUnit(self.texture_unit, self.name);

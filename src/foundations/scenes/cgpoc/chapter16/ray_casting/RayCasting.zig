@@ -111,8 +111,9 @@ pub fn draw(self: *RayCasting, dt: f64) void {
 }
 
 fn rayCastScene(self: *RayCasting) void {
+    self.img_1.tex.bindWritableImage();
     c.glUseProgram(self.img_1.prog);
-    c.glDispatchCompute(6, 1, 1);
+    c.glDispatchCompute(texture_dims, texture_dims, 1);
     c.glMemoryBarrier(c.GL_ALL_BARRIER_BITS);
 }
 
