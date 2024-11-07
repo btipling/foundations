@@ -6,12 +6,20 @@ ui_state: RayCastingUI,
 cross: scenery.debug.Cross = undefined,
 
 ray_cast_buffer: SSBO,
-ray_cast_prog: u32 = undefined,
-ray_cast_tex: ?rhi.Texture = null,
 
-scene_quad: object.object = .{ .norender = .{} },
+img_1: Img = undefined,
 
 const RayCasting = @This();
+
+const Img = struct {
+    prog: u32 = 0,
+    tex: rhi.Texture = undefined,
+    mem: []u8 = undefined,
+    quad: object.object = .{ .norender = .{} },
+};
+
+const texture_dims: usize = 512;
+const num_channels: usize = 4;
 
 pub const SceneData = struct {
     sphere_radius: f32,
@@ -73,19 +81,16 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     rc.renderDebugCross();
     errdefer rc.deleteCross();
 
-    rc.initScene();
-    errdefer c.glDeleteProgram(rc.ray_cast_prog);
-
-    rc.renderQuad();
-    errdefer rhi.deleteObject(rc.scene_quad);
+    rc.img_1 = rc.renderImg("img_1", @embedFile("img_1_compute.glsl"));
+    errdefer rc.deleteImg(rc.img_1);
 
     return rc;
 }
 
 pub fn deinit(self: *RayCasting, allocator: std.mem.Allocator) void {
     self.ray_cast_buffer.deinit();
-    c.glDeleteProgram(self.ray_cast_prog);
-    rhi.deleteObject(self.scene_quad);
+    self.deleteImg(self.img_1);
+    self.ray_cast_buffer.deinit();
     self.deleteCross();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
@@ -98,36 +103,33 @@ pub fn draw(self: *RayCasting, dt: f64) void {
     self.rayCastScene();
     self.view_camera.update(dt);
     {
-        rhi.drawObject(self.scene_quad);
+        rhi.drawObject(self.img_1.quad);
     }
     self.cross.draw(dt);
     self.ui_state.draw();
 }
 
 fn rayCastScene(self: *RayCasting) void {
-    c.glUseProgram(self.ray_cast_prog);
+    c.glUseProgram(self.img_1.prog);
     c.glDispatchCompute(6, 1, 1);
     c.glMemoryBarrier(c.GL_ALL_BARRIER_BITS);
 }
 
-fn initScene(self: *RayCasting) void {
-    const prog = rhi.createProgram("ray_cast_program");
-    const comp = Compiler.runWithBytes(self.allocator, @embedFile("raycast_compute.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(comp);
-
-    const shaders = [_]rhi.Shader.ShaderData{
-        .{ .source = comp, .shader_type = c.GL_COMPUTE_SHADER },
-    };
-    const s: rhi.Shader = .{
-        .program = prog,
-    };
-    s.attachAndLinkAll(self.allocator, shaders[0..], "floor");
-
-    self.ray_cast_prog = prog;
-}
-
 fn deleteCross(self: *RayCasting) void {
     self.cross.deinit(self.allocator);
+}
+
+pub fn allocateTextureMemory(self: *RayCasting) []u8 {
+    var mem = self.allocator.alloc(u8, texture_dims * texture_dims * num_channels) catch @panic("OOM");
+    for (0..texture_dims) |i| {
+        for (0..texture_dims) |j| {
+            mem[i * texture_dims * num_channels + j + num_channels + 0] = 255;
+            mem[i * texture_dims * num_channels + j + num_channels + 1] = 255;
+            mem[i * texture_dims * num_channels + j + num_channels + 2] = 128;
+            mem[i * texture_dims * num_channels + j + num_channels + 3] = 255;
+        }
+    }
+    return mem;
 }
 
 fn renderDebugCross(self: *RayCasting) void {
@@ -138,43 +140,70 @@ fn renderDebugCross(self: *RayCasting) void {
     );
 }
 
-fn renderQuad(self: *RayCasting) void {
-    const prog = rhi.createProgram("scene_quad");
-    const frag_bindings = [_]usize{ 4, 2, 3 };
-    const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
+fn deleteImg(self: *RayCasting, img: Img) void {
+    c.glDeleteProgram(img.prog);
+    self.allocator.free(img.mem);
+    img.tex.deinit();
+    rhi.deleteObject(img.quad);
+}
 
-    const vert = Compiler.runWithBytes(self.allocator, @embedFile("quad_vert.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(vert);
+fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8) Img {
+    var img: Img = .{
+        .mem = self.allocateTextureMemory(),
+        .tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create reflection texture"),
+    };
+    {
+        img.prog = rhi.createProgram(name);
+        const comp = Compiler.runWithBytes(self.allocator, compute_shader) catch @panic("shader compiler");
+        defer self.allocator.free(comp);
 
-    var frag = Compiler.runWithBytes(self.allocator, @embedFile("quad_frag.glsl")) catch @panic("shader compiler");
-    defer self.allocator.free(frag);
-    frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
-        frag,
-        frag_bindings[0..],
-    ) catch @panic("bindless");
+        const shaders = [_]rhi.Shader.ShaderData{
+            .{ .source = comp, .shader_type = c.GL_COMPUTE_SHADER },
+        };
+        const s: rhi.Shader = .{
+            .program = img.prog,
+        };
+        s.attachAndLinkAll(self.allocator, shaders[0..], name);
+    }
+    {
+        const prog = rhi.createProgram(name);
+        const frag_bindings = [_]usize{1};
+        const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
 
-    const shaders = [_]rhi.Shader.ShaderData{
-        .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
-        .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
-    };
-    const s: rhi.Shader = .{
-        .program = prog,
-    };
-    s.attachAndLinkAll(self.allocator, shaders[0..], "scene_quad");
-    var m = math.matrix.identity();
-    m = math.matrix.transformMatrix(m, math.matrix.rotationZ(-(std.math.pi / 2.0)));
-    const i_datas = [_]rhi.instanceData{
-        .{
-            .t_column0 = m.columns[0],
-            .t_column1 = m.columns[1],
-            .t_column2 = m.columns[2],
-            .t_column3 = m.columns[3],
-            .color = .{ 1, 0, 1, 1 },
-        },
-    };
-    var grid_obj: object.object = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], "scene_quad") };
-    grid_obj.quad.mesh.linear_colorspace = false;
-    self.scene_quad = grid_obj;
+        const vert = Compiler.runWithBytes(self.allocator, @embedFile("quad_vert.glsl")) catch @panic("shader compiler");
+        defer self.allocator.free(vert);
+
+        var frag = Compiler.runWithBytes(self.allocator, @embedFile("quad_frag.glsl")) catch @panic("shader compiler");
+        defer self.allocator.free(frag);
+        frag = if (!disable_bindless) frag else rhi.Shader.disableBindless(
+            frag,
+            frag_bindings[0..],
+        ) catch @panic("bindless");
+
+        const shaders = [_]rhi.Shader.ShaderData{
+            .{ .source = vert, .shader_type = c.GL_VERTEX_SHADER },
+            .{ .source = frag, .shader_type = c.GL_FRAGMENT_SHADER },
+        };
+        const s: rhi.Shader = .{
+            .program = prog,
+        };
+        s.attachAndLinkAll(self.allocator, shaders[0..], name);
+        var m = math.matrix.identity();
+        m = math.matrix.transformMatrix(m, math.matrix.rotationZ(-(std.math.pi / 2.0)));
+        const i_datas = [_]rhi.instanceData{
+            .{
+                .t_column0 = m.columns[0],
+                .t_column1 = m.columns[1],
+                .t_column2 = m.columns[2],
+                .t_column3 = m.columns[3],
+                .color = .{ 1, 0, 1, 1 },
+            },
+        };
+        var grid_obj: object.object = .{ .quad = object.Quad.initPlane(prog, i_datas[0..], name) };
+        grid_obj.quad.mesh.linear_colorspace = false;
+        img.quad = grid_obj;
+    }
+    return img;
 }
 
 const std = @import("std");
