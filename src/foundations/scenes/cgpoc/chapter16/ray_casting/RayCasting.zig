@@ -103,6 +103,7 @@ pub fn draw(self: *RayCasting, dt: f64) void {
     self.rayCastScene();
     self.view_camera.update(dt);
     {
+        self.img_1.tex.bind();
         rhi.drawObject(self.img_1.quad);
     }
     self.cross.draw(dt);
