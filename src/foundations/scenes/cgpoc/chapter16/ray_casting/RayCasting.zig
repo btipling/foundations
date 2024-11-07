@@ -31,7 +31,7 @@ pub const SceneData = struct {
     box_rotation: [4]f32,
 };
 
-pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ssbo = 3 };
+pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ubo = 3 };
 const SSBO = rhi.storage_buffer.Buffer(SceneData, binding_point, c.GL_DYNAMIC_COPY);
 
 pub fn navType() ui.ui_state.scene_nav_info {
