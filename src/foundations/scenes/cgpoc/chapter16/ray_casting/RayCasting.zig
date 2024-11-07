@@ -167,6 +167,7 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8) 
         s.attachAndLinkAll(self.allocator, shaders[0..], name);
     }
     {
+        img.tex.texture_unit = 1;
         const prog = rhi.createProgram(name);
         const frag_bindings = [_]usize{1};
         const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
