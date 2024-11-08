@@ -39,7 +39,7 @@ Collision f_intersect_box_object(Ray f_ray) {
     vec3 f_t_max_dist = max(f_t_min, f_t_max);
 
     float f_t_near = max(max(f_t_min_dist.x, f_t_min_dist.y), f_t_min_dist.z);
-    float f_t_far = min(min(f_t_min_dist.x, f_t_min_dist.y), f_t_min_dist.z);
+    float f_t_far = min(min(f_t_max_dist.x, f_t_max_dist.y), f_t_max_dist.z);
 
     Collision f_c;
     f_c.object_index = 2;
