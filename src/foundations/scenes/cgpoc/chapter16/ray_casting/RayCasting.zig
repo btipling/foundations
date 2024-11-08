@@ -225,7 +225,7 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8) 
 fn updateSceneData(self: *RayCasting) void {
     const sp = self.ui_state.sphere_pos;
     const scene_data: SceneData = .{
-        .sphere_radius = .{ 2.5, 0, 0, 0 },
+        .sphere_radius = .{ self.ui_state.sphere_radius, 0, 0, 0 },
         .sphere_position = .{ sp[0], sp[1], sp[2], 1.0 },
         .sphere_color = .{ 0, 0, 1, 1 },
         .box_position = .{ 0.5, 0, 0, 0 },
