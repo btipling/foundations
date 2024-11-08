@@ -29,6 +29,55 @@ struct Collision {
     int object_index;
 };
 
+Collision f_intersect_box_object(Ray f_ray) {
+    vec3 f_box_min = f_box_position.xyz - (f_box_dims.xyz / 2.0);
+    vec3 f_box_max = f_box_position.xyz + (f_box_dims.xyz / 2.0);
+    vec3 f_t_min = (f_box_min.xyz - f_ray.start) / f_ray.dir;
+    vec3 f_t_max = (f_box_max.xyz - f_ray.start) / f_ray.dir;
+
+    vec3 f_t_min_dist = min(f_t_min, f_t_max);
+    vec3 f_t_max_dist = max(f_t_min, f_t_max);
+
+    float f_t_near = max(max(f_t_min_dist.x, f_t_min_dist.y), f_t_min_dist.z);
+    float f_t_far = min(min(f_t_min_dist.x, f_t_min_dist.y), f_t_min_dist.z);
+
+    Collision f_c;
+    f_c.object_index = 2;
+    f_c.t = f_t_near;
+    f_c.inside = false;
+
+    if (f_t_near >= f_t_far || f_t_far <= 0.0) {
+        f_c.t = -1.0;
+        return f_c;
+    }
+    float f_intersect_distance = f_t_near;
+    vec3 f_plane_intersect_distances = f_t_min_dist;
+
+    if (f_t_near < 0.0) {
+        f_c.t = f_t_far;
+        f_intersect_distance = f_t_far;
+        f_plane_intersect_distances = f_t_max_dist;
+        f_c.inside = true;
+    }
+
+    int f_face_index = 0;
+    if (f_intersect_distance == f_plane_intersect_distances.y) {
+        f_face_index = 1;
+    } else if (f_intersect_distance == f_plane_intersect_distances.z) {
+        f_face_index = 2;
+    }
+
+    f_c.n = vec3(0.0);
+    f_c.n[f_face_index] = 1.0;
+
+    if (f_ray.dir[f_face_index] > 0.0) {
+        f_c.n *= -1.0;
+    }
+
+    f_c.p = f_ray.start + f_c.t * f_ray.dir;
+    return f_c;
+}
+
 Collision f_intersect_sphere_object(Ray f_ray) {
     vec3 f_p = f_ray.start - f_sphere_position.xyz;
     float f_qa = dot(f_ray.dir, f_ray.dir);
@@ -73,13 +122,18 @@ Collision f_intersect_sphere_object(Ray f_ray) {
 }
 
 Collision f_get_closest_collision(Ray f_ray) {
-    Collision f_c_col, f_sphere_c;
+    Collision f_c_col, f_sphere_c, f_box_c;
     f_c_col.object_index = -1;
 
     f_sphere_c = f_intersect_sphere_object(f_ray);
+    f_box_c = f_intersect_box_object(f_ray);
 
-    if (f_sphere_c.t > 0) {
+    if ((f_sphere_c.t > 0) && ((f_sphere_c.t < f_box_c.t) || (f_box_c.t < 0))) {
         f_c_col = f_sphere_c;
+    }
+
+    if ((f_box_c.t > 0) && ((f_box_c.t < f_sphere_c.t) || (f_sphere_c.t < 0))) {
+        f_c_col = f_box_c;
     }
 
     return f_c_col;
@@ -89,6 +143,7 @@ vec3 f_ray_trace(Ray f_ray) {
     Collision f_c = f_get_closest_collision(f_ray);
     if (f_c.object_index == -1) return vec3(0.0);
     if (f_c.object_index == 1) return f_sphere_color.xyz;
+    if (f_c.object_index == 2) return f_box_color.xyz;
     return vec3(1.0, 0.0, 1.0);
 }
 

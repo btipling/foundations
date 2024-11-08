@@ -60,8 +60,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
         .sphere_radius = .{ 2.5, 0, 0, 0 },
         .sphere_position = .{ 1, 0, -3, 1.0 },
         .sphere_color = .{ 0, 0, 1, 1 },
-        .box_position = .{ -1.5, -1.5, 0, 0 },
-        .box_dims = .{ 1, 1, 1, 0 },
+        .box_position = .{ 0.5, 0, 0, 0 },
+        .box_dims = .{ 0.5, 0.5, 0.5, 0 },
         .box_color = .{ 1, 0, 0, 0 },
         .box_rotation = .{ 0, 0, 0, 0 },
     };
