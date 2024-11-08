@@ -100,6 +100,10 @@ pub fn deinit(self: *RayCasting, allocator: std.mem.Allocator) void {
 pub fn updateCamera(_: *RayCasting) void {}
 
 pub fn draw(self: *RayCasting, dt: f64) void {
+    if (self.ui_state.updated) {
+        self.updateSceneData();
+        self.ui_state.updated = false;
+    }
     self.rayCastScene();
     self.view_camera.update(dt);
     {
@@ -216,6 +220,20 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8) 
         ) catch @panic("unable to setup reflection depth texture");
     }
     return img;
+}
+
+fn updateSceneData(self: *RayCasting) void {
+    const sp = self.ui_state.sphere_pos;
+    const scene_data: SceneData = .{
+        .sphere_radius = .{ 2.5, 0, 0, 0 },
+        .sphere_position = .{ sp[0], sp[1], sp[2], 1.0 },
+        .sphere_color = .{ 0, 0, 1, 1 },
+        .box_position = .{ 0.5, 0, 0, 0 },
+        .box_dims = .{ 0.5, 0.5, 0.5, 0 },
+        .box_color = .{ 1, 0, 0, 0 },
+        .box_rotation = .{ 0, 0, 0, 0 },
+    };
+    self.ray_cast_buffer.update(scene_data);
 }
 
 const std = @import("std");
