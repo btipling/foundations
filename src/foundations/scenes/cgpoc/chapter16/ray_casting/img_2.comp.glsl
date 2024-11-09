@@ -8,6 +8,14 @@ uniform int f_scene_index = 1;
 uniform int f_light_index = 0;
 uniform int f_mat_index = 0;
 
+layout(std140, binding = 0) uniform CameraBuffer {
+    mat4 f_mvp;
+    mat4 v_matrix;
+    vec4 f_camera_pos;
+    vec4 f_global_ambient;
+    mat4 f_shadow_view_m;
+};
+
 struct Material {
     vec4 ambient;
     vec4 diffuse;
