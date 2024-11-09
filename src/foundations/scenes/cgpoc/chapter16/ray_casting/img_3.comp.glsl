@@ -193,14 +193,33 @@ vec3 f_lighting(Ray f_ray, Collision f_c, vec4 f_object_c)
 {
     Light f_light = f_lights[f_light_index];
     Material f_mat = f_materials[f_mat_index];
-    vec4 f_ambient = f_global_ambient + f_light.ambient * f_mat.ambient;
-    vec3 f_light_dir = normalize(f_light.location.xyz - f_c.p);
-    vec3 f_light_ref = normalize(reflect(f_light_dir, f_c.n));
-    float f_cos_theta = dot(f_light_dir, f_c.n);
-    float f_cos_phi = dot(normalize(f_ray.dir), f_light_ref);
 
-    vec4 f_diffuse = f_light.diffuse * f_mat.diffuse * max(f_cos_theta, 0.0);
-    vec4 f_specular = f_light.specular * f_mat.specular * pow(max(f_cos_phi, 0.0), f_mat.shininess);
+    vec4 f_ambient = f_global_ambient + f_light.ambient * f_mat.ambient;
+
+    vec4 f_diffuse = vec4(0.0);
+    vec4 f_specular = vec4(0.0);
+
+    vec3 f_light_dir_v = f_light.location.xyz - f_c.p;
+
+    Ray f_light_ray;
+    f_light_ray.start = f_c.p + f_c.n * 0.01;
+    f_light_ray.dir = normalize(f_light_dir_v);
+    bool f_in_shadow = false;
+
+    Collision f_c_shadow = f_get_closest_collision(f_light_ray);
+    if (f_c_shadow.object_index != -1 && f_c_shadow.t < length(f_light_dir_v)) {
+        f_in_shadow = true;
+    }
+
+    if (f_in_shadow == false) {
+        vec3 f_light_dir = f_light_ray.dir;
+        vec3 f_light_ref = normalize(reflect(f_light_dir, f_c.n));
+        float f_cos_theta = dot(f_light_dir, f_c.n);
+        float f_cos_phi = dot(normalize(f_ray.dir), f_light_ref);
+
+        f_diffuse = f_light.diffuse * f_mat.diffuse * max(f_cos_theta, 0.0);
+        f_specular = f_light.specular * f_mat.specular * pow(max(f_cos_phi, 0.0), f_mat.shininess);
+    }
 
     vec4 f_l_c = f_ambient + f_diffuse;
     return (f_object_c * f_l_c + f_specular).xyz;
