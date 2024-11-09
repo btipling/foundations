@@ -123,11 +123,11 @@ Collision f_intersect_box_object(Ray f_ray) {
     m *= r;
     mat4 mi = inverse(m);
     mat4 ri = inverse(r);
-    vec3 f_ray_start = (m * vec4(f_ray.start, 1.0)).xyz;
-    vec3 f_ray_dir = (r * vec4(f_ray.dir, 1.0)).xyz;
+    vec3 f_ray_start = (mi * vec4(f_ray.start, 1.0)).xyz;
+    vec3 f_ray_dir = (ri * vec4(f_ray.dir, 1.0)).xyz;
 
-    vec3 f_box_min = f_sd.box_position.xyz - (f_sd.box_dims.xyz / 2.0);
-    vec3 f_box_max = f_sd.box_position.xyz + (f_sd.box_dims.xyz / 2.0);
+    vec3 f_box_min = vec3(-0.5, -0.5, -0.5);
+    vec3 f_box_max = vec3(0.5, 0.5, 0.5);
     vec3 f_t_min = (f_box_min.xyz - f_ray_start) / f_ray_dir;
     vec3 f_t_max = (f_box_max.xyz - f_ray_start) / f_ray_dir;
 
