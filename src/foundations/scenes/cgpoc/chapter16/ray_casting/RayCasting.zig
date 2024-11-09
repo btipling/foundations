@@ -249,16 +249,18 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
         var sd = cd[j];
         const d = self.ui_state.data[j];
         const sp = d.sphere_pos;
+        const sc = d.sphere_color;
         const bd = d.box_dim;
         const bp = d.box_pos;
+        const bc = d.box_color;
 
         sd.sphere_radius = .{ d.sphere_radius, 0, 0, 0 };
         sd.sphere_position = .{ sp[0], sp[1], sp[2], 1.0 };
-        sd.sphere_color = .{ 0, 0, 1, 1 };
+        sd.sphere_color = .{ sc[0], sc[1], sc[2], 1 };
 
         sd.box_position = .{ bp[0], bp[1], bp[2], 0 };
         sd.box_dims = .{ bd, bd, bd, 0 };
-        sd.box_color = .{ 1, 0, 0, 0 };
+        sd.box_color = .{ bc[0], bc[1], bc[2], 1 };
         sd.box_rotation = .{ 0, 0, 0, 0 };
         cd[j] = sd;
     }
