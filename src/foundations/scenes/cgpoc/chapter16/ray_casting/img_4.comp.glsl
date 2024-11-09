@@ -166,7 +166,7 @@ Collision f_intersect_box_object(Ray f_ray) {
     f_c.n = vec3(0.0);
     f_c.n[f_face_index] = 1.0;
 
-    if (f_ray.dir[f_face_index] > 0.0) {
+    if (f_ray_dir[f_face_index] > 0.0) {
         f_c.n *= -1.0;
     }
     f_c.n = normalize(transpose(inverse(mat3(r))) * f_c.n);
