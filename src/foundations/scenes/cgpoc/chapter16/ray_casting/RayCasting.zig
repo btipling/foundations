@@ -9,6 +9,9 @@ lights: lighting.Light.SSBO,
 cubemap: object.object = .{ .norender = .{} },
 cubemap_texture: ?rhi.Texture = null,
 
+brick_texture: ?rhi.Texture = null,
+earth_texture: ?rhi.Texture = null,
+
 cross: scenery.debug.Cross = undefined,
 
 ray_cast_buffer: SSBO,
@@ -218,6 +221,39 @@ fn renderDebugCross(self: *RayCasting) void {
     );
 }
 
+fn initSceneTextures(self: *RayCasting, prog: u32) bool {
+    if (self.brick_texture) |_| if (self.earth_texture) |_| return false;
+    if (self.brick_texture) |t| t.deinit();
+    const disable_bindless = true; // disabling to keep compute ray tracing shaders simple
+    var brick_texture = rhi.Texture.init(disable_bindless) catch @panic("no texture");
+    brick_texture.texture_unit = 2;
+    var earth_texture = rhi.Texture.init(disable_bindless) catch @panic("no texture");
+    earth_texture.texture_unit = 3;
+    self.brick_texture = brick_texture;
+    self.earth_texture = earth_texture;
+    if (self.brick_texture) |*t| {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null,
+            prog,
+            "f_box_tex",
+            "box_texture",
+        ) catch {
+            self.brick_texture = null;
+        };
+    }
+    if (self.earth_texture) |*t| {
+        t.setup(
+            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null,
+            prog,
+            "f_sphere_tex",
+            "sphere_texture",
+        ) catch {
+            self.earth_texture = null;
+        };
+    }
+    return true;
+}
+
 fn deleteImg(self: *RayCasting, img: Img) void {
     c.glDeleteProgram(img.prog);
     self.allocator.free(img.mem);
@@ -242,6 +278,10 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8, 
             .program = img.prog,
         };
         s.attachAndLinkAll(self.allocator, shaders[0..], name);
+        if (!self.initSceneTextures(img.prog)) {
+            self.brick_texture.?.addUniform(img.prog, "f_box_tex") catch @panic("no uniform");
+            self.earth_texture.?.addUniform(img.prog, "f_sphere_tex") catch @panic("no uniform");
+        }
     }
     {
         img.tex.texture_unit = 1;
