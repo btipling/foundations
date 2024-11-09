@@ -73,8 +73,9 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
-    const lights = [RayCastingUI.num_images]lighting.Light{
-        .{
+    var lights: [RayCastingUI.num_images]lighting.Light = undefined;
+    for (0..RayCastingUI.num_images) |i| {
+        lights[i] = .{
             .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
             .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
@@ -86,40 +87,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
             .attenuation_linear = 0.0,
             .attenuation_quadratic = 0.0,
             .light_kind = .positional,
-        },
-        .{
-            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
-            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
-            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-            .location = [4]f32{ 3.0, 2.0, 4.0, 1.0 },
-            .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
-            .cutoff = 0.0,
-            .exponent = 0.0,
-            .attenuation_constant = 1.0,
-            .attenuation_linear = 0.0,
-            .attenuation_quadratic = 0.0,
-            .light_kind = .positional,
-        },
-        .{
-            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
-            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
-            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-            .location = [4]f32{ 3.0, 2.0, 4.0, 1.0 },
-            .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
-            .cutoff = 0.0,
-            .exponent = 0.0,
-            .attenuation_constant = 1.0,
-            .attenuation_linear = 0.0,
-            .attenuation_quadratic = 0.0,
-            .light_kind = .positional,
-        },
-    };
+        };
+    }
     const ld: []const lighting.Light = lights[0..];
     var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
-    const cd: [RayCastingUI.num_images]SceneData = .{
-        .{
+    var cd: [RayCastingUI.num_images]SceneData = undefined;
+    for (0..RayCastingUI.num_images) |i| {
+        cd[i] = .{
             .sphere_radius = .{ 2.5, 0, 0, 0 },
             .sphere_position = .{ 1, 0, -3, 1.0 },
             .sphere_color = .{ 0, 0, 1, 1 },
@@ -127,30 +103,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
             .box_dims = .{ 0.5, 0.5, 0.5, 0 },
             .box_color = .{ 1, 0, 0, 0 },
             .box_rotation = .{ 0, 0, 0, 0 },
-        },
-        .{
-            .sphere_radius = .{ 2.5, 0, 0, 0 },
-            .sphere_position = .{ 1, 0, -3, 1.0 },
-            .sphere_color = .{ 0, 0, 1, 1 },
-            .box_position = .{ 0.5, 0, 0, 0 },
-            .box_dims = .{ 0.5, 0.5, 0.5, 0 },
-            .box_color = .{ 1, 0, 0, 0 },
-            .box_rotation = .{ 0, 0, 0, 0 },
-        },
-        .{
-            .sphere_radius = .{ 2.5, 0, 0, 0 },
-            .sphere_position = .{ 1, 0, -3, 1.0 },
-            .sphere_color = .{ 0, 0, 1, 1 },
-            .box_position = .{ 0.5, 0, 0, 0 },
-            .box_dims = .{ 0.5, 0.5, 0.5, 0 },
-            .box_color = .{ 1, 0, 0, 0 },
-            .box_rotation = .{ 0, 0, 0, 0 },
-        },
-    };
-
+        };
+    }
     var rc_buf = SSBO.init(cd[0..], "scene_data");
     errdefer rc_buf.deinit();
-    const ui_state: RayCastingUI = .{};
+    var ui_state: RayCastingUI = .{};
+    for (0..RayCastingUI.num_images) |i| {
+        ui_state.data[i] = .{};
+    }
+    ui_state.updating = RayCastingUI.num_images - 1;
 
     rc.* = .{
         .ui_state = ui_state,
@@ -174,6 +135,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     errdefer rc.deleteImg(rc.images[1]);
     rc.images[2] = rc.renderImg("img_3", @embedFile("img_3.comp.glsl"), math.matrix.translate(0, 0, 4));
     errdefer rc.deleteImg(rc.images[2]);
+    rc.images[3] = rc.renderImg("img_4", @embedFile("img_4.comp.glsl"), math.matrix.translate(0, 0, 8));
+    errdefer rc.deleteImg(rc.images[3]);
 
     return rc;
 }
@@ -357,47 +320,22 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
 }
 
 fn updateLights(self: *RayCasting) void {
-    const lights = [RayCastingUI.num_images]lighting.Light{
-        .{
+    var lights: [RayCastingUI.num_images]lighting.Light = undefined;
+    for (0..RayCastingUI.num_images) |i| {
+        lights[i] = .{
             .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
             .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = [4]f32{ 3.0, 2.0, 4.0, 1.0 },
-            .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
+            .direction = self.ui_state.data[i].light_pos,
             .cutoff = 0.0,
             .exponent = 0.0,
             .attenuation_constant = 1.0,
             .attenuation_linear = 0.0,
             .attenuation_quadratic = 0.0,
             .light_kind = .positional,
-        },
-        .{
-            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
-            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
-            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-            .location = self.ui_state.data[1].light_pos,
-            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
-            .cutoff = 0.0,
-            .exponent = 0.0,
-            .attenuation_constant = 1.0,
-            .attenuation_linear = 0.0,
-            .attenuation_quadratic = 0.0,
-            .light_kind = .positional,
-        },
-        .{
-            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
-            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
-            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-            .location = self.ui_state.data[2].light_pos,
-            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
-            .cutoff = 0.0,
-            .exponent = 0.0,
-            .attenuation_constant = 1.0,
-            .attenuation_linear = 0.0,
-            .attenuation_quadratic = 0.0,
-            .light_kind = .positional,
-        },
-    };
+        };
+    }
     self.lights.deinit();
     const ld: []const lighting.Light = lights[0..];
     var lights_buf = lighting.Light.SSBO.init(ld, "lights");
