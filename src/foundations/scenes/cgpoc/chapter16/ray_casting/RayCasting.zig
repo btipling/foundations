@@ -87,6 +87,19 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
             .attenuation_quadratic = 0.0,
             .light_kind = .positional,
         },
+        .{
+            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
+            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 3.0, 2.0, 4.0, 1.0 },
+            .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
     };
     const ld: []const lighting.Light = lights[0..];
     var lights_buf = lighting.Light.SSBO.init(ld, "lights");
@@ -315,7 +328,44 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
         cd[j] = sd;
     }
     self.ray_cast_buffer.update(cd[0..]);
+    self.updateLights();
     self.images[i].drawn = false;
+}
+
+fn updateLights(self: *RayCasting) void {
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
+            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 3.0, 2.0, 4.0, 1.0 },
+            .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+        .{
+            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
+            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = self.ui_state.data[1].light_pos,
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+    };
+    self.lights.deinit();
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
+    errdefer lights_buf.deinit();
+    self.lights = lights_buf;
 }
 
 pub fn deleteCubemap(self: *RayCasting) void {

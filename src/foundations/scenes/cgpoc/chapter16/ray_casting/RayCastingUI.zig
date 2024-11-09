@@ -8,7 +8,7 @@ pub const ImgData = struct {
     box_dim: f32 = 1.5,
     box_pos: [3]f32 = .{ 0.0, -2.0, 0.0 },
     box_color: [3]f32 = .{ 1, 0, 0 },
-    // light_pos: [3]f32 = .{},
+    light_pos: [4]f32 = .{ 3, 2, 4, 1 },
     updated: bool = true,
 };
 

@@ -5,7 +5,7 @@ layout(binding=1, rgba8) uniform image2D f_texture;
 
 uniform float f_camera_pos_z = 5.0;
 uniform int f_scene_index = 1;
-uniform int f_light_index = 0;
+uniform int f_light_index = 1;
 uniform int f_mat_index = 0;
 
 layout(std140, binding = 0) uniform CameraBuffer {
