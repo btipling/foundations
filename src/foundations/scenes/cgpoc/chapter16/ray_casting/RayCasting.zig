@@ -7,7 +7,7 @@ cross: scenery.debug.Cross = undefined,
 
 ray_cast_buffer: SSBO,
 
-img_1: Img = undefined,
+images: [2]Img = undefined,
 
 const RayCasting = @This();
 
@@ -16,6 +16,7 @@ const Img = struct {
     tex: rhi.Texture = undefined,
     mem: []u8 = undefined,
     quad: object.object = .{ .norender = .{} },
+    drawn: bool = false,
 };
 
 const texture_dims: usize = 512;
@@ -32,7 +33,7 @@ pub const SceneData = extern struct {
 };
 
 pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ubo = 3 };
-const SSBO = rhi.storage_buffer.Buffer(SceneData, binding_point, c.GL_DYNAMIC_COPY);
+const SSBO = rhi.storage_buffer.Buffer([]const SceneData, binding_point, c.GL_DYNAMIC_COPY);
 
 pub fn navType() ui.ui_state.scene_nav_info {
     return .{
@@ -56,17 +57,28 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     );
     errdefer cam.deinit(allocator);
 
-    const cd: SceneData = .{
-        .sphere_radius = .{ 2.5, 0, 0, 0 },
-        .sphere_position = .{ 1, 0, -3, 1.0 },
-        .sphere_color = .{ 0, 0, 1, 1 },
-        .box_position = .{ 0.5, 0, 0, 0 },
-        .box_dims = .{ 0.5, 0.5, 0.5, 0 },
-        .box_color = .{ 1, 0, 0, 0 },
-        .box_rotation = .{ 0, 0, 0, 0 },
+    const cd: [2]SceneData = .{
+        .{
+            .sphere_radius = .{ 2.5, 0, 0, 0 },
+            .sphere_position = .{ 1, 0, -3, 1.0 },
+            .sphere_color = .{ 0, 0, 1, 1 },
+            .box_position = .{ 0.5, 0, 0, 0 },
+            .box_dims = .{ 0.5, 0.5, 0.5, 0 },
+            .box_color = .{ 1, 0, 0, 0 },
+            .box_rotation = .{ 0, 0, 0, 0 },
+        },
+        .{
+            .sphere_radius = .{ 2.5, 0, 0, 0 },
+            .sphere_position = .{ 1, 0, -3, 1.0 },
+            .sphere_color = .{ 0, 0, 1, 1 },
+            .box_position = .{ 0.5, 0, 0, 0 },
+            .box_dims = .{ 0.5, 0.5, 0.5, 0 },
+            .box_color = .{ 1, 0, 0, 0 },
+            .box_rotation = .{ 0, 0, 0, 0 },
+        },
     };
 
-    var rc_buf = SSBO.init(cd, "scene_data");
+    var rc_buf = SSBO.init(cd[0..], "scene_data");
     errdefer rc_buf.deinit();
     const ui_state: RayCastingUI = .{};
 
@@ -81,15 +93,19 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     rc.renderDebugCross();
     errdefer rc.deleteCross();
 
-    rc.img_1 = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"));
-    errdefer rc.deleteImg(rc.img_1);
+    rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(0, 0, 0));
+    errdefer rc.deleteImg(rc.images[0]);
+    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 1.5));
+    errdefer rc.deleteImg(rc.images[1]);
 
     return rc;
 }
 
 pub fn deinit(self: *RayCasting, allocator: std.mem.Allocator) void {
     self.ray_cast_buffer.deinit();
-    self.deleteImg(self.img_1);
+    for (self.images) |i| {
+        self.deleteImg(i);
+    }
     self.ray_cast_buffer.deinit();
     self.deleteCross();
     self.view_camera.deinit(allocator);
@@ -100,25 +116,30 @@ pub fn deinit(self: *RayCasting, allocator: std.mem.Allocator) void {
 pub fn updateCamera(_: *RayCasting) void {}
 
 pub fn draw(self: *RayCasting, dt: f64) void {
-    if (self.ui_state.updated) {
-        self.updateSceneData();
-        self.ui_state.updated = false;
+    for (self.ui_state.data, 0..) |d, i| {
+        if (!d.updated) continue;
+        self.updateSceneData(i);
+        self.ui_state.data[i].updated = false;
     }
     self.rayCastScene();
     self.view_camera.update(dt);
-    {
-        self.img_1.tex.bind();
-        rhi.drawObject(self.img_1.quad);
+    for (self.images) |i| {
+        i.tex.bind();
+        rhi.drawObject(i.quad);
     }
     self.cross.draw(dt);
     self.ui_state.draw();
 }
 
 fn rayCastScene(self: *RayCasting) void {
-    self.img_1.tex.bindWritableImage();
-    c.glUseProgram(self.img_1.prog);
-    c.glDispatchCompute(texture_dims, texture_dims, 1);
-    c.glMemoryBarrier(c.GL_ALL_BARRIER_BITS);
+    for (self.images, 0..) |img, i| {
+        if (img.drawn) continue;
+        img.tex.bindWritableImage();
+        c.glUseProgram(img.prog);
+        c.glDispatchCompute(texture_dims, texture_dims, 1);
+        c.glMemoryBarrier(c.GL_ALL_BARRIER_BITS);
+        self.images[i].drawn = true;
+    }
 }
 
 fn deleteCross(self: *RayCasting) void {
@@ -153,7 +174,7 @@ fn deleteImg(self: *RayCasting, img: Img) void {
     rhi.deleteObject(img.quad);
 }
 
-fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8) Img {
+fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8, translation: math.matrix) Img {
     var img: Img = .{
         .mem = self.allocateTextureMemory(),
         .tex = rhi.Texture.init(self.ctx.args.disable_bindless) catch @panic("unable to create reflection texture"),
@@ -195,7 +216,7 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8) 
             .program = prog,
         };
         s.attachAndLinkAll(self.allocator, shaders[0..], name);
-        var m = math.matrix.identity();
+        var m = translation;
         m = math.matrix.transformMatrix(m, math.matrix.rotationZ(-(std.math.pi / 2.0)));
         const i_datas = [_]rhi.instanceData{
             .{
@@ -222,20 +243,27 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8) 
     return img;
 }
 
-fn updateSceneData(self: *RayCasting) void {
-    const sp = self.ui_state.sphere_pos;
-    const bd = self.ui_state.box_dim;
-    const bp = self.ui_state.box_pos;
-    const scene_data: SceneData = .{
-        .sphere_radius = .{ self.ui_state.sphere_radius, 0, 0, 0 },
-        .sphere_position = .{ sp[0], sp[1], sp[2], 1.0 },
-        .sphere_color = .{ 0, 0, 1, 1 },
-        .box_position = .{ bp[0], bp[1], bp[2], 0 },
-        .box_dims = .{ bd, bd, bd, 0 },
-        .box_color = .{ 1, 0, 0, 0 },
-        .box_rotation = .{ 0, 0, 0, 0 },
-    };
-    self.ray_cast_buffer.update(scene_data);
+fn updateSceneData(self: *RayCasting, i: usize) void {
+    var cd: [2]SceneData = undefined;
+    for (cd, 0..) |_, j| {
+        var sd = cd[j];
+        const d = self.ui_state.data[j];
+        const sp = d.sphere_pos;
+        const bd = d.box_dim;
+        const bp = d.box_pos;
+
+        sd.sphere_radius = .{ d.sphere_radius, 0, 0, 0 };
+        sd.sphere_position = .{ sp[0], sp[1], sp[2], 1.0 };
+        sd.sphere_color = .{ 0, 0, 1, 1 };
+
+        sd.box_position = .{ bp[0], bp[1], bp[2], 0 };
+        sd.box_dims = .{ bd, bd, bd, 0 };
+        sd.box_color = .{ 1, 0, 0, 0 };
+        sd.box_rotation = .{ 0, 0, 0, 0 };
+        cd[j] = sd;
+    }
+    self.images[i].drawn = false;
+    self.ray_cast_buffer.update(cd[0..]);
 }
 
 const std = @import("std");
