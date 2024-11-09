@@ -7,8 +7,8 @@ layout(binding=3) uniform sampler2D f_sphere_tex;
 
 layout(binding=4) uniform sampler2D f_xp_tex;
 layout(binding=5) uniform sampler2D f_xn_tex;
-layout(binding=6) uniform sampler2D f_yp_tex;
-layout(binding=7) uniform sampler2D f_yn_tex;
+layout(binding=6) uniform sampler2D f_yn_tex;
+layout(binding=7) uniform sampler2D f_yp_tex;
 layout(binding=8) uniform sampler2D f_zp_tex;
 layout(binding=9) uniform sampler2D f_zn_tex;
 
@@ -304,7 +304,7 @@ Collision f_intersect_sky_box_object(Ray f_ray) {
         f_c.n *= -1.0;
     }
 	
-    vec3 f_cp = f_ray.start + f_c.t * f_ray.dir;
+    f_c.p = f_ray.start + f_c.t * f_ray.dir;
 	
 	if (f_c.n == vec3(1,0,0)) f_c.face_index = 0;
 	else if (f_c.n == vec3(-1,0,0)) f_c.face_index = 1;
