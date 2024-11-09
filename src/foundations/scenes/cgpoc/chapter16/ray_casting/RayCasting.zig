@@ -116,11 +116,6 @@ pub fn deinit(self: *RayCasting, allocator: std.mem.Allocator) void {
 pub fn updateCamera(_: *RayCasting) void {}
 
 pub fn draw(self: *RayCasting, dt: f64) void {
-    for (self.ui_state.data, 0..) |d, i| {
-        if (!d.updated) continue;
-        self.updateSceneData(i);
-        self.ui_state.data[i].updated = false;
-    }
     self.rayCastScene();
     self.view_camera.update(dt);
     for (self.images) |i| {
@@ -129,6 +124,11 @@ pub fn draw(self: *RayCasting, dt: f64) void {
     }
     self.cross.draw(dt);
     self.ui_state.draw();
+    for (self.ui_state.data, 0..) |d, i| {
+        if (!d.updated) continue;
+        self.updateSceneData(i);
+        self.ui_state.data[i].updated = false;
+    }
 }
 
 fn rayCastScene(self: *RayCasting) void {
@@ -262,8 +262,8 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
         sd.box_rotation = .{ 0, 0, 0, 0 };
         cd[j] = sd;
     }
-    self.images[i].drawn = false;
     self.ray_cast_buffer.update(cd[0..]);
+    self.images[i].drawn = false;
 }
 
 const std = @import("std");

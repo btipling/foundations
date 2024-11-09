@@ -4,7 +4,7 @@ layout(local_size_x = 1) in;
 layout(binding=1, rgba8) uniform image2D f_texture;
 
 uniform float f_camera_pos_z = 5.0;
-uniform int f_scene_index = 1;
+uniform int f_scene_index = 0;
 
 struct SceneData {
     vec4 sphere_radius;
