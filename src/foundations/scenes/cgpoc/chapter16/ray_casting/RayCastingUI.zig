@@ -1,13 +1,14 @@
 data: [2]ImgData = .{ .{}, .{} },
-updating: usize = 0,
+updating: usize = 1,
 
 pub const ImgData = struct {
     sphere_radius: f32 = 2.5,
     sphere_pos: [3]f32 = .{ 1, 0, -3 },
     sphere_color: [3]f32 = .{ 0, 1, 0 },
-    box_dim: f32 = 0.5,
-    box_pos: [3]f32 = .{ 0.5, 0.0, 0.0 },
+    box_dim: f32 = 1.5,
+    box_pos: [3]f32 = .{ 0.0, -2.0, 0.0 },
     box_color: [3]f32 = .{ 1, 0, 0 },
+    // light_pos: [3]f32 = .{},
     updated: bool = true,
 };
 

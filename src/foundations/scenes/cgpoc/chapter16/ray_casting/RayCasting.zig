@@ -75,10 +75,10 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
 
     const lights = [_]lighting.Light{
         .{
-            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
-            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
+            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
-            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .location = [4]f32{ 3.0, 2.0, 4.0, 1.0 },
             .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
             .cutoff = 0.0,
             .exponent = 0.0,

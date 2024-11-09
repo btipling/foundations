@@ -193,11 +193,11 @@ vec3 f_lighting(Ray f_ray, Collision f_c)
 {
     Light f_light = f_lights[f_light_index];
     Material f_mat = f_materials[f_mat_index];
-    vec4 f_ambient = f_global_ambient + f_light.ambient + f_mat.ambient;
+    vec4 f_ambient = f_global_ambient + f_light.ambient * f_mat.ambient;
     vec3 f_light_dir = normalize(f_light.location.xyz - f_c.p);
-    vec3 f_light_ref = normalize(reflect(-f_light.direction.xyz, f_c.n));
+    vec3 f_light_ref = normalize(reflect(f_light_dir, f_c.n));
     float f_cos_theta = dot(f_light_dir, f_c.n);
-    float f_cos_phi = dot(normalize(-f_ray.dir), f_light_ref);
+    float f_cos_phi = dot(normalize(f_ray.dir), f_light_ref);
 
     vec4 f_diffuse = f_light.diffuse * f_mat.diffuse * max(f_cos_theta, 0.0);
     vec4 f_specular = f_light.specular * f_mat.specular * pow(max(f_cos_phi, 0.0), f_mat.shininess);
