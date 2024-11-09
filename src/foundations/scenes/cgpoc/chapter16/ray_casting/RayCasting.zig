@@ -129,14 +129,16 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     rc.renderDebugCross();
     errdefer rc.deleteCross();
 
-    rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(0, 0, -4));
+    rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(0, 0, -8));
     errdefer rc.deleteImg(rc.images[0]);
     rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 8));
     errdefer rc.deleteImg(rc.images[1]);
     rc.images[2] = rc.renderImg("img_3", @embedFile("img_3.comp.glsl"), math.matrix.translate(0, 0, 4));
     errdefer rc.deleteImg(rc.images[2]);
-    rc.images[3] = rc.renderImg("img_4", @embedFile("img_4.comp.glsl"), math.matrix.translate(0, 0, 0));
+    rc.images[3] = rc.renderImg("img_4", @embedFile("img_4.comp.glsl"), math.matrix.translate(0, 0, -4));
     errdefer rc.deleteImg(rc.images[3]);
+    rc.images[4] = rc.renderImg("img_5", @embedFile("img_4.comp.glsl"), math.matrix.translate(0, 0, 0));
+    errdefer rc.deleteImg(rc.images[4]);
 
     return rc;
 }
