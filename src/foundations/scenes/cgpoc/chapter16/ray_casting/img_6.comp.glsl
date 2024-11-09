@@ -403,7 +403,14 @@ vec3 f_ray_trace(Ray f_ray) {
     if (f_c.object_index == -1) return vec3(0.0);
     if (f_c.object_index == 1) return f_lighting(f_ray, f_c, (texture(f_sphere_tex, f_c.tc)));
     if (f_c.object_index == 2) return f_lighting(f_ray, f_c, (texture(f_box_tex, f_c.tc)));
-    if (f_c.object_index == 3) return f_lighting(f_ray, f_c, vec4(1.0, 1.0, 1.0, 1.0));
+    if (f_c.object_index == 3) {
+        if (f_c.face_index == 0) return texture(f_xn_tex, f_c.tc).xyz;
+        if (f_c.face_index == 1) return texture(f_xp_tex, f_c.tc).xyz;
+        if (f_c.face_index == 2) return texture(f_yn_tex, f_c.tc).xyz;
+        if (f_c.face_index == 3) return texture(f_yp_tex, f_c.tc).xyz;
+        if (f_c.face_index == 4) return texture(f_zn_tex, f_c.tc).xyz;
+        if (f_c.face_index == 5) return texture(f_zp_tex, f_c.tc).xyz;
+    }
     return vec3(1.0, 0.0, 1.0);
 }
 
