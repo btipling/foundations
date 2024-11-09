@@ -10,6 +10,7 @@ pub const ImgData = struct {
     box_dim: f32 = 1.5,
     box_pos: [3]f32 = .{ 0.0, -2.0, 0.0 },
     box_color: [3]f32 = .{ 1, 0, 0 },
+    box_rot: [3]f32 = .{ 1, 0, 0 },
     light_pos: [4]f32 = .{ 3, 2, 4, 1 },
     updated: bool = true,
 };
@@ -75,6 +76,10 @@ pub fn draw(self: *ComputeShaderUI) void {
     if (c.igSliderFloat("##bpx", &self.data[self.updating].box_pos[0], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
     if (c.igSliderFloat("##bpy", &self.data[self.updating].box_pos[1], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
     if (c.igSliderFloat("##bpz", &self.data[self.updating].box_pos[2], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    _ = c.igText("Box rotation");
+    if (c.igSliderFloat("##brx", &self.data[self.updating].box_rot[0], 0, std.math.pi, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##bry", &self.data[self.updating].box_rot[1], 0, std.math.pi, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##brz", &self.data[self.updating].box_rot[2], 0, std.math.pi, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
 
     _ = c.igText("Box color");
     {

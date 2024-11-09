@@ -7,6 +7,7 @@ uniform float f_camera_pos_z = 5.0;
 uniform int f_scene_index = 3;
 uniform int f_light_index = 3;
 uniform int f_mat_index = 0;
+uniform float f_pi = 3.1415926535;
 
 layout(std140, binding = 0) uniform CameraBuffer {
     mat4 f_mvp;
@@ -77,12 +78,58 @@ struct Collision {
     int object_index;
 };
 
+
+mat4 f_translate(vec3 pos) {	
+    return mat4(
+        1.0,        0.0,        0.0,        0.0,
+        0.0,        1.0,        0.0,        0.0,
+        0.0,        0.0,        1.0,        0.0,
+        pos.x,      pos.y,      pos.z,      1.0
+    );
+}
+mat4 f_rot_x(float rad) {	
+    return mat4(
+        1.0,        0.0,        0.0,        0.0,
+        0.0,        cos(rad),   sin(rad),   0.0,
+        0.0,        -sin(rad),  cos(rad),   0.0,
+        0.0,        0.0,        0.0,        1.0
+    );
+}
+mat4 f_rot_y(float rad) {	
+    return mat4(
+        cos(rad),   0.0,        -sin(rad),  0.0,
+        0.0,        1.0,        0.0,        0.0,
+        sin(rad),   0.0,        cos(rad),   0.0,
+        0.0,        0.0,        0.0,        1.0
+    );
+}
+mat4 f_rot_z(float rad) {	
+    return mat4(
+        cos(rad),   sin(rad),   0.0,        0.0,
+        -sin(rad),  cos(rad),   0.0,        0.0,
+        0.0,        0.0,        1.0,        0.0,
+        0.0,        0.0,        0.0,        1.0
+    );
+}
+
+
 Collision f_intersect_box_object(Ray f_ray) {
     SceneData f_sd = f_scene_data[f_scene_index];
+
+    mat4 m = f_translate(f_sd.box_position.xyz);
+    mat4 r = f_rot_y(f_sd.box_rotation.y);
+    r *= f_rot_x(f_sd.box_rotation.x);
+    r *= f_rot_z(f_sd.box_rotation.z);
+    m *= r;
+    mat4 mi = inverse(m);
+    mat4 ri = inverse(r);
+    vec3 f_ray_start = (m * vec4(f_ray.start, 1.0)).xyz;
+    vec3 f_ray_dir = (r * vec4(f_ray.dir, 1.0)).xyz;
+
     vec3 f_box_min = f_sd.box_position.xyz - (f_sd.box_dims.xyz / 2.0);
     vec3 f_box_max = f_sd.box_position.xyz + (f_sd.box_dims.xyz / 2.0);
-    vec3 f_t_min = (f_box_min.xyz - f_ray.start) / f_ray.dir;
-    vec3 f_t_max = (f_box_max.xyz - f_ray.start) / f_ray.dir;
+    vec3 f_t_min = (f_box_min.xyz - f_ray_start) / f_ray_dir;
+    vec3 f_t_max = (f_box_max.xyz - f_ray_start) / f_ray_dir;
 
     vec3 f_t_min_dist = min(f_t_min, f_t_max);
     vec3 f_t_max_dist = max(f_t_min, f_t_max);
@@ -122,6 +169,8 @@ Collision f_intersect_box_object(Ray f_ray) {
     if (f_ray.dir[f_face_index] > 0.0) {
         f_c.n *= -1.0;
     }
+
+    f_c.n = transpose(inverse(mat3(r))) * f_c.n;
 
     f_c.p = f_ray.start + f_c.t * f_ray.dir;
     return f_c;

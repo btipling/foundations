@@ -303,6 +303,7 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
         const bd = d.box_dim;
         const bp = d.box_pos;
         const bc = d.box_color;
+        const br = d.box_rot;
 
         sd.sphere_radius = .{ d.sphere_radius, 0, 0, 0 };
         sd.sphere_position = .{ sp[0], sp[1], sp[2], 1.0 };
@@ -311,7 +312,7 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
         sd.box_position = .{ bp[0], bp[1], bp[2], 0 };
         sd.box_dims = .{ bd, bd, bd, 0 };
         sd.box_color = .{ bc[0], bc[1], bc[2], 1 };
-        sd.box_rotation = .{ 0, 0, 0, 0 };
+        sd.box_rotation = .{ br[0], br[1], br[2], 0 };
         cd[j] = sd;
     }
     self.ray_cast_buffer.update(cd[0..]);
