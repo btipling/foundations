@@ -275,7 +275,8 @@ Collision f_intersect_sky_box_object(Ray f_ray) {
 	f_c.inside = false;
 
 	if(f_t_near >= f_t_far || f_t_far <= 0.0)
-	{	f_c.t = -1.0;
+	{	
+        f_c.t = -1.0;
 		return f_c;
 	}
 
@@ -321,18 +322,19 @@ Collision f_intersect_sky_box_object(Ray f_ray) {
 	float f_ray_strike_y = ((f_c.p).y + f_total_height/2.0) / f_max_dim;
 	float f_ray_strike_z = ((f_c.p).z + f_total_depth/2.0) / f_max_dim;
 	
-	if (f_c.face_index == 0)
+	if (f_c.face_index == 0) {
 		f_c.tc = vec2(f_ray_strike_z, f_ray_strike_y);
-	else if (f_c.face_index == 1)
+	} else if (f_c.face_index == 1) {
 		f_c.tc = vec2(1.0 - f_ray_strike_z, f_ray_strike_y);
-	else if (f_c.face_index == 2)
+	} else if (f_c.face_index == 2) {
 		f_c.tc = vec2(f_ray_strike_x, f_ray_strike_z);
-	else if (f_c.face_index == 3)
+	} else if (f_c.face_index == 3) {
 		f_c.tc = vec2(f_ray_strike_x, 1.0 - f_ray_strike_z);
-	else if (f_c.face_index == 4)
+	} else if (f_c.face_index == 4) {
 		f_c.tc = vec2(1.0 - f_ray_strike_x, f_ray_strike_y);
-	else if (f_c.face_index == 5)
+	} else if (f_c.face_index == 5) {
 		f_c.tc = vec2(f_ray_strike_x, f_ray_strike_y);
+    }
 		
 	return f_c;
 }
@@ -398,7 +400,6 @@ vec3 f_lighting(Ray f_ray, Collision f_c, vec4 f_object_c)
 }
 
 vec3 f_ray_trace(Ray f_ray) {
-    SceneData f_sd = f_scene_data[f_scene_index];
     Collision f_c = f_get_closest_collision(f_ray);
     if (f_c.object_index == -1) return vec3(0.0);
     if (f_c.object_index == 1) return f_lighting(f_ray, f_c, (texture(f_sphere_tex, f_c.tc)));
