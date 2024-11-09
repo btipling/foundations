@@ -189,7 +189,7 @@ Collision f_get_closest_collision(Ray f_ray) {
     return f_c_col;
 }
 
-vec3 f_lighting(Ray f_ray, Collision f_c)
+vec3 f_lighting(Ray f_ray, Collision f_c, vec4 f_object_c)
 {
     Light f_light = f_lights[f_light_index];
     Material f_mat = f_materials[f_mat_index];
@@ -202,16 +202,16 @@ vec3 f_lighting(Ray f_ray, Collision f_c)
     vec4 f_diffuse = f_light.diffuse * f_mat.diffuse * max(f_cos_theta, 0.0);
     vec4 f_specular = f_light.specular * f_mat.specular * pow(max(f_cos_phi, 0.0), f_mat.shininess);
 
-    vec4 f_l_c = f_ambient + f_diffuse + f_specular;
-    return f_l_c.xyz;
+    vec4 f_l_c = f_ambient + f_diffuse;
+    return (f_object_c * f_l_c + f_specular).xyz;
 }
 
 vec3 f_ray_trace(Ray f_ray) {
     SceneData f_sd = f_scene_data[f_scene_index];
     Collision f_c = f_get_closest_collision(f_ray);
     if (f_c.object_index == -1) return vec3(0.0);
-    if (f_c.object_index == 1) return f_lighting(f_ray, f_c) * f_sd.sphere_color.xyz;
-    if (f_c.object_index == 2) return f_lighting(f_ray, f_c) * f_sd.box_color.xyz;
+    if (f_c.object_index == 1) return f_lighting(f_ray, f_c, f_sd.sphere_color);
+    if (f_c.object_index == 2) return f_lighting(f_ray, f_c, f_sd.box_color);
     return vec3(1.0, 0.0, 1.0);
 }
 
