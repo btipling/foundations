@@ -86,6 +86,7 @@ struct Collision {
     bool inside;
     int object_index;
     vec2 tc;
+    int face_index;
 };
 
 
@@ -255,12 +256,94 @@ Collision f_intersect_sphere_object(Ray f_ray) {
     return f_c;
 }
 
+Collision f_intersect_sky_box_object(Ray f_ray) {
+
+    vec3 f_sky_box_min = vec3(-20, -20, -20);
+    vec3 f_sky_box_max = vec3( 20,  20,  20);
+    vec3 f_sky_box_color = vec3(1.0, 1.0, 1.0);
+
+    vec3 f_t_min = (f_sky_box_min - f_ray.start) / f_ray.dir;
+	vec3 f_t_max = (f_sky_box_max - f_ray.start) / f_ray.dir;
+	vec3 f_t_min_dist = min(f_t_min, f_t_max);
+	vec3 f_t_max_dist = max(f_t_min, f_t_max);
+	float f_t_near = max(max(f_t_min_dist.x, f_t_min_dist.y), f_t_min_dist.z);
+	float f_t_far = min(min(f_t_max_dist.x, f_t_max_dist.y), f_t_max_dist.z);
+
+	Collision f_c;
+    f_c.object_index = 3;
+	f_c.t = f_t_near;
+	f_c.inside = false;
+
+	if(f_t_near >= f_t_far || f_t_far <= 0.0)
+	{	f_c.t = -1.0;
+		return f_c;
+	}
+
+	float f_intersect_distance = f_t_near;
+	vec3 f_plane_intersect_distances = f_t_min_dist;
+
+	if (f_t_near < 0.0) {
+        f_c.t = f_t_far;
+        f_intersect_distance = f_t_far;
+        f_plane_intersect_distances = f_t_max_dist;
+        f_c.inside = true;
+    }
+
+    int f_face_index = 0;
+    if (f_intersect_distance == f_plane_intersect_distances.y) {
+        f_face_index = 1;
+    } else if (f_intersect_distance == f_plane_intersect_distances.z) {
+        f_face_index = 2;
+    }
+
+    f_c.n = vec3(0.0);
+    f_c.n[f_face_index] = 1.0;
+
+    if (f_ray.dir[f_face_index] > 0.0) {
+        f_c.n *= -1.0;
+    }
+	
+    vec3 f_cp = f_ray.start + f_c.t * f_ray.dir;
+	
+	if (f_c.n == vec3(1,0,0)) f_c.face_index = 0;
+	else if (f_c.n == vec3(-1,0,0)) f_c.face_index = 1;
+	else if (f_c.n == vec3(0,1,0)) f_c.face_index = 2;
+	else if (f_c.n == vec3(0,-1,0)) f_c.face_index = 3;
+	else if (f_c.n == vec3(0,0,1)) f_c.face_index = 4;
+	else if (f_c.n == vec3(0,0,-1)) f_c.face_index = 5;
+	
+	float f_total_width = f_sky_box_max.x - f_sky_box_min.x;
+	float f_total_height = f_sky_box_max.y - f_sky_box_min.y;
+	float f_total_depth = f_sky_box_max.z - f_sky_box_min.z;
+	float f_max_dim = max(f_total_width, max(f_total_height, f_total_depth));
+	
+	float f_ray_strike_x = ((f_c.p).x + f_total_width/2.0) / f_max_dim;
+	float f_ray_strike_y = ((f_c.p).y + f_total_height/2.0) / f_max_dim;
+	float f_ray_strike_z = ((f_c.p).z + f_total_depth/2.0) / f_max_dim;
+	
+	if (f_c.face_index == 0)
+		f_c.tc = vec2(f_ray_strike_z, f_ray_strike_y);
+	else if (f_c.face_index == 1)
+		f_c.tc = vec2(1.0 - f_ray_strike_z, f_ray_strike_y);
+	else if (f_c.face_index == 2)
+		f_c.tc = vec2(f_ray_strike_x, f_ray_strike_z);
+	else if (f_c.face_index == 3)
+		f_c.tc = vec2(f_ray_strike_x, 1.0 - f_ray_strike_z);
+	else if (f_c.face_index == 4)
+		f_c.tc = vec2(1.0-f_ray_strike_x, f_ray_strike_y);
+	else if (f_c.face_index == 5)
+		f_c.tc = vec2(f_ray_strike_x, f_ray_strike_y);
+		
+	return f_c;
+}
+
 Collision f_get_closest_collision(Ray f_ray) {
-    Collision f_c_col, f_sphere_c, f_box_c;
+    Collision f_c_col, f_sphere_c, f_box_c, f_sky_box_c;
     f_c_col.object_index = -1;
 
     f_sphere_c = f_intersect_sphere_object(f_ray);
     f_box_c = f_intersect_box_object(f_ray);
+    f_sky_box_c = f_intersect_sky_box_object(f_ray);
 
     if ((f_sphere_c.t > 0) && ((f_sphere_c.t < f_box_c.t) || (f_box_c.t < 0))) {
         f_c_col = f_sphere_c;
@@ -268,6 +351,10 @@ Collision f_get_closest_collision(Ray f_ray) {
 
     if ((f_box_c.t > 0) && ((f_box_c.t < f_sphere_c.t) || (f_sphere_c.t < 0))) {
         f_c_col = f_box_c;
+    }
+
+    if ((f_sky_box_c.t > 0) && ((f_sky_box_c.t < f_sphere_c.t) || (f_sphere_c.t < 0)) && ((f_sky_box_c.t < f_box_c.t) || (f_box_c.t < 0))) {
+        f_c_col = f_sky_box_c;
     }
 
     return f_c_col;
@@ -316,6 +403,7 @@ vec3 f_ray_trace(Ray f_ray) {
     if (f_c.object_index == -1) return vec3(0.0);
     if (f_c.object_index == 1) return f_lighting(f_ray, f_c, (texture(f_sphere_tex, f_c.tc)));
     if (f_c.object_index == 2) return f_lighting(f_ray, f_c, (texture(f_box_tex, f_c.tc)));
+    if (f_c.object_index == 3) return f_lighting(f_ray, f_c, vec4(1.0, 1.0, 1.0, 1.0));
     return vec3(1.0, 0.0, 1.0);
 }
 
