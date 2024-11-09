@@ -330,7 +330,7 @@ Collision f_intersect_sky_box_object(Ray f_ray) {
 	else if (f_c.face_index == 3)
 		f_c.tc = vec2(f_ray_strike_x, 1.0 - f_ray_strike_z);
 	else if (f_c.face_index == 4)
-		f_c.tc = vec2(1.0-f_ray_strike_x, f_ray_strike_y);
+		f_c.tc = vec2(1.0 - f_ray_strike_x, f_ray_strike_y);
 	else if (f_c.face_index == 5)
 		f_c.tc = vec2(f_ray_strike_x, f_ray_strike_y);
 		
