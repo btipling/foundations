@@ -80,6 +80,11 @@ pub fn draw(self: *ComputeShaderUI) void {
         }
     }
 
+    _ = c.igText("Light position");
+    if (c.igSliderFloat("##lpx", &self.data[self.updating].light_pos[0], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##lpy", &self.data[self.updating].light_pos[1], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##lpz", &self.data[self.updating].light_pos[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+
     c.igEnd();
 }
 
