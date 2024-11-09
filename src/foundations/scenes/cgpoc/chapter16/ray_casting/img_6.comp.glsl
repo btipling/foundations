@@ -5,6 +5,13 @@ layout(binding=1, rgba8) uniform image2D f_texture;
 layout(binding=2) uniform sampler2D f_box_tex;
 layout(binding=3) uniform sampler2D f_sphere_tex;
 
+layout(binding=4) uniform sampler2D f_xp_tex;
+layout(binding=5) uniform sampler2D f_xn_tex;
+layout(binding=6) uniform sampler2D f_yp_tex;
+layout(binding=7) uniform sampler2D f_yn_tex;
+layout(binding=8) uniform sampler2D f_zp_tex;
+layout(binding=9) uniform sampler2D f_zn_tex;
+
 uniform float f_camera_pos_z = 5.0;
 uniform int f_scene_index = 5;
 uniform int f_light_index = 5;

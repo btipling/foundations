@@ -11,6 +11,12 @@ cubemap_texture: ?rhi.Texture = null,
 
 brick_texture: ?rhi.Texture = null,
 earth_texture: ?rhi.Texture = null,
+cubemap_xp: ?rhi.Texture = null,
+cubemap_xn: ?rhi.Texture = null,
+cubemap_yp: ?rhi.Texture = null,
+cubemap_yn: ?rhi.Texture = null,
+cubemap_zp: ?rhi.Texture = null,
+cubemap_zn: ?rhi.Texture = null,
 
 cross: scenery.debug.Cross = undefined,
 
@@ -175,12 +181,16 @@ pub fn draw(self: *RayCasting, dt: f64) void {
         rhi.drawHorizon(self.cubemap);
     }
     {
-        if (self.brick_texture) |t| {
-            t.bind();
-        }
-        if (self.earth_texture) |t| {
-            t.bind();
-        }
+        self.brick_texture.?.bind();
+        self.earth_texture.?.bind();
+
+        self.cubemap_xp.?.bind();
+        self.cubemap_xn.?.bind();
+        self.cubemap_yp.?.bind();
+        self.cubemap_yn.?.bind();
+        self.cubemap_zp.?.bind();
+        self.cubemap_zn.?.bind();
+
         for (self.images) |i| {
             i.tex.bind();
             rhi.drawObject(i.quad);
@@ -234,33 +244,49 @@ fn renderDebugCross(self: *RayCasting) void {
 fn initSceneTextures(self: *RayCasting, prog: u32) bool {
     if (self.brick_texture) |_| if (self.earth_texture) |_| return false;
     if (self.brick_texture) |t| t.deinit();
+
     const disable_bindless = true; // disabling to keep compute ray tracing shaders simple
+
     var brick_texture = rhi.Texture.init(disable_bindless) catch @panic("no texture");
     brick_texture.texture_unit = 2;
     var earth_texture = rhi.Texture.init(disable_bindless) catch @panic("no texture");
     earth_texture.texture_unit = 3;
+
+    var cubemap_xp = rhi.Texture.init(disable_bindless) catch @panic("no texture");
+    cubemap_xp.texture_unit = 4;
+    var cubemap_xn = rhi.Texture.init(disable_bindless) catch @panic("no texture");
+    cubemap_xn.texture_unit = 5;
+
+    var cubemap_yp = rhi.Texture.init(disable_bindless) catch @panic("no texture");
+    cubemap_yp.texture_unit = 6;
+    var cubemap_yn = rhi.Texture.init(disable_bindless) catch @panic("no texture");
+    cubemap_yn.texture_unit = 7;
+
+    var cubemap_zp = rhi.Texture.init(disable_bindless) catch @panic("no texture");
+    cubemap_zp.texture_unit = 8;
+    var cubemap_zn = rhi.Texture.init(disable_bindless) catch @panic("no texture");
+    cubemap_zn.texture_unit = 9;
+
     self.brick_texture = brick_texture;
     self.earth_texture = earth_texture;
-    if (self.brick_texture) |*t| {
-        t.setup(
-            self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null,
-            prog,
-            "f_box_tex",
-            "box_texture",
-        ) catch {
-            self.brick_texture = null;
-        };
-    }
-    if (self.earth_texture) |*t| {
-        t.setup(
-            self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null,
-            prog,
-            "f_sphere_tex",
-            "sphere_texture",
-        ) catch {
-            self.earth_texture = null;
-        };
-    }
+
+    self.cubemap_xp = cubemap_xp;
+    self.cubemap_xn = cubemap_xn;
+    self.cubemap_yp = cubemap_yp;
+    self.cubemap_yn = cubemap_yn;
+    self.cubemap_zp = cubemap_zp;
+    self.cubemap_zn = cubemap_zn;
+
+    self.brick_texture.?.setup(self.ctx.textures_loader.loadAsset("cgpoc\\luna\\brick1.jpg") catch null, prog, "f_box_tex", "box_texture") catch @panic("no texture");
+    self.earth_texture.?.setup(self.ctx.textures_loader.loadAsset("cgpoc\\PlanetPixelEmporium\\earthmap1k.jpg") catch null, prog, "f_sphere_tex", "sphere_texture") catch @panic("no texture");
+
+    self.cubemap_xp.?.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\cubeMap\\xp.jpg") catch null, prog, "f_xp_tex", "f_xp_tex") catch @panic("no texture");
+    self.cubemap_xn.?.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\cubeMap\\xn.jpg") catch null, prog, "f_xn_tex", "f_xn_tex") catch @panic("no texture");
+    self.cubemap_yp.?.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\cubeMap\\yp.jpg") catch null, prog, "f_yp_tex", "f_yp_tex") catch @panic("no texture");
+    self.cubemap_yn.?.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\cubeMap\\yn.jpg") catch null, prog, "f_yn_tex", "f_yn_tex") catch @panic("no texture");
+    self.cubemap_zp.?.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\cubeMap\\zp.jpg") catch null, prog, "f_zp_tex", "f_zp_tex") catch @panic("no texture");
+    self.cubemap_zn.?.setup(self.ctx.textures_loader.loadAsset("cgpoc\\cubemaps\\LakeIslands\\cubeMap\\zn.jpg") catch null, prog, "f_zn_tex", "f_zn_tex") catch @panic("no texture");
+
     return true;
 }
 
