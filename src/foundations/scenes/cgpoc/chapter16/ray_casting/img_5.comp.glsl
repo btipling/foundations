@@ -6,8 +6,8 @@ layout(binding=2) uniform sampler2D f_box_tex;
 layout(binding=3) uniform sampler2D f_sphere_tex;
 
 uniform float f_camera_pos_z = 5.0;
-uniform int f_scene_index = 3;
-uniform int f_light_index = 3;
+uniform int f_scene_index = 4;
+uniform int f_light_index = 4;
 uniform int f_mat_index = 0;
 uniform float f_pi = 3.1415926535;
 
@@ -126,6 +126,7 @@ Collision f_intersect_box_object(Ray f_ray) {
     m *= r;
     mat4 mi = inverse(m);
     mat4 ri = inverse(r);
+
     vec3 f_ray_start = (mi * vec4(f_ray.start, 1.0)).xyz;
     vec3 f_ray_dir = (ri * vec4(f_ray.dir, 1.0)).xyz;
 
@@ -177,8 +178,25 @@ Collision f_intersect_box_object(Ray f_ray) {
 
     f_c.p = f_ray.start + f_c.t * f_ray.dir;
 
-    f_c.tc.x = 0.5;
-    f_c.tc.y = 0.0;
+
+    vec3 f_cp = (mi * vec4(f_c.p, 1.0)).xyz;
+    
+    float f_total_width = f_box_max.x - f_box_min.x;
+    float f_total_height = f_box_max.y - f_box_min.y;
+    float f_total_depth = f_box_max.z - f_box_min.z;
+    float f_max_dim = max(max(f_total_width, f_total_height), f_total_depth);
+
+    float f_ray_strike_x = (f_cp.x + f_total_width/2.0)/f_max_dim;
+    float f_ray_strike_y = (f_cp.x + f_total_height/2.0)/f_max_dim;
+    float f_ray_strike_z = (f_cp.x + f_total_depth/2.0)/f_max_dim;
+
+    if (f_face_index == 0) {
+        f_c.tc = vec2(f_ray_strike_z, f_ray_strike_y);
+    } else if (f_face_index == 1) {
+        f_c.tc = vec2(f_ray_strike_z, f_ray_strike_x);
+    } else {
+        f_c.tc = vec2(f_ray_strike_y, f_ray_strike_x);
+    }
 
     return f_c;
 }
