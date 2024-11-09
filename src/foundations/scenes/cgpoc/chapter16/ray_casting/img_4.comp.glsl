@@ -126,8 +126,8 @@ Collision f_intersect_box_object(Ray f_ray) {
     vec3 f_ray_start = (mi * vec4(f_ray.start, 1.0)).xyz;
     vec3 f_ray_dir = (ri * vec4(f_ray.dir, 1.0)).xyz;
 
-    vec3 f_box_min = vec3(-0.5, -0.5, -0.5);
-    vec3 f_box_max = vec3(0.5, 0.5, 0.5);
+    vec3 f_box_min = f_sd.box_dims.xyz * 0.5;
+    vec3 f_box_max = f_box_min * -1;
     vec3 f_t_min = (f_box_min.xyz - f_ray_start) / f_ray_dir;
     vec3 f_t_max = (f_box_max.xyz - f_ray_start) / f_ray_dir;
 
@@ -169,8 +169,8 @@ Collision f_intersect_box_object(Ray f_ray) {
     if (f_ray.dir[f_face_index] > 0.0) {
         f_c.n *= -1.0;
     }
+    f_c.n = normalize(transpose(inverse(mat3(r))) * f_c.n);
 
-    f_c.n = transpose(inverse(mat3(r))) * f_c.n;
 
     f_c.p = f_ray.start + f_c.t * f_ray.dir;
     return f_c;
@@ -271,7 +271,8 @@ vec3 f_lighting(Ray f_ray, Collision f_c, vec4 f_object_c)
     }
 
     vec4 f_l_c = f_ambient + f_diffuse;
-    return (f_object_c * f_l_c + f_specular).xyz;
+    f_l_c = (f_object_c * f_l_c + f_specular);
+    return f_l_c.xyz;
 }
 
 vec3 f_ray_trace(Ray f_ray) {

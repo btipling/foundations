@@ -64,7 +64,7 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
         ctx.cfg,
         rc,
         integrator,
-        .{ 0, -2, 0 },
+        .{ 1, -5, 2 },
         0,
     );
     errdefer cam.deinit(allocator);
@@ -131,11 +131,11 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
 
     rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(0, 0, -4));
     errdefer rc.deleteImg(rc.images[0]);
-    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 0));
+    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 8));
     errdefer rc.deleteImg(rc.images[1]);
     rc.images[2] = rc.renderImg("img_3", @embedFile("img_3.comp.glsl"), math.matrix.translate(0, 0, 4));
     errdefer rc.deleteImg(rc.images[2]);
-    rc.images[3] = rc.renderImg("img_4", @embedFile("img_4.comp.glsl"), math.matrix.translate(0, 0, 8));
+    rc.images[3] = rc.renderImg("img_4", @embedFile("img_4.comp.glsl"), math.matrix.translate(0, 0, 0));
     errdefer rc.deleteImg(rc.images[3]);
 
     return rc;
