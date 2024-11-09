@@ -58,6 +58,8 @@ struct SceneData {
     vec4 box_dims;
     vec4 box_color;
     vec4 box_rotation;
+    vec4 camera_position;
+    vec4 camera_direction;
 };
 
 layout(std140, binding = 3) uniform SceneBuffer {

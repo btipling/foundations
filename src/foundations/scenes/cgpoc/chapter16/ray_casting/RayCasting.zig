@@ -51,6 +51,8 @@ pub const SceneData = extern struct {
     box_dims: [4]f32,
     box_color: [4]f32,
     box_rotation: [4]f32,
+    camera_position: [4]f32,
+    camera_direction: [4]f32,
 };
 
 pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ubo = 3 };
@@ -112,6 +114,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
             .box_dims = .{ 0.5, 0.5, 0.5, 0 },
             .box_color = .{ 1, 0, 0, 0 },
             .box_rotation = .{ 0, 0, 0, 0 },
+            .camera_position = .{ 0, 0, 5, 1 },
+            .camera_direction = .{ 0, 0, 1, 0 },
         };
     }
     var rc_buf = SSBO.init(cd[0..], "scene_data");
@@ -383,6 +387,8 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
         const bp = d.box_pos;
         const bc = d.box_color;
         const br = d.box_rot;
+        const cpos = d.camera_pos;
+        const cdir: math.vector.vec4 = d.camera_dir;
 
         sd.sphere_radius = .{ d.sphere_radius, 0, 0, 0 };
         sd.sphere_position = .{ sp[0], sp[1], sp[2], 1.0 };
@@ -392,6 +398,9 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
         sd.box_dims = .{ bd, bd, bd, 0 };
         sd.box_color = .{ bc[0], bc[1], bc[2], 1 };
         sd.box_rotation = .{ br[0], br[1], br[2], 0 };
+
+        sd.camera_position = cpos;
+        sd.camera_direction = math.vector.normalize(cdir);
         cd[j] = sd;
     }
     self.ray_cast_buffer.update(cd[0..]);
