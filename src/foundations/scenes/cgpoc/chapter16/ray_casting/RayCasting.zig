@@ -3,6 +3,9 @@ ctx: scenes.SceneContext,
 allocator: std.mem.Allocator,
 ui_state: RayCastingUI,
 
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
+
 cubemap: object.object = .{ .norender = .{} },
 cubemap_texture: ?rhi.Texture = null,
 
@@ -13,6 +16,10 @@ ray_cast_buffer: SSBO,
 images: [2]Img = undefined,
 
 const RayCasting = @This();
+
+const mats = [_]lighting.Material{
+    lighting.materials.Silver,
+};
 
 const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 
@@ -62,6 +69,29 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     );
     errdefer cam.deinit(allocator);
 
+    const bd: []const lighting.Material = mats[0..];
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
+    errdefer mats_buf.deinit();
+
+    const lights = [_]lighting.Light{
+        .{
+            .ambient = [4]f32{ 0.1, 0.1, 0.1, 1.0 },
+            .diffuse = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 0.0, 0.0, 0.0, 1.0 },
+            .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+    };
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
+    errdefer lights_buf.deinit();
+
     const cd: [2]SceneData = .{
         .{
             .sphere_radius = .{ 2.5, 0, 0, 0 },
@@ -92,6 +122,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
         .allocator = allocator,
         .ctx = ctx,
         .view_camera = cam,
+        .materials = mats_buf,
+        .lights = lights_buf,
         .ray_cast_buffer = rc_buf,
     };
 
@@ -117,6 +149,8 @@ pub fn deinit(self: *RayCasting, allocator: std.mem.Allocator) void {
     self.ray_cast_buffer.deinit();
     self.deleteCross();
     self.deleteCubemap();
+    self.lights.deinit();
+    self.materials.deinit();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
