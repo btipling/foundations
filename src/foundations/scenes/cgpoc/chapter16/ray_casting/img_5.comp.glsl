@@ -187,8 +187,8 @@ Collision f_intersect_box_object(Ray f_ray) {
     float f_max_dim = max(max(f_total_width, f_total_height), f_total_depth);
 
     float f_ray_strike_x = (f_cp.x + f_total_width/2.0)/f_max_dim;
-    float f_ray_strike_y = (f_cp.x + f_total_height/2.0)/f_max_dim;
-    float f_ray_strike_z = (f_cp.x + f_total_depth/2.0)/f_max_dim;
+    float f_ray_strike_y = (f_cp.y + f_total_height/2.0)/f_max_dim;
+    float f_ray_strike_z = (f_cp.z + f_total_depth/2.0)/f_max_dim;
 
     if (f_face_index == 0) {
         f_c.tc = vec2(f_ray_strike_z, f_ray_strike_y);
