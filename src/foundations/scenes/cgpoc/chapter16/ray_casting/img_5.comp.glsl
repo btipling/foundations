@@ -2,6 +2,8 @@
 
 layout(local_size_x = 1) in;
 layout(binding=1, rgba8) uniform image2D f_texture;
+layout(binding=2) uniform sampler2D f_box_tex;
+layout(binding=3) uniform sampler2D f_sphere_tex;
 
 uniform float f_camera_pos_z = 5.0;
 uniform int f_scene_index = 3;
@@ -76,6 +78,7 @@ struct Collision {
     vec3 n;
     bool inside;
     int object_index;
+    vec2 tc;
 };
 
 
@@ -173,6 +176,10 @@ Collision f_intersect_box_object(Ray f_ray) {
 
 
     f_c.p = f_ray.start + f_c.t * f_ray.dir;
+
+    f_c.tc.x = 0.5;
+    f_c.tc.y = 0.0;
+
     return f_c;
 }
 
@@ -216,6 +223,9 @@ Collision f_intersect_sphere_object(Ray f_ray) {
     if (f_c.inside) {
         f_c.n *= -1.0;
     }
+
+    f_c.tc.x = 0.5 + atan(-f_c.n.z, f_c.n.x) / (2.0 * f_pi);
+    f_c.tc.y = 0.5 - asin(-f_c.n.y) / f_pi;
 
     return f_c;
 }
@@ -279,8 +289,8 @@ vec3 f_ray_trace(Ray f_ray) {
     SceneData f_sd = f_scene_data[f_scene_index];
     Collision f_c = f_get_closest_collision(f_ray);
     if (f_c.object_index == -1) return vec3(0.0);
-    if (f_c.object_index == 1) return f_lighting(f_ray, f_c, f_sd.sphere_color);
-    if (f_c.object_index == 2) return f_lighting(f_ray, f_c, f_sd.box_color);
+    if (f_c.object_index == 1) return f_lighting(f_ray, f_c, (texture(f_sphere_tex, f_c.tc)));
+    if (f_c.object_index == 2) return f_lighting(f_ray, f_c, (texture(f_box_tex, f_c.tc)));
     return vec3(1.0, 0.0, 1.0);
 }
 

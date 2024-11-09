@@ -132,15 +132,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     rc.renderDebugCross();
     errdefer rc.deleteCross();
 
-    rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(0, 0, -8));
+    rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(3, 0, -8));
     errdefer rc.deleteImg(rc.images[0]);
-    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 8));
+    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(3, 0, 8));
     errdefer rc.deleteImg(rc.images[1]);
-    rc.images[2] = rc.renderImg("img_3", @embedFile("img_3.comp.glsl"), math.matrix.translate(0, 0, 4));
+    rc.images[2] = rc.renderImg("img_3", @embedFile("img_3.comp.glsl"), math.matrix.translate(3, 0, 4));
     errdefer rc.deleteImg(rc.images[2]);
-    rc.images[3] = rc.renderImg("img_4", @embedFile("img_4.comp.glsl"), math.matrix.translate(0, 0, -4));
+    rc.images[3] = rc.renderImg("img_4", @embedFile("img_4.comp.glsl"), math.matrix.translate(3, 0, -4));
     errdefer rc.deleteImg(rc.images[3]);
-    rc.images[4] = rc.renderImg("img_5", @embedFile("img_4.comp.glsl"), math.matrix.translate(0, 0, 0));
+    rc.images[4] = rc.renderImg("img_5", @embedFile("img_5.comp.glsl"), math.matrix.translate(3, 0, 0));
     errdefer rc.deleteImg(rc.images[4]);
 
     return rc;
@@ -172,9 +172,17 @@ pub fn draw(self: *RayCasting, dt: f64) void {
     {
         rhi.drawHorizon(self.cubemap);
     }
-    for (self.images) |i| {
-        i.tex.bind();
-        rhi.drawObject(i.quad);
+    {
+        if (self.brick_texture) |t| {
+            t.bind();
+        }
+        if (self.earth_texture) |t| {
+            t.bind();
+        }
+        for (self.images) |i| {
+            i.tex.bind();
+            rhi.drawObject(i.quad);
+        }
     }
     self.cross.draw(dt);
     self.ui_state.draw();
@@ -309,6 +317,7 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8, 
         s.attachAndLinkAll(self.allocator, shaders[0..], name);
         var m = translation;
         m = math.matrix.transformMatrix(m, math.matrix.uniformScale(3));
+        m = math.matrix.transformMatrix(m, math.matrix.rotationY(std.math.pi / 2.0));
         m = math.matrix.transformMatrix(m, math.matrix.rotationZ(-(std.math.pi / 2.0)));
         const i_datas = [_]rhi.instanceData{
             .{
