@@ -1,5 +1,7 @@
-data: [2]ImgData = .{ .{}, .{} },
-updating: usize = 1,
+data: [num_images]ImgData = .{ .{}, .{}, .{} },
+updating: usize = 2,
+
+pub const num_images: usize = 3;
 
 pub const ImgData = struct {
     sphere_radius: f32 = 2.5,
@@ -23,9 +25,10 @@ pub fn draw(self: *ComputeShaderUI) void {
     _ = c.igBegin("Raycasting", null, 0);
     c.igPushItemWidth(-1);
 
-    const img_list = [_][*]const u8{
+    const img_list = [num_images][*]const u8{
         "1",
         "2",
+        "3",
     };
 
     {

@@ -13,7 +13,7 @@ cross: scenery.debug.Cross = undefined,
 
 ray_cast_buffer: SSBO,
 
-images: [2]Img = undefined,
+images: [RayCastingUI.num_images]Img = undefined,
 
 const RayCasting = @This();
 
@@ -73,7 +73,20 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
-    const lights = [_]lighting.Light{
+    const lights = [RayCastingUI.num_images]lighting.Light{
+        .{
+            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
+            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = [4]f32{ 3.0, 2.0, 4.0, 1.0 },
+            .direction = [4]f32{ 0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
         .{
             .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
             .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
@@ -105,7 +118,16 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
-    const cd: [2]SceneData = .{
+    const cd: [RayCastingUI.num_images]SceneData = .{
+        .{
+            .sphere_radius = .{ 2.5, 0, 0, 0 },
+            .sphere_position = .{ 1, 0, -3, 1.0 },
+            .sphere_color = .{ 0, 0, 1, 1 },
+            .box_position = .{ 0.5, 0, 0, 0 },
+            .box_dims = .{ 0.5, 0.5, 0.5, 0 },
+            .box_color = .{ 1, 0, 0, 0 },
+            .box_rotation = .{ 0, 0, 0, 0 },
+        },
         .{
             .sphere_radius = .{ 2.5, 0, 0, 0 },
             .sphere_position = .{ 1, 0, -3, 1.0 },
@@ -146,10 +168,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     rc.renderDebugCross();
     errdefer rc.deleteCross();
 
-    rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(0, 0, 0));
+    rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(0, 0, -4));
     errdefer rc.deleteImg(rc.images[0]);
-    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 4));
+    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 0));
     errdefer rc.deleteImg(rc.images[1]);
+    rc.images[2] = rc.renderImg("img_3", @embedFile("img_3.comp.glsl"), math.matrix.translate(0, 0, 4));
+    errdefer rc.deleteImg(rc.images[2]);
 
     return rc;
 }
@@ -307,7 +331,7 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8, 
 }
 
 fn updateSceneData(self: *RayCasting, i: usize) void {
-    var cd: [2]SceneData = undefined;
+    var cd: [RayCastingUI.num_images]SceneData = undefined;
     for (cd, 0..) |_, j| {
         var sd = cd[j];
         const d = self.ui_state.data[j];
@@ -333,7 +357,7 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
 }
 
 fn updateLights(self: *RayCasting) void {
-    const lights = [_]lighting.Light{
+    const lights = [RayCastingUI.num_images]lighting.Light{
         .{
             .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
             .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
@@ -352,6 +376,19 @@ fn updateLights(self: *RayCasting) void {
             .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
             .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
             .location = self.ui_state.data[1].light_pos,
+            .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
+            .cutoff = 0.0,
+            .exponent = 0.0,
+            .attenuation_constant = 1.0,
+            .attenuation_linear = 0.0,
+            .attenuation_quadratic = 0.0,
+            .light_kind = .positional,
+        },
+        .{
+            .ambient = [4]f32{ 0.2, 0.2, 0.2, 1.0 },
+            .diffuse = [4]f32{ 0.7, 0.7, 0.70, 1.0 },
+            .specular = [4]f32{ 1.0, 1.0, 1.0, 1.0 },
+            .location = self.ui_state.data[2].light_pos,
             .direction = [4]f32{ -0.5, -1.0, -0.3, 0.0 },
             .cutoff = 0.0,
             .exponent = 0.0,
