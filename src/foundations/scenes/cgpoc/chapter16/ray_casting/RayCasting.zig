@@ -3,6 +3,9 @@ ctx: scenes.SceneContext,
 allocator: std.mem.Allocator,
 ui_state: RayCastingUI,
 
+cubemap: object.object = .{ .norender = .{} },
+cubemap_texture: ?rhi.Texture = null,
+
 cross: scenery.debug.Cross = undefined,
 
 ray_cast_buffer: SSBO,
@@ -10,6 +13,8 @@ ray_cast_buffer: SSBO,
 images: [2]Img = undefined,
 
 const RayCasting = @This();
+
+const cubemap_vert: []const u8 = @embedFile("../../../../shaders/cubemap_vert.glsl");
 
 const Img = struct {
     prog: u32 = 0,
@@ -90,12 +95,15 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
         .ray_cast_buffer = rc_buf,
     };
 
+    rc.renderCubemap();
+    errdefer rc.deleteCubemap();
+
     rc.renderDebugCross();
     errdefer rc.deleteCross();
 
     rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(0, 0, 0));
     errdefer rc.deleteImg(rc.images[0]);
-    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 1.5));
+    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(0, 0, 4));
     errdefer rc.deleteImg(rc.images[1]);
 
     return rc;
@@ -108,6 +116,7 @@ pub fn deinit(self: *RayCasting, allocator: std.mem.Allocator) void {
     }
     self.ray_cast_buffer.deinit();
     self.deleteCross();
+    self.deleteCubemap();
     self.view_camera.deinit(allocator);
     self.view_camera = undefined;
     allocator.destroy(self);
@@ -118,6 +127,12 @@ pub fn updateCamera(_: *RayCasting) void {}
 pub fn draw(self: *RayCasting, dt: f64) void {
     self.rayCastScene();
     self.view_camera.update(dt);
+    if (self.cubemap_texture) |t| {
+        t.bind();
+    }
+    {
+        rhi.drawHorizon(self.cubemap);
+    }
     for (self.images) |i| {
         i.tex.bind();
         rhi.drawObject(i.quad);
@@ -217,6 +232,7 @@ fn renderImg(self: *RayCasting, name: [:0]const u8, compute_shader: []const u8, 
         };
         s.attachAndLinkAll(self.allocator, shaders[0..], name);
         var m = translation;
+        m = math.matrix.transformMatrix(m, math.matrix.uniformScale(3));
         m = math.matrix.transformMatrix(m, math.matrix.rotationZ(-(std.math.pi / 2.0)));
         const i_datas = [_]rhi.instanceData{
             .{
@@ -266,6 +282,74 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
     }
     self.ray_cast_buffer.update(cd[0..]);
     self.images[i].drawn = false;
+}
+
+pub fn deleteCubemap(self: *RayCasting) void {
+    const objects: [1]object.object = .{
+        self.cubemap,
+    };
+    rhi.deleteObjects(objects[0..]);
+    if (self.cubemap_texture) |t| {
+        t.deinit();
+    }
+}
+
+pub fn renderCubemap(self: *RayCasting) void {
+    const prog = rhi.createProgram("cubemap");
+    self.cubemap_texture = rhi.Texture.init(self.ctx.args.disable_bindless) catch null;
+    {
+        var s: rhi.Shader = .{
+            .program = prog,
+            .cubemap = true,
+            .instance_data = true,
+            .fragment_shader = .texture,
+        };
+        s.attach(self.allocator, rhi.Shader.single_vertex(cubemap_vert)[0..], "cubemap");
+    }
+    var i_datas: [1]rhi.instanceData = undefined;
+    {
+        var cm = math.matrix.identity();
+        cm = math.matrix.transformMatrix(cm, math.matrix.uniformScale(20));
+        cm = math.matrix.transformMatrix(cm, math.matrix.translate(-0.5, -0.5, -0.5));
+        const i_data: rhi.instanceData = .{
+            .t_column0 = cm.columns[0],
+            .t_column1 = cm.columns[1],
+            .t_column2 = cm.columns[2],
+            .t_column3 = cm.columns[3],
+            .color = .{ 1, 0, 0, 1 },
+        };
+        i_datas[0] = i_data;
+    }
+    var parallelepiped: object.object = .{
+        .parallelepiped = object.Parallelepiped.initCubemap(
+            prog,
+            i_datas[0..],
+            "cubemap",
+        ),
+    };
+    parallelepiped.parallelepiped.mesh.linear_colorspace = false;
+    if (self.cubemap_texture) |*bt| {
+        var cm: assets.Cubemap = .{
+            .path = "cgpoc\\cubemaps\\AlienWorld\\cubeMap",
+            .textures_loader = self.ctx.textures_loader,
+        };
+        cm.names[0] = "xp.png";
+        cm.names[1] = "xn.png";
+        cm.names[2] = "yp.png";
+        cm.names[3] = "yn.png";
+        cm.names[4] = "zp.png";
+        cm.names[5] = "zn.png";
+        var images: ?[6]*assets.Image = null;
+        if (cm.loadAll(self.allocator)) {
+            images = cm.images;
+        } else |_| {
+            std.debug.print("failed to load textures\n", .{});
+        }
+        bt.setupCubemap(images, prog, "f_cubemap", "alien_world") catch {
+            self.cubemap_texture = null;
+        };
+    }
+    self.cubemap = parallelepiped;
 }
 
 const std = @import("std");
