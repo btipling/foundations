@@ -5,6 +5,42 @@ layout(binding=1, rgba8) uniform image2D f_texture;
 
 uniform float f_camera_pos_z = 5.0;
 uniform int f_scene_index = 1;
+uniform int f_light_index = 0;
+uniform int f_mat_index = 0;
+
+struct Material {
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    float shininess;
+    float padding_1;
+    float padding_2;
+    float padding_3;
+};
+
+layout(std430, binding = 0) buffer MaterialBuffer {
+    Material f_materials[];
+};
+
+struct Light {
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    vec4 location;
+    vec4 direction;
+    float cutoff;
+    float exponent;
+    float attenuation_constant;
+    float attenuation_linear;
+    float attenuation_quadratic;
+    int light_kind; 
+    float padding_1;
+    float padding_2;
+};
+
+layout(std430, binding = 1) buffer LightBuffer {
+    Light f_lights[];
+};
 
 struct SceneData {
     vec4 sphere_radius;
