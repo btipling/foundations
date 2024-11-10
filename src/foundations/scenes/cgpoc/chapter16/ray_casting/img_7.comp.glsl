@@ -17,6 +17,13 @@ uniform int f_light_index = 6;
 uniform int f_mat_index = 0;
 uniform float f_pi = 3.1415926535;
 
+vec3 f_plane_pos = vec3(0, 2.5, -2.0);
+float f_plane_width = 12.0;
+float f_plane_depth = 8.0;
+float f_plane_x_rot = 0.0;
+float f_plane_y_rot = 0.0;
+float f_plane_z_rot = 0.0;
+
 layout(std140, binding = 0) uniform CameraBuffer {
     mat4 f_mvp;
     mat4 v_matrix;
@@ -339,13 +346,51 @@ Collision f_intersect_sky_box_object(Ray f_ray) {
 	return f_c;
 }
 
+Collision f_intersect_plane_object(Ray f_ray) {
+    mat4 m = f_translate(f_plane_pos);
+    mat4 r = f_rot_y(f_plane_y_rot);
+    r *= f_rot_x(f_plane_x_rot);
+    r *= f_rot_z(f_plane_z_rot);
+    m *= r;
+    mat4 mi = inverse(m);
+    mat4 ri = inverse(r);
+
+    vec3 f_ray_start = (mi * vec4(f_ray.start, 1.0)).xyz;
+    vec3 f_ray_dir = (ri * vec4(f_ray.dir, 1.0)).xyz;
+
+    Collision f_c;
+    f_c.object_index = 4;
+    f_c.inside = false;
+
+    f_c.t = dot((vec3(0.0, 0.0, 0.0) - f_ray_start), vec3(0.0, 1.0, 0.0) / dot(f_ray_dir, vec3(0.0, 1.0, 0.0)));
+    f_c.p = f_ray.start + f_c.t * f_ray.dir;
+    vec3 f_intersect_point = f_ray_start + f_c.t * f_ray_dir;
+
+    if ((abs(f_intersect_point.x) > f_plane_width/2.0) || (abs(f_intersect_point.z) > (f_plane_depth / 2.0))) {
+        f_c.t = -1.0;
+        return f_c;
+    }
+
+    f_c.n = vec3(0.0, 1.0, 0.0);
+    if (f_ray_dir.y > 0.0) {
+        f_c.n *= -1.0;
+    }
+    f_c.n = transpose(inverse(mat3(r))) * f_c.n;
+
+    float f_max_dims = max(f_plane_width, f_plane_depth);
+    f_c.tc = (f_intersect_point.xz + f_plane_width / 2.0) / f_max_dims;
+
+    return f_c;
+}
+
 Collision f_get_closest_collision(Ray f_ray) {
-    Collision f_c_col, f_sphere_c, f_box_c, f_sky_box_c;
+    Collision f_c_col, f_sphere_c, f_box_c, f_sky_box_c, f_plane_c;
     f_c_col.object_index = -1;
 
     f_sphere_c = f_intersect_sphere_object(f_ray);
     f_box_c = f_intersect_box_object(f_ray);
     f_sky_box_c = f_intersect_sky_box_object(f_ray);
+    f_plane_c = f_intersect_plane_object(f_ray);
 
     if ((f_sphere_c.t > 0) && ((f_sphere_c.t < f_box_c.t) || (f_box_c.t < 0))) {
         f_c_col = f_sphere_c;
@@ -357,6 +402,10 @@ Collision f_get_closest_collision(Ray f_ray) {
 
     if ((f_sky_box_c.t > 0) && ((f_sky_box_c.t < f_sphere_c.t) || (f_sphere_c.t < 0)) && ((f_sky_box_c.t < f_box_c.t) || (f_box_c.t < 0))) {
         f_c_col = f_sky_box_c;
+    }
+
+    if ((f_plane_c.t > 0) && ((f_plane_c.t < f_sphere_c.t) || (f_sphere_c.t < 0)) && ((f_plane_c.t < f_box_c.t) || (f_box_c.t < 0))) {
+        f_c_col = f_plane_c;
     }
 
     return f_c_col;
@@ -399,6 +448,12 @@ vec3 f_lighting(Ray f_ray, Collision f_c, vec4 f_object_c)
     return f_l_c.xyz;
 }
 
+vec4 f_checkerboard(vec2 f_tc) {
+    float f_tile_scale = 24.0;
+    float f_tile = mod(floor(f_tc.x * f_tile_scale) + floor(f_tc.y * f_tile_scale), 2.0);
+    return vec4((f_tile * vec3(1.0, 1.0, 1.0)).xyz, 1.0);
+}
+
 vec3 f_ray_trace(Ray f_ray) {
     Collision f_c = f_get_closest_collision(f_ray);
     if (f_c.object_index == -1) return vec3(0.0);
@@ -412,6 +467,7 @@ vec3 f_ray_trace(Ray f_ray) {
         if (f_c.face_index == 4) return texture(f_zn_tex, f_c.tc).xyz;
         if (f_c.face_index == 5) return texture(f_zp_tex, f_c.tc).xyz;
     }
+    if (f_c.object_index == 4) return f_lighting(f_ray, f_c, f_checkerboard(f_c.tc)).xyz;
     return vec3(1.0, 0.0, 1.0);
 }
 
