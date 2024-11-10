@@ -1,7 +1,7 @@
 data: [num_images]ImgData = undefined,
 updating: usize = 0,
 
-pub const num_images: usize = 8;
+pub const num_images: usize = 9;
 
 pub const ImgData = struct {
     sphere_radius: f32 = 2.5,
@@ -37,6 +37,7 @@ pub fn draw(self: *ComputeShaderUI) void {
         "6",
         "7",
         "8",
+        "9",
     };
 
     {
