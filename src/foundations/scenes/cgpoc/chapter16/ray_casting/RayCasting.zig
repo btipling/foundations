@@ -142,20 +142,25 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *RayCasting 
     rc.renderDebugCross();
     errdefer rc.deleteCross();
 
-    rc.images[0] = rc.renderImg("img_1", @embedFile("img_1.comp.glsl"), math.matrix.translate(3, 0, -24));
-    errdefer rc.deleteImg(rc.images[0]);
-    rc.images[1] = rc.renderImg("img_2", @embedFile("img_2.comp.glsl"), math.matrix.translate(3, 0, -20));
-    errdefer rc.deleteImg(rc.images[1]);
-    rc.images[2] = rc.renderImg("img_3", @embedFile("img_3.comp.glsl"), math.matrix.translate(3, 0, -16));
-    errdefer rc.deleteImg(rc.images[2]);
-    rc.images[3] = rc.renderImg("img_4", @embedFile("img_4.comp.glsl"), math.matrix.translate(3, 0, -12));
-    errdefer rc.deleteImg(rc.images[3]);
-    rc.images[4] = rc.renderImg("img_5", @embedFile("img_5.comp.glsl"), math.matrix.translate(3, 0, -8));
-    errdefer rc.deleteImg(rc.images[4]);
-    rc.images[5] = rc.renderImg("img_6", @embedFile("img_6.comp.glsl"), math.matrix.translate(3, 0, -4));
-    errdefer rc.deleteImg(rc.images[5]);
-    rc.images[6] = rc.renderImg("img_7", @embedFile("img_7.comp.glsl"), math.matrix.translate(3, 0, 0));
-    errdefer rc.deleteImg(rc.images[6]);
+    const z_start: f32 = @as(f32, @floatFromInt(RayCastingUI.num_images)) * 4.0 * -1;
+    comptime var embeds: [RayCastingUI.num_images][]const u8 = undefined;
+    comptime {
+        for (0..RayCastingUI.num_images) |i| {
+            var file_name_buf: [500]u8 = undefined;
+            const file_name = std.fmt.bufPrint(&file_name_buf, "img_{d}.comp.glsl", .{i + 1}) catch @panic("bufsize too small");
+            embeds[i] = @embedFile(file_name);
+        }
+    }
+    inline for (0..RayCastingUI.num_images) |i| {
+        var label_buf: [10]u8 = undefined;
+        const label = std.fmt.bufPrintZ(&label_buf, "img_{d}", .{i}) catch @panic("bufsize too small");
+        rc.images[i] = rc.renderImg(label, embeds[i], math.matrix.translate(
+            3,
+            0,
+            z_start + @as(f32, @floatFromInt(i * 4)),
+        ));
+        errdefer rc.deleteImg(rc.images[i]);
+    }
 
     return rc;
 }
