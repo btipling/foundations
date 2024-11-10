@@ -12,8 +12,8 @@ layout(binding=7) uniform sampler2D f_yp_tex;
 layout(binding=8) uniform sampler2D f_zp_tex;
 layout(binding=9) uniform sampler2D f_zn_tex;
 
-uniform int f_scene_index = 5;
-uniform int f_light_index = 5;
+uniform int f_scene_index = 6;
+uniform int f_light_index = 6;
 uniform int f_mat_index = 0;
 uniform float f_pi = 3.1415926535;
 
