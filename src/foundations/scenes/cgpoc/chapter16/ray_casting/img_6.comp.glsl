@@ -12,7 +12,6 @@ layout(binding=7) uniform sampler2D f_yp_tex;
 layout(binding=8) uniform sampler2D f_zp_tex;
 layout(binding=9) uniform sampler2D f_zn_tex;
 
-uniform float f_camera_pos_z = 5.0;
 uniform int f_scene_index = 5;
 uniform int f_light_index = 5;
 uniform int f_mat_index = 0;
@@ -259,7 +258,6 @@ Collision f_intersect_sphere_object(Ray f_ray) {
 }
 
 Collision f_intersect_sky_box_object(Ray f_ray) {
-
     vec3 f_sky_box_min = vec3(-20, -20, -20);
     vec3 f_sky_box_max = vec3( 20,  20,  20);
     vec3 f_sky_box_color = vec3(1.0, 1.0, 1.0);
@@ -419,15 +417,25 @@ vec3 f_ray_trace(Ray f_ray) {
 
 void main()
 {
+    SceneData f_sd = f_scene_data[f_scene_index];
     int f_width = int(gl_NumWorkGroups.x);
     int f_height = int(gl_NumWorkGroups.y);
     ivec2 f_texel = ivec2(gl_GlobalInvocationID.xy);
     float f_x_texel = 2.0 * f_texel.x / f_width - 1.0;
     float f_y_texel = 2.0 * f_texel.y / f_height - 1.0;
     Ray f_world_ray;
-    f_world_ray.start = vec3(0.0, 0.0, f_camera_pos_z);
-    vec4 f_world_ray_end = vec4(f_x_texel, f_y_texel, f_camera_pos_z - 1.0, 1.0);
+
+
+    // f_world_ray.start = f_sd.camera_position.xyz;
+    // f_world_ray.dir = normalize(f_sd.camera_direction.xyz);
+
+    f_world_ray.start = f_sd.camera_position.xyz; //vec3(0.0, 0.0, f_camera_pos_z);
+    vec4 f_world_ray_end = vec4(f_x_texel, f_y_texel, f_sd.camera_position.z - 1.0, 1.0);
     f_world_ray.dir = normalize(f_world_ray_end.xyz - f_world_ray.start);
+    mat4 r = f_rot_y(f_sd.camera_direction.y);
+    r *= f_rot_x(f_sd.camera_direction.x);
+    r *= f_rot_z(f_sd.camera_direction.z);
+    f_world_ray.dir = (r * vec4(f_world_ray.dir.xyz, 1.0)).xyz;
     vec4 f_output_color = vec4(f_ray_trace(f_world_ray), 1.0);
     imageStore(f_texture, f_texel, f_output_color);
 }

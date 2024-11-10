@@ -400,7 +400,7 @@ fn updateSceneData(self: *RayCasting, i: usize) void {
         sd.box_rotation = .{ br[0], br[1], br[2], 0 };
 
         sd.camera_position = cpos;
-        sd.camera_direction = math.vector.normalize(cdir);
+        sd.camera_direction = cdir;
         cd[j] = sd;
     }
     self.ray_cast_buffer.update(cd[0..]);

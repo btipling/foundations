@@ -13,7 +13,7 @@ pub const ImgData = struct {
     box_rot: [3]f32 = .{ 0.566, 1.650, 2.074 },
     light_pos: [4]f32 = .{ 3, 2, 4, 1 },
     camera_pos: [4]f32 = .{ 0, 0, 5, 1 },
-    camera_dir: [4]f32 = .{ 0, 0, 1, 0 },
+    camera_dir: [4]f32 = .{ 0, 0, 0, 0 },
     updated: bool = true,
 };
 
@@ -104,9 +104,9 @@ pub fn draw(self: *ComputeShaderUI) void {
     if (c.igSliderFloat("##cposz", &self.data[self.updating].camera_pos[2], -25, 25, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
 
     _ = c.igText("Camera direction");
-    if (c.igSliderFloat("##cdx", &self.data[self.updating].camera_dir[0], 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
-    if (c.igSliderFloat("##cdy", &self.data[self.updating].camera_dir[1], 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
-    if (c.igSliderFloat("##cdz", &self.data[self.updating].camera_dir[2], 0, 1, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##cdx", &self.data[self.updating].camera_dir[0], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##cdy", &self.data[self.updating].camera_dir[1], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##cdz", &self.data[self.updating].camera_dir[2], 0, std.math.pi * 2.0, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
 
     c.igEnd();
 }
