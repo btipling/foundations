@@ -9,8 +9,8 @@ del_torus: object.object = .{ .norender = .{} },
 change_torus: object.object = .{ .norender = .{} },
 expode_torus: object.object = .{ .norender = .{} },
 
-materials: rhi.Buffer,
-lights: rhi.Buffer,
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
 
 const TorusGeometry = @This();
 
@@ -40,8 +40,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TorusGeomet
     );
     errdefer cam.deinit(allocator);
 
-    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd, "materials");
+    const bd: []const lighting.Material = mats[0..];
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -59,8 +59,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *TorusGeomet
             .light_kind = .positional,
         },
     };
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     tg.* = .{

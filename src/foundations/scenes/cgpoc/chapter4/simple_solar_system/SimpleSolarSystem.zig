@@ -9,8 +9,10 @@ moon_uniform: rhi.Uniform = .empty,
 view_camera: *physics.camera.Camera(*SimpleSolarSystem, physics.Integrator(physics.SmoothDeceleration)),
 stack: [10]math.matrix = undefined,
 current_stack_index: u8 = 0,
-materials: rhi.Buffer,
-lights: rhi.Buffer,
+
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
+
 cubemap: object.object = .{ .norender = .{} },
 cubemap_texture: ?rhi.Texture = null,
 sun_texture: ?rhi.Texture = null,
@@ -62,8 +64,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
         },
     };
 
-    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd, "materials");
+    const bd: []const lighting.Material = mats[0..];
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -81,8 +83,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimpleSolar
             .light_kind = .direction,
         },
     };
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     ss.* = .{

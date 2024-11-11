@@ -16,11 +16,11 @@ sphere_color: rhi.Uniform = undefined,
 particles: object.object = .{ .norender = .{} },
 particles_data: rhi.Uniform = undefined,
 particles_count: usize = 0,
-particles_list: [max_num_particles]rhi.Buffer.ParticlesData = undefined,
+particles_list: [max_num_particles]ParticlesData = undefined,
 
-materials: rhi.Buffer,
-lights: rhi.Buffer,
-particles_buffer: rhi.Buffer,
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
+particles_buffer: SSBO,
 
 cubemap: object.object = .{ .norender = .{} },
 cubemap_texture: ?rhi.Texture = null,
@@ -33,6 +33,14 @@ const particle_per_frame: usize = 1;
 
 const sphere_vert: []const u8 = @embedFile("sphere_vert.glsl");
 const cubemap_vert: []const u8 = @embedFile("../../../shaders/cubemap_vert.glsl");
+
+pub const ParticlesData = struct {
+    ts: [4]f32 = .{ 0, 0, 0, 0 },
+    color: [4]f32 = .{ 1, 0, 1, 1 },
+};
+
+pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ssbo = 3 };
+const SSBO = rhi.storage_buffer.Buffer([]const ParticlesData, binding_point, c.GL_DYNAMIC_DRAW);
 
 const mats = [_]lighting.Material{
     lighting.materials.Silver,
@@ -60,8 +68,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
     );
     errdefer cam.deinit(allocator);
 
-    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd, "materials");
+    const bd: []const lighting.Material = mats[0..];
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -79,11 +87,11 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
             .light_kind = .positional,
         },
     };
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
-    const particles = [_]rhi.Buffer.ParticlesData{
+    const particles = [_]ParticlesData{
         .{
             .ts = .{ 2, 0, 1, 0.1 },
             .color = .{ 1, 0, 1, 1 },
@@ -93,9 +101,10 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Particles {
             .color = .{ 0, 1, 1, 1 },
         },
     };
-    const pd: rhi.Buffer.buffer_data = .{ .particles = particles[0..] };
-    var particles_buf = rhi.Buffer.init(pd, "materials");
+    const pd: []const ParticlesData = particles[0..];
+    var particles_buf = SSBO.init(pd, "particles_data");
     errdefer particles_buf.deinit();
+
     const prng = std.Random.DefaultPrng.init(blk: {
         var seed: u64 = undefined;
         std.posix.getrandom(std.mem.asBytes(&seed)) catch @panic("random fail");
@@ -225,7 +234,7 @@ fn animateSphere(self: *Particles, dt: f64) void {
 
 pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: math.vector.vec4) void {
     if (self.particles_count >= max_num_particles) {
-        var new_pl: [max_num_particles]rhi.Buffer.ParticlesData = undefined;
+        var new_pl: [max_num_particles]ParticlesData = undefined;
         for (0..self.particles_count - particle_per_frame) |i| {
             const scale_change = 0.15 / max_num_particles_f;
             const vert_change = scale_change * 100;
@@ -243,7 +252,7 @@ pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: mat
         }
         self.particles_list = new_pl;
     } else {
-        var new_pl: [max_num_particles]rhi.Buffer.ParticlesData = undefined;
+        var new_pl: [max_num_particles]ParticlesData = undefined;
         for (0..self.particles_count) |i| {
             const scale_change = 0.15 / max_num_particles_f;
             const vert_change = scale_change * 100;
@@ -262,7 +271,7 @@ pub fn updateParticlesBuffer(self: *Particles, pos: math.vector.vec4, color: mat
             if (self.particles_count >= max_num_particles) break;
         }
     }
-    const pd: rhi.Buffer.buffer_data = .{ .particles = self.particles_list[0..self.particles_count] };
+    const pd: []const ParticlesData = self.particles_list[0..self.particles_count];
     self.particles_buffer.update(pd);
     self.particles_data.setUniform1i(self.particles_count);
 }

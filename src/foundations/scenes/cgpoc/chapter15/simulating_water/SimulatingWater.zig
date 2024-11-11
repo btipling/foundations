@@ -20,8 +20,8 @@ is_under_water: bool = false,
 water_data_local: [3]f32 = .{ 0, 0, 0 },
 wave_tex: ?rhi.Texture = null,
 
-materials: rhi.Buffer,
-lights: rhi.Buffer,
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
 
 // Reflection stuff
 reflection_tex: rhi.Texture = undefined,
@@ -60,8 +60,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
     );
     errdefer cam.deinit(allocator);
 
-    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd, "materials");
+    const bd: []const lighting.Material = mats[0..];
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -92,8 +92,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *SimulatingW
             .light_kind = .positional,
         },
     };
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
     sw.* = .{
@@ -359,8 +359,8 @@ fn updateLights(self: *SimulatingWater) void {
         },
     };
     self.lights.deinit();
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
@@ -430,12 +430,6 @@ fn renderFloor(self: *SimulatingWater) void {
 }
 
 fn renderSurfaceTop(self: *SimulatingWater) void {
-    var grid_model: *assets.Obj = undefined;
-    if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
-        grid_model = o;
-    } else {
-        return;
-    }
     const prog = rhi.createProgram("surface_top");
     const frag_bindings = [_]usize{ 4, 2, 3 };
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);
@@ -483,12 +477,6 @@ fn renderSurfaceTop(self: *SimulatingWater) void {
 }
 
 fn renderSurfaceBottom(self: *SimulatingWater) void {
-    var grid_model: *assets.Obj = undefined;
-    if (self.ctx.obj_loader.loadAsset("cgpoc\\grid\\grid.obj") catch null) |o| {
-        grid_model = o;
-    } else {
-        return;
-    }
     const prog = rhi.createProgram("surface_bottom");
     const frag_bindings = [_]usize{ 2, 4 };
     const disable_bindless = rhi.Texture.disableBindless(self.ctx.args.disable_bindless);

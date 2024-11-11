@@ -183,6 +183,67 @@ pub fn setup(self: *Texture, image: ?*assets.Image, program: u32, uniform_name: 
     return;
 }
 
+pub fn setupWriteable(
+    self: *Texture,
+    data: []u8,
+    program: u32,
+    uniform_name: []const u8,
+    label: [:0]const u8,
+    width: usize,
+    height: usize,
+) TextureError!void {
+    var name: u32 = undefined;
+    c.glCreateTextures(c.GL_TEXTURE_2D, 1, @ptrCast(&name));
+    var buf: [500]u8 = undefined;
+    const label_text = std.fmt.bufPrintZ(&buf, "✍️writeable_texture_{s}", .{label}) catch @panic("bufsize too small");
+    c.glObjectLabel(c.GL_TEXTURE, name, -1, label_text);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_S, self.wrap_s);
+    c.glTextureParameteri(name, c.GL_TEXTURE_WRAP_T, self.wrap_t);
+    c.glTextureParameteri(name, c.GL_TEXTURE_MIN_FILTER, c.GL_NEAREST);
+    c.glTextureParameteri(name, c.GL_TEXTURE_MAG_FILTER, c.GL_NEAREST);
+
+    c.glTextureStorage2D(name, 1, c.GL_RGBA8, @intCast(width), @intCast(height));
+    c.glTextureSubImage2D(
+        name,
+        0,
+        0,
+        0,
+        @intCast(width),
+        @intCast(height),
+        c.GL_RGBA,
+        c.GL_UNSIGNED_BYTE,
+        data.ptr,
+    );
+
+    c.glGenerateTextureMipmap(name);
+    if (c.glfwExtensionSupported("GL_EXT_texture_filter_anisotropic") == 1) {
+        var ansio_setting: f32 = 0;
+        c.glGetFloatv(c.GL_MAX_TEXTURE_MAX_ANISOTROPY, &ansio_setting);
+        c.glTextureParameterf(name, c.GL_TEXTURE_MAX_ANISOTROPY, ansio_setting);
+    }
+
+    self.name = name;
+
+    self.uniforms[0] = Uniform.init(program, uniform_name) catch {
+        return TextureError.UniformCreationFailed;
+    };
+    self.num_uniforms += 1;
+
+    if (self.disable_bindless) {
+        return;
+    }
+    // Generate bindless handle
+    self.handle = c.glGetTextureHandleARB(self.name);
+    if (self.handle == 0) {
+        return TextureError.BindlessHandleCreationFailed;
+    }
+
+    // Make the texture resident
+    c.glMakeTextureHandleResidentARB(self.handle);
+
+    return;
+}
+
 pub fn setupCubemap(self: *Texture, images: ?[6]*assets.Image, program: u32, uniform_name: []const u8, label: [:0]const u8) TextureError!void {
     var name: u32 = undefined;
     c.glCreateTextures(c.GL_TEXTURE_CUBE_MAP, 1, @ptrCast(&name));
@@ -350,6 +411,10 @@ pub fn addUniform(self: *Texture, program: u32, uniform_name: []const u8) Textur
         return TextureError.UniformCreationFailed;
     };
     self.num_uniforms += 1;
+}
+
+pub fn bindWritableImage(self: Texture) void {
+    c.glBindImageTexture(self.texture_unit, self.name, 0, c.GL_FALSE, 0, c.GL_WRITE_ONLY, c.GL_RGBA8);
 }
 
 pub fn bind(self: Texture) void {

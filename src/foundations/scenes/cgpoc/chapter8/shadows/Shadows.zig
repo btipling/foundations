@@ -3,8 +3,9 @@ ui_state: ShadowsUI,
 bg: object.object = .{ .norender = .{} },
 view_camera: *physics.camera.Camera(*Shadows, physics.Integrator(physics.SmoothDeceleration)),
 ctx: scenes.SceneContext,
-materials: rhi.Buffer,
-lights: rhi.Buffer,
+
+materials: lighting.Material.SSBO,
+lights: lighting.Light.SSBO,
 
 // Shadows
 shadowmaps: [num_maps]rhi.Texture = undefined,
@@ -36,7 +37,7 @@ sphere_2: object.object = .{ .norender = .{} },
 sphere_2_matrix: rhi.Uniform = undefined,
 light_2_view_ms: [6]math.matrix = undefined,
 
-scene_data_buffer: rhi.Buffer = undefined,
+scene_data_buffer: UBO = undefined,
 scene_data: SceneData = .{},
 should_gen_shadow_map: bool = false,
 generated_shadow_map: bool = false,
@@ -78,6 +79,9 @@ const blinn_phong_frag_shader: []const u8 = @embedFile("blinn_phong_frag.glsl");
 const phong_frag_shader: []const u8 = @embedFile("phong_frag.glsl");
 const gouraud_frag_shader: []const u8 = @embedFile("gouraud_frag.glsl");
 
+pub const binding_point: rhi.storage_buffer.storage_binding_point = .{ .ubo = 3 };
+const UBO = rhi.storage_buffer.Buffer(SceneData, binding_point, c.GL_DYNAMIC_DRAW);
+
 const mats = [_]lighting.Material{
     lighting.materials.Gold,
     lighting.materials.Jade,
@@ -112,8 +116,8 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
     );
     errdefer cam.deinit(allocator);
 
-    const bd: rhi.Buffer.buffer_data = .{ .materials = mats[0..] };
-    var mats_buf = rhi.Buffer.init(bd, "materials");
+    const bd: []const lighting.Material = mats[0..];
+    var mats_buf = lighting.Material.SSBO.init(bd, "materials");
     errdefer mats_buf.deinit();
 
     const lights = [_]lighting.Light{
@@ -144,12 +148,12 @@ pub fn init(allocator: std.mem.Allocator, ctx: scenes.SceneContext) *Shadows {
             .light_kind = .positional,
         },
     };
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
 
-    const sd: rhi.Buffer.buffer_data = .{ .chapter8_shadows = .{} };
-    var scene_data_buffer = rhi.Buffer.init(sd, "scene_data");
+    const sd: SceneData = .{};
+    var scene_data_buffer = UBO.init(sd, "scene_data");
     errdefer scene_data_buffer.deinit();
 
     const ui_state: ShadowsUI = .{};
@@ -266,8 +270,8 @@ fn updateLights(self: *Shadows) void {
         },
     };
     self.lights.deinit();
-    const ld: rhi.Buffer.buffer_data = .{ .lights = lights[0..] };
-    var lights_buf = rhi.Buffer.init(ld, "lights");
+    const ld: []const lighting.Light = lights[0..];
+    var lights_buf = lighting.Light.SSBO.init(ld, "lights");
     errdefer lights_buf.deinit();
     self.lights = lights_buf;
 }
@@ -296,7 +300,7 @@ fn lightDataToMat(self: *Shadows) void {
 }
 
 fn updateSceneData(self: *Shadows) void {
-    self.scene_data_buffer.update(.{ .chapter8_shadows = self.scene_data });
+    self.scene_data_buffer.update(self.scene_data);
 }
 
 pub fn draw(self: *Shadows, dt: f64) void {

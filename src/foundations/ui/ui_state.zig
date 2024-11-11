@@ -45,6 +45,8 @@ pub const scene_type = enum(usize) {
     fourteen_clipping_plane,
     fourteen_textures_3d,
     fifteen_simulating_water,
+    sixteen_compute_shader,
+    sixteen_ray_casting,
 };
 
 pub const scenes = union(scene_type) {
@@ -94,6 +96,8 @@ pub const scenes = union(scene_type) {
     fourteen_clipping_plane: *scenes_list.cgpoc.chapter14.ClippingPlane,
     fourteen_textures_3d: *scenes_list.cgpoc.chapter14.Textures3D,
     fifteen_simulating_water: *scenes_list.cgpoc.chapter15.SimulatingWater,
+    sixteen_compute_shader: *scenes_list.cgpoc.chapter16.ComputeShader,
+    sixteen_ray_casting: *scenes_list.cgpoc.chapter16.RayCasting,
 };
 
 pub const scene_nav_type = enum {

@@ -11,3 +11,4 @@ pub const chapter12 = @import("chapter12/chapter12.zig");
 pub const chapter13 = @import("chapter13/chapter13.zig");
 pub const chapter14 = @import("chapter14/chapter14.zig");
 pub const chapter15 = @import("chapter15/chapter15.zig");
+pub const chapter16 = @import("chapter16/chapter16.zig");
