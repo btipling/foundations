@@ -65,9 +65,9 @@ pub fn draw(self: *ComputeShaderUI) void {
     _ = c.igText("Sphere radius");
     if (c.igSliderFloat("##sr", &self.data[self.updating].sphere_radius, 0.5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
     _ = c.igText("Sphere position");
-    if (c.igSliderFloat("##spx", &self.data[self.updating].sphere_pos[0], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
-    if (c.igSliderFloat("##spy", &self.data[self.updating].sphere_pos[1], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
-    if (c.igSliderFloat("##spz", &self.data[self.updating].sphere_pos[2], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##spx", &self.data[self.updating].sphere_pos[0], -10, 10, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##spy", &self.data[self.updating].sphere_pos[1], -10, 10, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##spz", &self.data[self.updating].sphere_pos[2], -10, 10, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
 
     _ = c.igText("Sphere color");
     {
@@ -80,9 +80,9 @@ pub fn draw(self: *ComputeShaderUI) void {
     _ = c.igText("Box dimension");
     if (c.igSliderFloat("##bd", &self.data[self.updating].box_dim, 0.5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
     _ = c.igText("Box position");
-    if (c.igSliderFloat("##bpx", &self.data[self.updating].box_pos[0], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
-    if (c.igSliderFloat("##bpy", &self.data[self.updating].box_pos[1], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
-    if (c.igSliderFloat("##bpz", &self.data[self.updating].box_pos[2], -5, 5, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##bpx", &self.data[self.updating].box_pos[0], -10, 10, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##bpy", &self.data[self.updating].box_pos[1], -10, 10, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
+    if (c.igSliderFloat("##bpz", &self.data[self.updating].box_pos[2], -10, 10, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
     _ = c.igText("Box rotation");
     if (c.igSliderFloat("##brx", &self.data[self.updating].box_rot[0], 0, std.math.pi, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;
     if (c.igSliderFloat("##bry", &self.data[self.updating].box_rot[1], 0, std.math.pi, "%.3f", c.ImGuiSliderFlags_None)) self.data[self.updating].updated = true;

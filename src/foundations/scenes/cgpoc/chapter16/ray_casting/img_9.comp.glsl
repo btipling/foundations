@@ -454,13 +454,41 @@ vec4 f_checkerboard(vec2 f_tc) {
     return vec4((f_tile * vec3(1.0, 1.0, 1.0)).xyz, 1.0);
 }
 
-vec3 f_ray_trace2(Ray f_ray) {
+vec3 f_ray_trace3(Ray f_ray) {
+    SceneData f_sd = f_scene_data[f_scene_index];
     Collision f_c = f_get_closest_collision(f_ray);
     if (f_c.object_index == -1) return vec3(0.0);
-    if (f_c.object_index == 1) return f_lighting(f_ray, f_c, (texture(f_sphere_tex, f_c.tc)));
+    if (f_c.object_index == 1) return f_lighting(f_ray, f_c, f_sd.sphere_color);
     if (f_c.object_index == 2) return f_lighting(f_ray, f_c, (texture(f_box_tex, f_c.tc)));
     if (f_c.object_index == 3) {
         if (f_c.face_index == 0) return texture(f_xn_tex, f_c.tc).xyz;
+        if (f_c.face_index == 1) return texture(f_xp_tex, f_c.tc).xyz;
+        if (f_c.face_index == 2) return texture(f_yn_tex, f_c.tc).xyz;
+        if (f_c.face_index == 3) return texture(f_yp_tex, f_c.tc).xyz;
+        if (f_c.face_index == 4) return texture(f_zn_tex, f_c.tc).xyz;
+        if (f_c.face_index == 5) return texture(f_zp_tex, f_c.tc).xyz;
+    }
+    if (f_c.object_index == 4) return f_lighting(f_ray, f_c, f_checkerboard(f_c.tc)).xyz;
+    return vec3(1.0, 0.0, 1.0);
+}
+
+vec3 f_ray_trace2(Ray f_ray) {
+    Collision f_c = f_get_closest_collision(f_ray);
+    if (f_c.object_index == -1) return vec3(0.0);
+    if (f_c.object_index == 1) {
+        Ray f_refracted_ray;
+        f_refracted_ray.start = f_c.p - f_c.n * 0.001;
+
+        float f_ior = 1.125;
+        float f_k = 1.0 - f_ior * f_ior * (1.0 - dot(f_c.n, f_ray.dir) * dot(f_c.n, f_ray.dir));
+        if (f_k < 0.0) f_k = 0.0;
+        f_refracted_ray.dir = f_ior * f_ray.dir - (f_ior * dot(f_c.n, f_ray.dir) + sqrt(f_k)) * f_c.n;
+
+        vec3 f_refracted_color = f_ray_trace3(f_refracted_ray);
+        return f_lighting(f_ray, f_c, vec4(f_refracted_color, 1.0));
+    }
+    if (f_c.object_index == 2) return f_lighting(f_ray, f_c, (texture(f_box_tex, f_c.tc)));
+    if (f_c.object_index == 3) {
         if (f_c.face_index == 1) return texture(f_xp_tex, f_c.tc).xyz;
         if (f_c.face_index == 2) return texture(f_yn_tex, f_c.tc).xyz;
         if (f_c.face_index == 3) return texture(f_yp_tex, f_c.tc).xyz;
@@ -475,11 +503,16 @@ vec3 f_ray_trace(Ray f_ray) {
     Collision f_c = f_get_closest_collision(f_ray);
     if (f_c.object_index == -1) return vec3(0.0);
     if (f_c.object_index == 1) {
-        Ray f_reflected_ray;
-        f_reflected_ray.start = f_c.p + f_c.n * 0.001;
-        f_reflected_ray.dir = reflect(f_ray.dir, f_c.n);
-        vec3 f_reflected_color = f_ray_trace2(f_reflected_ray);
-        return f_lighting(f_ray, f_c, vec4(f_reflected_color, 1.0));
+        Ray f_refracted_ray;
+        f_refracted_ray.start = f_c.p - f_c.n * 0.001;
+
+        float f_ior = 1.0/1.125;
+        float f_k = 1.0 - f_ior * f_ior * (1.0 - dot(f_c.n, f_ray.dir) * dot(f_c.n, f_ray.dir));
+        if (f_k < 0.0) f_k = 0.0;
+        f_refracted_ray.dir = f_ior * f_ray.dir - (f_ior * dot(f_c.n, f_ray.dir) + sqrt(f_k)) * f_c.n;
+
+        vec3 f_refracted_color = f_ray_trace2(f_refracted_ray);
+        return f_lighting(f_ray, f_c, vec4(f_refracted_color, 1.0));
     }
     if (f_c.object_index == 2) return f_lighting(f_ray, f_c, (texture(f_box_tex, f_c.tc)));
     if (f_c.object_index == 3) {
